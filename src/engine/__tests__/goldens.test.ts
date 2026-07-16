@@ -41,14 +41,19 @@ function playAll(): Record<string, Golden> {
 }
 
 describe('golden playthroughs', () => {
-  it('match the pinned outcomes (run `npm run goldens:update` to accept changes)', () => {
-    const actual = playAll()
-    if (UPDATE) {
-      mkdirSync(dirname(FIXTURE), { recursive: true })
-      writeFileSync(FIXTURE, JSON.stringify(actual, null, 2) + '\n')
-      return
-    }
-    const expected = JSON.parse(readFileSync(FIXTURE, 'utf8')) as Record<string, Golden>
-    expect(actual).toEqual(expected)
-  })
+  it(
+    'match the pinned outcomes (run `npm run goldens:update` to accept changes)',
+    () => {
+      const actual = playAll()
+      if (UPDATE) {
+        mkdirSync(dirname(FIXTURE), { recursive: true })
+        writeFileSync(FIXTURE, JSON.stringify(actual, null, 2) + '\n')
+        return
+      }
+      const expected = JSON.parse(readFileSync(FIXTURE, 'utf8')) as Record<string, Golden>
+      expect(actual).toEqual(expected)
+    },
+    // Four full bot playthroughs — well past vitest's 5s default on CI runners.
+    120_000,
+  )
 })
