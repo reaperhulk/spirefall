@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spirefall</title>
+    <style>
+      body {
+        margin: 0;
+        background: #0b0e14;
+        color: #d8dee9;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+      }
+      main { max-width: 40rem; padding: 2rem; }
+      h1 { color: #e5c07b; letter-spacing: 0.08em; }
+      pre { background: #11151f; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>SPIREFALL</h1>
+      <p>
+        M0 skeleton — the deterministic engine core is live (see below for a
+        headless demo run executed in your browser). The playfield arrives at M2;
+        see <code>PLAN.md</code> for the roadmap.
+      </p>
+      <pre id="demo">simulating…</pre>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
