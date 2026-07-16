@@ -12,6 +12,10 @@ export function assertInvariants(state: RunState): void {
   check(Number.isInteger(state.tick) && state.tick >= 0, `tick must be a non-negative integer, got ${state.tick}`)
   check(Number.isInteger(state.wave) && state.wave >= 0, `wave must be a non-negative integer, got ${state.wave}`)
   check(
+    Number.isInteger(state.startWave) && state.startWave >= 0 && state.startWave <= state.wave,
+    `startWave must be in [0, wave], got ${state.startWave}`,
+  )
+  check(
     Number.isInteger(state.wavesCleared) && state.wavesCleared >= 0 && state.wavesCleared <= state.wave,
     `wavesCleared must be in [0, wave], got ${state.wavesCleared} (wave ${state.wave})`,
   )

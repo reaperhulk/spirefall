@@ -206,10 +206,19 @@ export const AFFIX_CHANCE_PCT = 35
 
 export const BASE_WAVE_BUDGET = 80
 export const WAVE_BUDGET_GROWTH_PCT = 118 // ×1.18 per wave
-export const HP_SCALE_GROWTH_PCT = 111 // enemy hp ×1.11 per wave
+// Two-phase HP ramp: gentle early so fresh skill can express itself, steep
+// after the break so the wall is real and meta progression is the only way
+// through it.
+export const HP_GROWTH_EARLY_PCT = 110
+export const HP_GROWTH_LATE_PCT = 120
+export const HP_GROWTH_BREAK_WAVE = 10
+
+export function hpGrowthPct(wave: number): number {
+  return wave <= HP_GROWTH_BREAK_WAVE ? HP_GROWTH_EARLY_PCT : HP_GROWTH_LATE_PCT
+}
 export const MAX_UNITS_PER_WAVE = 200
 export const BOSS_WAVE_INTERVAL = 10
-export const VICTORY_WAVE = 45
+export const VICTORY_WAVE = 32
 export const WAVE_CLEAR_GOLD_BASE = 20
 export const WAVE_CLEAR_GOLD_PER_WAVE = 6
 export const STARTING_GOLD = 100

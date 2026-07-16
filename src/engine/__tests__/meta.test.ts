@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { META_TREE } from '../../data/metaTree'
+import { META_SPIRE_HP_PER_LEVEL, META_TOWER_DAMAGE_PCT_PER_LEVEL, META_TREE, metaNode } from '../../data/metaTree'
 import { buyMetaUpgrade, createMeta, createRun, metaUpgradeCost, settleRun } from '../meta'
 import { computeSparks } from '../step'
 
@@ -24,8 +24,9 @@ describe('meta tree', () => {
   })
 
   it('max level upgrades cannot be bought', () => {
-    let meta = { ...createMeta(), sparks: 10_000 }
-    for (let i = 0; i < 5; i++) meta = buyMetaUpgrade(meta, 'spire_hp').meta
+    const node = metaNode('spire_hp')
+    let meta = { ...createMeta(), sparks: 1_000_000 }
+    for (let i = 0; i < node.maxLevel; i++) meta = buyMetaUpgrade(meta, 'spire_hp').meta
     expect(metaUpgradeCost(meta, 'spire_hp')).toBeNull()
     expect(buyMetaUpgrade(meta, 'spire_hp').ok).toBe(false)
   })
@@ -57,10 +58,24 @@ describe('createRun applies meta', () => {
     meta = buyMetaUpgrade(meta, 'unlock_gold_rush').meta
     const run = createRun(meta, 'meta-rich')
     expect(run.gold).toBe(130)
-    expect(run.spireMaxHp).toBe(125)
-    expect(run.mods.damagePct).toBe(6)
+    expect(run.spireMaxHp).toBe(100 + META_SPIRE_HP_PER_LEVEL)
+    expect(run.mods.damagePct).toBe(META_TOWER_DAMAGE_PCT_PER_LEVEL)
     expect(run.availableTowers).toContain('tesla')
     expect(Object.keys(run.abilities)).toContain('gold_rush')
+  })
+
+  it('Ashen Road skips starting waves with catch-up gold, and skipped waves pay no sparks', () => {
+    let meta = { ...createMeta(), sparks: 1_000 }
+    meta = buyMetaUpgrade(meta, 'wave_skip').meta // level 1 = start at wave 2
+    const run = createRun(meta, 'skip-run')
+    expect(run.startWave).toBe(2)
+    expect(run.wave).toBe(2)
+    expect(run.wavesCleared).toBe(2)
+    expect(run.waveBudget).toBeGreaterThan(0) // budget curve advanced to match
+    expect(run.gold).toBeGreaterThan(100) // catch-up gold for the skipped waves
+    // Sparks only pay for waves cleared THIS run.
+    expect(computeSparks({ ...run, wavesCleared: 2, kills: 0 })).toBe(5)
+    expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(10 * 10 + 5)
   })
 
   it('the same meta and seed always create the identical run', () => {

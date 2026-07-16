@@ -3,7 +3,7 @@ import {
   BASE_WAVE_BUDGET,
   ENEMIES,
   enhanceCost,
-  HP_SCALE_GROWTH_PCT,
+  hpGrowthPct,
   RELIC_IDS,
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
@@ -87,7 +87,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       const wave = s.wave + 1
       s.wave = wave
       s.waveBudget = wave === 1 ? BASE_WAVE_BUDGET : Math.floor((s.waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
-      s.hpScalePct = wave === 1 ? 100 : Math.floor((s.hpScalePct * HP_SCALE_GROWTH_PCT) / 100)
+      s.hpScalePct = wave === 1 ? 100 : Math.floor((s.hpScalePct * hpGrowthPct(wave)) / 100)
       const generated = generateWave(s.rng.waves, wave, s.waveBudget)
       s.rng.waves = generated.rng
       s.activeAffix = generated.affix
@@ -289,7 +289,9 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
 }
 
 export function computeSparks(s: RunState): number {
-  const base = s.wavesCleared * 10 + Math.floor(s.kills / 6) + 5 + (s.victoryClaimed ? 500 : 0)
+  // Only waves cleared THIS run pay — skipped starting waves don't.
+  const cleared = Math.max(0, s.wavesCleared - s.startWave)
+  const base = cleared * 10 + Math.floor(s.kills / 6) + 5 + (s.victoryClaimed ? 500 : 0)
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
   return Math.floor((base * pct) / 100)

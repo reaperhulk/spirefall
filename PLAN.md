@@ -80,13 +80,18 @@ intentionally moves):
 |---|---|
 | Fresh account, does nothing during waves | dies waves 2–5, under 90 sim-seconds |
 | Fresh account, greedy arrow spam | dies waves 7–9 |
-| Fresh account, competent bot | dies waves ~37–42, never wins run 1 |
-| Banked account (~5000 sparks) | strictly outlasts fresh; wins on some seeds |
-| Maxed Spire Tree (≈5–6 run career) | wins (wave 45), then endless |
+| Fresh account, competent bot | walls at waves 14–21 (7–15 min at 1×) — half the game still ahead |
+| +1000 sparks | reaches ~25–27; +3000 reaches ~30 — every run visibly further |
+| Career (bot) | first victory (wave 32) around run 7–10; deep tree (~60k) → 32–33, then endless |
 
-Wave budget grows ~1.18ᴺ and enemy HP ~1.11ᴺ; a static defense's DPS is roughly
-linear in gold, so every run *stalls* — the geometric/linear gap is what guarantees
-failure and sets the loop cadence.
+The ramp is two-phase: enemy HP ×1.10/wave through wave 10, ×1.20/wave after —
+gentle enough early for fresh skill to express itself, steep enough late that the
+deep Spire Tree (25-level damage, 12-level HP/income, wave-skip) is the only way
+through. The tree is priced to span 10+ runs of Sparks.
+
+Wave budget grows ~1.18ᴺ throughout; a defense's DPS is roughly linear in gold,
+so past the wave-10 break every run *stalls hard* — the geometric/linear gap is
+what guarantees failure and sets the loop cadence.
 
 ## 3. Engine architecture — a pure, deterministic core
 

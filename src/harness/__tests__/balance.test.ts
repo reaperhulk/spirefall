@@ -44,14 +44,17 @@ describe('balance envelope', () => {
     }
   }, 120_000)
 
-  it('a competent fresh player survives the early game but can never win run 1', () => {
+  it('a competent fresh player clears the early game, walls in the teens, and cannot win run 1', () => {
     for (const seed of SEEDS) {
       const state = play(seed, 'balanced')
       expect(state.phase, seed).toBe('defeat')
-      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(25)
+      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(12)
+      expect(state.wavesCleared, seed).toBeLessThanOrEqual(24) // most of the game is still ahead
       expect(state.wavesCleared, seed).toBeLessThan(VICTORY_WAVE)
+      // A fresh run is a quick loop: under ~18 minutes of sim time at 1x.
+      expect(state.tick, seed).toBeLessThan(18 * 60 * 30)
     }
-  }, 120_000)
+  }, 240_000)
 
   it('sparks buy real power: a banked-up account outlasts a fresh one', () => {
     let strictlyBetter = 0
@@ -64,8 +67,16 @@ describe('balance envelope', () => {
     expect(strictlyBetter).toBeGreaterThanOrEqual(2)
   }, 240_000)
 
-  it('the grind pays off: a maxed Spire Tree can actually win', () => {
-    const meta = richMeta(15_000)
+  it('meta power is monotonic: each spark tier reaches further', () => {
+    const fresh = play('alpha', 'balanced')
+    const mid = play('alpha', 'balanced', richMeta(3000))
+    const deep = play('alpha', 'balanced', richMeta(20_000))
+    expect(mid.wavesCleared).toBeGreaterThan(fresh.wavesCleared + 5)
+    expect(deep.wavesCleared).toBeGreaterThanOrEqual(mid.wavesCleared)
+  }, 240_000)
+
+  it('the grind pays off: a deep Spire Tree can actually win', () => {
+    const meta = richMeta(60_000)
     let victories = 0
     for (const seed of ['alpha', 'beta', 'gamma', 'delta']) {
       const state = play(seed, 'balanced', meta)
@@ -74,14 +85,23 @@ describe('balance envelope', () => {
     expect(victories).toBeGreaterThanOrEqual(2)
   }, 240_000)
 
-  it('a six-run career climbs: later runs reach further and sparks accumulate', () => {
+  it('a six-run career climbs steadily but has NOT won yet — the grind is real', () => {
     const { history, meta } = playProgression(6, 'career', BOTS.balanced, DEFAULT_BUY_PRIORITY)
     const first = history[0]!.wavesCleared
     const bestLate = Math.max(...history.slice(3).map((h) => h.wavesCleared))
-    expect(bestLate).toBeGreaterThanOrEqual(first + 2)
-    expect(meta.totalSparks).toBeGreaterThan(3000)
+    expect(bestLate).toBeGreaterThanOrEqual(first + 5) // visible progression...
+    expect(history.every((h) => h.outcome === 'defeat')).toBe(true) // ...but no early victory
+    expect(meta.totalSparks).toBeGreaterThan(2000)
     expect(meta.runs).toBe(6)
     // Every single run ended — the loop always closes.
     for (const h of history) expect(h.sparks).toBeGreaterThan(0)
-  }, 240_000)
+  }, 300_000)
+
+  it('a longer career eventually breaks the cycle', () => {
+    const { history } = playProgression(12, 'career', BOTS.balanced, DEFAULT_BUY_PRIORITY)
+    expect(history.some((h) => h.outcome === 'victory')).toBe(true)
+    // The first win takes real investment: no earlier than run 5.
+    const firstWin = history.findIndex((h) => h.outcome === 'victory') + 1
+    expect(firstWin).toBeGreaterThanOrEqual(5)
+  }, 600_000)
 })

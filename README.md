@@ -29,9 +29,11 @@ npm run dev     # then open http://localhost:5173
   (only Arrows, Teslas, and Snipers can hit air).
 - **Choose**: every 5 waves the ruins offer a relic — run-scoped power with
   trade-offs.
-- **Fall**: wave budgets grow ~18% per wave; every run ends. Spend Sparks in the
-  Spire Tree and reach further next run. Clear wave 45 to break the cycle — then
-  keep pushing into the endless if you dare; the victory is banked either way.
+- **Fall**: the difficulty ramp turns brutal after wave 10; every run ends. Spend
+  Sparks in the deep Spire Tree (damage, HP, income, wave-skipping) and reach
+  further next run — expect the climb to wave 32 to take many runs. Break the
+  cycle there, then keep pushing into the endless if you dare; the victory is
+  banked either way.
 
 Progress saves to localStorage automatically, mid-run included.
 

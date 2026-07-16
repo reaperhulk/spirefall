@@ -98,7 +98,8 @@ export interface RunState {
   phase: Phase
   rng: RngStreams
   mapId: number
-  wave: number // wave currently active or last started (0 before first)
+  wave: number // wave currently active or last started
+  startWave: number // waves skipped via meta (sparks only pay past this)
   wavesCleared: number
   kills: number
   gold: number

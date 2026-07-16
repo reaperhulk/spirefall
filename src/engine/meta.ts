@@ -1,4 +1,12 @@
-import { STARTING_GOLD, STARTING_SPIRE_HP } from '../data/content'
+import {
+  BASE_WAVE_BUDGET,
+  hpGrowthPct,
+  STARTING_GOLD,
+  STARTING_SPIRE_HP,
+  WAVE_BUDGET_GROWTH_PCT,
+  WAVE_CLEAR_GOLD_BASE,
+  WAVE_CLEAR_GOLD_PER_WAVE,
+} from '../data/content'
 import { MAPS } from '../data/maps'
 import {
   META_GOLD_INCOME_PCT_PER_LEVEL,
@@ -6,6 +14,7 @@ import {
   META_SPIRE_HP_PER_LEVEL,
   META_STARTING_GOLD_PER_LEVEL,
   META_TOWER_DAMAGE_PCT_PER_LEVEL,
+  META_WAVE_SKIP_PER_LEVEL,
   metaNode,
   type MetaUpgradeId,
 } from '../data/metaTree'
@@ -55,6 +64,19 @@ export function createRun(meta: MetaState, seed: string): RunState {
 
   const spireHp = STARTING_SPIRE_HP + metaLevel(meta, 'spire_hp') * META_SPIRE_HP_PER_LEVEL
 
+  // Ashen Road: start further in, with the gold those waves would roughly
+  // have paid (clear income plus ~a quarter of each wave's budget in
+  // bounties). The trade: skipped waves never offer relics.
+  const startWave = metaLevel(meta, 'wave_skip') * META_WAVE_SKIP_PER_LEVEL
+  let waveBudget = 0
+  let hpScalePct = 100
+  let catchUpGold = 0
+  for (let w = 1; w <= startWave; w++) {
+    waveBudget = w === 1 ? BASE_WAVE_BUDGET : Math.floor((waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
+    if (w > 1) hpScalePct = Math.floor((hpScalePct * hpGrowthPct(w)) / 100)
+    catchUpGold += WAVE_CLEAR_GOLD_BASE + w * WAVE_CLEAR_GOLD_PER_WAVE + Math.floor(waveBudget / 4)
+  }
+
   return {
     schemaVersion: 1,
     seed,
@@ -66,14 +88,15 @@ export function createRun(meta: MetaState, seed: string): RunState {
       relics: deriveStream(seed, 'relics'),
     },
     mapId: mapRoll.value,
-    wave: 0,
-    wavesCleared: 0,
+    wave: startWave,
+    startWave,
+    wavesCleared: startWave,
     kills: 0,
-    gold: STARTING_GOLD + metaLevel(meta, 'starting_gold') * META_STARTING_GOLD_PER_LEVEL,
+    gold: STARTING_GOLD + metaLevel(meta, 'starting_gold') * META_STARTING_GOLD_PER_LEVEL + catchUpGold,
     spireHp,
     spireMaxHp: spireHp,
-    waveBudget: 0,
-    hpScalePct: 100,
+    waveBudget,
+    hpScalePct,
     nextEntityId: 1,
     towers: [],
     enemies: [],
