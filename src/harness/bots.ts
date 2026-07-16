@@ -51,20 +51,25 @@ export const greedyBot: Bot = (state) => {
 
 const RELIC_PRIORITY: RelicId[] = [
   'spark_siphon',
+  'glass_cannon',
   'piercing_arrows',
   'overcharge',
+  'bounty_banner',
+  'stoneskin',
   'heavy_powder',
   'winters_grip',
+  'overclock',
+  'mint_condition',
   'golden_touch',
 ]
 
-const BUILD_RATIO: Record<TowerType, number> = { arrow: 5, cannon: 2, frost: 1, tesla: 3 }
+const BUILD_RATIO: Record<TowerType, number> = { arrow: 5, cannon: 2, frost: 1, tesla: 3, sniper: 2, mint: 1 }
 
 function pickBuildType(state: RunState): TowerType {
   // Early game is all about cheap single-target DPS.
   if (state.wave < 3) return 'arrow'
   // After that, build toward the ratio: pick the available type most below quota.
-  const counts: Record<TowerType, number> = { arrow: 0, cannon: 0, frost: 0, tesla: 0 }
+  const counts: Record<TowerType, number> = { arrow: 0, cannon: 0, frost: 0, tesla: 0, sniper: 0, mint: 0 }
   for (const t of state.towers) counts[t.type] += 1
   let best: TowerType = 'arrow'
   let bestScore = -Infinity
@@ -129,8 +134,9 @@ export const balancedBot: Bot = (state) => {
   }
 
   if (state.phase === 'wave') {
-    // Emergency repairs mid-assault.
-    if (state.spireHp < state.spireMaxHp / 2 && state.gold >= 100) {
+    // Emergency repairs mid-assault — but not in the early game, where gold
+    // is better spent on towers than triage.
+    if (state.wave >= 10 && state.spireHp < state.spireMaxHp / 2 && state.gold >= 100) {
       return [{ type: 'repair_spire' }]
     }
     const alive = state.enemies.length

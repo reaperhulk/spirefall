@@ -18,11 +18,11 @@ import {
   WAVE_CLEAR_GOLD_BASE,
   WAVE_CLEAR_GOLD_PER_WAVE,
 } from '../data/content'
-import { castAbility, collectDead, drawRelicOffer, moveEnemies, tickStatuses, towersFire } from './combat'
+import { castAbility, collectDead, drawRelicOffer, enemyAuras, moveEnemies, tickStatuses, towersFire } from './combat'
 import { cloneRun } from './clone'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, inBounds } from './grid'
 import type { Command, GameEvent, RelicId, RunState, StepResult, Targeting } from './types'
-import { generateWave, scaledHp } from './waves'
+import { affixHpPct, affixSpeedPct, generateWave, scaledHp } from './waves'
 
 export const TICKS_PER_SECOND = 30
 
@@ -49,8 +49,9 @@ export function step(state: RunState, commands: Command[]): StepResult {
     spawnDue(s, events)
     moveEnemies(s, map, field, events)
     if (s.spireHp === 0) {
-      endRun(s, 'defeat', events)
+      endRun(s, events)
     } else {
+      enemyAuras(s, events)
       towersFire(s, map, field, events)
       collectDead(s, events)
       checkWaveEnd(s, events)
@@ -74,10 +75,10 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
 
   switch (command.type) {
     case 'abandon_run': {
-      // Concede: the run ends as a defeat and pays sparks for progress so
-      // far, exactly as if the Spire had fallen.
+      // Concede: the run ends now and pays sparks for progress so far. If
+      // the victory wave was already cleared, the cycle still counts as won.
       s.spireHp = 0
-      endRun(s, 'defeat', events)
+      endRun(s, events)
       return
     }
 
@@ -89,9 +90,10 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.hpScalePct = wave === 1 ? 100 : Math.floor((s.hpScalePct * HP_SCALE_GROWTH_PCT) / 100)
       const generated = generateWave(s.rng.waves, wave, s.waveBudget)
       s.rng.waves = generated.rng
+      s.activeAffix = generated.affix
       s.pendingSpawns = generated.spawns.map((p) => ({ type: p.type, tick: s.tick + p.tick }))
       s.phase = 'wave'
-      events.push({ type: 'wave_started', wave, spawnCount: s.pendingSpawns.length })
+      events.push({ type: 'wave_started', wave, spawnCount: s.pendingSpawns.length, affix: generated.affix })
       return
     }
 
@@ -201,18 +203,20 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       if (!s.relicOffer.includes(command.relic)) return reject(command, 'relic not in the offer', events)
       s.relics.push(command.relic)
       s.relicOffer = null
-      if (command.relic === 'golden_touch') {
-        // Scale current HP proportionally: losing max HP must never make the
-        // spire relatively healthier (a damaged spire used to "heal" on the
-        // bar because only max dropped).
-        const oldMax = s.spireMaxHp
-        s.spireMaxHp = Math.max(1, Math.floor((oldMax * 90) / 100))
-        s.spireHp = Math.max(1, Math.min(s.spireMaxHp, Math.floor((s.spireHp * s.spireMaxHp) / oldMax)))
-      }
+      if (command.relic === 'golden_touch') reduceSpireMax(s, 90)
+      if (command.relic === 'glass_cannon') reduceSpireMax(s, 80)
       events.push({ type: 'relic_chosen', relic: command.relic })
       return
     }
   }
+}
+
+// Scale current HP proportionally with a max-HP reduction: losing max HP must
+// never make the spire relatively healthier on the bar.
+function reduceSpireMax(s: RunState, keepPct: number): void {
+  const oldMax = s.spireMaxHp
+  s.spireMaxHp = Math.max(1, Math.floor((oldMax * keepPct) / 100))
+  s.spireHp = Math.max(1, Math.min(s.spireMaxHp, Math.floor((s.spireHp * s.spireMaxHp) / oldMax)))
 }
 
 function spawnDue(s: RunState, events: GameEvent[]): void {
@@ -223,7 +227,8 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
   const map = getMap(s.mapId)
   for (const spawn of due) {
     const def = ENEMIES[spawn.type]
-    const hp = scaledHp(spawn.type, s.hpScalePct)
+    const hp = Math.max(1, Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix)) / 100))
+    const speed = Math.floor((def.speed * affixSpeedPct(s.activeAffix)) / 100)
     const id = s.nextEntityId
     s.nextEntityId += 1
     s.enemies.push({
@@ -232,12 +237,13 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       pos: cellCenter(map.spawn),
       hp,
       maxHp: hp,
-      speed: def.speed,
+      speed,
       slowFactor: 100,
       slowTicks: 0,
       bounty: def.bounty,
       damage: def.damage,
       shield: def.shield,
+      healCooldown: def.heal ? def.heal.everyTicks : 0,
       targetCell: null,
     })
     events.push({ type: 'enemy_spawned', id, enemy: spawn.type })
@@ -253,9 +259,22 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   s.gold += goldAwarded
   events.push({ type: 'wave_cleared', wave: s.wave, goldAwarded })
 
-  if (s.wave >= VICTORY_WAVE) {
-    endRun(s, 'victory', events)
-    return
+  // Mints pay out on every cleared wave.
+  const mintBonus = s.relics.includes('mint_condition') ? 50 : 0
+  for (const t of s.towers) {
+    if (t.type !== 'mint') continue
+    const base = towerTier('mint', t.tier).mintYield!
+    const amount = Math.floor((base * (100 + s.mods.goldPct + mintBonus + 10 * t.enhance)) / 100)
+    s.gold += amount
+    events.push({ type: 'mint_income', id: t.id, amount })
+  }
+
+  // Clearing the victory wave completes the cycle — but the run continues
+  // into the endless if the player wants to push further. Sparks keep
+  // accruing; the victory bonus is banked whenever the run finally ends.
+  if (s.wave >= VICTORY_WAVE && !s.victoryClaimed) {
+    s.victoryClaimed = true
+    events.push({ type: 'victory_achieved', wave: s.wave })
   }
 
   s.phase = 'build'
@@ -269,15 +288,19 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   }
 }
 
-export function computeSparks(s: RunState, outcome: 'defeat' | 'victory'): number {
-  const base = s.wavesCleared * 10 + Math.floor(s.kills / 6) + 5 + (outcome === 'victory' ? 500 : 0)
+export function computeSparks(s: RunState): number {
+  const base = s.wavesCleared * 10 + Math.floor(s.kills / 6) + 5 + (s.victoryClaimed ? 500 : 0)
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
   return Math.floor((base * pct) / 100)
 }
 
-function endRun(s: RunState, outcome: 'defeat' | 'victory', events: GameEvent[]): void {
-  const sparks = computeSparks(s, outcome)
+// A run ends when the spire falls or the player concedes. If the victory
+// wave was cleared at any point, the cycle counts as won — endless waves
+// past it only add to the spoils.
+function endRun(s: RunState, events: GameEvent[]): void {
+  const outcome = s.victoryClaimed ? 'victory' : 'defeat'
+  const sparks = computeSparks(s)
   s.phase = outcome
   s.sparksEarned = sparks
   s.relicOffer = null

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ABILITIES,
+  AFFIXES,
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   repairCostPerHp,
@@ -25,7 +26,7 @@ function newSeed(runs: number): string {
   return `run-${runs + 1}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla']
+const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint']
 const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush']
 const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'nearest']
 
@@ -39,6 +40,7 @@ export default function App() {
   const [meta, setMeta] = useState(boot.meta)
   const [session, setSession] = useState(() => new GameSession(boot.run))
   const [summary, setSummary] = useState<RunSummary | null>(null)
+  const [victoryPrompt, setVictoryPrompt] = useState(false)
   const [showTree, setShowTree] = useState(false)
   const [shopSelection, setShopSelection] = useState<TowerType | null>(null)
   const [abilitySelection, setAbilitySelection] = useState<AbilityId | null>(null)
@@ -68,6 +70,9 @@ export default function App() {
           setMeta(settled.meta)
           setSummary(settled.summary)
           persistSave({ version: 1, meta: settled.meta, run: null })
+        } else if (e.type === 'victory_achieved') {
+          setVictoryPrompt(true)
+          persistSave({ version: 1, meta: metaRef.current, run: s })
         } else if (e.type === 'wave_started' || e.type === 'wave_cleared' || e.type === 'relic_chosen') {
           persistSave({ version: 1, meta: metaRef.current, run: s })
         }
@@ -83,6 +88,7 @@ export default function App() {
     const next = new GameSession(run)
     setSession(next)
     setSummary(null)
+    setVictoryPrompt(false)
     setShopSelection(null)
     setAbilitySelection(null)
     setSelectedTowerId(null)
@@ -143,7 +149,7 @@ export default function App() {
         setShowTree(false)
         return
       }
-      const towerIdx = ['1', '2', '3', '4'].indexOf(e.key)
+      const towerIdx = ['1', '2', '3', '4', '5', '6'].indexOf(e.key)
       if (towerIdx !== -1) {
         const type = TOWER_KEYS[towerIdx]!
         if (sessionRef.current.state.availableTowers.includes(type)) {
@@ -189,9 +195,14 @@ export default function App() {
         <div className="hud-title">
           SPIREFALL
           <span className="hud-wave" data-testid="wave-label">
-            Wave {state.wave}/{VICTORY_WAVE}
+            {state.victoryClaimed ? `Wave ${state.wave} · ENDLESS` : `Wave ${state.wave}/${VICTORY_WAVE}`}
           </span>
         </div>
+        {state.phase === 'wave' && state.activeAffix && (
+          <span className="affix-badge" data-testid="affix" title={AFFIXES[state.activeAffix].description}>
+            {AFFIXES[state.activeAffix].name}
+          </span>
+        )}
         <div className="hud-spire" title={`Spire ${state.spireHp}/${state.spireMaxHp}`}>
           <div className="hp-bar">
             <div className="hp-fill" style={{ width: `${hpPct}%` }} />
@@ -240,12 +251,12 @@ export default function App() {
               data-testid="abandon-run"
               title="End this run now — you keep the Sparks earned so far"
               onClick={() => {
-                if (window.confirm('Abandon this run? You keep the Sparks earned so far.')) {
+                if (window.confirm(state.victoryClaimed ? 'End the run and bank your victory?' : 'Abandon this run? You keep the Sparks earned so far.')) {
                   session.dispatch({ type: 'abandon_run' })
                 }
               }}
             >
-              Give up
+              {state.victoryClaimed ? 'End run' : 'Give up'}
             </button>
           )}
           {state.phase === 'build' && (
@@ -284,17 +295,23 @@ export default function App() {
               {TOWERS[hoveredTower.type].name} · T{hoveredTower.tier}
               {hoveredTower.enhance > 0 && ` +${hoveredTower.enhance}`}
             </strong>
+            {hoveredTower.type === 'mint' ? (
+              <span>{towerTier('mint', hoveredTower.tier).mintYield} gold / cleared wave</span>
+            ) : (
+              <span>
+                {Math.floor(
+                  (towerTier(hoveredTower.type, hoveredTower.tier).damage *
+                    (effectiveDamagePct(state, hoveredTower.type) + ENHANCE_DAMAGE_PCT * hoveredTower.enhance)) /
+                    100,
+                )}{' '}
+                dmg · {(30 / towerTier(hoveredTower.type, hoveredTower.tier).cooldown).toFixed(1)}/s ·{' '}
+                {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
+              </span>
+            )}
             <span>
-              {Math.floor(
-                (towerTier(hoveredTower.type, hoveredTower.tier).damage *
-                  (effectiveDamagePct(state, hoveredTower.type) + ENHANCE_DAMAGE_PCT * hoveredTower.enhance)) /
-                  100,
-              )}{' '}
-              dmg · {(30 / towerTier(hoveredTower.type, hoveredTower.tier).cooldown).toFixed(1)}/s ·{' '}
-              {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
-            </span>
-            <span>
-              {hoveredTower.kills} kills · {hoveredTower.damageDealt} dmg dealt
+              {hoveredTower.type === 'mint'
+                ? `earned via waves`
+                : `${hoveredTower.kills} kills · ${hoveredTower.damageDealt} dmg dealt`}
             </span>
             <span>targets {hoveredTower.targeting} · click to manage</span>
           </div>
@@ -305,15 +322,19 @@ export default function App() {
               {TOWERS[selectedTower.type].name} · Tier {selectedTower.tier}
               {selectedTower.enhance > 0 && ` +${selectedTower.enhance}`}
             </h3>
-            <p>
-              DMG{' '}
-              {Math.floor(
-                (towerTier(selectedTower.type, selectedTower.tier).damage *
-                  (effectiveDamagePct(state, selectedTower.type) + ENHANCE_DAMAGE_PCT * selectedTower.enhance)) /
-                  100,
-              )}{' '}
-              · {(30 / towerTier(selectedTower.type, selectedTower.tier).cooldown).toFixed(1)} shots/s
-            </p>
+            {selectedTower.type === 'mint' ? (
+              <p>{towerTier('mint', selectedTower.tier).mintYield} gold per cleared wave</p>
+            ) : (
+              <p>
+                DMG{' '}
+                {Math.floor(
+                  (towerTier(selectedTower.type, selectedTower.tier).damage *
+                    (effectiveDamagePct(state, selectedTower.type) + ENHANCE_DAMAGE_PCT * selectedTower.enhance)) /
+                    100,
+                )}{' '}
+                · {(30 / towerTier(selectedTower.type, selectedTower.tier).cooldown).toFixed(1)} shots/s
+              </p>
+            )}
             <p data-testid="tower-stats">
               {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
             </p>
@@ -421,7 +442,25 @@ export default function App() {
         </div>
       </footer>
 
-      {state.relicOffer && !summary && (
+      {victoryPrompt && !summary && (
+        <div className="modal-backdrop" data-testid="victory-prompt">
+          <div className="modal">
+            <h2>THE CYCLE BREAKS</h2>
+            <p className="run-summary">Wave {VICTORY_WAVE} cleared — the Spire stands where every cycle before it fell.</p>
+            <p className="run-flavor">
+              End the run now and bank the victory, or push into the endless dark. Sparks keep accruing either way;
+              the victory bonus is yours whenever this run ends.
+            </p>
+            <button className="primary-btn" data-testid="claim-victory" onClick={() => session.dispatch({ type: 'abandon_run' })}>
+              Claim victory & end run
+            </button>
+            <button className="ghost-btn" data-testid="continue-endless" onClick={() => setVictoryPrompt(false)}>
+              Continue — endless
+            </button>
+          </div>
+        </div>
+      )}
+      {state.relicOffer && !summary && !victoryPrompt && (
         <RelicModal options={state.relicOffer} onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })} />
       )}
       {summary && <RunOverOverlay summary={summary} meta={meta} onBuy={buyMeta} onNextRun={() => beginNextRun()} />}

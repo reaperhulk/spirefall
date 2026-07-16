@@ -8,7 +8,7 @@ import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 // replayable log of every command it feeds to the sim.
 
 export interface VisualEffect {
-  kind: 'beam' | 'splash' | 'meteor' | 'nova' | 'death' | 'spire_hit' | 'gold_rush'
+  kind: 'beam' | 'splash' | 'meteor' | 'nova' | 'death' | 'spire_hit' | 'gold_rush' | 'heal'
   from?: Vec
   to?: Vec
   at?: Vec
@@ -130,6 +130,11 @@ export class GameSession {
         case 'enemy_reached_spire':
           this.effects.push({ kind: 'spire_hit', t0: now, dur: 350 })
           break
+        case 'enemy_healed': {
+          const healer = this.state.enemies.find((en) => en.id === e.healer)
+          if (healer) this.effects.push({ kind: 'heal', at: { ...healer.pos }, t0: now, dur: 400 })
+          break
+        }
         case 'ability_cast': {
           const at = { x: e.cell.cx * 1000 + 500, y: e.cell.cy * 1000 + 500 }
           if (e.ability === 'meteor') this.effects.push({ kind: 'meteor', at, t0: now, dur: 500 })

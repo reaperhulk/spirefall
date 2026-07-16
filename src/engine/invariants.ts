@@ -27,6 +27,11 @@ export function assertInvariants(state: RunState): void {
     `unknown phase ${String(state.phase)}`,
   )
   check(state.phase !== 'defeat' || state.spireHp === 0, 'defeat requires a fallen spire')
+  check(state.phase !== 'victory' || state.victoryClaimed, 'victory phase requires a claimed victory')
+  check(
+    state.activeAffix === null || ['frenzied', 'armored', 'horde', 'vanguard'].includes(state.activeAffix),
+    `unknown affix ${String(state.activeAffix)}`,
+  )
 
   // Entities
   const ids = new Set<number>()
@@ -58,6 +63,7 @@ export function assertInvariants(state: RunState): void {
     )
     check(e.slowFactor >= 1 && e.slowFactor <= 100, `enemy ${e.id} slowFactor ${e.slowFactor}`)
     check(e.slowTicks >= 0, `enemy ${e.id} negative slowTicks`)
+    check(Number.isInteger(e.healCooldown) && e.healCooldown >= 0, `enemy ${e.id} bad healCooldown`)
   }
 
   // Enemy ids strictly increase with array position (stable iteration order).

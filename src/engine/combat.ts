@@ -1,8 +1,9 @@
 import type { MapDef } from '../data/maps'
-import { ABILITIES, ENHANCE_DAMAGE_PCT, TESLA_CHAIN_RANGE, towerTier } from '../data/content'
+import { ABILITIES, ENEMIES, ENHANCE_DAMAGE_PCT, TESLA_CHAIN_RANGE, TOWERS, towerTier } from '../data/content'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
 import type { AbilityId, CellPos, Enemy, GameEvent, RunState, Tower } from './types'
+import { scaledHp } from './waves'
 
 // All functions in this file mutate a draft RunState that step() has already
 // cloned — mutation never escapes the step boundary.
@@ -10,6 +11,7 @@ import type { AbilityId, CellPos, Enemy, GameEvent, RunState, Tower } from './ty
 export function effectiveDamagePct(state: RunState, tower: Tower['type']): number {
   let pct = 100 + state.mods.damagePct
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += 40
+  if (state.relics.includes('glass_cannon')) pct += 30
   return pct
 }
 
@@ -40,6 +42,25 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
   for (const enemy of state.enemies) {
     let budget = enemy.slowTicks > 0 ? Math.max(1, Math.floor((enemy.speed * enemy.slowFactor) / 100)) : enemy.speed
 
+    // Fliers ignore the maze entirely: straight for the spire, over
+    // everything. Only air-capable towers can touch them.
+    if (ENEMIES[enemy.type].flying) {
+      const target = cellCenter(map.spire)
+      const dx = target.x - enemy.pos.x
+      const dy = target.y - enemy.pos.y
+      const need = Math.abs(dx) + Math.abs(dy)
+      if (need <= budget) {
+        enemy.pos = target
+        arrived.push(enemy.id)
+      } else {
+        const moveX = Math.min(Math.abs(dx), budget) * Math.sign(dx)
+        enemy.pos.x += moveX
+        const rest = budget - Math.abs(moveX)
+        enemy.pos.y += Math.min(Math.abs(dy), rest) * Math.sign(dy)
+      }
+      continue
+    }
+
     // Re-path if we have no waypoint or ours was built over.
     if (enemy.targetCell !== null && blocked[cellIndex(map, enemy.targetCell)] === 1) enemy.targetCell = null
     if (enemy.targetCell === null) enemy.targetCell = nextCell(map, field, cellOf(enemy.pos))
@@ -69,10 +90,12 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
   }
 
   if (arrived.length > 0) {
+    const stoneskin = state.relics.includes('stoneskin')
     state.enemies = state.enemies.filter((e) => {
       if (!arrived.includes(e.id)) return true
-      state.spireHp = Math.max(0, state.spireHp - e.damage)
-      events.push({ type: 'enemy_reached_spire', id: e.id, enemy: e.type, damage: e.damage, spireHp: state.spireHp })
+      const damage = stoneskin ? Math.max(1, e.damage - 2) : e.damage
+      state.spireHp = Math.max(0, state.spireHp - damage)
+      events.push({ type: 'enemy_reached_spire', id: e.id, enemy: e.type, damage, spireHp: state.spireHp })
       return false
     })
   }
@@ -84,6 +107,10 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
 // Progress toward the Spire: field distance dominates, distance to the next
 // waypoint breaks ties within a cell. Lower = closer to the Spire.
 function progressKey(map: MapDef, field: Int32Array, enemy: Enemy): number {
+  if (ENEMIES[enemy.type].flying) {
+    const spire = cellCenter(map.spire)
+    return (Math.abs(spire.x - enemy.pos.x) + Math.abs(spire.y - enemy.pos.y)) * 10
+  }
   const d = field[cellIndex(map, cellOf(enemy.pos))] ?? -1
   if (d === -1) return 1_000_000_000
   const target = enemy.targetCell ? cellCenter(enemy.targetCell) : cellCenter(cellOf(enemy.pos))
@@ -130,14 +157,16 @@ export function selectTarget(
 
 export function towersFire(state: RunState, map: MapDef, field: Int32Array, events: GameEvent[]): void {
   for (const tower of state.towers) {
+    if (tower.type === 'mint') continue // mints earn, they don't fight
     if (tower.cooldown > 0) {
       tower.cooldown -= 1
       continue
     }
     const def = towerTier(tower.type, tower.tier)
+    const hitsAir = TOWERS[tower.type].hitsAir
     const origin = cellCenter(tower.cell)
     const rangeSq = def.range * def.range
-    const alive = state.enemies.filter((e) => e.hp > 0)
+    const alive = state.enemies.filter((e) => e.hp > 0 && (hitsAir || !ENEMIES[e.type].flying))
     const inRange = alive.filter((e) => distSq(origin, e.pos) <= rangeSq)
     const target = selectTarget(tower, inRange, map, field)
     if (target === null) continue
@@ -156,7 +185,8 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     }
 
     switch (tower.type) {
-      case 'arrow': {
+      case 'arrow':
+      case 'sniper': {
         hit(target)
         break
       }
@@ -246,7 +276,9 @@ export function castAbility(
       break
     }
   }
-  state.abilities[ability] = def.cooldown
+  let cooldown = def.cooldown
+  if (state.relics.includes('overclock')) cooldown = Math.floor((cooldown * 75) / 100)
+  state.abilities[ability] = cooldown
   events.push({ type: 'ability_cast', ability, cell })
 }
 
@@ -267,8 +299,33 @@ export function tickStatuses(state: RunState): void {
   if (state.goldRushTicks > 0) state.goldRushTicks -= 1
 }
 
+// Healers pulse healing to nearby wounded allies. Runs after movement so the
+// pulse lands where enemies actually are this tick.
+export function enemyAuras(state: RunState, events: GameEvent[]): void {
+  for (const healer of state.enemies) {
+    const heal = ENEMIES[healer.type].heal
+    if (!heal || healer.hp <= 0) continue
+    if (healer.healCooldown > 0) {
+      healer.healCooldown -= 1
+      continue
+    }
+    const amount = Math.max(1, Math.floor((heal.amount * state.hpScalePct) / 100))
+    const radiusSq = heal.radius * heal.radius
+    const healed: number[] = []
+    for (const e of state.enemies) {
+      if (e.id === healer.id || e.hp <= 0 || e.hp >= e.maxHp) continue
+      if (distSq(healer.pos, e.pos) > radiusSq) continue
+      e.hp = Math.min(e.maxHp, e.hp + amount)
+      healed.push(e.id)
+    }
+    healer.healCooldown = heal.everyTicks
+    if (healed.length > 0) events.push({ type: 'enemy_healed', healer: healer.id, targets: healed, amount })
+  }
+}
+
 export function collectDead(state: RunState, events: GameEvent[]): void {
   const survivors: Enemy[] = []
+  const children: Enemy[] = []
   for (const e of state.enemies) {
     if (e.hp > 0) {
       survivors.push(e)
@@ -276,13 +333,42 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     }
     let bounty = e.bounty
     if (state.relics.includes('golden_touch')) bounty += 2
+    if (state.relics.includes('bounty_banner')) bounty += 1
     bounty = Math.floor((bounty * (100 + state.mods.goldPct)) / 100)
     if (state.goldRushTicks > 0) bounty *= 2
     state.gold += bounty
     state.kills += 1
     events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty })
+
+    // Splitters burst into shards where they fell.
+    const split = ENEMIES[e.type].splitInto
+    if (split) {
+      const def = ENEMIES[split.type]
+      for (let i = 0; i < split.count; i++) {
+        const hp = scaledHp(split.type, state.hpScalePct)
+        const id = state.nextEntityId
+        state.nextEntityId += 1
+        children.push({
+          id,
+          type: split.type,
+          pos: { ...e.pos },
+          hp,
+          maxHp: hp,
+          speed: def.speed,
+          slowFactor: 100,
+          slowTicks: 0,
+          bounty: def.bounty,
+          damage: def.damage,
+          shield: def.shield,
+          healCooldown: 0,
+          targetCell: null,
+        })
+        events.push({ type: 'enemy_spawned', id, enemy: split.type })
+      }
+    }
   }
-  state.enemies = survivors
+  // Children have the highest ids, so appending keeps spawn order stable.
+  state.enemies = survivors.concat(children)
 }
 
 // Deterministic "densest cluster" helper used by bots and available to UI:

@@ -21,12 +21,23 @@ const COLORS = {
   path: '#10151f',
   spawn: '#8856ff',
   spire: '#e5c07b',
-  towers: { arrow: '#9ece6a', cannon: '#e0af68', frost: '#7dcfff', tesla: '#bb9af7' } as Record<TowerType, string>,
+  towers: {
+    arrow: '#9ece6a',
+    cannon: '#e0af68',
+    frost: '#7dcfff',
+    tesla: '#bb9af7',
+    sniper: '#73daca',
+    mint: '#e5c07b',
+  } as Record<TowerType, string>,
   enemies: {
     runner: '#f7768e',
     swarmling: '#ff9e64',
     brute: '#db4b4b',
     shieldbearer: '#c0caf5',
+    flier: '#7aa2f7',
+    healer: '#9ece6a',
+    splitter: '#d19a66',
+    splitling: '#f0a45d',
     boss: '#ff007c',
   } as Record<string, string>,
   hpBack: '#30354a',
@@ -37,7 +48,17 @@ const COLORS = {
   rangeEdge: 'rgba(255, 255, 255, 0.25)',
 }
 
-const ENEMY_RADIUS: Record<string, number> = { runner: 8, swarmling: 5, brute: 12, shieldbearer: 10, boss: 16 }
+const ENEMY_RADIUS: Record<string, number> = {
+  runner: 8,
+  swarmling: 5,
+  brute: 12,
+  shieldbearer: 10,
+  flier: 7,
+  healer: 10,
+  splitter: 9,
+  splitling: 5,
+  boss: 16,
+}
 
 function px(v: number): number {
   return (v / 1000) * CELL_PX
@@ -171,9 +192,24 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
     const y = px(pos.y)
     const r = ENEMY_RADIUS[e.type] ?? 8
     ctx.fillStyle = COLORS.enemies[e.type] ?? '#ffffff'
-    ctx.beginPath()
-    ctx.arc(x, y, r, 0, Math.PI * 2)
-    ctx.fill()
+    if (e.type === 'flier') {
+      // Fliers render as triangles — visually "above" the maze.
+      ctx.beginPath()
+      ctx.moveTo(x, y - r)
+      ctx.lineTo(x + r, y + r)
+      ctx.lineTo(x - r, y + r)
+      ctx.closePath()
+      ctx.fill()
+    } else {
+      ctx.beginPath()
+      ctx.arc(x, y, r, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    if (e.type === 'healer') {
+      ctx.fillStyle = '#0b0e14'
+      ctx.fillRect(x - 1.5, y - 5, 3, 10)
+      ctx.fillRect(x - 5, y - 1.5, 10, 3)
+    }
     if (e.type === 'shieldbearer') {
       ctx.strokeStyle = '#ffffff'
       ctx.lineWidth = 2
@@ -244,6 +280,15 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.arc(px(fx.at.x), px(fx.at.y), px(ABILITIES.frost_nova.radius) * age, 0, Math.PI * 2)
         ctx.stroke()
         ctx.lineWidth = 1
+        break
+      }
+      case 'heal': {
+        if (!fx.at) break
+        ctx.strokeStyle = '#9ece6a'
+        ctx.globalAlpha = fade * 0.7
+        ctx.beginPath()
+        ctx.arc(px(fx.at.x), px(fx.at.y), px(1800) * age, 0, Math.PI * 2)
+        ctx.stroke()
         break
       }
       case 'death': {

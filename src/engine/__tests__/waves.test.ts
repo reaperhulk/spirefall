@@ -1,8 +1,8 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
-import { BOSS_WAVE_INTERVAL, ENEMIES, MAX_UNITS_PER_WAVE } from '../../data/content'
+import { BOSS_WAVE_INTERVAL, ENEMIES } from '../../data/content'
 import { deriveStream } from '../rng'
-import { generateWave, scaledHp } from '../waves'
+import { generateWave, scaledHp, waveUnitCap } from '../waves'
 
 describe('wave generation', () => {
   it('is deterministic for the same rng state', () => {
@@ -33,7 +33,7 @@ describe('wave generation', () => {
         fc.integer({ min: 10, max: 100_000 }),
         (seed, wave, budget) => {
           const { spawns } = generateWave(deriveStream(seed, 'waves'), wave, budget)
-          expect(spawns.length).toBeLessThanOrEqual(MAX_UNITS_PER_WAVE)
+          expect(spawns.length).toBeLessThanOrEqual(waveUnitCap(wave))
           for (let i = 1; i < spawns.length; i++) {
             expect(spawns[i]!.tick).toBeGreaterThanOrEqual(spawns[i - 1]!.tick)
           }
@@ -59,7 +59,7 @@ describe('wave generation', () => {
     fc.assert(
       fc.property(fc.string(), fc.integer({ min: 1, max: 40 }), fc.integer({ min: 30, max: 20_000 }), (seed, wave, budget) => {
         const { spawns } = generateWave(deriveStream(seed, 'waves'), wave, budget)
-        if (spawns.length >= MAX_UNITS_PER_WAVE) return
+        if (spawns.length >= waveUnitCap(wave)) return
         const effective = wave % BOSS_WAVE_INTERVAL === 0 ? Math.floor(budget / 2) : budget
         const spent = spawns.filter((s) => s.type !== 'boss').reduce((sum, s) => sum + ENEMIES[s.type].cost, 0)
         const maxGroupCost = 30 // shieldbearer, the priciest single group

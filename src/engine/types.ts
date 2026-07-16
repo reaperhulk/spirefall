@@ -5,9 +5,18 @@ import type { Rng } from './rng'
 // (determinism.test.ts proves it).
 
 export type Phase = 'build' | 'wave' | 'defeat' | 'victory'
-export type TowerType = 'arrow' | 'cannon' | 'frost' | 'tesla'
+export type TowerType = 'arrow' | 'cannon' | 'frost' | 'tesla' | 'sniper' | 'mint'
 export type Targeting = 'first' | 'last' | 'strongest' | 'nearest'
-export type EnemyType = 'runner' | 'swarmling' | 'brute' | 'shieldbearer' | 'boss'
+export type EnemyType =
+  | 'runner'
+  | 'swarmling'
+  | 'brute'
+  | 'shieldbearer'
+  | 'flier'
+  | 'healer'
+  | 'splitter'
+  | 'splitling'
+  | 'boss'
 export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush'
 export type RelicId =
   | 'piercing_arrows'
@@ -16,6 +25,13 @@ export type RelicId =
   | 'golden_touch'
   | 'overcharge'
   | 'spark_siphon'
+  | 'glass_cannon'
+  | 'overclock'
+  | 'bounty_banner'
+  | 'mint_condition'
+  | 'stoneskin'
+
+export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 
 export interface CellPos {
   cx: number
@@ -58,7 +74,8 @@ export interface Enemy {
   bounty: number
   damage: number // dealt to the Spire on arrival
   shield: number // hits dealing <= this are fully blocked
-  targetCell: CellPos | null // next waypoint; null = needs (re)pathing
+  healCooldown: number // healers: ticks until next healing pulse
+  targetCell: CellPos | null // next waypoint; null = needs (re)pathing (unused by fliers)
 }
 
 export interface PendingSpawn {
@@ -99,6 +116,8 @@ export interface RunState {
   relicOffer: RelicId[] | null
   availableTowers: TowerType[]
   mods: RunMods
+  activeAffix: AffixId | null // wave modifier for the current/last wave
+  victoryClaimed: boolean // wave VICTORY_WAVE cleared; endless continues after
   sparksEarned: number // set once, at run end
 }
 
@@ -114,7 +133,7 @@ export type Command =
   | { type: 'choose_relic'; relic: RelicId | null }
 
 export type GameEvent =
-  | { type: 'wave_started'; wave: number; spawnCount: number }
+  | { type: 'wave_started'; wave: number; spawnCount: number; affix: AffixId | null }
   | { type: 'enemy_spawned'; id: number; enemy: EnemyType }
   | { type: 'enemy_killed'; id: number; enemy: EnemyType; at: Vec; bounty: number }
   | { type: 'enemy_reached_spire'; id: number; enemy: EnemyType; damage: number; spireHp: number }
@@ -122,6 +141,9 @@ export type GameEvent =
   | { type: 'tower_upgraded'; id: number; tier: number }
   | { type: 'tower_enhanced'; id: number; level: number; cost: number }
   | { type: 'spire_repaired'; amount: number; cost: number; spireHp: number }
+  | { type: 'enemy_healed'; healer: number; targets: number[]; amount: number }
+  | { type: 'mint_income'; id: number; amount: number }
+  | { type: 'victory_achieved'; wave: number }
   | { type: 'tower_sold'; id: number; refund: number }
   | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[] }
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }

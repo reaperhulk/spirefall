@@ -46,8 +46,9 @@ export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: Meta
 export function createRun(meta: MetaState, seed: string): RunState {
   const mapRoll = nextInt(deriveStream(seed, 'map'), 0, MAPS.length - 1)
 
-  const availableTowers: TowerType[] = ['arrow', 'cannon', 'frost']
+  const availableTowers: TowerType[] = ['arrow', 'cannon', 'frost', 'sniper']
   if (metaLevel(meta, 'unlock_tesla') > 0) availableTowers.push('tesla')
+  if (metaLevel(meta, 'unlock_mint') > 0) availableTowers.push('mint')
 
   const abilities: Record<string, number> = { meteor: 0, frost_nova: 0 }
   if (metaLevel(meta, 'unlock_gold_rush') > 0) abilities['gold_rush' satisfies AbilityId] = 0
@@ -82,6 +83,8 @@ export function createRun(meta: MetaState, seed: string): RunState {
     relics: [],
     relicOffer: null,
     availableTowers,
+    activeAffix: null,
+    victoryClaimed: false,
     mods: {
       damagePct: metaLevel(meta, 'tower_damage') * META_TOWER_DAMAGE_PCT_PER_LEVEL,
       goldPct: metaLevel(meta, 'gold_income') * META_GOLD_INCOME_PCT_PER_LEVEL,

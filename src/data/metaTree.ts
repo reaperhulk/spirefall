@@ -8,6 +8,7 @@ export type MetaUpgradeId =
   | 'gold_income'
   | 'spark_gain'
   | 'unlock_tesla'
+  | 'unlock_mint'
   | 'unlock_gold_rush'
 
 export interface MetaNodeDef {
@@ -60,6 +61,13 @@ export const META_TREE: MetaNodeDef[] = [
     description: 'Unlock the Tesla tower.',
     maxLevel: 1,
     costs: [120],
+  },
+  {
+    id: 'unlock_mint',
+    name: 'Deep Vaults',
+    description: 'Unlock the Mint — a tower that earns gold every cleared wave.',
+    maxLevel: 1,
+    costs: [150],
   },
   {
     id: 'unlock_gold_rush',

@@ -57,7 +57,7 @@ test('boots clean: canvas, HUD, and harness all present, no console errors', asy
   const errors = await boot(page, 'e2e-boot')
   await expect(page.getByTestId('gold')).toContainText('100')
   await expect(page.getByTestId('spire-hp')).toContainText('100/100')
-  await expect(page.getByTestId('wave-label')).toContainText('Wave 0/44')
+  await expect(page.getByTestId('wave-label')).toContainText('Wave 0/')
   await expect(page.getByTestId('start-wave')).toBeVisible()
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')

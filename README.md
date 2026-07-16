@@ -24,11 +24,14 @@ npm run dev     # then open http://localhost:5173
   Towers block the path — build mazes. Click a tower to upgrade, sell, or change
   its targeting.
 - **Fight**: press *Start wave* (or Space). Cast Meteor / Frost Nova (Q/W, then
-  click) and Gold Rush (E) during waves.
+  click) and Gold Rush (E) during waves. Watch for wave affixes — Frenzied,
+  Armored, Horde, Vanguard — and for Gale Imps that fly straight over your maze
+  (only Arrows, Teslas, and Snipers can hit air).
 - **Choose**: every 5 waves the ruins offer a relic — run-scoped power with
   trade-offs.
 - **Fall**: wave budgets grow ~18% per wave; every run ends. Spend Sparks in the
-  Spire Tree and reach further next run. Clear wave 44 to win the cycle.
+  Spire Tree and reach further next run. Clear wave 45 to break the cycle — then
+  keep pushing into the endless if you dare; the victory is banked either way.
 
 Progress saves to localStorage automatically, mid-run included.
 
@@ -54,7 +57,8 @@ the repository (Settings → Pages → Source: GitHub Actions).
 
 ## Status
 
-**M3 — the loop closes.** Playable game with 4 tower types, 5 enemy types, bosses,
-abilities, relics, the Spire Tree meta progression, saves, and a full test harness
-(unit, determinism, property, golden, balance-envelope, perf, and browser E2E
-suites). See PLAN.md §8 for the roadmap.
+**M4 — rogue-lite depth.** Playable game with 6 tower types (incl. the gold-earning
+Mint and long-range Sniper), 9 enemy types (fliers, healers, splitters, bosses),
+wave affixes, 11 relics, abilities, endless mode past the victory wave, the Spire
+Tree meta progression, saves, and a full test harness (unit, determinism, property,
+golden, balance-envelope, perf, and browser E2E suites). See PLAN.md §8.

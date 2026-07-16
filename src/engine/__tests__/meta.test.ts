@@ -87,18 +87,18 @@ describe('settleRun', () => {
 })
 
 describe('computeSparks', () => {
-  it('failure pays, victory pays more, spark mods multiply', () => {
+  it('failure pays, a claimed victory pays more, spark mods multiply', () => {
     const run = createRun(createMeta(), 'sparks')
     const base = { ...run, wavesCleared: 10, kills: 40 }
-    const defeat = computeSparks(base, 'defeat')
-    const victory = computeSparks(base, 'victory')
+    const defeat = computeSparks(base)
+    const victory = computeSparks({ ...base, victoryClaimed: true })
     expect(defeat).toBe(10 * 10 + Math.floor(40 / 6) + 5)
     expect(victory).toBe(defeat + 500)
 
-    const boosted = computeSparks({ ...base, mods: { ...base.mods, sparkPct: 24 } }, 'defeat')
+    const boosted = computeSparks({ ...base, mods: { ...base.mods, sparkPct: 24 } })
     expect(boosted).toBe(Math.floor((defeat * 124) / 100))
 
-    const siphoned = computeSparks({ ...base, relics: ['spark_siphon'] }, 'defeat')
+    const siphoned = computeSparks({ ...base, relics: ['spark_siphon'] })
     expect(siphoned).toBe(Math.floor((defeat * 125) / 100))
   })
 })

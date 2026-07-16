@@ -16,6 +16,7 @@ function enemy(overrides: Partial<Enemy> & { id: number }): Enemy {
     bounty: 3,
     damage: 2,
     shield: 0,
+    healCooldown: 0,
     targetCell: null,
     ...overrides,
   }

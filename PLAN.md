@@ -342,9 +342,11 @@ npm run goldens:update regenerate golden replay hashes (balance changes)
 - ✅ **M3 — The loop closes:** Sparks, 7-node Spire Tree, run-over → meta →
   next-run flow, localStorage saves (schema-versioned), balance envelope in CI,
   Playwright E2E suite, Pages deploy workflow.
-- **M4 — Rogue-lite depth:** more enemies (fliers, healers, splitters), more
-  relics with build-around identities, procedural map generation, endless mode
-  after victory.
+- ✅ **M4 — Rogue-lite depth:** 9 enemy types (fliers that ignore the maze,
+  healers, splitters), 6 towers (long-range sniper; gold-earning mint), air/
+  ground targeting, seeded wave affixes (Frenzied/Armored/Horde/Vanguard),
+  11 relics, endless mode (the victory wave is a milestone; runs continue),
+  early-wave unit caps to bound seed variance. Procedural maps deferred.
 - **M5 — Balance & feel:** tune against bot envelopes, difficulty curve polish,
   juice (particles, floaters, screen shake, audio), mobile layout.
 - **M6 — Incremental depth:** Ascension layer, achievements, unlockable game

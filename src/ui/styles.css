@@ -65,6 +65,17 @@ button:disabled {
   font-weight: 400;
 }
 
+.affix-badge {
+  background: #33201a;
+  border: 1px solid #ff5f3c;
+  color: #ff9e64;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .hud-spire {
   display: flex;
   align-items: center;
