@@ -72,19 +72,21 @@ choose loadout → BUILD phase (place towers, no timer)
 
 ### 2.3 The difficulty curve (the contract we test)
 
-Target envelope, enforced by bot playtests in CI rather than by hope:
+Measured envelope, enforced by bot playtests in CI rather than by hope
+(`src/harness/__tests__/balance.test.ts`; numbers re-derived when the curve
+intentionally moves):
 
-| Player | Expected outcome |
+| Player | Measured outcome |
 |---|---|
-| Fresh account, does nothing during waves | dies by wave ~4 |
-| Fresh account, competent bot | dies waves 8–12 |
-| ~5 runs of Sparks, competent bot | dies waves 15–20 |
-| Half the Spire Tree | reaches first boss wall (wave 30) |
-| Full Spire Tree | can win a standard run (wave 50 boss) |
+| Fresh account, does nothing during waves | dies waves 5–8 |
+| Fresh account, greedy arrow spam | dies waves 11–30 (relic luck) |
+| Fresh account, competent bot | dies waves 15–39, never wins run 1 |
+| Banked account (~5000 sparks) | strictly outlasts fresh on most seeds |
+| Maxed Spire Tree (~10k sparks, ≈8 runs) | wins (wave 44) on most seeds |
 
-Wave budget grows at ~1.18ᴺ; a static defense's DPS is roughly linear in gold, so
-every run *stalls* — the geometric/linear gap is what guarantees failure and sets the
-loop cadence (target: runs 1–3 last 5–10 min, late runs 20–30 min).
+Wave budget grows ~1.18ᴺ and enemy HP ~1.11ᴺ; a static defense's DPS is roughly
+linear in gold, so every run *stalls* — the geometric/linear gap is what guarantees
+failure and sets the loop cadence.
 
 ## 3. Engine architecture — a pure, deterministic core
 
@@ -326,21 +328,25 @@ npm run goldens:update regenerate golden replay hashes (balance changes)
 
 ## 8. Milestones
 
-- **M0 — Skeleton (this commit):** repo scaffold, strict TS, Vitest + fast-check,
-  ESLint with engine-purity rules, CI workflow, seeded RNG + fixed-tick `step`
-  skeleton with command/event plumbing, determinism + property tests green.
-- **M1 — Headless game:** grid/path/pathfinding, one tower, two enemy types, wave
-  budget generator, gold, Spire HP, defeat → `RunSummary`. Full unit + determinism
-  + golden coverage. *The game is "playable" by bots before it has pixels.*
-- **M2 — Pixels & input:** canvas renderer, React shell, fixed-timestep loop with
-  interpolation, tower placement/upgrade UI, browser dev harness, replay recorder.
-- **M3 — The loop closes:** Sparks, Spire Tree v1 (8–10 nodes), run-over → meta →
-  next-run flow, localStorage saves with migration, balance bots + envelope
-  assertions in CI, Pages deploy.
-- **M4 — Rogue-lite depth:** full tower/enemy roster, abilities, relics, boss
-  waves, seeded map variation.
+- ✅ **M0 — Skeleton:** repo scaffold, strict TS, Vitest + fast-check, ESLint with
+  engine-purity rules, CI workflow, seeded RNG + fixed-tick `step` skeleton with
+  command/event plumbing, determinism + property tests green.
+- ✅ **M1 — Headless game** (shipped bigger than planned): grid maps + BFS
+  flow-field mazing, full 4-tower/5-enemy roster, budget waves + bosses,
+  abilities, relics, meta layer, victory/defeat. Unit + determinism + golden
+  coverage; bots play whole careers. *The game was playable by bots before it
+  had pixels.*
+- ✅ **M2 — Pixels & input:** canvas renderer with interpolation, React shell,
+  fixed-timestep loop, placement/upgrade/targeting UI, browser dev harness with
+  replay capture.
+- ✅ **M3 — The loop closes:** Sparks, 7-node Spire Tree, run-over → meta →
+  next-run flow, localStorage saves (schema-versioned), balance envelope in CI,
+  Playwright E2E suite, Pages deploy workflow.
+- **M4 — Rogue-lite depth:** more enemies (fliers, healers, splitters), more
+  relics with build-around identities, procedural map generation, endless mode
+  after victory.
 - **M5 — Balance & feel:** tune against bot envelopes, difficulty curve polish,
-  juice (particles, floaters, screen shake, audio), Playwright smoke suite.
+  juice (particles, floaters, screen shake, audio), mobile layout.
 - **M6 — Incremental depth:** Ascension layer, achievements, unlockable game
   modifiers (endless mode, challenge seeds — free content via determinism: daily
   seed = same run for everyone, shareable).
