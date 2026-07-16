@@ -129,11 +129,18 @@ export default function App() {
       setAbilitySelection(null)
       return
     }
+    const tower = state.towers.find((t) => sameCell(t.cell, cell))
     if (shopSelection) {
+      // Clicking an existing tower while armed inspects it instead of
+      // uselessly attempting a placement on an occupied cell.
+      if (tower) {
+        setShopSelection(null)
+        setSelectedTowerId(tower.id)
+        return
+      }
       session.dispatch({ type: 'place_tower', tower: shopSelection, cell })
       return // stay armed for multi-placement
     }
-    const tower = state.towers.find((t) => sameCell(t.cell, cell))
     setSelectedTowerId(tower ? tower.id : null)
   }
 
@@ -408,12 +415,13 @@ export default function App() {
           {TOWER_KEYS.map((type, i) => {
             const unlocked = state.availableTowers.includes(type)
             const cost = towerTier(type, 1).cost
+            const affordable = state.gold >= cost
             return (
               <button
                 key={type}
-                className={`shop-card${shopSelection === type ? ' selected' : ''}`}
+                className={`shop-card${shopSelection === type ? ' selected' : ''}${unlocked && !affordable ? ' unaffordable' : ''}`}
                 data-testid={`shop-${type}`}
-                disabled={!unlocked || state.gold < cost}
+                disabled={!unlocked}
                 title={unlocked ? `Hotkey ${i + 1}` : 'Unlock in the Spire Tree'}
                 onClick={() => {
                   setShopSelection((cur) => (cur === type ? null : type))

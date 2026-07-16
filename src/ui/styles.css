@@ -252,6 +252,15 @@ button:disabled {
   background: #1c2a1e;
 }
 
+/* Still clickable — you can preview (and deselect!) what you can't afford. */
+.shop-card.unaffordable {
+  opacity: 0.55;
+}
+
+.shop-card.unaffordable .cost {
+  color: #db4b4b;
+}
+
 .tower-dot {
   width: 12px;
   height: 12px;

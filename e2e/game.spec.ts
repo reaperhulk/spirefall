@@ -157,6 +157,29 @@ test('relic offers appear in the UI and apply on click', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
+test('an armed but unaffordable shop selection never traps you', async ({ page }) => {
+  const errors = await boot(page, 'e2e-trap')
+  // Spend everything: two arrows at 50 each leaves 0 gold with arrow armed.
+  await page.getByTestId('shop-arrow').click()
+  await clickCell(page, 4, 5)
+  await clickCell(page, 4, 7)
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).gold).toBe(0)
+
+  // The unaffordable card must still toggle the selection off...
+  await expect(page.getByTestId('shop-arrow')).toBeEnabled()
+  await page.getByTestId('shop-arrow').click()
+  await clickCell(page, 4, 5)
+  await expect(page.getByTestId('tower-panel')).toBeVisible() // click selects, not places
+
+  // ...and clicking an existing tower while re-armed inspects it directly.
+  await page.getByTestId('shop-arrow').click()
+  await clickCell(page, 4, 7)
+  await expect(page.getByTestId('tower-panel')).toBeVisible()
+  const snap = await page.evaluate(() => window.__harness.snapshot())
+  expect(snap.towers).toBe(2) // no phantom placements happened
+  expect(errors).toEqual([])
+})
+
 test('give up ends the run with sparks, and high speeds are selectable', async ({ page }) => {
   const errors = await boot(page, 'e2e-giveup')
   await page.getByRole('button', { name: '10×' }).click()
