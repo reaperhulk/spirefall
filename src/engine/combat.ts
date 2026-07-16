@@ -1,5 +1,5 @@
 import type { MapDef } from '../data/maps'
-import { ABILITIES, TESLA_CHAIN_RANGE, towerTier } from '../data/content'
+import { ABILITIES, ENHANCE_DAMAGE_PCT, TESLA_CHAIN_RANGE, towerTier } from '../data/content'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
 import type { AbilityId, CellPos, Enemy, GameEvent, RunState, Tower } from './types'
@@ -142,12 +142,22 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const target = selectTarget(tower, inRange, map, field)
     if (target === null) continue
 
-    const damage = Math.floor((def.damage * effectiveDamagePct(state, tower.type)) / 100)
+    const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance
+    const damage = Math.floor((def.damage * pct) / 100)
     const hitIds: number[] = [target.id]
+
+    // Every hit is attributed to the tower: damage always, kill on the blow
+    // that empties the enemy's hp — so per-tower stats answer "what is this
+    // tower actually doing?"
+    const hit = (enemy: Enemy): void => {
+      const dealt = applyHit(enemy, damage)
+      tower.damageDealt += dealt
+      if (dealt > 0 && enemy.hp === 0) tower.kills += 1
+    }
 
     switch (tower.type) {
       case 'arrow': {
-        applyHit(target, damage)
+        hit(target)
         break
       }
       case 'cannon': {
@@ -156,14 +166,14 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
         const radiusSq = radius * radius
         for (const e of alive) {
           if (e.id === target.id || distSq(target.pos, e.pos) <= radiusSq) {
-            applyHit(e, damage)
+            hit(e)
             if (e.id !== target.id) hitIds.push(e.id)
           }
         }
         break
       }
       case 'frost': {
-        applyHit(target, damage)
+        hit(target)
         applySlow(target, def.slowFactor!, def.slowTicks!, state)
         break
       }
@@ -172,7 +182,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
         if (state.relics.includes('overcharge')) chain += 2
         const chainRangeSq = TESLA_CHAIN_RANGE * TESLA_CHAIN_RANGE
         let current = target
-        applyHit(current, damage)
+        hit(current)
         while (hitIds.length < chain) {
           let next: Enemy | null = null
           let nextDist = 0
@@ -185,7 +195,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
             }
           }
           if (next === null) break
-          applyHit(next, damage)
+          hit(next)
           hitIds.push(next.id)
           current = next
         }

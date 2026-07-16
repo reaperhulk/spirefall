@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { ABILITIES, TOWERS, towerInvested, towerTier, VICTORY_WAVE } from '../data/content'
+import {
+  ABILITIES,
+  ENHANCE_DAMAGE_PCT,
+  enhanceCost,
+  repairCostPerHp,
+  TOWERS,
+  towerInvested,
+  towerTier,
+  VICTORY_WAVE,
+} from '../data/content'
+import { effectiveDamagePct } from '../engine/combat'
 import { buyMetaUpgrade, createMeta, createRun, settleRun } from '../engine/meta'
 import { sameCell } from '../engine/grid'
 import type { MetaUpgradeId } from '../data/metaTree'
@@ -33,6 +43,7 @@ export default function App() {
   const [shopSelection, setShopSelection] = useState<TowerType | null>(null)
   const [abilitySelection, setAbilitySelection] = useState<AbilityId | null>(null)
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
+  const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
 
   const metaRef = useRef(meta)
@@ -169,6 +180,7 @@ export default function App() {
   }
 
   const selectedTower = selectedTowerId !== null ? state.towers.find((t) => t.id === selectedTowerId) : undefined
+  const hoveredTower = hoveredTowerId !== null ? state.towers.find((t) => t.id === hoveredTowerId) : undefined
   const hpPct = Math.round((state.spireHp / state.spireMaxHp) * 100)
 
   return (
@@ -187,6 +199,17 @@ export default function App() {
           <span data-testid="spire-hp">
             {state.spireHp}/{state.spireMaxHp}
           </span>
+          {state.spireHp < state.spireMaxHp && (
+            <button
+              className="ghost-btn"
+              data-testid="repair-spire"
+              disabled={state.gold < repairCostPerHp(state.wave)}
+              title={`Repair up to 25 HP at ${repairCostPerHp(state.wave)} gold per HP`}
+              onClick={() => session.dispatch({ type: 'repair_spire' })}
+            >
+              Repair
+            </button>
+          )}
         </div>
         <div className="hud-right">
           <span className="hud-gold" data-testid="gold">
@@ -244,16 +267,55 @@ export default function App() {
           onCellClick={handleCellClick}
           onHover={(c) => {
             hoverRef.current = c
+            const tower = c ? sessionRef.current.state.towers.find((t) => sameCell(t.cell, c)) : undefined
+            setHoveredTowerId((cur) => (tower ? tower.id : null) === cur ? cur : (tower ? tower.id : null))
           }}
         />
+        {hoveredTower && !shopSelection && (
+          <div
+            className="tower-tooltip"
+            data-testid="tower-tooltip"
+            style={{
+              left: Math.min(hoveredTower.cell.cx * 34 + 42, 24 * 34 - 190),
+              top: Math.max(4, hoveredTower.cell.cy * 34 - 10),
+            }}
+          >
+            <strong>
+              {TOWERS[hoveredTower.type].name} · T{hoveredTower.tier}
+              {hoveredTower.enhance > 0 && ` +${hoveredTower.enhance}`}
+            </strong>
+            <span>
+              {Math.floor(
+                (towerTier(hoveredTower.type, hoveredTower.tier).damage *
+                  (effectiveDamagePct(state, hoveredTower.type) + ENHANCE_DAMAGE_PCT * hoveredTower.enhance)) /
+                  100,
+              )}{' '}
+              dmg · {(30 / towerTier(hoveredTower.type, hoveredTower.tier).cooldown).toFixed(1)}/s ·{' '}
+              {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
+            </span>
+            <span>
+              {hoveredTower.kills} kills · {hoveredTower.damageDealt} dmg dealt
+            </span>
+            <span>targets {hoveredTower.targeting} · click to manage</span>
+          </div>
+        )}
         {selectedTower && (
           <aside className="tower-panel" data-testid="tower-panel">
             <h3>
               {TOWERS[selectedTower.type].name} · Tier {selectedTower.tier}
+              {selectedTower.enhance > 0 && ` +${selectedTower.enhance}`}
             </h3>
             <p>
-              DMG {towerTier(selectedTower.type, selectedTower.tier).damage} · every{' '}
-              {towerTier(selectedTower.type, selectedTower.tier).cooldown} ticks
+              DMG{' '}
+              {Math.floor(
+                (towerTier(selectedTower.type, selectedTower.tier).damage *
+                  (effectiveDamagePct(state, selectedTower.type) + ENHANCE_DAMAGE_PCT * selectedTower.enhance)) /
+                  100,
+              )}{' '}
+              · {(30 / towerTier(selectedTower.type, selectedTower.tier).cooldown).toFixed(1)} shots/s
+            </p>
+            <p data-testid="tower-stats">
+              {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
             </p>
             <label>
               Target:{' '}
@@ -274,7 +336,7 @@ export default function App() {
                 ))}
               </select>
             </label>
-            {selectedTower.tier < 3 && (
+            {selectedTower.tier < 3 ? (
               <button
                 className="primary-btn"
                 data-testid="upgrade-tower"
@@ -282,6 +344,16 @@ export default function App() {
                 onClick={() => session.dispatch({ type: 'upgrade_tower', id: selectedTower.id })}
               >
                 Upgrade (⛀ {towerTier(selectedTower.type, (selectedTower.tier + 1) as 2 | 3).cost})
+              </button>
+            ) : (
+              <button
+                className="primary-btn"
+                data-testid="upgrade-tower"
+                title={`+${ENHANCE_DAMAGE_PCT}% damage, repeatable`}
+                disabled={state.gold < enhanceCost(selectedTower.type, selectedTower.enhance)}
+                onClick={() => session.dispatch({ type: 'upgrade_tower', id: selectedTower.id })}
+              >
+                Enhance (⛀ {enhanceCost(selectedTower.type, selectedTower.enhance)})
               </button>
             )}
             <button

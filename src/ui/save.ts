@@ -47,6 +47,14 @@ function migrate(parsed: { version?: number }): SaveData | null {
       if (data.run && (data.run.phase === 'defeat' || data.run.phase === 'victory')) {
         return { ...data, run: null }
       }
+      // Additive tower fields introduced after launch — backfill old saves.
+      if (data.run) {
+        for (const t of data.run.towers) {
+          t.enhance ??= 0
+          t.kills ??= 0
+          t.damageDealt ??= 0
+        }
+      }
       return data
     }
     default:

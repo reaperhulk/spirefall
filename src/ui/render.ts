@@ -1,6 +1,6 @@
 import { ABILITIES, towerTier } from '../data/content'
 import type { MapDef } from '../data/maps'
-import { blockedGrid, cellCenter, distanceField, getMap, pathFrom } from '../engine/grid'
+import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, pathFrom } from '../engine/grid'
 import type { AbilityId, CellPos, Enemy, RunState, TowerType, Vec } from '../engine/types'
 import type { GameSession } from './session'
 
@@ -142,6 +142,14 @@ function drawTowers(ctx: CanvasRenderingContext2D, state: RunState, ui: RenderUi
     ctx.fillStyle = color
     // Tier pips
     for (let i = 0; i < t.tier; i++) ctx.fillRect(x + 11 + i * 5, y + CELL_PX - 12, 3, 3)
+    // Enhancement level badge
+    if (t.enhance > 0) {
+      ctx.font = 'bold 9px ui-monospace, monospace'
+      ctx.textAlign = 'right'
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText(`+${t.enhance}`, x + CELL_PX - 4, y + 12)
+      ctx.textAlign = 'left'
+    }
 
     if (ui.selectedTowerId === t.id) {
       const def = towerTier(t.type, t.tier)
@@ -276,13 +284,8 @@ function drawPlacementGhost(
   const c = ui.hoverCell
 
   if (ui.shopSelection) {
-    const ok =
-      c.cx >= 0 &&
-      c.cx < map.width &&
-      c.cy >= 0 &&
-      c.cy < map.height &&
-      !session.state.towers.some((t) => t.cell.cx === c.cx && t.cell.cy === c.cy) &&
-      !map.rocks[c.cy * map.width + c.cx]
+    // Full engine-side validation, including "would this wall off the spire".
+    const ok = canPlaceTower(session.state, map, c).ok
     ctx.fillStyle = ok ? COLORS.ghostOk : COLORS.ghostBad
     ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
     const def = towerTier(ui.shopSelection, 1)
@@ -291,6 +294,20 @@ function drawPlacementGhost(
     ctx.beginPath()
     ctx.arc(px(center.x), px(center.y), px(def.range), 0, Math.PI * 2)
     ctx.stroke()
+
+    // Preview how enemies would re-route around the new tower BEFORE buying:
+    // amber dots trace the would-be path.
+    if (ok) {
+      const field = distanceField(map, blockedGrid(map, session.state.towers, c))
+      const preview = [map.spawn, ...pathFrom(map, field, map.spawn)]
+      ctx.fillStyle = 'rgba(229, 192, 123, 0.8)'
+      for (const cell of preview) {
+        const p = cellCenter(cell)
+        ctx.beginPath()
+        ctx.arc(px(p.x), px(p.y), 2.5, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
   }
 
   if (ui.abilitySelection && ui.abilitySelection !== 'gold_rush') {

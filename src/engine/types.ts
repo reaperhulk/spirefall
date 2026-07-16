@@ -38,9 +38,12 @@ export interface Tower {
   id: number
   type: TowerType
   tier: 1 | 2 | 3
+  enhance: number // post-tier-3 levels: +damage %, unbounded
   cell: CellPos
   cooldown: number // ticks until it can fire again
   targeting: Targeting
+  kills: number // killing blows landed (lifetime)
+  damageDealt: number // total damage dealt (lifetime)
 }
 
 export interface Enemy {
@@ -102,6 +105,7 @@ export interface RunState {
 export type Command =
   | { type: 'start_wave' }
   | { type: 'abandon_run' }
+  | { type: 'repair_spire' }
   | { type: 'place_tower'; tower: TowerType; cell: CellPos }
   | { type: 'upgrade_tower'; id: number }
   | { type: 'sell_tower'; id: number }
@@ -116,6 +120,8 @@ export type GameEvent =
   | { type: 'enemy_reached_spire'; id: number; enemy: EnemyType; damage: number; spireHp: number }
   | { type: 'tower_placed'; id: number; tower: TowerType; cell: CellPos }
   | { type: 'tower_upgraded'; id: number; tier: number }
+  | { type: 'tower_enhanced'; id: number; level: number; cost: number }
+  | { type: 'spire_repaired'; amount: number; cost: number; spireHp: number }
   | { type: 'tower_sold'; id: number; refund: number }
   | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[] }
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }

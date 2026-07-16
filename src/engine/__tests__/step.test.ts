@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TOWERS } from '../../data/content'
+import { ENHANCE_COST_GROWTH_PCT, TOWERS } from '../../data/content'
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
@@ -156,6 +156,65 @@ describe('wave lifecycle', () => {
   })
 })
 
+describe('gold sinks', () => {
+  it('tier-3 towers enhance indefinitely at escalating cost', () => {
+    const state = { ...freshRun(), gold: 100_000 }
+    const cell = buildCandidates(state)[0]!
+    let s = step(state, [{ type: 'place_tower', tower: 'arrow', cell }]).state
+    const id = s.towers[0]!.id
+    s = step(s, [{ type: 'upgrade_tower', id }]).state
+    s = step(s, [{ type: 'upgrade_tower', id }]).state
+    expect(s.towers[0]!.tier).toBe(3)
+
+    const goldBefore = s.gold
+    const first = step(s, [{ type: 'upgrade_tower', id }])
+    expect(first.state.towers[0]!.enhance).toBe(1)
+    const firstCost = goldBefore - first.state.gold
+    expect(firstCost).toBe(Math.floor((140 * ENHANCE_COST_GROWTH_PCT) / 100))
+    expect(first.events).toContainEqual({ type: 'tower_enhanced', id, level: 1, cost: firstCost })
+
+    const second = step(first.state, [{ type: 'upgrade_tower', id }])
+    const secondCost = first.state.gold - second.state.gold
+    expect(secondCost).toBeGreaterThan(firstCost) // escalates forever
+    expect(second.state.towers[0]!.enhance).toBe(2)
+  })
+
+  it('repair_spire heals for gold, capped per cast and at max HP', () => {
+    const damaged = { ...freshRun(), spireHp: 40, gold: 1000 }
+    const healed = step(damaged, [{ type: 'repair_spire' }])
+    expect(healed.state.spireHp).toBe(65) // +25 cap
+    expect(healed.state.gold).toBe(1000 - 25 * 4) // wave 0: base cost
+    expect(healed.events[0]).toMatchObject({ type: 'spire_repaired', amount: 25 })
+
+    const nearlyFull = { ...freshRun(), spireHp: 95, gold: 1000 }
+    const topped = step(nearlyFull, [{ type: 'repair_spire' }])
+    expect(topped.state.spireHp).toBe(100) // never over max
+
+    const full = step({ ...freshRun(), gold: 1000 }, [{ type: 'repair_spire' }])
+    expect(full.events[0]).toMatchObject({ type: 'command_rejected', reason: 'spire is at full health' })
+
+    const broke = step({ ...freshRun(), spireHp: 40, gold: 3 }, [{ type: 'repair_spire' }])
+    expect(broke.events[0]).toMatchObject({ type: 'command_rejected', reason: 'not enough gold' })
+  })
+
+  it('towers record kills and damage dealt', () => {
+    const state = { ...freshRun(), gold: 10_000 }
+    let s = state
+    for (let i = 0; i < 6; i++) {
+      const cell = buildCandidates(s)[0]
+      if (!cell) break
+      s = step(s, [{ type: 'place_tower', tower: 'arrow', cell }]).state
+    }
+    s = step(s, [{ type: 'start_wave' }]).state
+    s = stepUntil(s, (st) => st.phase !== 'wave', 20_000)
+    expect(s.kills).toBeGreaterThan(0)
+    const towerKills = s.towers.reduce((sum, t) => sum + t.kills, 0)
+    const towerDamage = s.towers.reduce((sum, t) => sum + t.damageDealt, 0)
+    expect(towerKills).toBe(s.kills) // every kill is attributed to a tower
+    expect(towerDamage).toBeGreaterThan(0)
+  })
+})
+
 describe('abilities', () => {
   it('meteor kills a cluster and goes on cooldown; casting again is rejected', () => {
     const state = freshRun()
@@ -198,6 +257,17 @@ describe('relics', () => {
     const chosen = step(s, [{ type: 'choose_relic', relic }]).state
     expect(chosen.relics).toContain(relic)
     expect(chosen.relicOffer).toBeNull()
+  })
+
+  it('golden_touch scales current HP proportionally — a damaged spire never gets relatively healthier', () => {
+    const base = { ...freshRun(), relicOffer: ['golden_touch'] as RunState['relicOffer'] }
+    const damaged = { ...base, spireHp: 80 }
+    const s = step(damaged, [{ type: 'choose_relic', relic: 'golden_touch' }]).state
+    expect(s.spireMaxHp).toBe(90)
+    expect(s.spireHp).toBe(72) // 80% of the new max — same fraction as before
+    // At full health it stays full.
+    const full = step(base, [{ type: 'choose_relic', relic: 'golden_touch' }]).state
+    expect(full.spireHp).toBe(full.spireMaxHp)
   })
 
   it('choosing nothing clears the offer; bogus picks are rejected', () => {

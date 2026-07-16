@@ -39,6 +39,10 @@ export function assertInvariants(state: RunState): void {
     check(!sameCell(t.cell, map.spawn) && !sameCell(t.cell, map.spire), `tower ${t.id} on gate/spire`)
     check(t.cooldown >= 0 && Number.isInteger(t.cooldown), `tower ${t.id} negative cooldown`)
     check(t.tier >= 1 && t.tier <= 3, `tower ${t.id} bad tier ${t.tier}`)
+    check(Number.isInteger(t.enhance) && t.enhance >= 0, `tower ${t.id} bad enhance ${t.enhance}`)
+    check(t.enhance === 0 || t.tier === 3, `tower ${t.id} enhanced before tier 3`)
+    check(Number.isInteger(t.kills) && t.kills >= 0, `tower ${t.id} bad kills ${t.kills}`)
+    check(Number.isInteger(t.damageDealt) && t.damageDealt >= 0, `tower ${t.id} bad damageDealt`)
   }
   const towerCells = new Set(state.towers.map((t) => cellIndex(map, t.cell)))
   check(towerCells.size === state.towers.length, 'two towers share a cell')

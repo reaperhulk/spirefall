@@ -1,4 +1,4 @@
-import { towerTier, TOWERS } from '../data/content'
+import { enhanceCost, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, getMap, inBounds, pathFrom, sameCell } from '../engine/grid'
 import type { CellPos, Command, RelicId, RunState, TowerType } from '../engine/types'
@@ -113,10 +113,26 @@ export const balancedBot: Bot = (state) => {
     }
     if (upgrade !== null) return [{ type: 'upgrade_tower', id: upgrade.id }]
 
+    // Patch the spire up between waves before banking gold.
+    if (state.spireHp <= state.spireMaxHp - 25 && state.gold >= 150) return [{ type: 'repair_spire' }]
+
+    // Everything built and maxed: sink gold into the cheapest enhancement.
+    let enhance: { id: number; cost: number } | null = null
+    for (const t of state.towers) {
+      if (t.tier !== 3) continue
+      const cost = enhanceCost(t.type, t.enhance)
+      if (state.gold >= cost && (enhance === null || cost < enhance.cost)) enhance = { id: t.id, cost }
+    }
+    if (enhance !== null) return [{ type: 'upgrade_tower', id: enhance.id }]
+
     return [{ type: 'start_wave' }]
   }
 
   if (state.phase === 'wave') {
+    // Emergency repairs mid-assault.
+    if (state.spireHp < state.spireMaxHp / 2 && state.gold >= 100) {
+      return [{ type: 'repair_spire' }]
+    }
     const alive = state.enemies.length
     if ((state.abilities['meteor'] ?? 1) === 0 && alive >= 6) {
       const cell = densestEnemyCell(state, 1500)

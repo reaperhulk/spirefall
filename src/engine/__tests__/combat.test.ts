@@ -22,7 +22,18 @@ function enemy(overrides: Partial<Enemy> & { id: number }): Enemy {
 }
 
 function tower(overrides: Partial<Tower> = {}): Tower {
-  return { id: 100, type: 'arrow', tier: 1, cell: { cx: 5, cy: 5 }, cooldown: 0, targeting: 'first', ...overrides }
+  return {
+    id: 100,
+    type: 'arrow',
+    tier: 1,
+    enhance: 0,
+    cell: { cx: 5, cy: 5 },
+    cooldown: 0,
+    targeting: 'first',
+    kills: 0,
+    damageDealt: 0,
+    ...overrides,
+  }
 }
 
 describe('applyHit', () => {

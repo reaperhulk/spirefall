@@ -50,39 +50,51 @@ export const TOWERS: Record<TowerType, TowerDef> = {
   arrow: {
     name: 'Arrow',
     tiers: [
-      { cost: 50, damage: 7, range: 2500, cooldown: 15 },
-      { cost: 60, damage: 15, range: 2800, cooldown: 12 },
-      { cost: 140, damage: 32, range: 3100, cooldown: 10 },
+      { cost: 50, damage: 7, range: 2800, cooldown: 15 },
+      { cost: 60, damage: 15, range: 3200, cooldown: 12 },
+      { cost: 140, damage: 32, range: 3600, cooldown: 10 },
     ],
   },
   cannon: {
     name: 'Cannon',
     tiers: [
-      { cost: 80, damage: 22, range: 2200, cooldown: 45, splashRadius: 900 },
-      { cost: 100, damage: 48, range: 2400, cooldown: 40, splashRadius: 1050 },
-      { cost: 220, damage: 95, range: 2700, cooldown: 36, splashRadius: 1200 },
+      { cost: 80, damage: 22, range: 2000, cooldown: 45, splashRadius: 900 },
+      { cost: 100, damage: 48, range: 2200, cooldown: 40, splashRadius: 1050 },
+      { cost: 220, damage: 95, range: 2400, cooldown: 36, splashRadius: 1200 },
     ],
   },
   frost: {
     name: 'Frost',
     tiers: [
-      { cost: 60, damage: 3, range: 2200, cooldown: 30, slowFactor: 60, slowTicks: 45 },
-      { cost: 70, damage: 6, range: 2400, cooldown: 28, slowFactor: 45, slowTicks: 60 },
-      { cost: 150, damage: 12, range: 2600, cooldown: 26, slowFactor: 30, slowTicks: 75 },
+      { cost: 60, damage: 3, range: 1600, cooldown: 30, slowFactor: 60, slowTicks: 45 },
+      { cost: 70, damage: 6, range: 1800, cooldown: 28, slowFactor: 45, slowTicks: 60 },
+      { cost: 150, damage: 12, range: 2000, cooldown: 26, slowFactor: 30, slowTicks: 75 },
     ],
   },
   tesla: {
     name: 'Tesla',
     tiers: [
-      { cost: 90, damage: 11, range: 2400, cooldown: 24, chain: 3 },
-      { cost: 110, damage: 20, range: 2500, cooldown: 22, chain: 4 },
-      { cost: 240, damage: 34, range: 2600, cooldown: 20, chain: 6 },
+      { cost: 90, damage: 11, range: 1900, cooldown: 24, chain: 3 },
+      { cost: 110, damage: 20, range: 2000, cooldown: 22, chain: 4 },
+      { cost: 240, damage: 34, range: 2100, cooldown: 20, chain: 6 },
     ],
   },
 }
 
 export const SELL_REFUND_PCT = 70
 export const TESLA_CHAIN_RANGE = 1400 // millicells between chain hops
+
+// Past tier 3, towers can be enhanced indefinitely: +ENHANCE_DAMAGE_PCT damage
+// per level, each level costing ENHANCE_COST_GROWTH_PCT of the last. This is
+// the unbounded late-game gold sink.
+export const ENHANCE_DAMAGE_PCT = 10
+export const ENHANCE_COST_GROWTH_PCT = 145
+
+export function enhanceCost(type: TowerType, currentEnhance: number): number {
+  let cost = towerTier(type, 3).cost
+  for (let i = 0; i <= currentEnhance; i++) cost = Math.floor((cost * ENHANCE_COST_GROWTH_PCT) / 100)
+  return cost
+}
 
 export function towerTier(type: TowerType, tier: 1 | 2 | 3): TowerTierDef {
   return TOWERS[type].tiers[tier - 1]!
@@ -147,3 +159,10 @@ export const WAVE_CLEAR_GOLD_BASE = 20
 export const WAVE_CLEAR_GOLD_PER_WAVE = 6
 export const STARTING_GOLD = 100
 export const STARTING_SPIRE_HP = 100
+export const REPAIR_MAX_PER_CAST = 25
+
+// Repair gets pricier as waves escalate — sustain is a tool, not an
+// infinite-HP engine.
+export function repairCostPerHp(wave: number): number {
+  return 4 + Math.floor(wave / 3)
+}

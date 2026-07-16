@@ -71,6 +71,7 @@ describe('determinism', () => {
     const commandArb: fc.Arbitrary<Command> = fc.oneof(
       fc.constant<Command>({ type: 'start_wave' }),
       fc.constant<Command>({ type: 'abandon_run' }),
+      fc.constant<Command>({ type: 'repair_spire' }),
       fc.record({
         type: fc.constant('place_tower' as const),
         tower: fc.constantFrom('arrow', 'cannon', 'frost', 'tesla') as fc.Arbitrary<'arrow'>,

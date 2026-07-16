@@ -2,10 +2,13 @@ import {
   ABILITIES,
   BASE_WAVE_BUDGET,
   ENEMIES,
+  enhanceCost,
   HP_SCALE_GROWTH_PCT,
   RELIC_IDS,
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
+  REPAIR_MAX_PER_CAST,
+  repairCostPerHp,
   SELL_REFUND_PCT,
   TOWERS,
   towerInvested,
@@ -103,7 +106,17 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       const id = s.nextEntityId
       s.nextEntityId += 1
       s.gold -= cost
-      s.towers.push({ id, type: command.tower, tier: 1, cell: { ...command.cell }, cooldown: 0, targeting: 'first' })
+      s.towers.push({
+        id,
+        type: command.tower,
+        tier: 1,
+        enhance: 0,
+        cell: { ...command.cell },
+        cooldown: 0,
+        targeting: 'first',
+        kills: 0,
+        damageDealt: 0,
+      })
       // Placement changed the maze: force enemies to re-path from their cells.
       for (const e of s.enemies) e.targetCell = null
       events.push({ type: 'tower_placed', id, tower: command.tower, cell: { ...command.cell } })
@@ -113,7 +126,15 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     case 'upgrade_tower': {
       const tower = s.towers.find((t) => t.id === command.id)
       if (!tower) return reject(command, 'no such tower', events)
-      if (tower.tier >= 3) return reject(command, 'already max tier', events)
+      if (tower.tier >= 3) {
+        // Tier 3 towers enhance indefinitely — the unbounded gold sink.
+        const cost = enhanceCost(tower.type, tower.enhance)
+        if (s.gold < cost) return reject(command, 'not enough gold', events)
+        s.gold -= cost
+        tower.enhance += 1
+        events.push({ type: 'tower_enhanced', id: tower.id, level: tower.enhance, cost })
+        return
+      }
       const nextTier = (tower.tier + 1) as 2 | 3
       const cost = towerTier(tower.type, nextTier).cost
       if (s.gold < cost) return reject(command, 'not enough gold', events)
@@ -132,6 +153,21 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.gold += refund
       for (const e of s.enemies) e.targetCell = null // maze opened up; re-path
       events.push({ type: 'tower_sold', id: tower.id, refund })
+      return
+    }
+
+    case 'repair_spire': {
+      const missing = s.spireMaxHp - s.spireHp
+      const perHp = repairCostPerHp(s.wave)
+      const affordable = Math.floor(s.gold / perHp)
+      const amount = Math.min(REPAIR_MAX_PER_CAST, missing, affordable)
+      if (amount <= 0) {
+        return reject(command, missing === 0 ? 'spire is at full health' : 'not enough gold', events)
+      }
+      const cost = amount * perHp
+      s.gold -= cost
+      s.spireHp += amount
+      events.push({ type: 'spire_repaired', amount, cost, spireHp: s.spireHp })
       return
     }
 
@@ -166,8 +202,12 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.relics.push(command.relic)
       s.relicOffer = null
       if (command.relic === 'golden_touch') {
-        s.spireMaxHp = Math.max(1, Math.floor((s.spireMaxHp * 90) / 100))
-        s.spireHp = Math.min(s.spireHp, s.spireMaxHp)
+        // Scale current HP proportionally: losing max HP must never make the
+        // spire relatively healthier (a damaged spire used to "heal" on the
+        // bar because only max dropped).
+        const oldMax = s.spireMaxHp
+        s.spireMaxHp = Math.max(1, Math.floor((oldMax * 90) / 100))
+        s.spireHp = Math.max(1, Math.min(s.spireMaxHp, Math.floor((s.spireHp * s.spireMaxHp) / oldMax)))
       }
       events.push({ type: 'relic_chosen', relic: command.relic })
       return
