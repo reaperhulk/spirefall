@@ -70,6 +70,7 @@ describe('determinism', () => {
     const cellArb = fc.record({ cx: fc.integer({ min: -2, max: 26 }), cy: fc.integer({ min: -2, max: 16 }) })
     const commandArb: fc.Arbitrary<Command> = fc.oneof(
       fc.constant<Command>({ type: 'start_wave' }),
+      fc.constant<Command>({ type: 'abandon_run' }),
       fc.record({
         type: fc.constant('place_tower' as const),
         tower: fc.constantFrom('arrow', 'cannon', 'frost', 'tesla') as fc.Arbitrary<'arrow'>,

@@ -20,11 +20,11 @@ export interface EnemyDef {
 }
 
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
-  runner: { name: 'Runner', hp: 26, speed: 100, cost: 10, pack: 2, spacing: 16, bounty: 3, damage: 3, shield: 0, unlockWave: 1 },
-  swarmling: { name: 'Swarmling', hp: 9, speed: 130, cost: 4, pack: 5, spacing: 6, bounty: 1, damage: 1, shield: 0, unlockWave: 2 },
-  brute: { name: 'Brute', hp: 130, speed: 48, cost: 26, pack: 1, spacing: 40, bounty: 8, damage: 8, shield: 0, unlockWave: 4 },
-  shieldbearer: { name: 'Shieldbearer', hp: 95, speed: 60, cost: 30, pack: 1, spacing: 36, bounty: 9, damage: 6, shield: 7, unlockWave: 7 },
-  boss: { name: 'Spirebreaker', hp: 550, speed: 38, cost: 0, pack: 1, spacing: 0, bounty: 60, damage: 30, shield: 0, unlockWave: 10 },
+  runner: { name: 'Runner', hp: 26, speed: 100, cost: 10, pack: 3, spacing: 14, bounty: 2, damage: 3, shield: 0, unlockWave: 1 },
+  swarmling: { name: 'Swarmling', hp: 9, speed: 130, cost: 4, pack: 6, spacing: 6, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
+  brute: { name: 'Brute', hp: 130, speed: 48, cost: 26, pack: 1, spacing: 40, bounty: 6, damage: 8, shield: 0, unlockWave: 4 },
+  shieldbearer: { name: 'Shieldbearer', hp: 95, speed: 60, cost: 30, pack: 1, spacing: 36, bounty: 7, damage: 6, shield: 7, unlockWave: 7 },
+  boss: { name: 'Spirebreaker', hp: 550, speed: 38, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 30, shield: 0, unlockWave: 10 },
 }
 
 // ---------------------------------------------------------------------------
@@ -137,10 +137,10 @@ export const RELIC_OFFER_SIZE = 3
 // ---------------------------------------------------------------------------
 // Run pacing
 
-export const BASE_WAVE_BUDGET = 35
+export const BASE_WAVE_BUDGET = 80
 export const WAVE_BUDGET_GROWTH_PCT = 118 // ×1.18 per wave
 export const HP_SCALE_GROWTH_PCT = 111 // enemy hp ×1.11 per wave
-export const MAX_UNITS_PER_WAVE = 150
+export const MAX_UNITS_PER_WAVE = 200
 export const BOSS_WAVE_INTERVAL = 10
 export const VICTORY_WAVE = 44
 export const WAVE_CLEAR_GOLD_BASE = 20

@@ -96,10 +96,12 @@ export function SpireTreeModal({
   meta,
   onBuy,
   onClose,
+  onHardReset,
 }: {
   meta: MetaState
   onBuy: (id: MetaUpgradeId) => void
   onClose: () => void
+  onHardReset: () => void
 }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -109,6 +111,15 @@ export function SpireTreeModal({
         <SpireTree meta={meta} onBuy={onBuy} />
         <button className="ghost-btn" onClick={onClose}>
           Close
+        </button>
+        <button
+          className="ghost-btn danger"
+          data-testid="hard-reset"
+          onClick={() => {
+            if (window.confirm('Wipe ALL progress — every Spark and upgrade — and start over?')) onHardReset()
+          }}
+        >
+          Hard reset (wipe all progress)
         </button>
       </div>
     </div>

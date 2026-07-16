@@ -25,9 +25,11 @@ describe('balance envelope', () => {
     for (const seed of SEEDS) {
       const state = play(seed, 'afk')
       expect(state.phase).toBe('defeat')
-      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(5)
-      expect(state.wavesCleared, seed).toBeLessThanOrEqual(8)
+      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(2)
+      expect(state.wavesCleared, seed).toBeLessThanOrEqual(5)
       expect(state.sparksEarned, seed).toBeGreaterThan(0)
+      // Dying while afk is quick in real time too: under 90 sim-seconds.
+      expect(state.tick, seed).toBeLessThan(90 * 30)
     }
   }, 60_000)
 

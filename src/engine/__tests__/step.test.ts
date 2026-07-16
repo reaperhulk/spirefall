@@ -132,6 +132,22 @@ describe('wave lifecycle', () => {
     expect(state.sparksEarned).toBeGreaterThan(0)
   })
 
+  it('abandon_run concedes immediately and still pays sparks', () => {
+    const s = step(freshRun('quitter'), [{ type: 'start_wave' }]).state
+    expect(s.phase).toBe('wave')
+    const result = step(s, [{ type: 'abandon_run' }])
+    expect(result.state.phase).toBe('defeat')
+    expect(result.state.spireHp).toBe(0)
+    expect(result.state.sparksEarned).toBeGreaterThan(0)
+    expect(result.events.some((e) => e.type === 'run_ended')).toBe(true)
+    expect(() => assertInvariants(result.state)).not.toThrow()
+    // Works from the build phase too, and only once.
+    const fromBuild = step(freshRun('quitter-2'), [{ type: 'abandon_run' }])
+    expect(fromBuild.state.phase).toBe('defeat')
+    const again = step(result.state, [{ type: 'abandon_run' }])
+    expect(again.events[0]).toMatchObject({ type: 'command_rejected', reason: 'run is over' })
+  })
+
   it('commands after the run ends are rejected', () => {
     const { state } = autoplay(freshRun('doomed'), afkBot, 400_000)
     const after = step(state, [{ type: 'start_wave' }])

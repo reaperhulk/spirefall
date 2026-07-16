@@ -196,7 +196,7 @@ export default function App() {
             ✦ {meta.sparks}
           </span>
           <div className="speed-controls">
-            {[0, 1, 2, 3].map((n) => (
+            {[0, 1, 2, 3, 5, 10].map((n) => (
               <button
                 key={n}
                 className={session.speed === n ? 'active' : ''}
@@ -211,6 +211,20 @@ export default function App() {
           <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree">
             Spire Tree
           </button>
+          {!summary && (
+            <button
+              className="ghost-btn danger"
+              data-testid="abandon-run"
+              title="End this run now — you keep the Sparks earned so far"
+              onClick={() => {
+                if (window.confirm('Abandon this run? You keep the Sparks earned so far.')) {
+                  session.dispatch({ type: 'abandon_run' })
+                }
+              }}
+            >
+              Give up
+            </button>
+          )}
           {state.phase === 'build' && (
             <button
               className="primary-btn"
@@ -339,7 +353,17 @@ export default function App() {
         <RelicModal options={state.relicOffer} onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })} />
       )}
       {summary && <RunOverOverlay summary={summary} meta={meta} onBuy={buyMeta} onNextRun={() => beginNextRun()} />}
-      {showTree && !summary && <SpireTreeModal meta={meta} onBuy={buyMeta} onClose={() => setShowTree(false)} />}
+      {showTree && !summary && (
+        <SpireTreeModal
+          meta={meta}
+          onBuy={buyMeta}
+          onClose={() => setShowTree(false)}
+          onHardReset={() => {
+            clearSave()
+            window.location.reload()
+          }}
+        />
+      )}
     </div>
   )
 }

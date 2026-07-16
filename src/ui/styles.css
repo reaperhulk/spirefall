@@ -136,6 +136,16 @@ button:disabled {
   background: transparent;
 }
 
+.ghost-btn.danger {
+  color: #db4b4b;
+  border-color: #5c2c34;
+}
+
+.ghost-btn.danger:hover:not(:disabled) {
+  border-color: #db4b4b;
+  background: #2a1418;
+}
+
 /* Board */
 .board {
   position: relative;

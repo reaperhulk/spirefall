@@ -101,6 +101,7 @@ export interface RunState {
 
 export type Command =
   | { type: 'start_wave' }
+  | { type: 'abandon_run' }
   | { type: 'place_tower'; tower: TowerType; cell: CellPos }
   | { type: 'upgrade_tower'; id: number }
   | { type: 'sell_tower'; id: number }

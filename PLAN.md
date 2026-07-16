@@ -78,11 +78,11 @@ intentionally moves):
 
 | Player | Measured outcome |
 |---|---|
-| Fresh account, does nothing during waves | dies waves 5–8 |
-| Fresh account, greedy arrow spam | dies waves 11–30 (relic luck) |
-| Fresh account, competent bot | dies waves 15–39, never wins run 1 |
-| Banked account (~5000 sparks) | strictly outlasts fresh on most seeds |
-| Maxed Spire Tree (~10k sparks, ≈8 runs) | wins (wave 44) on most seeds |
+| Fresh account, does nothing during waves | dies waves 2–5, under 90 sim-seconds |
+| Fresh account, greedy arrow spam | dies around wave 9 |
+| Fresh account, competent bot | dies waves ~37–39, never wins run 1 |
+| Banked account (~5000 sparks) | strictly outlasts fresh; wins on some seeds |
+| Maxed Spire Tree (≈4–6 run career) | wins (wave 44) |
 
 Wave budget grows ~1.18ᴺ and enemy HP ~1.11ᴺ; a static defense's DPS is roughly
 linear in gold, so every run *stalls* — the geometric/linear gap is what guarantees

@@ -70,6 +70,14 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
   const map = getMap(s.mapId)
 
   switch (command.type) {
+    case 'abandon_run': {
+      // Concede: the run ends as a defeat and pays sparks for progress so
+      // far, exactly as if the Spire had fallen.
+      s.spireHp = 0
+      endRun(s, 'defeat', events)
+      return
+    }
+
     case 'start_wave': {
       if (s.phase !== 'build') return reject(command, `phase is ${s.phase}`, events)
       const wave = s.wave + 1
