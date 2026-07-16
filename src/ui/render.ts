@@ -282,6 +282,16 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.lineWidth = 1
         break
       }
+      case 'float': {
+        if (!fx.at || !fx.text) break
+        ctx.font = 'bold 12px ui-monospace, monospace'
+        ctx.textAlign = 'center'
+        ctx.fillStyle = fx.color ?? '#ffffff'
+        ctx.globalAlpha = fade
+        ctx.fillText(fx.text, px(fx.at.x), px(fx.at.y) - 14 - age * 16)
+        ctx.textAlign = 'left'
+        break
+      }
       case 'heal': {
         if (!fx.at) break
         ctx.strokeStyle = '#9ece6a'

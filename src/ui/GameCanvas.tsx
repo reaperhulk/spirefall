@@ -34,6 +34,12 @@ export function GameCanvas({ session, ui, onCellClick, onHover }: Props) {
       last = now
       ctx.save()
       ctx.scale(dpr, dpr)
+      // Screen shake while a spire hit is fresh (rendering-only randomness).
+      const hit = session.effects.find((fx) => fx.kind === 'spire_hit' && now - fx.t0 < fx.dur)
+      if (hit) {
+        const strength = 3 * (1 - (now - hit.t0) / hit.dur)
+        ctx.translate((Math.random() - 0.5) * 2 * strength, (Math.random() - 0.5) * 2 * strength)
+      }
       draw(ctx, session, uiRef.current)
       ctx.restore()
       raf = requestAnimationFrame(frame)
@@ -54,7 +60,7 @@ export function GameCanvas({ session, ui, onCellClick, onHover }: Props) {
       ref={canvasRef}
       className="playfield"
       data-testid="playfield"
-      style={{ width: MAP_WIDTH * CELL_PX, height: MAP_HEIGHT * CELL_PX }}
+      style={{ width: '100%', maxWidth: MAP_WIDTH * CELL_PX, aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}
       onClick={(e) => onCellClick(cellFromEvent(e))}
       onMouseMove={(e) => onHover(cellFromEvent(e))}
       onMouseLeave={() => onHover(null)}

@@ -15,6 +15,7 @@ import { buyMetaUpgrade, createMeta, createRun, settleRun } from '../engine/meta
 import { sameCell } from '../engine/grid'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { AbilityId, CellPos, RunSummary, Targeting, TowerType } from '../engine/types'
+import { Sfx } from './audio'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
 import { RelicModal, RunOverOverlay, SpireTreeModal } from './Overlays'
@@ -47,6 +48,8 @@ export default function App() {
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
+  const [sfx] = useState(() => new Sfx())
+  const [muted, setMuted] = useState(() => sfx.muted)
 
   const metaRef = useRef(meta)
   const sessionRef = useRef(session)
@@ -63,6 +66,7 @@ export default function App() {
   // Engine events drive meta settlement and saves.
   useEffect(() => {
     session.setOnEvents((events, s) => {
+      sfx.handleEvents(events)
       for (const e of events) {
         if (e.type === 'run_ended') {
           const settled = settleRun(metaRef.current, s)
@@ -81,7 +85,7 @@ export default function App() {
     return () => {
       session.setOnEvents(null)
     }
-  }, [session])
+  }, [session, sfx])
 
   const beginNextRun = (seed?: string) => {
     const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs))
@@ -229,6 +233,14 @@ export default function App() {
           <span className="hud-sparks" data-testid="meta-sparks">
             ✦ {meta.sparks}
           </span>
+          <button
+            className="ghost-btn"
+            data-testid="mute"
+            title={muted ? 'Unmute sound' : 'Mute sound'}
+            onClick={() => setMuted(sfx.toggleMute())}
+          >
+            {muted ? '🔇' : '🔊'}
+          </button>
           <div className="speed-controls">
             {[0, 1, 2, 3, 5, 10].map((n) => (
               <button

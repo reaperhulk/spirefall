@@ -1,3 +1,4 @@
+import { cellCenter, getMap } from '../engine/grid'
 import { step, TICKS_PER_SECOND } from '../engine/step'
 import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 
@@ -8,11 +9,12 @@ import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 // replayable log of every command it feeds to the sim.
 
 export interface VisualEffect {
-  kind: 'beam' | 'splash' | 'meteor' | 'nova' | 'death' | 'spire_hit' | 'gold_rush' | 'heal'
+  kind: 'beam' | 'splash' | 'meteor' | 'nova' | 'death' | 'spire_hit' | 'gold_rush' | 'heal' | 'float'
   from?: Vec
   to?: Vec
   at?: Vec
   color?: string
+  text?: string
   t0: number // performance.now() timestamp
   dur: number // ms
 }
@@ -126,6 +128,22 @@ export class GameSession {
           break
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
+          if (this.speed <= 3) {
+            this.effects.push({ kind: 'float', at: e.at, text: `+${e.bounty}`, color: '#e5c07b', t0: now, dur: 700 })
+          }
+          break
+        case 'spire_repaired':
+          this.effects.push({
+            kind: 'float',
+            at: cellCenter(getMap(this.state.mapId).spire),
+            text: `+${e.amount}`,
+            color: '#9ece6a',
+            t0: now,
+            dur: 800,
+          })
+          break
+        case 'mint_income':
+          this.effects.push({ kind: 'float', at: { x: 12_000, y: 1_000 }, text: `Mint +${e.amount}`, color: '#e5c07b', t0: now, dur: 900 })
           break
         case 'enemy_reached_spire':
           this.effects.push({ kind: 'spire_hit', t0: now, dur: 350 })

@@ -79,10 +79,10 @@ intentionally moves):
 | Player | Measured outcome |
 |---|---|
 | Fresh account, does nothing during waves | dies waves 2–5, under 90 sim-seconds |
-| Fresh account, greedy arrow spam | dies around wave 9 |
-| Fresh account, competent bot | dies waves ~37–39, never wins run 1 |
+| Fresh account, greedy arrow spam | dies waves 7–9 |
+| Fresh account, competent bot | dies waves ~37–42, never wins run 1 |
 | Banked account (~5000 sparks) | strictly outlasts fresh; wins on some seeds |
-| Maxed Spire Tree (≈4–6 run career) | wins (wave 44) |
+| Maxed Spire Tree (≈5–6 run career) | wins (wave 45), then endless |
 
 Wave budget grows ~1.18ᴺ and enemy HP ~1.11ᴺ; a static defense's DPS is roughly
 linear in gold, so every run *stalls* — the geometric/linear gap is what guarantees
@@ -347,8 +347,9 @@ npm run goldens:update regenerate golden replay hashes (balance changes)
   ground targeting, seeded wave affixes (Frenzied/Armored/Horde/Vanguard),
   11 relics, endless mode (the victory wave is a milestone; runs continue),
   early-wave unit caps to bound seed variance. Procedural maps deferred.
-- **M5 — Balance & feel:** tune against bot envelopes, difficulty curve polish,
-  juice (particles, floaters, screen shake, audio), mobile layout.
+- ✅ **M5 — Balance & feel:** curve re-tuned against bot envelopes each change,
+  floating bounty/repair text, screen shake, synthesized WebAudio SFX with a
+  persisted mute, responsive canvas for small screens.
 - **M6 — Incremental depth:** Ascension layer, achievements, unlockable game
   modifiers (endless mode, challenge seeds — free content via determinism: daily
   seed = same run for everyone, shareable).

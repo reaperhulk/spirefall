@@ -395,3 +395,20 @@ button:disabled {
   min-width: 76px;
   color: #7dcfff;
 }
+
+/* Small screens */
+@media (max-width: 640px) {
+  .app {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .hud {
+    gap: 8px;
+  }
+
+  .tower-panel {
+    width: 160px;
+    font-size: 12px;
+  }
+}
