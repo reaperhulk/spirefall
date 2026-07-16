@@ -1,0 +1,114 @@
+import { STARTING_GOLD, STARTING_SPIRE_HP } from '../data/content'
+import { MAPS } from '../data/maps'
+import {
+  META_GOLD_INCOME_PCT_PER_LEVEL,
+  META_SPARK_GAIN_PCT_PER_LEVEL,
+  META_SPIRE_HP_PER_LEVEL,
+  META_STARTING_GOLD_PER_LEVEL,
+  META_TOWER_DAMAGE_PCT_PER_LEVEL,
+  metaNode,
+  type MetaUpgradeId,
+} from '../data/metaTree'
+import { deriveStream, nextInt } from './rng'
+import type { AbilityId, MetaState, RunState, RunSummary, TowerType } from './types'
+
+export function createMeta(): MetaState {
+  return { schemaVersion: 1, sparks: 0, totalSparks: 0, runs: 0, upgrades: {} }
+}
+
+export function metaLevel(meta: MetaState, id: MetaUpgradeId): number {
+  return meta.upgrades[id] ?? 0
+}
+
+export function metaUpgradeCost(meta: MetaState, id: MetaUpgradeId): number | null {
+  const node = metaNode(id)
+  const level = metaLevel(meta, id)
+  if (level >= node.maxLevel) return null
+  return node.costs[level]!
+}
+
+export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: MetaState; ok: boolean; reason: string } {
+  const cost = metaUpgradeCost(meta, id)
+  if (cost === null) return { meta, ok: false, reason: 'already at max level' }
+  if (meta.sparks < cost) return { meta, ok: false, reason: 'not enough sparks' }
+  return {
+    meta: {
+      ...meta,
+      sparks: meta.sparks - cost,
+      upgrades: { ...meta.upgrades, [id]: metaLevel(meta, id) + 1 },
+    },
+    ok: true,
+    reason: '',
+  }
+}
+
+// Snapshot the meta tree into a fresh run. The run never reads meta again.
+export function createRun(meta: MetaState, seed: string): RunState {
+  const mapRoll = nextInt(deriveStream(seed, 'map'), 0, MAPS.length - 1)
+
+  const availableTowers: TowerType[] = ['arrow', 'cannon', 'frost']
+  if (metaLevel(meta, 'unlock_tesla') > 0) availableTowers.push('tesla')
+
+  const abilities: Record<string, number> = { meteor: 0, frost_nova: 0 }
+  if (metaLevel(meta, 'unlock_gold_rush') > 0) abilities['gold_rush' satisfies AbilityId] = 0
+
+  const spireHp = STARTING_SPIRE_HP + metaLevel(meta, 'spire_hp') * META_SPIRE_HP_PER_LEVEL
+
+  return {
+    schemaVersion: 1,
+    seed,
+    tick: 0,
+    phase: 'build',
+    rng: {
+      waves: deriveStream(seed, 'waves'),
+      combat: deriveStream(seed, 'combat'),
+      relics: deriveStream(seed, 'relics'),
+    },
+    mapId: mapRoll.value,
+    wave: 0,
+    wavesCleared: 0,
+    kills: 0,
+    gold: STARTING_GOLD + metaLevel(meta, 'starting_gold') * META_STARTING_GOLD_PER_LEVEL,
+    spireHp,
+    spireMaxHp: spireHp,
+    waveBudget: 0,
+    hpScalePct: 100,
+    nextEntityId: 1,
+    towers: [],
+    enemies: [],
+    pendingSpawns: [],
+    abilities,
+    goldRushTicks: 0,
+    relics: [],
+    relicOffer: null,
+    availableTowers,
+    mods: {
+      damagePct: metaLevel(meta, 'tower_damage') * META_TOWER_DAMAGE_PCT_PER_LEVEL,
+      goldPct: metaLevel(meta, 'gold_income') * META_GOLD_INCOME_PCT_PER_LEVEL,
+      sparkPct: metaLevel(meta, 'spark_gain') * META_SPARK_GAIN_PCT_PER_LEVEL,
+    },
+    sparksEarned: 0,
+  }
+}
+
+// Bank a finished run's Sparks into the meta state.
+export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; summary: RunSummary } {
+  if (run.phase !== 'defeat' && run.phase !== 'victory') {
+    throw new Error(`settleRun: run is not over (phase=${run.phase})`)
+  }
+  const summary: RunSummary = {
+    outcome: run.phase,
+    wavesCleared: run.wavesCleared,
+    kills: run.kills,
+    sparks: run.sparksEarned,
+  }
+  return {
+    meta: {
+      ...meta,
+      sparks: meta.sparks + summary.sparks,
+      totalSparks: meta.totalSparks + summary.sparks,
+      runs: meta.runs + 1,
+    },
+    summary,
+  }
+}

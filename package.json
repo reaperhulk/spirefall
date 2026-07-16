@@ -11,10 +11,12 @@
     "test:unit": "vitest --run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "goldens:update": "UPDATE_GOLDENS=1 vitest --run src/engine/__tests__/goldens.test.ts",
     "check": "npm run lint && npm run typecheck && npm run test:unit && npm run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@types/node": "^26.1.1",
     "eslint": "^9.37.0",
     "fast-check": "^4.3.0",
     "globals": "^16.4.0",

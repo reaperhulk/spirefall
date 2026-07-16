@@ -16,7 +16,7 @@ export default tseslint.config(
     // The engine must stay pure and deterministic: no ambient time, no ambient
     // randomness, no DOM, no scheduling, no I/O. See PLAN.md §3.2.
     files: ['src/engine/**/*.ts', 'src/data/**/*.ts', 'src/harness/**/*.ts'],
-    ignores: ['src/engine/__tests__/**'],
+    ignores: ['src/**/__tests__/**'],
     rules: {
       'no-restricted-globals': [
         'error',

@@ -1,0 +1,309 @@
+import type { MapDef } from '../data/maps'
+import { ABILITIES, TESLA_CHAIN_RANGE, towerTier } from '../data/content'
+import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
+import { nextInt } from './rng'
+import type { AbilityId, CellPos, Enemy, GameEvent, RunState, Tower } from './types'
+
+// All functions in this file mutate a draft RunState that step() has already
+// cloned — mutation never escapes the step boundary.
+
+export function effectiveDamagePct(state: RunState, tower: Tower['type']): number {
+  let pct = 100 + state.mods.damagePct
+  if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += 40
+  return pct
+}
+
+export function applyHit(enemy: Enemy, damage: number): number {
+  if (damage <= enemy.shield) return 0 // shieldbearers ignore weak hits entirely
+  const dealt = Math.min(enemy.hp, damage)
+  enemy.hp -= dealt
+  return dealt
+}
+
+function applySlow(enemy: Enemy, slowFactor: number, slowTicks: number, state: RunState): void {
+  let factor = slowFactor
+  if (state.relics.includes('winters_grip')) factor = Math.max(20, factor - 15)
+  const current = enemy.slowTicks > 0 ? enemy.slowFactor : 100
+  enemy.slowFactor = Math.min(current, factor) // strongest slow wins
+  enemy.slowTicks = Math.max(enemy.slowTicks, slowTicks) // longest duration wins
+}
+
+// ---------------------------------------------------------------------------
+// Movement
+
+// Enemies walk cell-center to cell-center along the flow field. Movement is
+// axis-by-axis (x then y) so re-pathing mid-transit stays well-defined.
+export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, events: GameEvent[]): void {
+  const blocked = blockedGrid(map, state.towers)
+  const arrived: number[] = []
+
+  for (const enemy of state.enemies) {
+    let budget = enemy.slowTicks > 0 ? Math.max(1, Math.floor((enemy.speed * enemy.slowFactor) / 100)) : enemy.speed
+
+    // Re-path if we have no waypoint or ours was built over.
+    if (enemy.targetCell !== null && blocked[cellIndex(map, enemy.targetCell)] === 1) enemy.targetCell = null
+    if (enemy.targetCell === null) enemy.targetCell = nextCell(map, field, cellOf(enemy.pos))
+    if (enemy.targetCell === null) continue // momentarily walled in; stand fast
+
+    while (budget > 0 && enemy.targetCell !== null) {
+      const target = cellCenter(enemy.targetCell)
+      const dx = target.x - enemy.pos.x
+      const dy = target.y - enemy.pos.y
+      const need = Math.abs(dx) + Math.abs(dy)
+      if (need <= budget) {
+        enemy.pos = target
+        budget -= need
+        if (sameCell(enemy.targetCell, map.spire)) {
+          arrived.push(enemy.id)
+          break
+        }
+        enemy.targetCell = nextCell(map, field, enemy.targetCell)
+      } else {
+        const moveX = Math.min(Math.abs(dx), budget) * Math.sign(dx)
+        enemy.pos.x += moveX
+        const rest = budget - Math.abs(moveX)
+        enemy.pos.y += Math.min(Math.abs(dy), rest) * Math.sign(dy)
+        budget = 0
+      }
+    }
+  }
+
+  if (arrived.length > 0) {
+    state.enemies = state.enemies.filter((e) => {
+      if (!arrived.includes(e.id)) return true
+      state.spireHp = Math.max(0, state.spireHp - e.damage)
+      events.push({ type: 'enemy_reached_spire', id: e.id, enemy: e.type, damage: e.damage, spireHp: state.spireHp })
+      return false
+    })
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Targeting
+
+// Progress toward the Spire: field distance dominates, distance to the next
+// waypoint breaks ties within a cell. Lower = closer to the Spire.
+function progressKey(map: MapDef, field: Int32Array, enemy: Enemy): number {
+  const d = field[cellIndex(map, cellOf(enemy.pos))] ?? -1
+  if (d === -1) return 1_000_000_000
+  const target = enemy.targetCell ? cellCenter(enemy.targetCell) : cellCenter(cellOf(enemy.pos))
+  const frac = Math.abs(target.x - enemy.pos.x) + Math.abs(target.y - enemy.pos.y)
+  return d * 10_000 + frac
+}
+
+export function selectTarget(
+  tower: Tower,
+  candidates: Enemy[],
+  map: MapDef,
+  field: Int32Array,
+): Enemy | null {
+  if (candidates.length === 0) return null
+  const origin = cellCenter(tower.cell)
+  let best: Enemy | null = null
+  let bestKey = 0
+  for (const e of candidates) {
+    let key: number
+    switch (tower.targeting) {
+      case 'first':
+        key = progressKey(map, field, e)
+        break
+      case 'last':
+        key = -progressKey(map, field, e)
+        break
+      case 'strongest':
+        key = -e.hp
+        break
+      case 'nearest':
+        key = distSq(origin, e.pos)
+        break
+    }
+    if (best === null || key < bestKey || (key === bestKey && e.id < best.id)) {
+      best = e
+      bestKey = key
+    }
+  }
+  return best
+}
+
+// ---------------------------------------------------------------------------
+// Firing
+
+export function towersFire(state: RunState, map: MapDef, field: Int32Array, events: GameEvent[]): void {
+  for (const tower of state.towers) {
+    if (tower.cooldown > 0) {
+      tower.cooldown -= 1
+      continue
+    }
+    const def = towerTier(tower.type, tower.tier)
+    const origin = cellCenter(tower.cell)
+    const rangeSq = def.range * def.range
+    const alive = state.enemies.filter((e) => e.hp > 0)
+    const inRange = alive.filter((e) => distSq(origin, e.pos) <= rangeSq)
+    const target = selectTarget(tower, inRange, map, field)
+    if (target === null) continue
+
+    const damage = Math.floor((def.damage * effectiveDamagePct(state, tower.type)) / 100)
+    const hitIds: number[] = [target.id]
+
+    switch (tower.type) {
+      case 'arrow': {
+        applyHit(target, damage)
+        break
+      }
+      case 'cannon': {
+        let radius = def.splashRadius!
+        if (state.relics.includes('heavy_powder')) radius = Math.floor((radius * 130) / 100)
+        const radiusSq = radius * radius
+        for (const e of alive) {
+          if (e.id === target.id || distSq(target.pos, e.pos) <= radiusSq) {
+            applyHit(e, damage)
+            if (e.id !== target.id) hitIds.push(e.id)
+          }
+        }
+        break
+      }
+      case 'frost': {
+        applyHit(target, damage)
+        applySlow(target, def.slowFactor!, def.slowTicks!, state)
+        break
+      }
+      case 'tesla': {
+        let chain = def.chain!
+        if (state.relics.includes('overcharge')) chain += 2
+        const chainRangeSq = TESLA_CHAIN_RANGE * TESLA_CHAIN_RANGE
+        let current = target
+        applyHit(current, damage)
+        while (hitIds.length < chain) {
+          let next: Enemy | null = null
+          let nextDist = 0
+          for (const e of alive) {
+            if (e.hp <= 0 || hitIds.includes(e.id)) continue
+            const d = distSq(current.pos, e.pos)
+            if (d <= chainRangeSq && (next === null || d < nextDist || (d === nextDist && e.id < next.id))) {
+              next = e
+              nextDist = d
+            }
+          }
+          if (next === null) break
+          applyHit(next, damage)
+          hitIds.push(next.id)
+          current = next
+        }
+        break
+      }
+    }
+
+    tower.cooldown = def.cooldown
+    events.push({
+      type: 'tower_fired',
+      id: tower.id,
+      tower: tower.type,
+      from: origin,
+      to: { ...target.pos },
+      targets: hitIds,
+    })
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Abilities
+
+export function castAbility(
+  state: RunState,
+  ability: AbilityId,
+  cell: CellPos,
+  events: GameEvent[],
+): void {
+  const def = ABILITIES[ability]
+  const at = cellCenter(cell)
+  const radiusSq = def.radius * def.radius
+  switch (ability) {
+    case 'meteor': {
+      const damage = Math.floor((def.damage! * (100 + state.mods.damagePct)) / 100)
+      for (const e of state.enemies) {
+        if (e.hp > 0 && distSq(at, e.pos) <= radiusSq) applyHit(e, damage)
+      }
+      break
+    }
+    case 'frost_nova': {
+      for (const e of state.enemies) {
+        if (e.hp > 0 && distSq(at, e.pos) <= radiusSq) applySlow(e, def.slowFactor!, def.slowTicks!, state)
+      }
+      break
+    }
+    case 'gold_rush': {
+      state.goldRushTicks = def.durationTicks!
+      break
+    }
+  }
+  state.abilities[ability] = def.cooldown
+  events.push({ type: 'ability_cast', ability, cell })
+}
+
+// ---------------------------------------------------------------------------
+// Per-tick bookkeeping
+
+export function tickStatuses(state: RunState): void {
+  for (const e of state.enemies) {
+    if (e.slowTicks > 0) {
+      e.slowTicks -= 1
+      if (e.slowTicks === 0) e.slowFactor = 100
+    }
+  }
+  for (const key of Object.keys(state.abilities)) {
+    const cd = state.abilities[key]!
+    if (cd > 0) state.abilities[key] = cd - 1
+  }
+  if (state.goldRushTicks > 0) state.goldRushTicks -= 1
+}
+
+export function collectDead(state: RunState, events: GameEvent[]): void {
+  const survivors: Enemy[] = []
+  for (const e of state.enemies) {
+    if (e.hp > 0) {
+      survivors.push(e)
+      continue
+    }
+    let bounty = e.bounty
+    if (state.relics.includes('golden_touch')) bounty += 2
+    bounty = Math.floor((bounty * (100 + state.mods.goldPct)) / 100)
+    if (state.goldRushTicks > 0) bounty *= 2
+    state.gold += bounty
+    state.kills += 1
+    events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty })
+  }
+  state.enemies = survivors
+}
+
+// Deterministic "densest cluster" helper used by bots and available to UI:
+// the position of the enemy with the most living enemies within `radius`.
+export function densestEnemyCell(state: RunState, radius: number): CellPos | null {
+  let best: Enemy | null = null
+  let bestCount = 0
+  const radiusSq = radius * radius
+  for (const e of state.enemies) {
+    if (e.hp <= 0) continue
+    let count = 0
+    for (const other of state.enemies) {
+      if (other.hp > 0 && distSq(e.pos, other.pos) <= radiusSq) count += 1
+    }
+    // Enemies iterate in ascending id order, so ties keep the earliest spawn.
+    if (count > bestCount) {
+      best = e
+      bestCount = count
+    }
+  }
+  return best ? cellOf(best.pos) : null
+}
+
+// Draw distinct relics from the relic stream for an offer.
+export function drawRelicOffer(state: RunState, pool: string[], size: number): string[] {
+  const remaining = [...pool]
+  const offer: string[] = []
+  while (offer.length < size && remaining.length > 0) {
+    const pick = nextInt(state.rng.relics, 0, remaining.length - 1)
+    state.rng.relics = pick.rng
+    offer.push(remaining.splice(pick.value, 1)[0]!)
+  }
+  return offer
+}

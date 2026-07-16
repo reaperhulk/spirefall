@@ -1,37 +1,26 @@
-// M0 placeholder entry: prove the pure engine runs unchanged in the browser by
-// executing a short headless run and printing its event log. Replaced at M2 by
-// the canvas renderer + React shell (PLAN.md §6).
-import { createRun, TICKS_PER_SECOND } from './engine/step'
-import type { GameEvent } from './engine/types'
-import { simulate, type ScheduledCommand } from './harness/simulate'
+// M0/M1 placeholder entry: prove the pure engine runs unchanged in the browser
+// by letting a bot play a full run headlessly and printing what happened.
+// Replaced at M2 by the canvas renderer + React shell (PLAN.md §6).
+import { createMeta, createRun } from './engine/meta'
+import { autoplay } from './harness/autoplay'
+import { balancedBot } from './harness/bots'
 
 const seed = `demo-${new Date().toISOString().slice(0, 10)}`
-const log: ScheduledCommand[] = []
-for (let wave = 0; wave < 50; wave++) {
-  log.push({ tick: wave * 4 * TICKS_PER_SECOND, command: { type: 'start_wave' } })
-}
-
-const { state, events } = simulate(createRun(seed), log, 300 * TICKS_PER_SECOND)
+const run = createRun(createMeta(), seed)
+const { state, commandLog } = autoplay(run, balancedBot, 400_000)
 
 const lines = [
-  `seed: ${seed}`,
+  `seed: ${seed}  (map ${state.mapId})`,
   '',
-  ...events
-    .filter((e): e is Exclude<GameEvent, { type: 'command_rejected' }> => e.type !== 'command_rejected')
-    .map((e) => {
-      switch (e.type) {
-        case 'wave_started':
-          return `wave ${e.wave} begins`
-        case 'spire_damaged':
-          return `  the spire takes ${e.amount} damage (${e.spireHp} hp left)`
-        case 'wave_cleared':
-          return `  wave ${e.wave} survived (+${e.goldAwarded} gold)`
-        case 'run_ended':
-          return `\nTHE SPIRE FALLS. ${e.wavesCleared} waves cleared → ${e.sparks} sparks earned.`
-      }
-    }),
+  `a bot just played a whole run in your browser:`,
+  `  waves cleared: ${state.wavesCleared}`,
+  `  kills: ${state.kills}`,
+  `  towers built: ${state.towers.length}`,
+  `  relics: ${state.relics.join(', ') || 'none'}`,
+  `  commands issued: ${commandLog.length}`,
+  `  outcome: ${state.phase}`,
   '',
-  `final state: tick=${state.tick} phase=${state.phase} sparks=${state.sparksEarned}`,
+  `THE SPIRE FALLS. ${state.sparksEarned} sparks earned.`,
 ]
 
 document.querySelector('#demo')!.textContent = lines.join('\n')

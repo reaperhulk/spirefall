@@ -1,3 +1,4 @@
+import { getMap, cellIndex, inBounds, sameCell } from './grid'
 import type { Rng } from './rng'
 import type { RunState } from './types'
 
@@ -6,23 +7,77 @@ import type { RunState } from './types'
 // inputs; the harness can also run them after every tick in dev builds.
 export function assertInvariants(state: RunState): void {
   assertFiniteNumbers(state, 'state')
+  const map = getMap(state.mapId)
 
   check(Number.isInteger(state.tick) && state.tick >= 0, `tick must be a non-negative integer, got ${state.tick}`)
   check(Number.isInteger(state.wave) && state.wave >= 0, `wave must be a non-negative integer, got ${state.wave}`)
+  check(
+    Number.isInteger(state.wavesCleared) && state.wavesCleared >= 0 && state.wavesCleared <= state.wave,
+    `wavesCleared must be in [0, wave], got ${state.wavesCleared} (wave ${state.wave})`,
+  )
   check(Number.isInteger(state.gold) && state.gold >= 0, `gold must be a non-negative integer, got ${state.gold}`)
+  check(Number.isInteger(state.kills) && state.kills >= 0, `kills must be non-negative, got ${state.kills}`)
   check(
     Number.isInteger(state.spireHp) && state.spireHp >= 0 && state.spireHp <= state.spireMaxHp,
     `spireHp must be in [0, ${state.spireMaxHp}], got ${state.spireHp}`,
   )
   check(state.sparksEarned >= 0, `sparksEarned must be non-negative, got ${state.sparksEarned}`)
-
   check(
-    (state.phase === 'wave') === (state.activeWave !== null),
-    `activeWave must exist iff phase is 'wave' (phase=${state.phase})`,
+    ['build', 'wave', 'defeat', 'victory'].includes(state.phase),
+    `unknown phase ${String(state.phase)}`,
   )
-  if (state.activeWave !== null) {
-    check(state.activeWave.remainingTicks > 0, 'activeWave.remainingTicks must be positive')
-    check(state.activeWave.hitDamage > 0, 'activeWave.hitDamage must be positive')
+  check(state.phase !== 'defeat' || state.spireHp === 0, 'defeat requires a fallen spire')
+
+  // Entities
+  const ids = new Set<number>()
+  for (const t of state.towers) {
+    check(!ids.has(t.id), `duplicate entity id ${t.id}`)
+    ids.add(t.id)
+    check(t.id < state.nextEntityId, `tower id ${t.id} >= nextEntityId`)
+    check(inBounds(map, t.cell), `tower ${t.id} out of bounds`)
+    check(!map.rocks[cellIndex(map, t.cell)], `tower ${t.id} on a rock`)
+    check(!sameCell(t.cell, map.spawn) && !sameCell(t.cell, map.spire), `tower ${t.id} on gate/spire`)
+    check(t.cooldown >= 0 && Number.isInteger(t.cooldown), `tower ${t.id} negative cooldown`)
+    check(t.tier >= 1 && t.tier <= 3, `tower ${t.id} bad tier ${t.tier}`)
+  }
+  const towerCells = new Set(state.towers.map((t) => cellIndex(map, t.cell)))
+  check(towerCells.size === state.towers.length, 'two towers share a cell')
+
+  for (const e of state.enemies) {
+    check(!ids.has(e.id), `duplicate entity id ${e.id}`)
+    ids.add(e.id)
+    check(e.id < state.nextEntityId, `enemy id ${e.id} >= nextEntityId`)
+    check(e.hp > 0 && e.hp <= e.maxHp, `enemy ${e.id} hp ${e.hp} out of (0, ${e.maxHp}]`)
+    check(
+      e.pos.x >= 0 && e.pos.x <= map.width * 1000 && e.pos.y >= 0 && e.pos.y <= map.height * 1000,
+      `enemy ${e.id} out of the world at ${e.pos.x},${e.pos.y}`,
+    )
+    check(e.slowFactor >= 1 && e.slowFactor <= 100, `enemy ${e.id} slowFactor ${e.slowFactor}`)
+    check(e.slowTicks >= 0, `enemy ${e.id} negative slowTicks`)
+  }
+
+  // Enemy ids strictly increase with array position (stable iteration order).
+  for (let i = 1; i < state.enemies.length; i++) {
+    check(state.enemies[i]!.id > state.enemies[i - 1]!.id, 'enemy array not in spawn order')
+  }
+
+  for (const p of state.pendingSpawns) {
+    check(Number.isInteger(p.tick), 'pendingSpawn tick must be an integer')
+  }
+  check(
+    state.pendingSpawns.length === 0 || state.phase === 'wave',
+    'pendingSpawns outside of a wave',
+  )
+
+  for (const [ability, cd] of Object.entries(state.abilities)) {
+    check(Number.isInteger(cd) && cd >= 0, `ability ${ability} cooldown ${cd}`)
+  }
+
+  check(new Set(state.relics).size === state.relics.length, 'duplicate relics')
+  if (state.relicOffer !== null) {
+    check(state.relicOffer.length > 0, 'empty relic offer')
+    check(state.phase === 'build', 'relic offer outside build phase')
+    for (const r of state.relicOffer) check(!state.relics.includes(r), `offered relic ${r} already owned`)
   }
 
   const streams: [string, Rng][] = [
