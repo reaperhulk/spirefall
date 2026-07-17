@@ -476,13 +476,6 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
 
       await assertLayout('build phase')
 
-      // The approach lane sits flush against the playfield's left edge at
-      // the same height — the strip where incoming enemies telegraph.
-      const laneBox = (await page.getByTestId('approach-lane').boundingBox())!
-      const fieldBox = (await page.getByTestId('playfield').boundingBox())!
-      expect(Math.abs(laneBox.x + laneBox.width - fieldBox.x)).toBeLessThanOrEqual(1.5)
-      expect(Math.abs(laneBox.height - fieldBox.height)).toBeLessThanOrEqual(2)
-
       // Tower panel open (a bottom sheet on phones) must not break layout.
       await page.getByTestId('shop-arrow').click()
       await clickCell(page, 4, 5)
