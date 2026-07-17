@@ -20,6 +20,7 @@ import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createR
 import type { EmberUpgradeId } from '../data/emberTree'
 import { previewNextWave } from '../engine/step'
 import { sameCell } from '../engine/grid'
+import { MAPS } from '../data/maps'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { AbilityId, CataclysmId, CellPos, RunSummary, Targeting, TowerType } from '../engine/types'
 import { Sfx } from './audio'
@@ -305,6 +306,8 @@ export default function App() {
           SPIREFALL
           <span className="hud-wave" data-testid="wave-label">
             {state.victoryClaimed ? `Wave ${state.wave} · ENDLESS` : `Wave ${state.wave}/${VICTORY_WAVE}`}
+            {' · '}
+            {MAPS[state.mapId]!.name}
           </span>
         </div>
         {state.phase === 'wave' && state.activeAffix && (

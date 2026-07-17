@@ -9,7 +9,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 - [x] 1. Carrier enemy: late-game spawner that births swarmlings while alive
 - [ ] 2. Wraith enemy: phases untargetable — punishes pure-DPS, rewards timing
-- [ ] 3. Two new maps (Serpent, Crossroads) + map name in HUD; recalibrate seeds
+- [x] 3. Two new maps (Serpent, Crossroads) + map name in HUD; recalibrate seeds
 - [x] 4. Endless mutators: stacking wave modifiers past the victory wave (Cataclysms)
 - [x] 5. Run summary analytics: damage by tower type, kills by enemy type
 - [x] 6. Graphics: real projectiles (cannon shells, sniper tracers), muzzle flash
@@ -30,6 +30,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+10. **Maps** — The Serpent (four alternating vertical walls force a long
+    winding gauntlet) and Crossroads (central block + pylons split the horde
+    into lanes) join the pool of five. Map name shown in the HUD. New
+    connectivity test pins every map reachable. Seed→map assignments
+    reshuffled; envelope + goldens + all 13 e2e recalibrated and green.
 
 9. **Board glow-up** — checkered ground tint, faceted rocks with deterministic
    per-cell variation and lit facets, path chevrons drifting toward the spire,

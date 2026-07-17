@@ -12,9 +12,9 @@ import { DEFAULT_BUY_PRIORITY, richMeta } from '../scenarios'
 // flake. If you change balance on purpose, re-derive the numbers and update
 // both this file and the goldens in the same commit.
 
-// Representative seeds across maps 0/1. The Bulwark map (e.g. seed 'gamma')
-// punishes the naive bot's placement badly — humans adapt, the heuristic
-// doesn't — so the fresh-competence floor is pinned on representative maps.
+// Representative seeds. With five maps in the pool the seed→map assignment
+// shifts whenever the catalog changes — re-verify these pins (and re-derive
+// numbers if needed) any time a map is added.
 const SEEDS = ['alpha', 'beta', 'delta'] as const
 
 function play(seed: string, bot: keyof typeof BOTS, meta = createMeta(), maxTicks = 800_000) {

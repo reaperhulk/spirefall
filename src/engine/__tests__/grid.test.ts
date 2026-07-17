@@ -88,3 +88,12 @@ describe('fixed-point cells', () => {
     expect(cellOf({ x: 23_500, y: 6_500 })).toEqual({ cx: 23, cy: 6 })
   })
 })
+
+describe('map catalog', () => {
+  it('every map is connected: the horde can always reach the spire', () => {
+    for (const map of MAPS) {
+      const field = distanceField(map, blockedGrid(map, []))
+      expect(field[map.spawn.cy * map.width + map.spawn.cx], map.name).toBeGreaterThanOrEqual(0)
+    }
+  })
+})
