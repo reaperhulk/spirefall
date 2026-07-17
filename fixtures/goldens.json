@@ -1,34 +1,34 @@
 {
   "afk-fresh": {
-    "ticks": 373,
-    "wavesCleared": 1,
+    "ticks": 200,
+    "wavesCleared": 0,
     "kills": 0,
     "outcome": "defeat",
-    "sparks": 15,
-    "stateHash": "f05cef5d"
+    "sparks": 0,
+    "stateHash": "b5e79941"
   },
   "greedy-fresh": {
-    "ticks": 1284,
-    "wavesCleared": 3,
-    "kills": 25,
+    "ticks": 1709,
+    "wavesCleared": 4,
+    "kills": 121,
     "outcome": "defeat",
-    "sparks": 49,
-    "stateHash": "fcc9bdb0"
+    "sparks": 70,
+    "stateHash": "822549ad"
   },
   "balanced-fresh": {
-    "ticks": 1767,
-    "wavesCleared": 4,
-    "kills": 56,
+    "ticks": 4428,
+    "wavesCleared": 9,
+    "kills": 411,
     "outcome": "defeat",
-    "sparks": 69,
-    "stateHash": "dff3cd95"
+    "sparks": 211,
+    "stateHash": "ab2c6750"
   },
   "balanced-rich": {
-    "ticks": 9544,
+    "ticks": 11266,
     "wavesCleared": 15,
-    "kills": 525,
+    "kills": 1091,
     "outcome": "defeat",
-    "sparks": 390,
-    "stateHash": "34e7aa7d"
+    "sparks": 393,
+    "stateHash": "aa25d732"
   }
 }

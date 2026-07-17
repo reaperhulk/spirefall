@@ -117,7 +117,7 @@ describe('computeSparks', () => {
     const base = { ...run, wavesCleared: 10, kills: 40 }
     const defeat = computeSparks(base)
     const victory = computeSparks({ ...base, victoryClaimed: true })
-    expect(defeat).toBe(10 * 15 + Math.floor(40 / 6))
+    expect(defeat).toBe(10 * 15 + Math.floor(40 / 12))
     expect(victory).toBe(defeat + 500)
 
     const boosted = computeSparks({ ...base, mods: { ...base.mods, sparkPct: 24 } })

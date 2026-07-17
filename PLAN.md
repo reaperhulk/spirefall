@@ -86,12 +86,13 @@ intentionally moves):
 
 | Player | Measured outcome |
 |---|---|
-| Fresh account, does nothing during waves | dies at wave 1 in ~15 sim-seconds |
-| Fresh account, greedy arrow spam | dies waves 3–4 |
-| Fresh account, competent bot | dies waves 3–9 in **under 2 minutes** — the spire is paper until you invest |
-| +1000–3000 sparks | reaches ~13–14 — Reinforced Core turns leaks survivable |
-| +20k sparks (deep tree) | wins (wave 24) |
-| Career (bot) | first victory at run ~13, repeating wins after, then endless |
+| Fresh account, does nothing during waves | overrun mid-wave-1 in ~8 sim-seconds, 0 sparks (no progress = no pay) |
+| Fresh account, greedy arrow spam | dies waves 4–5 |
+| Fresh account, competent bot | dies waves 3–9 in **under 2.5 minutes** — the spire is paper until you invest |
+| +3000–5000 sparks | reaches ~12–14 — Reinforced Core turns leaks survivable |
+| +20k sparks | reaches ~23–25, wins on a good map |
+| +60k sparks (deep tree) | wins (wave 24) while mowing down hundreds per wave |
+| Career (bot) | first victory around run ~16, repeating wins after, then endless |
 
 The Spire has **10 HP** and enemies keep their damage identity: swarmlings chip
 for 1, runners 2, fliers 3, shieldbearers 4, brutes 5, bosses 8 — a boss leak

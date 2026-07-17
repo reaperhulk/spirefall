@@ -106,7 +106,14 @@ describe('splitters', () => {
 
 describe('mints', () => {
   it('pay out on every cleared wave, scaled by enhance and relics', () => {
-    let s = { ...freshRun(), gold: 10_000, availableTowers: [...freshRun().availableTowers, 'mint' as const] }
+    // A tall spire tanks the undefended horde so the wave actually clears.
+    let s = {
+      ...freshRun(),
+      gold: 10_000,
+      spireHp: 1000,
+      spireMaxHp: 1000,
+      availableTowers: [...freshRun().availableTowers, 'mint' as const],
+    }
     const spot = buildCandidates(s)[0]!
     s = step(s, [{ type: 'place_tower', tower: 'mint', cell: spot }]).state
     s = step(s, [{ type: 'start_wave' }]).state

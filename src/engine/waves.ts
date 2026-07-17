@@ -9,7 +9,7 @@ import {
 import { nextInt, type Rng } from './rng'
 import type { AffixId, EnemyType, PendingSpawn } from './types'
 
-const GROUP_GAP_TICKS = 12
+const GROUP_GAP_TICKS = 8
 const FIRST_SPAWN_DELAY = 15
 
 const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shieldbearer', 'healer', 'splitter']
@@ -17,7 +17,7 @@ const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shield
 // Early waves are capped in unit count so seed variance can't triple the
 // pressure on a fresh two-tower defense; the cap fades out by mid-game.
 export function waveUnitCap(wave: number): number {
-  return Math.min(MAX_UNITS_PER_WAVE, 6 + wave * 4)
+  return Math.min(MAX_UNITS_PER_WAVE, 10 + wave * 8)
 }
 
 export interface GeneratedWave {

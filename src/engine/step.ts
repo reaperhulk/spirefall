@@ -349,8 +349,10 @@ export function computeSparks(s: RunState): number {
   // Sparks are earned by PROGRESS only: waves cleared this run (skipped
   // starting waves excluded) and kills. No flat participation payout — a
   // zero-progress run pays zero, so instantly abandoning runs farms nothing.
+  // kills/12 (not /6): horde waves double the body count, so the per-kill
+  // rate halves to keep spark income on the same curve.
   const cleared = Math.max(0, s.wavesCleared - s.startWave)
-  const base = cleared * 15 + Math.floor(s.kills / 6) + (s.victoryClaimed ? 500 : 0)
+  const base = cleared * 15 + Math.floor(s.kills / 12) + (s.victoryClaimed ? 500 : 0)
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
   return Math.floor((base * pct) / 100)

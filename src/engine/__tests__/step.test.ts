@@ -111,12 +111,17 @@ describe('wave lifecycle', () => {
     expect(s.enemies[0]!.pos.x).toBeGreaterThan(before) // marching toward the spire (east)
   })
 
-  it('an undefended wave damages the spire; wave then clears', () => {
-    const state = freshRun()
+  it('an undefended horde overruns the base spire; a tall spire tanks it and the wave clears', () => {
+    // At the base 10 HP, wave 1's horde is lethal with no towers at all.
+    const overrun = stepUntil(step(freshRun(), [{ type: 'start_wave' }]).state, (st) => st.phase !== 'wave', 20_000)
+    expect(overrun.phase).toBe('defeat')
+
+    // With enough HP to soak it, the wave clears and pays out.
+    const state = { ...freshRun(), spireHp: 1000, spireMaxHp: 1000 }
     let s = step(state, [{ type: 'start_wave' }]).state
     s = stepUntil(s, (st) => st.phase !== 'wave', 20_000)
     expect(s.phase).toBe('build')
-    expect(s.spireHp).toBeLessThan(s.spireMaxHp)
+    expect(s.spireHp).toBeLessThan(s.spireMaxHp) // the horde got its hits in
     expect(s.wavesCleared).toBe(1)
     expect(s.gold).toBeGreaterThan(state.gold) // wave-clear income
   })
@@ -142,7 +147,9 @@ describe('wave lifecycle', () => {
     const { state } = autoplay(freshRun('doomed'), afkBot, 400_000, { checkInvariants: false })
     expect(state.phase).toBe('defeat')
     expect(state.spireHp).toBe(0)
-    expect(state.sparksEarned).toBeGreaterThan(0)
+    // The horde overruns an undefended spire before wave 1 clears — and
+    // sparks pay for progress only, so literally doing nothing earns nothing.
+    expect(state.sparksEarned).toBe(0)
   })
 
   it('abandon_run concedes immediately — but zero progress pays zero sparks', () => {
@@ -165,8 +172,9 @@ describe('wave lifecycle', () => {
   })
 
   it('abandoning WITH progress still pays for that progress', () => {
-    // Clear wave 1 undefended, then concede: the cleared wave pays.
-    let s = step(freshRun('honest-quitter'), [{ type: 'start_wave' }]).state
+    // Tank wave 1 on a tall spire, then concede: the cleared wave pays.
+    const tall = { ...freshRun('honest-quitter'), spireHp: 1000, spireMaxHp: 1000 }
+    let s = step(tall, [{ type: 'start_wave' }]).state
     s = stepUntil(s, (st) => st.phase !== 'wave', 20_000)
     expect(s.phase).toBe('build')
     expect(s.wavesCleared).toBe(1)

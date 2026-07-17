@@ -94,16 +94,18 @@ test('placing a tower via real shop + canvas clicks spends gold', async ({ page 
 
 test('a defended wave plays out: enemies die, bounties arrive, build phase returns', async ({ page }) => {
   const errors = await boot(page, 'e2e-wave')
-  // Two towers around the path mouth.
+  // Four towers around the path mouth — the horde is dense, two won't hold.
   await page.getByTestId('shop-arrow').click()
   await clickCell(page, 4, 5)
   await clickCell(page, 4, 7)
+  await clickCell(page, 5, 5)
+  await clickCell(page, 5, 7)
   await page.getByTestId('start-wave').click()
   await page.evaluate(() => window.__harness.fastForward(120))
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
   expect(snap.wave).toBe(1)
-  expect(snap.kills).toBeGreaterThan(0)
+  expect(snap.kills).toBeGreaterThan(5) // a horde died out there
   expect(snap.spireHp).toBeGreaterThanOrEqual(8) // a defended spire stays near-intact
   expect(errors).toEqual([])
 })
@@ -117,6 +119,8 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   await page.getByTestId('shop-arrow').click()
   await clickCell(page, 4, 5)
   await clickCell(page, 4, 7)
+  await clickCell(page, 5, 5)
+  await clickCell(page, 5, 7)
   // Then send waves until the spire falls (fastForward is instant).
   await page.evaluate(() => {
     const send = () => {

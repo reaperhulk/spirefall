@@ -24,12 +24,13 @@ function play(seed: string, bot: keyof typeof BOTS, meta = createMeta(), maxTick
 }
 
 describe('balance envelope', () => {
-  it('an afk player always dies fast — but every failure still pays sparks', () => {
+  it('an afk player is overrun almost immediately — and zero effort pays zero sparks', () => {
     for (const seed of SEEDS) {
       const state = play(seed, 'afk')
       expect(state.phase).toBe('defeat')
-      expect(state.wavesCleared, seed).toBeLessThanOrEqual(2) // 10 HP forgives nothing
-      expect(state.sparksEarned, seed).toBeGreaterThan(0)
+      expect(state.wavesCleared, seed).toBeLessThanOrEqual(1) // the horde forgives nothing
+      // Sparks pay for progress only; doing literally nothing earns nothing.
+      expect(state.sparksEarned, seed).toBe(0)
       // Dying while afk is near-instant in real time: under 45 sim-seconds.
       expect(state.tick, seed).toBeLessThan(45 * 30)
     }
