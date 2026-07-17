@@ -5,7 +5,11 @@ import { expect, test, type Page } from '@playwright/test'
 // canvas clicks, and the dev harness the way a playtester would. Runs are
 // seeded through the harness so every assertion is deterministic.
 
-const CELL = 34
+// Logical grid dimensions (src/data/maps.ts). Cell pixel size is derived
+// from the live bounding box on every click — the canvas is responsive, so
+// a hardcoded pixel size drifts whenever layout shifts (fonts, hint banner).
+const MAP_W = 24
+const MAP_H = 14
 
 declare global {
   interface Window {
@@ -56,9 +60,19 @@ async function boot(page: Page, seed: string) {
   return errors
 }
 
-async function clickCell(page: Page, cx: number, cy: number) {
+async function cellPoint(page: Page, cx: number, cy: number) {
   const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
-  await page.mouse.click(box.x + cx * CELL + CELL / 2, box.y + cy * CELL + CELL / 2)
+  return { x: box.x + ((cx + 0.5) * box.width) / MAP_W, y: box.y + ((cy + 0.5) * box.height) / MAP_H }
+}
+
+async function clickCell(page: Page, cx: number, cy: number) {
+  const p = await cellPoint(page, cx, cy)
+  await page.mouse.click(p.x, p.y)
+}
+
+async function tapCell(page: Page, cx: number, cy: number) {
+  const p = await cellPoint(page, cx, cy)
+  await page.touchscreen.tap(p.x, p.y)
 }
 
 test('boots clean: canvas, HUD, and harness all present, no console errors', async ({ page }) => {
@@ -81,9 +95,10 @@ test('placing a tower via real shop + canvas clicks spends gold', async ({ page 
   await clickCell(page, 7, 5)
   await clickCell(page, 8, 5)
   await clickCell(page, 9, 5)
-  await expect(page.getByTestId('gold')).toContainText('50')
-  const snap = await page.evaluate(() => window.__harness.snapshot())
-  expect(snap.towers).toBe(3)
+  // Commands apply on the session's next animation frame — poll the count
+  // first. (An early toContainText('50') would match the transient '150'.)
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(3)
+  await expect(page.getByTestId('gold')).toHaveText(/^⛀ 50$/)
   // Clicking a tower opens its panel; upgrade button is visible but too
   // expensive right now (50 gold left, upgrade costs 60).
   await page.keyboard.press('Escape')
@@ -278,13 +293,12 @@ test.describe('touch', () => {
   test('tower popups dismiss on touch: ✕ closes the panel, tooltips never stick', async ({ page }) => {
     const errors = await boot(page, 'e2e-touch')
     await page.getByTestId('shop-arrow').tap()
-    const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
-    await page.touchscreen.tap(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+    await tapCell(page, 7, 5)
     await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
 
     // Disarm, then tap the tower: the panel opens and no hover tooltip sticks.
     await page.getByTestId('shop-arrow').tap()
-    await page.touchscreen.tap(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+    await tapCell(page, 7, 5)
     await expect(page.getByTestId('tower-panel')).toBeVisible()
     await expect(page.getByTestId('tower-tooltip')).not.toBeVisible()
 
@@ -293,9 +307,9 @@ test.describe('touch', () => {
     await expect(page.getByTestId('tower-panel')).not.toBeVisible()
 
     // ...and so does tapping empty ground, with no tooltip left behind.
-    await page.touchscreen.tap(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+    await tapCell(page, 7, 5)
     await expect(page.getByTestId('tower-panel')).toBeVisible()
-    await page.touchscreen.tap(box.x + 10 * CELL + CELL / 2, box.y + 9 * CELL + CELL / 2)
+    await tapCell(page, 10, 9)
     await expect(page.getByTestId('tower-panel')).not.toBeVisible()
     await expect(page.getByTestId('tower-tooltip')).not.toBeVisible()
     expect(errors).toEqual([])
@@ -308,12 +322,10 @@ test.describe('mobile viewport', () => {
   test('tower panel is a bottom sheet: buttons stay tappable over the shop', async ({ page }) => {
     const errors = await boot(page, 'e2e-mobile')
     await page.getByTestId('shop-arrow').tap()
-    const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
-    const cell = box.width / 24 // canvas scales down; derive the cell size
-    await page.touchscreen.tap(box.x + 7.5 * cell, box.y + 5.5 * cell)
+    await tapCell(page, 7, 5)
     await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
     await page.getByTestId('shop-arrow').tap() // disarm
-    await page.touchscreen.tap(box.x + 7.5 * cell, box.y + 5.5 * cell)
+    await tapCell(page, 7, 5)
     await expect(page.getByTestId('tower-panel')).toBeVisible()
 
     // Playwright refuses to tap covered controls — these prove the panel
@@ -411,8 +423,7 @@ test('PWA surface: manifest and service worker are served and coherent', async (
 test('save transfer: export a code, wipe, import restores progress', async ({ page }) => {
   const errors = await boot(page, 'e2e-transfer')
   await page.getByTestId('shop-arrow').click()
-  const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
-  await page.mouse.click(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+  await clickCell(page, 7, 5)
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
 
   await page.getByTestId('open-settings').click()
@@ -444,9 +455,8 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
   const errors = await boot(page, 'e2e-hints')
   await expect(page.getByTestId('hint')).toContainText('Pick a tower')
   await page.getByTestId('shop-arrow').click()
-  const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
-  await page.mouse.click(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
-  await page.mouse.click(box.x + 8 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+  await clickCell(page, 7, 5)
+  await clickCell(page, 8, 5)
   await expect(page.getByTestId('hint')).toContainText('Send the wave')
   // Dismiss kills hints permanently, across reloads.
   await page.locator('.hint-close').click()
@@ -460,9 +470,8 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
 test('auto-advance sends the next wave by itself', async ({ page }) => {
   const errors = await boot(page, 'e2e-auto')
   await page.getByTestId('shop-arrow').click()
-  const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
   for (const [cx, cy] of [[4, 5], [4, 7], [5, 5], [5, 7]]) {
-    await page.mouse.click(box.x + cx * CELL + CELL / 2, box.y + cy * CELL + CELL / 2)
+    await clickCell(page, cx!, cy!)
   }
   await page.getByTestId('auto-start').click()
   await page.getByTestId('start-wave').click()

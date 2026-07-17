@@ -31,6 +31,14 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+38. **Test health + Tempered** — root-caused the flaky placement e2e: after
+    one tower, gold reads '150' and `toContainText('50')` matched it early,
+    racing the remaining clicks (commands apply on the session's next
+    animation frame). Now polls tower count then asserts gold exactly —
+    10/10 green. All canvas coordinates derive from the live bounding box
+    (shared cellPoint/clickCell/tapCell helpers). Plus the Tempered
+    achievement: win with a Trial active (+300✦).
+
 37. **Trials** — opt-in run handicaps that pay bonus sparks: Glass Spire
     (half HP, +40%✦), Swift Horde (+15% speed, +25%✦), Iron Horde (+25% HP,
     +35%✦), Famine (−25% gold, +30%✦). Chosen next to the battlefield picker

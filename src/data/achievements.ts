@@ -70,6 +70,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     earned: (run) => run.cataclysms.length >= 2,
   },
   {
+    id: 'tempered',
+    name: 'Tempered',
+    description: 'Win a run with a Trial active.',
+    sparks: 300,
+    earned: (run) => run.victoryClaimed && run.trials.length > 0,
+  },
+  {
     id: 'wave_30',
     name: 'Beyond the Break',
     description: 'Clear wave 30 in a single endless run.',
