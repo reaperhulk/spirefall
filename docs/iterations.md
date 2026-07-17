@@ -38,6 +38,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+62. *(post-marathon, playtest)* **Loupe unbound from the board** — the
+    aim loupe was drawn inside the playfield canvas, and on a phone the
+    board is only ~170 screen px tall: for most cells "above the finger"
+    didn't exist, so the flip-below fallback parked the loupe exactly
+    under the finger (reported in playtest). The loupe is now a separate
+    screen-space canvas overlay that can float over the header/preview
+    area; placement prefers above the finger, falls back right → left →
+    below only if the viewport truly corners it. Fixed screen size (120px,
+    cell magnified to ~46px) at any board scale. E2e now pins the
+    regression: aiming at the board's center cell, the loupe's box must
+    not contain the touch point; it hides on release.
+
 61. *(post-marathon, playtest)* **DPS column, narrower table** — the codex
     tower tables gain a DPS column (per-target, from the same effective
     damage/cooldown helpers, base in parens when modified) while getting

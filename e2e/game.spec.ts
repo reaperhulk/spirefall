@@ -371,12 +371,30 @@ test.describe('touch', () => {
     await page.waitForTimeout(150)
     expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(0)
 
+    // The loupe overlay is visible and NOT under the finger — on phones the
+    // board is too short to host it, so it floats in screen space (it used
+    // to flip below and sit exactly under the touch point at board-center).
+    const loupe = page.getByTestId('placement-loupe')
+    await expect(loupe).toBeVisible()
+    const fingerAtCenter = await cellPoint(page, 12, 7)
+    await firePointer('pointermove', 12, 7)
+    await page.waitForTimeout(100)
+    const loupeBox = (await loupe.boundingBox())!
+    const covers =
+      fingerAtCenter.x >= loupeBox.x &&
+      fingerAtCenter.x <= loupeBox.x + loupeBox.width &&
+      fingerAtCenter.y >= loupeBox.y &&
+      fingerAtCenter.y <= loupeBox.y + loupeBox.height
+    expect(covers, 'loupe must never sit under the finger').toBe(false)
+    await firePointer('pointermove', 5, 7)
+
     // Release: the tower lands on the cell under the loupe — the release
     // cell, not the touch-down cell.
     await firePointer('pointerup', 5, 7)
     await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
     const cell = await page.evaluate(() => window.__harness.getState().towers[0]!.cell)
     expect(cell).toEqual({ cx: 5, cy: 7 })
+    await expect(loupe).not.toBeVisible()
 
     // Disarmed again after checking: quick taps (down+up in place) still
     // place instantly — the existing touch spec covers that path.

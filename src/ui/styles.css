@@ -184,11 +184,26 @@ button:disabled {
   position: relative;
 }
 
+.playfield-wrap {
+  position: relative;
+  width: 100%;
+}
+
 .playfield {
   display: block;
   border: 1px solid #2c3448;
   border-radius: 8px;
   cursor: crosshair;
+}
+
+/* The touch-aim loupe: a screen-space overlay, deliberately NOT clipped to
+   the playfield — on phones the board is too short to host it anywhere the
+   finger isn't. Above the tower panel (8) and tooltips, below modals (10). */
+.placement-loupe {
+  position: absolute;
+  pointer-events: none;
+  z-index: 9;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.6));
 }
 
 .tower-panel {
