@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+44. **Docs + post-relic fuzz audit** — README rewritten for the game as it
+    stands (7 towers, 23 relics, Trials, Cataclysms, meta stack, daily,
+    deep links, fuzzer story). A fresh 216-run fuzz hunt against the new
+    relic pool found NOTHING — zero breaking, zero warnings, best defeats
+    at 21–23 waves across 5k/8k/14k budgets. The repair cap holds.
+
 43. **Relic depth** — three new archetypes: Last Stand (rare: +30% damage
     while the Spire sits at half HP or less — shows as an "active" line in
     the damage breakdown), Shatter (rare: slowed enemies take +20%, making

@@ -1,14 +1,14 @@
 # Spirefall
 
-A rogue-lite incremental tower defense game. Defend the Spire on a real playfield —
+A rogue-lite incremental horde tower defense. Defend the Spire on a real playfield —
 place towers to build mazes, cast abilities, choose relics — and lose. When the Spire
 falls it sheds **Sparks**, permanent currency that makes the next run reach further.
 Failure is the progression loop.
 
 The whole game runs on a pure, deterministic, headless simulation core: a full run is
-just `(meta, seed, commands)`, so replays, save games, bot playtesting, and golden
-tests are all the same mechanism. Strategy bots play entire multi-run careers in CI
-and assert the difficulty curve.
+just `(meta, seed, commands)`, so replays, save games, bot playtesting, golden tests,
+and an evolutionary build fuzzer are all the same mechanism. Strategy bots play entire
+multi-run careers in CI and assert the difficulty curve.
 
 See [PLAN.md](PLAN.md) for the full design and engineering plan, and
 [CLAUDE.md](CLAUDE.md) for dev workflow and architecture rules.
@@ -20,24 +20,35 @@ npm install
 npm run dev     # then open http://localhost:5173
 ```
 
-- **Build**: pick a tower in the shop (hotkeys 1–4), click the field to place.
-  Towers block the path — build mazes. Click a tower to upgrade, sell, or change
-  its targeting.
-- **Fight**: press *Start wave* (or Space). Cast Meteor / Frost Nova (Q/W, then
-  click) and Gold Rush (E) during waves. Watch for wave affixes — Frenzied,
-  Armored, Horde, Vanguard — and for Gale Imps that fly straight over your maze
-  (only Arrows, Teslas, and Snipers can hit air).
-- **Choose**: every 5 waves the ruins offer a relic — run-scoped power with
-  trade-offs.
-- **Fall**: the Spire has just 10 HP and every enemy hits differently — swarmlings
-  chip for 1, brutes crush for 5, a boss leak (8) all but ends an unupgraded run.
-  It knits +1 back each cleared wave, but early on everything kills you easily:
-  first runs die in a couple of minutes. Reinforced Core in the Spire Tree is what
-  makes leaks survivable — then damage, income, and wave-skipping carry you toward
-  wave 24. Expect the climb to take ten or more runs; break the cycle, then push
-  into the endless if you dare. The victory is banked either way.
+- **Build**: pick a tower in the shop (hotkeys 1–7), click the field to place.
+  Towers block the path — build mazes. Seven types: Arrow (2× vs fliers), Cannon
+  (splash), Frost (slows), Tesla (chains), Sniper (pierces shields, 1.5× vs
+  elites), Mint (earns gold each wave), Beacon (amplifies neighbors). Click a
+  tower for its itemized damage breakdown, upgrades, and targeting (six modes,
+  including Weakest and Elite Hunter).
+- **Fight**: press *Start wave* (or Space; ▶▶ auto-advances). The scouting report
+  shows exactly what's coming — counts, total HP, elites, affixes. Cast Meteor /
+  Frost Nova (Q/W, then click), Gold Rush (E), and Bulwark (F) during waves.
+  Watch for fliers that soar over mazes, phasing wraiths, carriers that birth
+  swarmlings, shieldbearers that bounce weak hits, and a different boss every
+  10th wave.
+- **Choose**: every 5 waves the ruins offer a relic (23 in the pool, with
+  rarities, one paid reroll, and a pity floor past wave 15). Skipping pays gold.
+- **Fall**: the Spire has 10 HP and every enemy hits differently — first runs die
+  in minutes. Sparks buy the Spire Tree (12 nodes); victories unlock Ascension,
+  which burns the tree for Embers and permanent Ember Tree upgrades. A dozen
+  achievements pay bounties along the way, and mid-run stats live on the S key.
+- **Push**: clear wave 24 to break the cycle, then dare the endless — every 5th
+  wave past victory strikes a permanent, stacking Cataclysm.
+- **Vary it**: pick your battlefield (5 maps, each with its own look), take an
+  opt-in Trial for bonus sparks (Glass Spire, Swift Horde, Iron Horde, Famine),
+  race the shared **Daily** seed (📅), or share any run as a link with
+  `?seed=<anything>`.
 
-Progress saves to localStorage automatically, mid-run included.
+Progress saves to localStorage automatically, mid-run included; export/import
+codes move it between devices. Installable as a PWA with offline support. Every
+run-over screen offers a copy-paste replay (seed + full command log) for perfect
+bug reports.
 
 ## Testing
 
@@ -47,7 +58,13 @@ npm run test:unit      # engine + harness suites (determinism, balance, goldens)
 npm run test:e2e       # Playwright browser suite against the real UI
 npm run check          # full local gate: lint + typecheck + unit + build
 npm run goldens:update # accept intentional balance changes
+npm run fuzz:builds    # deep evolutionary hunt for curve-breaking builds
 ```
+
+The build fuzzer searches strategy-genome space (tower ratios, relic and meta
+priorities, repair habits) for builds that win far cheaper than the curve allows.
+CI runs a smoke sweep, and past finds are pinned as regression tests — the
+mid-wave repair cap exists because the fuzzer won at 5k sparks without it.
 
 The dev harness is exposed at `window.__harness` in the browser console:
 `setSpeed(10)`, `fastForward(300)`, `snapshot()`, `dispatch(command)`,
@@ -61,8 +78,10 @@ the repository (Settings → Pages → Source: GitHub Actions).
 
 ## Status
 
-**M4 — rogue-lite depth.** Playable game with 6 tower types (incl. the gold-earning
-Mint and long-range Sniper), 9 enemy types (fliers, healers, splitters, bosses),
-wave affixes, 11 relics, abilities, endless mode past the victory wave, the Spire
-Tree meta progression, saves, and a full test harness (unit, determinism, property,
-golden, balance-envelope, perf, and browser E2E suites). See PLAN.md §8.
+**Post-M6, in continuous iteration.** Playable game with 7 tower types, 13 enemy
+types across a boss roster, wave affixes, 23 relics with rarity/reroll/pity, four
+abilities, Trials, endless Cataclysms, the Spire Tree → Ascension → Ember Tree
+meta stack, achievements, daily runs, map select with per-map themes, saves with
+transfer codes, PWA install, deep links, and a full test harness (unit,
+determinism, property, golden, balance-envelope, perf, fuzz, and browser E2E
+suites). `docs/iterations.md` logs the improvement marathon. See PLAN.md §8.
