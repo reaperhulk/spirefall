@@ -38,6 +38,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+64. *(post-marathon, playtest)* **Approach lane** — a two-cell strip
+    OUTSIDE the playfield wall on the spawn side (all six maps spawn on
+    the left edge; verified). During a wave, pending spawns march through
+    it toward the gate at their real speed — slow heavies telegraph ~1.5s
+    early, runners burst in late — so you see what's coming before it can
+    be attacked. Build phase shows the next wave's vanguard dimly forming
+    up (from the same previewNextWave the scouting report uses, cached
+    per wave). Implementation: a SEPARATE canvas left of the playfield,
+    so the playfield's coordinate space (input, e2e cellPoint, the loupe)
+    is completely untouched — the board's own border becomes the wall the
+    horde breaches, which also makes the seam read as intentional. Same
+    proportional scaling on phone and desktop (the wrap is one flex row).
+    Loupe positioning re-anchored to the wrapper; the hover tooltip
+    offset by the lane width. The viewport matrix asserts the lane sits
+    flush with the playfield at equal height on all six sizes. Also this
+    batch: panel ✕ centered (global button padding leaked into the 28px
+    square).
+
 63. *(post-marathon, playtest)* **Sound 3.0: real synthesis voices** — the
     per-action sounds themselves rebuilt (feedback: layering polish wasn't
     enough; oscillator beeps read as programmer art). Two new voices:

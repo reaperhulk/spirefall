@@ -38,7 +38,7 @@ import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
 import { RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
 import { settings, updateSettings } from './settings'
-import type { RenderUiState } from './render'
+import { APPROACH_W, type RenderUiState } from './render'
 import { clearSave, loadSave, persistSave } from './save'
 import { GameSession } from './session'
 
@@ -762,7 +762,7 @@ export default function App() {
             className="tower-tooltip"
             data-testid="tower-tooltip"
             style={{
-              left: Math.min(hoveredTower.cell.cx * 34 + 42, 24 * 34 - 190),
+              left: APPROACH_W + Math.min(hoveredTower.cell.cx * 34 + 42, 24 * 34 - 190),
               top: Math.max(4, hoveredTower.cell.cy * 34 - 10),
             }}
           >

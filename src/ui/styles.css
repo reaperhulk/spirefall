@@ -187,6 +187,18 @@ button:disabled {
 .playfield-wrap {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+/* The approach lane: outside the walls. Borderless on the right so the
+   playfield's own border reads as the wall the horde breaches. */
+.approach-lane {
+  display: block;
+  border: 1px solid #1c2333;
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  background: #07090c;
 }
 
 .playfield {

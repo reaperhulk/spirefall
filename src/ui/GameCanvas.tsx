@@ -1,7 +1,18 @@
 import { useEffect, useRef } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import type { CellPos } from '../engine/types'
-import { CELL_PX, draw, LOUPE_D, LOUPE_GAP, renderLoupe, type RenderUiState, type TouchAim } from './render'
+import {
+  APPROACH_CELLS,
+  APPROACH_W,
+  CELL_PX,
+  draw,
+  drawApproachLane,
+  LOUPE_D,
+  LOUPE_GAP,
+  renderLoupe,
+  type RenderUiState,
+  type TouchAim,
+} from './render'
 import { settings } from './settings'
 import type { GameSession } from './session'
 
@@ -19,6 +30,8 @@ interface Props {
 // renderer; React never re-renders this component per frame.
 export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const laneRef = useRef<HTMLCanvasElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
   const loupeRef = useRef<HTMLCanvasElement>(null)
   const uiRef = useRef(ui)
   // Live touch aim (finger down with a tower/ability armed). A ref, not
@@ -41,6 +54,10 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
     const dpr = window.devicePixelRatio || 1
     canvas.width = MAP_WIDTH * CELL_PX * dpr
     canvas.height = MAP_HEIGHT * CELL_PX * dpr
+    const lane = laneRef.current!
+    const laneCtx = lane.getContext('2d')!
+    lane.width = APPROACH_W * dpr
+    lane.height = MAP_HEIGHT * CELL_PX * dpr
 
     let raf = 0
     let last = performance.now()
@@ -58,6 +75,10 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
       }
       draw(ctx, session, uiRef.current)
       ctx.restore()
+      laneCtx.save()
+      laneCtx.scale(dpr, dpr)
+      drawApproachLane(laneCtx, session, now)
+      laneCtx.restore()
       // The loupe copies from this frame's pixels, so it repaints after.
       if (aimRef.current && loupeRef.current) renderLoupe(loupeRef.current, canvas, aimRef.current, dpr)
       raf = requestAnimationFrame(frame)
@@ -108,10 +129,13 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
       else if (fingerX - LOUPE_GAP - r > 4) cx = fingerX - LOUPE_GAP
       else cy = fingerY + LOUPE_GAP // truly cornered — below beats invisible
     }
-    // Clamp inside the viewport, then convert to canvas-relative offsets.
+    // Clamp inside the viewport, then convert to wrapper-relative offsets
+    // (the wrapper's origin is the approach lane's left edge, not the
+    // playfield's).
     cx = Math.max(r + 4, Math.min(window.innerWidth - r - 4, cx))
-    loupe.style.left = `${cx - r - rect.left}px`
-    loupe.style.top = `${cy - r - rect.top}px`
+    const wrapRect = (wrapRef.current ?? canvas).getBoundingClientRect()
+    loupe.style.left = `${cx - r - wrapRect.left}px`
+    loupe.style.top = `${cy - r - wrapRect.top}px`
     loupe.style.display = 'block'
   }
 
@@ -121,8 +145,19 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
     onHover(null)
   }
 
+  const totalCells = MAP_WIDTH + APPROACH_CELLS
   return (
-    <div className="playfield-wrap" style={{ maxWidth: MAP_WIDTH * CELL_PX }}>
+    <div ref={wrapRef} className="playfield-wrap" style={{ maxWidth: totalCells * CELL_PX }}>
+      <canvas
+        ref={laneRef}
+        className="approach-lane"
+        data-testid="approach-lane"
+        aria-hidden="true"
+        style={{
+          width: `${(100 * APPROACH_CELLS) / totalCells}%`,
+          aspectRatio: `${APPROACH_CELLS} / ${MAP_HEIGHT}`,
+        }}
+      />
       <canvas
         ref={canvasRef}
         className="playfield"
@@ -130,7 +165,7 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
         role="img"
         aria-label="Battlefield — pick a tower, then click a free cell beside the path to build"
         style={{
-          width: '100%',
+          width: `${(100 * MAP_WIDTH) / totalCells}%`,
           aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}`,
           // While armed, a touch drag is aiming — not scrolling the page.
           touchAction: armed ? 'none' : 'auto',
