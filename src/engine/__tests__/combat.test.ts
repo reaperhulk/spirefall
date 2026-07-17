@@ -33,6 +33,7 @@ function tower(overrides: Partial<Tower> = {}): Tower {
     targeting: 'first',
     kills: 0,
     damageDealt: 0,
+    shots: 0,
     ...overrides,
   }
 }

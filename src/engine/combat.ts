@@ -274,6 +274,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     }
 
     tower.cooldown = def.cooldown
+    tower.shots += 1
     events.push({
       type: 'tower_fired',
       id: tower.id,

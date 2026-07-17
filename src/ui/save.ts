@@ -53,6 +53,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
           t.enhance ??= 0
           t.kills ??= 0
           t.damageDealt ??= 0
+          // Pre-`shots` saves: infer "has acted" so old towers don't all
+          // become free full refunds.
+          t.shots ??= t.damageDealt > 0 || t.kills > 0 ? 1 : 0
         }
         for (const e of data.run.enemies) e.healCooldown ??= 0
         data.run.activeAffix ??= null

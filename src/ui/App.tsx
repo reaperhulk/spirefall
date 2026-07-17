@@ -8,6 +8,7 @@ import {
   relicSkipGold,
   REPAIR_MAX_PER_CAST,
   repairCostPerHp,
+  SELL_REFUND_PCT,
   TOWERS,
   towerInvested,
   towerTier,
@@ -446,12 +447,22 @@ export default function App() {
             <button
               className="ghost-btn"
               data-testid="sell-tower"
+              title={
+                selectedTower.shots === 0
+                  ? 'Full refund — this tower has not acted yet'
+                  : `Towers that have acted refund ${SELL_REFUND_PCT}% of gold invested`
+              }
               onClick={() => {
                 session.dispatch({ type: 'sell_tower', id: selectedTower.id })
                 setSelectedTowerId(null)
               }}
             >
-              Sell (⛀ {Math.floor((towerInvested(selectedTower.type, selectedTower.tier) * 70) / 100)})
+              Sell (⛀{' '}
+              {Math.floor(
+                (towerInvested(selectedTower.type, selectedTower.tier) * (selectedTower.shots === 0 ? 100 : SELL_REFUND_PCT)) /
+                  100,
+              )}
+              {selectedTower.shots === 0 && ' · full refund'})
             </button>
           </aside>
         )}

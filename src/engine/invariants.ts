@@ -52,6 +52,8 @@ export function assertInvariants(state: RunState): void {
     check(t.enhance === 0 || t.tier === 3, `tower ${t.id} enhanced before tier 3`)
     check(Number.isInteger(t.kills) && t.kills >= 0, `tower ${t.id} bad kills ${t.kills}`)
     check(Number.isInteger(t.damageDealt) && t.damageDealt >= 0, `tower ${t.id} bad damageDealt`)
+    check(Number.isInteger(t.shots) && t.shots >= 0, `tower ${t.id} bad shots ${t.shots}`)
+    check(t.shots > 0 || (t.kills === 0 && t.damageDealt === 0), `tower ${t.id} has stats without shots`)
   }
   const towerCells = new Set(state.towers.map((t) => cellIndex(map, t.cell)))
   check(towerCells.size === state.towers.length, 'two towers share a cell')

@@ -13,7 +13,7 @@
     "kills": 25,
     "outcome": "defeat",
     "sparks": 49,
-    "stateHash": "c13c249a"
+    "stateHash": "fcc9bdb0"
   },
   "balanced-fresh": {
     "ticks": 1767,
@@ -21,7 +21,7 @@
     "kills": 56,
     "outcome": "defeat",
     "sparks": 69,
-    "stateHash": "ad7c9b70"
+    "stateHash": "dff3cd95"
   },
   "balanced-rich": {
     "ticks": 9544,
@@ -29,6 +29,6 @@
     "kills": 525,
     "outcome": "defeat",
     "sparks": 390,
-    "stateHash": "ac47e5ae"
+    "stateHash": "34e7aa7d"
   }
 }

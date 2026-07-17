@@ -121,6 +121,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
         targeting: 'first',
         kills: 0,
         damageDealt: 0,
+        shots: 0,
       })
       // Placement changed the maze: force enemies to re-path from their cells.
       for (const e of s.enemies) e.targetCell = null
@@ -153,7 +154,10 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       const index = s.towers.findIndex((t) => t.id === command.id)
       if (index === -1) return reject(command, 'no such tower', events)
       const tower = s.towers[index]!
-      const refund = Math.floor((towerInvested(tower.type, tower.tier) * SELL_REFUND_PCT) / 100)
+      // A tower that never acted (no shots; for mints, no payouts) sells for
+      // its full price — misplacements are a free undo until it does something.
+      const refundPct = tower.shots === 0 ? 100 : SELL_REFUND_PCT
+      const refund = Math.floor((towerInvested(tower.type, tower.tier) * refundPct) / 100)
       s.towers.splice(index, 1)
       s.gold += refund
       for (const e of s.enemies) e.targetCell = null // maze opened up; re-path
@@ -318,6 +322,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     const base = towerTier('mint', t.tier).mintYield!
     const amount = Math.floor((base * (100 + s.mods.goldPct + mintBonus + 10 * t.enhance)) / 100)
     s.gold += amount
+    t.shots += 1 // a payout counts as "acting" — the mint no longer sells at 100%
     events.push({ type: 'mint_income', id: t.id, amount })
   }
 

@@ -60,7 +60,7 @@ describe('tower commands', () => {
     expect(hostile.events[0]).toMatchObject({ type: 'command_rejected', reason: 'unknown tower type' })
   })
 
-  it('upgrade and sell round-trip: upgrade costs, sell refunds 70% of invested', () => {
+  it('selling an unfired tower is a free undo: 100% refund, even after upgrades', () => {
     const state = freshRun()
     const cell = buildCandidates(state)[0]!
     let s = step({ ...state, gold: 1000 }, [{ type: 'place_tower', tower: 'arrow', cell }]).state
@@ -70,7 +70,20 @@ describe('tower commands', () => {
     expect(s.gold).toBe(1000 - 50 - 60)
     const sold = step(s, [{ type: 'sell_tower', id }])
     expect(sold.state.towers).toHaveLength(0)
-    expect(sold.state.gold).toBe(1000 - 110 + Math.floor((110 * 70) / 100))
+    expect(sold.state.gold).toBe(1000) // never fired → every coin comes back
+  })
+
+  it('selling a tower that has fired refunds 70% of invested', () => {
+    let s = { ...freshRun(), gold: 1000 }
+    const cell = buildCandidates(s)[0]!
+    s = step(s, [{ type: 'place_tower', tower: 'arrow', cell }]).state
+    const id = s.towers[0]!.id
+    s = step(s, [{ type: 'start_wave' }]).state
+    s = stepUntil(s, (st) => st.towers[0]!.shots > 0, 20_000)
+    expect(s.towers[0]!.shots).toBeGreaterThan(0)
+    const goldBefore = s.gold
+    const sold = step(s, [{ type: 'sell_tower', id }]).state
+    expect(sold.gold).toBe(goldBefore + Math.floor((TOWERS.arrow.tiers[0].cost * 70) / 100))
   })
 
   it('set_targeting validates the mode', () => {
@@ -361,6 +374,7 @@ describe('probability layer', () => {
         targeting: 'first',
         kills: 0,
         damageDealt: 0,
+        shots: 0,
       })
       s.enemies.push({
         id: s.nextEntityId++,
