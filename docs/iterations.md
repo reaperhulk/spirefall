@@ -26,10 +26,14 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 17. Lifetime stats screen
 - [x] 18. Boss variety: distinct boss per boss wave
 - [x] 19. Deep fuzz run + rebalance pass (216-run hunt → mint economy trim)
-- [ ] 20. Death/hit particles, boss entrance, juice pass
+- [x] 20. Death/hit particles, boss entrance, juice pass
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+19. **Juice** — kills burst into shards colored like the fallen (suppressed
+    above 3×), bosses rise with a shockwave nova + name-drop float + ominous
+    two-note sawtooth, wave starts announce themselves quietly.
 
 18. **Achievements** — nine one-shot goals (waves 10/15/20, first victory,
     horde slayer, collector, stormrider, ascendant…) evaluated as pure

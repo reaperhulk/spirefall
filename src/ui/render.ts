@@ -14,6 +14,22 @@ export interface RenderUiState {
   abilitySelection: AbilityId | null
 }
 
+export const ENEMY_COLORS: Record<string, string> = {
+  runner: '#f7768e',
+  swarmling: '#ff9e64',
+  brute: '#db4b4b',
+  shieldbearer: '#c0caf5',
+  flier: '#7aa2f7',
+  healer: '#9ece6a',
+  splitter: '#d19a66',
+  splitling: '#f0a45d',
+  wraith: '#9aa5ce',
+  carrier: '#d16d9e',
+  boss: '#ff007c',
+  boss2: '#c53b53',
+  boss3: '#ffc777',
+}
+
 const COLORS = {
   bg: '#0b0e14',
   gridLine: '#151b28',
@@ -30,21 +46,7 @@ const COLORS = {
     sniper: '#73daca',
     mint: '#e5c07b',
   } as Record<TowerType, string>,
-  enemies: {
-    runner: '#f7768e',
-    swarmling: '#ff9e64',
-    brute: '#db4b4b',
-    shieldbearer: '#c0caf5',
-    flier: '#7aa2f7',
-    healer: '#9ece6a',
-    splitter: '#d19a66',
-    splitling: '#f0a45d',
-    wraith: '#9aa5ce',
-    carrier: '#d16d9e',
-    boss: '#ff007c',
-    boss2: '#c53b53',
-    boss3: '#ffc777',
-  } as Record<string, string>,
+  enemies: ENEMY_COLORS,
   hpBack: '#30354a',
   hpFill: '#9ece6a',
   ghostOk: 'rgba(158, 206, 106, 0.35)',
@@ -923,6 +925,20 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.beginPath()
         ctx.arc(px(fx.at.x), px(fx.at.y), 4 + age * 10, 0, Math.PI * 2)
         ctx.stroke()
+        break
+      }
+      case 'burst': {
+        // Shards flying outward from a kill, colored like the fallen.
+        if (!fx.at) break
+        ctx.fillStyle = fx.color ?? '#ffd76e'
+        ctx.globalAlpha = fade
+        const spin = fx.t0 % (Math.PI * 2)
+        for (let i = 0; i < 5; i++) {
+          const a = spin + (i * Math.PI * 2) / 5
+          const d = 3 + age * 14
+          circle(ctx, px(fx.at.x) + Math.cos(a) * d, px(fx.at.y) + Math.sin(a) * d, Math.max(0.5, 2.4 * fade))
+          ctx.fill()
+        }
         break
       }
       case 'spire_hit': {

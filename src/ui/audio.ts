@@ -8,7 +8,7 @@ import { settings } from './settings'
 
 const MUTE_KEY = 'spirefall-muted'
 
-type SoundKind = 'shot' | 'kill' | 'spire_hit' | 'wave_cleared' | 'victory' | 'defeat' | 'relic' | 'place'
+type SoundKind = 'shot' | 'kill' | 'spire_hit' | 'wave_cleared' | 'victory' | 'defeat' | 'relic' | 'place' | 'boss'
 
 interface Note {
   freq: number
@@ -42,6 +42,10 @@ const SOUNDS: Record<SoundKind, Note[]> = {
     { freq: 1320, dur: 0.14, type: 'sine', gain: 0.06 },
   ],
   place: [{ freq: 220, dur: 0.06, type: 'square', gain: 0.05, sweep: 1.3 }],
+  boss: [
+    { freq: 98, dur: 0.3, type: 'sawtooth', gain: 0.09, sweep: 0.8 },
+    { freq: 73, dur: 0.5, type: 'sawtooth', gain: 0.09, sweep: 0.9 },
+  ],
 }
 
 export class Sfx {
@@ -103,6 +107,9 @@ export class Sfx {
           break
         case 'tower_placed':
           this.play('place')
+          break
+        case 'enemy_spawned':
+          if (e.enemy.startsWith('boss')) this.play('boss')
           break
         default:
           break

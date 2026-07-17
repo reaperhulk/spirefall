@@ -1,4 +1,6 @@
+import { ENEMIES } from '../data/content'
 import { cellCenter, getMap } from '../engine/grid'
+import { ENEMY_COLORS } from './render'
 import { step, TICKS_PER_SECOND } from '../engine/step'
 import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 
@@ -24,6 +26,7 @@ export interface VisualEffect {
     | 'bolt' // arrow: fast small projectile
     | 'arc' // tesla: jagged lightning
     | 'flash' // muzzle flash at the firing tower
+    | 'burst' // death particles
   from?: Vec
   to?: Vec
   at?: Vec
@@ -181,6 +184,7 @@ export class GameSession {
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
           if (this.speed <= 3) {
+            this.effects.push({ kind: 'burst', at: e.at, color: ENEMY_COLORS[e.enemy] ?? '#ffd76e', t0: now, dur: 380 })
             this.effects.push({
               kind: 'float',
               at: e.at,
@@ -200,6 +204,32 @@ export class GameSession {
             t0: now,
             dur: 800,
           })
+          break
+        case 'enemy_spawned':
+          if (e.enemy.startsWith('boss')) {
+            const spawn = cellCenter(getMap(this.state.mapId).spawn)
+            this.effects.push({ kind: 'nova', at: spawn, t0: now, dur: 700 })
+            this.effects.push({
+              kind: 'float',
+              at: { x: 12_000, y: 4_000 },
+              text: `${ENEMIES[e.enemy].name.toUpperCase()} RISES`,
+              color: ENEMY_COLORS[e.enemy] ?? '#ff007c',
+              t0: now,
+              dur: 1500,
+            })
+          }
+          break
+        case 'wave_started':
+          if (this.speed <= 3) {
+            this.effects.push({
+              kind: 'float',
+              at: { x: 12_000, y: 2_000 },
+              text: `WAVE ${e.wave}`,
+              color: '#565f89',
+              t0: now,
+              dur: 900,
+            })
+          }
           break
         case 'cataclysm_struck':
           this.effects.push({
