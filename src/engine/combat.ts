@@ -205,12 +205,15 @@ export function selectTarget(
   candidates: Enemy[],
   map: MapDef,
   field: Int32Array,
+  rangeSq?: number, // when provided, out-of-range candidates are skipped inline
 ): Enemy | null {
   if (candidates.length === 0) return null
   const origin = cellCenter(tower.cell)
   let best: Enemy | null = null
   let bestKey = 0
   for (const e of candidates) {
+    if (e.hp <= 0) continue // shared lists go stale mid-tick as towers kill
+    if (rangeSq !== undefined && distSq(origin, e.pos) > rangeSq) continue
     let key: number
     switch (tower.targeting) {
       case 'first':
@@ -251,6 +254,17 @@ export function beaconAuraPct(state: RunState, tower: Tower): number {
 }
 
 export function towersFire(state: RunState, map: MapDef, field: Int32Array, events: GameEvent[]): void {
+  // Candidate lists are computed ONCE per tick and shared by every tower —
+  // with a full board this kills ~2 array allocations per tower per tick.
+  // Phased wraiths are untargetable by towers (abilities still hit them).
+  const aliveAir: Enemy[] = []
+  const aliveGround: Enemy[] = []
+  for (const e of state.enemies) {
+    if (e.hp <= 0 || e.phased) continue
+    aliveAir.push(e)
+    if (!ENEMIES[e.type].flying) aliveGround.push(e)
+  }
+
   for (const tower of state.towers) {
     if (tower.type === 'mint' || tower.type === 'beacon') continue // support towers don't fight
     if (tower.cooldown > 0) {
@@ -262,10 +276,8 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const origin = cellCenter(tower.cell)
     const range = state.relics.includes('longsight') ? Math.floor((def.range * LONGSIGHT_RANGE_PCT) / 100) : def.range
     const rangeSq = range * range
-    // Phased wraiths are untargetable by towers (abilities still hit them).
-    const alive = state.enemies.filter((e) => e.hp > 0 && !e.phased && (hitsAir || !ENEMIES[e.type].flying))
-    const inRange = alive.filter((e) => distSq(origin, e.pos) <= rangeSq)
-    const target = selectTarget(tower, inRange, map, field)
+    const alive = hitsAir ? aliveAir : aliveGround
+    const target = selectTarget(tower, alive, map, field, rangeSq)
     if (target === null) continue
 
     const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance + beaconAuraPct(state, tower)
@@ -312,6 +324,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
         if (state.relics.includes('heavy_powder')) radius = Math.floor((radius * 130) / 100)
         const radiusSq = radius * radius
         for (const e of alive) {
+          if (e.hp <= 0) continue // killed earlier this tick
           if (e.id === target.id || distSq(target.pos, e.pos) <= radiusSq) {
             hit(e)
             if (e.id !== target.id) hitIds.push(e.id)

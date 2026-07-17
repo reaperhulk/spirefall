@@ -31,6 +31,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+25. **Perf** — towersFire candidate lists hoisted to once-per-tick (was two
+    array allocations per tower per tick); range check inlined into
+    selectTarget. Live-checks preserve exact mid-tick kill semantics —
+    goldens pass byte-identical, proving the refactor pure.
+
 24. **Daily run** — 📅 button starts today's shared seed (UTC-dated, Date
     strictly UI-side); best-of-today tracked locally and shown on the button.
 
