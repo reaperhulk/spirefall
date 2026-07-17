@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { RELICS } from '../data/content'
+import { MAPS } from '../data/maps'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
 import { canAscend, emberGainOnAscend, emberLevel, emberUpgradeCost, metaLevel, metaUpgradeCost } from '../engine/meta'
@@ -200,6 +201,8 @@ export function RunOverOverlay({
   summary,
   meta,
   replay,
+  mapPref,
+  onMapPref,
   onBuy,
   onBuyEmber,
   onAscend,
@@ -208,6 +211,8 @@ export function RunOverOverlay({
   summary: RunSummary
   meta: MetaState
   replay: () => string
+  mapPref: string
+  onMapPref: (v: string) => void
   onBuy: (id: MetaUpgradeId) => void
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
@@ -279,9 +284,22 @@ export function RunOverOverlay({
         <h3>The Spire Tree — ✦ {meta.sparks} available</h3>
         <SpireTree meta={meta} onBuy={onBuy} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
-        <button className="primary-btn" onClick={onNextRun} data-testid="next-run">
-          Begin next run
-        </button>
+        <div className="next-run-row">
+          <label className="map-pick">
+            Battlefield
+            <select data-testid="map-select" value={mapPref} onChange={(e) => onMapPref(e.target.value)}>
+              <option value="random">🎲 Random</option>
+              {MAPS.map((m, i) => (
+                <option key={m.name} value={String(i)}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="primary-btn" onClick={onNextRun} data-testid="next-run">
+            Begin next run
+          </button>
+        </div>
       </div>
     </div>
   )

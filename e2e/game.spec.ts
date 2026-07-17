@@ -146,9 +146,11 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(replay.log.some((c) => c.command.type === 'place_tower')).toBe(true)
   expect(replay.log.some((c) => c.command.type === 'start_wave')).toBe(true)
 
-  // Spend sparks on starting gold, then begin the next run.
+  // Spend sparks on starting gold, pick a battlefield, then begin the next run.
   await page.getByTestId('buy-starting_gold').click()
+  await page.getByTestId('map-select').selectOption('3')
   await page.getByTestId('next-run').click()
+  expect(await page.evaluate(() => window.__harness.getState().mapId)).toBe(3)
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
   expect(snap.wave).toBe(0)

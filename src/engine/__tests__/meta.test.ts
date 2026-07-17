@@ -113,6 +113,19 @@ describe('createRun applies meta', () => {
     const meta = { ...createMeta(), sparks: 50 }
     expect(createRun(meta, 'same')).toEqual(createRun(meta, 'same'))
   })
+
+  it('an explicit map choice overrides the roll without touching anything else', () => {
+    const meta = createMeta()
+    const rolled = createRun(meta, 'map-choice')
+    expect(createRun(meta, 'map-choice', 3).mapId).toBe(3)
+    // Invalid choices fall back to the seed's roll.
+    expect(createRun(meta, 'map-choice', 99).mapId).toBe(rolled.mapId)
+    expect(createRun(meta, 'map-choice', -1).mapId).toBe(rolled.mapId)
+    // The choice must not shift any RNG stream — only the battlefield.
+    const chosen = createRun(meta, 'map-choice', 2)
+    expect(chosen.rng).toEqual(rolled.rng)
+    expect({ ...chosen, mapId: 0 }).toEqual({ ...rolled, mapId: 0 })
+  })
 })
 
 describe('settleRun', () => {

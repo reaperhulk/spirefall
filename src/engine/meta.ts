@@ -130,8 +130,11 @@ export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: Meta
 }
 
 // Snapshot the meta tree into a fresh run. The run never reads meta again.
-export function createRun(meta: MetaState, seed: string): RunState {
+// mapId, when valid, overrides the seed's map roll — player map choice. The
+// roll still always happens, so a chosen map never shifts the other streams.
+export function createRun(meta: MetaState, seed: string, mapId?: number): RunState {
   const mapRoll = nextInt(deriveStream(seed, 'map'), 0, MAPS.length - 1)
+  const chosenMap = mapId !== undefined && Number.isInteger(mapId) && mapId >= 0 && mapId < MAPS.length ? mapId : mapRoll.value
 
   const availableTowers: TowerType[] = ['arrow', 'cannon', 'frost', 'sniper']
   if (metaLevel(meta, 'unlock_tesla') > 0) availableTowers.push('tesla')
@@ -170,7 +173,7 @@ export function createRun(meta: MetaState, seed: string): RunState {
       combat: deriveStream(seed, 'combat'),
       relics: deriveStream(seed, 'relics'),
     },
-    mapId: mapRoll.value,
+    mapId: chosenMap,
     wave: startWave,
     startWave,
     wavesCleared: startWave,

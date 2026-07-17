@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+30. **Map select** — the run-over screen gains a Battlefield picker (🎲
+    Random or any of the five maps, persisted). createRun takes an optional
+    map override that swaps only the battlefield — the roll still burns, so
+    every RNG stream is untouched (unit-proven). Daily runs ignore the
+    preference: everyone shares the daily's rolled map.
+
 29. **Shareable replays** — 🐞 Copy replay on the run-over screen exports
     seed + map + meta snapshot + the full command log as JSON (clipboard +
     visible textarea). Same seed, same commands, same run — every bug report

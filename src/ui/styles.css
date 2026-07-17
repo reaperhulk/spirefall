@@ -594,6 +594,31 @@ button:disabled {
   }
 }
 
+/* Next-run controls: battlefield picker beside the launch button. */
+.next-run-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.map-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8a93ad;
+}
+
+.map-pick select {
+  background: #1a1f2e;
+  color: #d7dce8;
+  border: 1px solid #3b4261;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: inherit;
+}
+
 /* Replay capture: seed + command log for reproducible bug reports. */
 .replay-row {
   display: flex;

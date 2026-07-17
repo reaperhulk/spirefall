@@ -72,6 +72,21 @@ function towerRole(type: TowerType): string {
 const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush', 'bulwark']
 const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'weakest', 'nearest', 'elites']
 
+// Battlefield preference: 'random' keeps the seed's roll; an index pins the
+// map. Daily runs ignore this — everyone shares the daily's rolled map.
+const MAP_PREF_KEY = 'spirefall-map'
+
+function loadMapPref(): string {
+  try {
+    const raw = localStorage.getItem(MAP_PREF_KEY)
+    if (raw !== null && (raw === 'random' || (Number.isInteger(Number(raw)) && Number(raw) >= 0 && Number(raw) < MAPS.length)))
+      return raw
+  } catch {
+    // fall through
+  }
+  return 'random'
+}
+
 export default function App() {
   const [boot] = useState(() => {
     const save = loadSave()
@@ -92,6 +107,11 @@ export default function App() {
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
   const [dailyBest, setDailyBest] = useState<DailyBest | null>(() => loadDailyBest())
+  const [mapPref, setMapPref] = useState<string>(() => loadMapPref())
+  const mapPrefRef = useRef(mapPref)
+  useEffect(() => {
+    mapPrefRef.current = mapPref
+  }, [mapPref])
   const [hintsDismissed, setHintsDismissed] = useState(() => {
     try {
       return localStorage.getItem('spirefall-hints-done') === '1'
@@ -162,7 +182,12 @@ export default function App() {
   }, [session, sfx])
 
   const beginNextRun = (seed?: string) => {
-    const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs))
+    // Daily runs always play the seed's rolled map — the whole point is that
+    // everyone faces the same battlefield.
+    const isDaily = seed === dailySeed()
+    const pref = mapPrefRef.current
+    const mapOverride = !isDaily && pref !== 'random' ? Number(pref) : undefined
+    const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), mapOverride)
     const next = new GameSession(run)
     // Update the ref synchronously: the dev harness (window.__harness) reads
     // sessionRef and may be driven immediately after newRun() returns —
@@ -843,6 +868,16 @@ export default function App() {
           onBuyEmber={buyEmber}
           onAscend={doAscend}
           onNextRun={() => beginNextRun()}
+          mapPref={mapPref}
+          onMapPref={(v) => {
+            setMapPref(v)
+            mapPrefRef.current = v
+            try {
+              localStorage.setItem(MAP_PREF_KEY, v)
+            } catch {
+              // unsaved preference is fine
+            }
+          }}
         />
       )}
       {showSettings && (
