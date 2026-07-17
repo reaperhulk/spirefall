@@ -17,6 +17,7 @@ export type MetaUpgradeId =
   | 'unlock_mint'
   | 'unlock_beacon'
   | 'unlock_gold_rush'
+  | 'unlock_bulwark'
 
 export interface MetaNodeDef {
   id: MetaUpgradeId
@@ -106,6 +107,13 @@ export const META_TREE: MetaNodeDef[] = [
     description: 'Unlock the Gold Rush ability.',
     maxLevel: 1,
     costs: [100],
+  },
+  {
+    id: 'unlock_bulwark',
+    name: 'Aegis Sigil',
+    description: 'Unlock Bulwark — 5 seconds of Spire invulnerability.',
+    maxLevel: 1,
+    costs: [250],
   },
 ]
 

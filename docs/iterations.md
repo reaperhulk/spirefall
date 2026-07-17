@@ -31,6 +31,10 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+23. **Bulwark** — 4th ability (Aegis Sigil unlock, 250 sparks): 5s of total
+    spire invulnerability on a 40s cooldown, hotkey F. Golden shell renders
+    while active; bots cast it under pressure; arrivals absorbed to 0.
+
 22. **Hit feedback** — struck enemies flash white for 110ms (render-side hit
     map fed by tower_fired targets); shielded enemies wear a ⛨N label showing
     the block threshold, so bounced shots explain themselves.

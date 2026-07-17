@@ -47,7 +47,7 @@ function towerRole(type: TowerType): string {
   if (type === 'beacon') return 'support — amplifies towers in range, never fires'
   return 'ground only — cannot hit fliers'
 }
-const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush']
+const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush', 'bulwark']
 const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'nearest']
 
 export default function App() {
@@ -289,12 +289,13 @@ export default function App() {
         }
         return
       }
-      const abilityIdx = ['q', 'w', 'e'].indexOf(e.key.toLowerCase())
+      const abilityIdx = ['q', 'w', 'e', 'f'].indexOf(e.key.toLowerCase())
       if (abilityIdx !== -1) {
         const ability = ABILITY_KEYS[abilityIdx]!
         const s = sessionRef.current.state
         if (ability in s.abilities && s.abilities[ability] === 0 && s.phase === 'wave') {
-          if (ability === 'gold_rush') sessionRef.current.dispatch({ type: 'cast_ability', ability, cell: { cx: 0, cy: 0 } })
+          if (ability === 'gold_rush' || ability === 'bulwark')
+            sessionRef.current.dispatch({ type: 'cast_ability', ability, cell: { cx: 0, cy: 0 } })
           else {
             setAbilitySelection((cur) => (cur === ability ? null : ability))
             setShopSelection(null)
@@ -718,9 +719,10 @@ export default function App() {
                 className={`ability-btn${abilitySelection === ability ? ' selected' : ''}`}
                 data-testid={`ability-${ability}`}
                 disabled={!ready}
-                title={`Hotkey ${['Q', 'W', 'E'][i]}`}
+                title={`Hotkey ${['Q', 'W', 'E', 'F'][i]}`}
                 onClick={() => {
-                  if (ability === 'gold_rush') session.dispatch({ type: 'cast_ability', ability, cell: { cx: 0, cy: 0 } })
+                  if (ability === 'gold_rush' || ability === 'bulwark')
+                    session.dispatch({ type: 'cast_ability', ability, cell: { cx: 0, cy: 0 } })
                   else {
                     setAbilitySelection((cur) => (cur === ability ? null : ability))
                     setShopSelection(null)
@@ -728,7 +730,7 @@ export default function App() {
                 }}
               >
                 {ABILITIES[ability].name}
-                <kbd className="key-hint">{['Q', 'W', 'E'][i]}</kbd>
+                <kbd className="key-hint">{['Q', 'W', 'E', 'F'][i]}</kbd>
                 {cd > 0 && <span className="cooldown">{Math.ceil(cd / 30)}s</span>}
               </button>
             )

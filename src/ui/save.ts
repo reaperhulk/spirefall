@@ -107,6 +107,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.startWave ??= 0
         data.run.cataclysms ??= []
         data.run.relicRerolled ??= false
+        data.run.bulwarkTicks ??= 0
         data.run.damageByTower ??= {}
         data.run.killsByEnemy ??= {}
         data.run.mods.critChancePct ??= 0

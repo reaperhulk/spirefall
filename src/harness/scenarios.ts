@@ -22,6 +22,7 @@ export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
   'gold_income',
   'wave_skip',
   'unlock_gold_rush',
+  'unlock_bulwark',
   'crit_chance',
   'spark_gain',
 ]

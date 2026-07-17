@@ -140,6 +140,7 @@ export function createRun(meta: MetaState, seed: string): RunState {
 
   const abilities: Record<string, number> = { meteor: 0, frost_nova: 0 }
   if (metaLevel(meta, 'unlock_gold_rush') > 0) abilities['gold_rush' satisfies AbilityId] = 0
+  if (metaLevel(meta, 'unlock_bulwark') > 0) abilities['bulwark' satisfies AbilityId] = 0
 
   const spireHp =
     STARTING_SPIRE_HP +
@@ -185,6 +186,7 @@ export function createRun(meta: MetaState, seed: string): RunState {
     pendingSpawns: [],
     abilities,
     goldRushTicks: 0,
+    bulwarkTicks: 0,
     relics: [],
     relicOffer: null,
     relicRerolled: false,

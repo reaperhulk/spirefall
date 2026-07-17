@@ -21,7 +21,7 @@ export type EnemyType =
   | 'boss'
   | 'boss2'
   | 'boss3'
-export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush'
+export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush' | 'bulwark'
 export type RelicId =
   | 'piercing_arrows'
   | 'heavy_powder'
@@ -133,6 +133,7 @@ export interface RunState {
   pendingSpawns: PendingSpawn[]
   abilities: Record<string, number> // AbilityId -> cooldown remaining; keys = equipped
   goldRushTicks: number
+  bulwarkTicks: number // spire invulnerability window (ability)
   relics: RelicId[]
   relicOffer: RelicId[] | null
   relicRerolled: boolean // one reroll per offer

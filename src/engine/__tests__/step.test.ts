@@ -6,6 +6,7 @@ import { cloneRun } from '../clone'
 import { drawRelicOffer } from '../combat'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
+import { cellCenter, getMap } from '../grid'
 import { previewNextWave, step } from '../step'
 import type { RunState } from '../types'
 
@@ -671,5 +672,49 @@ describe('threat estimate', () => {
         s = cloneRun(started)
       }
     }
+  })
+})
+
+describe('bulwark', () => {
+  it('absorbs arrivals entirely while active, then expires', () => {
+    const s = cloneRun(freshRun('bulwark'))
+    s.abilities['bulwark'] = 0
+    s.phase = 'wave'
+    s.wave = 1
+    s.spireHp = 10
+    s.spireMaxHp = 10
+    const map = getMap(s.mapId)
+    // A boss standing on the spire cell arrives next tick for 8 damage.
+    s.enemies.push({
+      id: s.nextEntityId++,
+      type: 'boss',
+      pos: cellCenter(map.spire),
+      hp: 500,
+      maxHp: 500,
+      speed: 46,
+      slowFactor: 100,
+      slowTicks: 0,
+      bounty: 40,
+      damage: 8,
+      shield: 0,
+      healCooldown: 0,
+      broodCooldown: 0,
+      phased: false,
+      phaseCooldown: 0,
+      targetCell: null,
+    })
+    const shielded = step(s, [{ type: 'cast_ability', ability: 'bulwark', cell: map.spire }]).state
+    expect(shielded.spireHp).toBe(10) // absorbed
+    expect(shielded.bulwarkTicks).toBeGreaterThan(0)
+    expect(shielded.abilities['bulwark']).toBeGreaterThan(0) // on cooldown
+
+    // Without the sigil, the same arrival hurts (then the clear knits +1).
+    const bare = step(s, []).state
+    expect(bare.spireHp).toBe(10 - 8 + 1)
+
+    // The window expires on its own.
+    let expiring = shielded
+    for (let i = 0; i < 200 && expiring.bulwarkTicks > 0; i++) expiring = step(expiring, []).state
+    expect(expiring.bulwarkTicks).toBe(0)
   })
 })

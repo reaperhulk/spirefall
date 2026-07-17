@@ -87,6 +87,7 @@ export function assertInvariants(state: RunState): void {
     'pendingSpawns outside of a wave',
   )
 
+  check(Number.isInteger(state.bulwarkTicks) && state.bulwarkTicks >= 0, 'bad bulwarkTicks')
   for (const [ability, cd] of Object.entries(state.abilities)) {
     check(Number.isInteger(cd) && cd >= 0, `ability ${ability} cooldown ${cd}`)
   }

@@ -200,6 +200,9 @@ export function waveActions(state: RunState, waveRepairPct = 50): Command[] {
   if ((state.abilities['gold_rush'] ?? 1) === 0 && alive >= 10) {
     return [{ type: 'cast_ability', ability: 'gold_rush', cell: map.spawn }]
   }
+  if ((state.abilities['bulwark'] ?? 1) === 0 && state.spireHp <= Math.max(2, state.spireMaxHp / 3) && alive >= 4) {
+    return [{ type: 'cast_ability', ability: 'bulwark', cell: map.spire }]
+  }
   return []
 }
 

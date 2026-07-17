@@ -249,6 +249,16 @@ function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, 
   ctx.lineTo(cx - r * 0.32, cy)
   ctx.closePath()
   ctx.fill()
+  // Bulwark: a hard golden shell while the sigil burns.
+  if (state.bulwarkTicks > 0) {
+    ctx.strokeStyle = '#e5c07b'
+    ctx.lineWidth = 3
+    ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t0 * 0.3)
+    circle(ctx, cx, cy, r * 1.35)
+    ctx.stroke()
+    ctx.globalAlpha = 1
+    ctx.lineWidth = 1
+  }
   if (hpFrac > 0.3) {
     const a = t0 * 0.06
     ctx.fillStyle = '#7dcfff'

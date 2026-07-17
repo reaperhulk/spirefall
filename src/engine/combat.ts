@@ -174,7 +174,8 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
     const stoneskin = state.relics.includes('stoneskin')
     state.enemies = state.enemies.filter((e) => {
       if (!arrived.includes(e.id)) return true
-      const damage = stoneskin ? Math.max(1, e.damage - 1) : e.damage
+      // Bulwark: the spire absorbs arrivals entirely while the sigil burns.
+      const damage = state.bulwarkTicks > 0 ? 0 : stoneskin ? Math.max(1, e.damage - 1) : e.damage
       state.spireHp = Math.max(0, state.spireHp - damage)
       events.push({ type: 'enemy_reached_spire', id: e.id, enemy: e.type, damage, spireHp: state.spireHp })
       return false
@@ -399,6 +400,10 @@ export function castAbility(
       state.goldRushTicks = def.durationTicks!
       break
     }
+    case 'bulwark': {
+      state.bulwarkTicks = def.durationTicks!
+      break
+    }
   }
   let cooldown = def.cooldown
   if (state.relics.includes('overclock')) cooldown = Math.floor((cooldown * 75) / 100)
@@ -430,6 +435,7 @@ export function tickStatuses(state: RunState): void {
     if (cd > 0) state.abilities[key] = cd - 1
   }
   if (state.goldRushTicks > 0) state.goldRushTicks -= 1
+  if (state.bulwarkTicks > 0) state.bulwarkTicks -= 1
 }
 
 // Carriers hatch broods of lesser enemies at their own position while alive.

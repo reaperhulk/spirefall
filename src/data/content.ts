@@ -196,6 +196,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   meteor: { name: 'Meteor', cooldown: 600, radius: 1500, damage: 120 },
   frost_nova: { name: 'Frost Nova', cooldown: 450, radius: 2000, slowFactor: 55, slowTicks: 90 },
   gold_rush: { name: 'Gold Rush', cooldown: 900, radius: 0, durationTicks: 300 },
+  bulwark: { name: 'Bulwark', cooldown: 1200, radius: 0, durationTicks: 150 },
 }
 
 // ---------------------------------------------------------------------------
