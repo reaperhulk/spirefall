@@ -10,8 +10,11 @@ import {
   COLOSSUS_DAMAGE_PCT,
   FORTUNE_IDOL_CHANCE_PCT,
   GLASS_CANNON_PCT,
+  LAST_STAND_PCT,
   LONGSIGHT_RANGE_PCT,
   QUICKDRAW_COOLDOWN_PCT,
+  SHATTER_BONUS_PCT,
+  SOUL_HARVEST_EVERY_KILLS,
   RELIC_PITY_WAVE,
   RELIC_RARITY_WEIGHTS,
   RELICS,
@@ -34,6 +37,7 @@ export function effectiveDamagePct(state: RunState, tower: Tower['type']): numbe
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += PIERCING_ARROWS_PCT
   if (state.relics.includes('glass_cannon')) pct += GLASS_CANNON_PCT
   if (state.relics.includes('colossus')) pct += COLOSSUS_DAMAGE_PCT
+  if (state.relics.includes('last_stand') && state.spireHp * 2 <= state.spireMaxHp) pct += LAST_STAND_PCT
   // Stacked Dampening cataclysms can drive mods negative; towers never go
   // below a tenth of their base output.
   return Math.max(10, pct)
@@ -59,6 +63,8 @@ export function damageBreakdown(
     parts.push({ source: 'Piercing Arrows (relic)', pct: PIERCING_ARROWS_PCT })
   if (state.relics.includes('glass_cannon')) parts.push({ source: 'Glass Cannon (relic)', pct: GLASS_CANNON_PCT })
   if (state.relics.includes('colossus')) parts.push({ source: 'Colossus (relic)', pct: COLOSSUS_DAMAGE_PCT })
+  if (state.relics.includes('last_stand') && state.spireHp * 2 <= state.spireMaxHp)
+    parts.push({ source: 'Last Stand (relic, active)', pct: LAST_STAND_PCT })
   if (tower.enhance > 0) parts.push({ source: `Enhance +${tower.enhance}`, pct: ENHANCE_DAMAGE_PCT * tower.enhance })
   const aura = beaconAuraPct(state, tower)
   if (aura > 0) parts.push({ source: 'Beacon aura', pct: aura })
@@ -310,8 +316,9 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // Shields judge a shot by its HONEST (pre-crit) weight: a lucky crit
     // never slips a light shot through — piercing or heavy hits only.
     const pierceShield = tower.type === 'sniper'
+    const shatter = state.relics.includes('shatter')
     const hit = (enemy: Enemy): void => {
-      const bonus = bonusPctVs(tower.type, enemy)
+      const bonus = bonusPctVs(tower.type, enemy) + (shatter && enemy.slowTicks > 0 ? SHATTER_BONUS_PCT : 0)
       const preCrit = bonus > 0 ? Math.floor((baseDamage * (100 + bonus)) / 100) : baseDamage
       if (!pierceShield && preCrit <= enemy.shield) return // fully blocked
       const dmg = crit ? Math.floor((preCrit * critPct) / 100) : preCrit
@@ -552,6 +559,15 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     state.kills += 1
     state.killsByEnemy[e.type] = (state.killsByEnemy[e.type] ?? 0) + 1
     events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty, lucky })
+    // Soul Harvest: the horde's own mass mends the walls, one drop at a time.
+    if (
+      state.relics.includes('soul_harvest') &&
+      state.kills % SOUL_HARVEST_EVERY_KILLS === 0 &&
+      state.spireHp < state.spireMaxHp
+    ) {
+      state.spireHp += 1
+      events.push({ type: 'spire_repaired', amount: 1, cost: 0, spireHp: state.spireHp })
+    }
 
     // Splitters burst into shards where they fell.
     const split = ENEMIES[e.type].splitInto

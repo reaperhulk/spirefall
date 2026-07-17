@@ -53,6 +53,8 @@ export const RELIC_PRIORITY: RelicId[] = [
   'colossus',
   'spark_siphon',
   'glass_cannon',
+  'last_stand',
+  'shatter',
   'piercing_arrows',
   'quickdraw',
   'longsight',
@@ -69,6 +71,7 @@ export const RELIC_PRIORITY: RelicId[] = [
   'winters_grip',
   'overclock',
   'mint_condition',
+  'soul_harvest',
   'golden_touch',
 ]
 

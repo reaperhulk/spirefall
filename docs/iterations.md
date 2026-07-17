@@ -31,6 +31,13 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+43. **Relic depth** — three new archetypes: Last Stand (rare: +30% damage
+    while the Spire sits at half HP or less — shows as an "active" line in
+    the damage breakdown), Shatter (rare: slowed enemies take +20%, making
+    frost a real damage partner), Soul Harvest (legendary: every 100th kill
+    knits +1 HP — sustain that scales with the horde). Pool is now 23.
+    Goldens re-pinned: balanced-fresh 13→14 waves; envelope green.
+
 42. **Deep links** — ?seed=&lt;x&gt; boots straight into that run (shareable
     challenges, one-click bug repros) and ?daily=1 into today's shared
     seed; meta carries over, the param strips itself so reloads resume

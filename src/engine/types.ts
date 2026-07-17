@@ -43,6 +43,9 @@ export type RelicId =
   | 'deep_pockets'
   | 'echo_chamber'
   | 'colossus'
+  | 'last_stand'
+  | 'shatter'
+  | 'soul_harvest'
 
 export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 

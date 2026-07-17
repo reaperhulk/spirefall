@@ -3,7 +3,7 @@ import { ENHANCE_COST_GROWTH_PCT, RELIC_IDS, RELIC_PITY_WAVE, RELICS, relicSkipG
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
-import { drawRelicOffer } from '../combat'
+import { damageBreakdown, drawRelicOffer, effectiveDamagePct } from '../combat'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
 import { cellCenter, getMap } from '../grid'
@@ -343,6 +343,47 @@ describe('relics', () => {
     // At full health it stays full.
     const full = step(base, [{ type: 'choose_relic', relic: 'golden_touch' }]).state
     expect(full.spireHp).toBe(full.spireMaxHp)
+  })
+
+  it('last_stand arms only while the spire is at half HP or less', () => {
+    const healthy = { ...cloneRun(freshRun('last-stand')), relics: ['last_stand'] as RunState['relics'], spireHp: 6, spireMaxHp: 10 }
+    expect(effectiveDamagePct(healthy, 'arrow')).toBe(100)
+    const bleeding = { ...cloneRun(healthy), spireHp: 5 }
+    expect(effectiveDamagePct(bleeding, 'arrow')).toBe(130)
+    // The itemized breakdown shows the active bonus and matches the math.
+    const tower = { id: 1, type: 'arrow' as const, cell: { cx: 0, cy: 0 }, tier: 1 as const, cooldown: 0, kills: 0, damageDealt: 0, targeting: 'first' as const, enhance: 0, shots: 0 }
+    expect(damageBreakdown(bleeding, tower).totalPct).toBe(130)
+    expect(damageBreakdown(healthy, tower).totalPct).toBe(100)
+  })
+
+  it('shatter punishes slowed enemies; soul_harvest knits on the 100th kill', () => {
+    // Shatter: identical duel, but the slowed copy takes +20%.
+    const duel = (slowTicks: number) => {
+      const s = cloneRun(freshRun('shatter-duel'))
+      s.phase = 'wave'
+      s.wave = 1
+      s.relics = ['shatter']
+      s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
+      s.towers.push({ id: s.nextEntityId++, type: 'arrow', cell: { cx: 6, cy: 4 }, tier: 1, cooldown: 0, kills: 0, damageDealt: 0, targeting: 'first', enhance: 0, shots: 0 })
+      s.enemies.push({ id: s.nextEntityId++, type: 'brute', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1000, maxHp: 1000, speed: 0, slowFactor: slowTicks > 0 ? 60 : 100, slowTicks, bounty: 3, damage: 3, shield: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
+      return step(s, []).state.towers[0]!.damageDealt
+    }
+    const plain = duel(0)
+    const slowed = duel(50)
+    expect(slowed).toBe(Math.floor((plain * 120) / 100))
+
+    // Soul Harvest: the 100th kill knits +1.
+    const s = cloneRun(freshRun('harvest'))
+    s.relics = ['soul_harvest']
+    s.kills = 99
+    s.spireHp = 5
+    s.phase = 'wave'
+    s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
+    s.towers.push({ id: s.nextEntityId++, type: 'sniper', cell: { cx: 6, cy: 4 }, tier: 3, cooldown: 0, kills: 0, damageDealt: 0, targeting: 'first', enhance: 0, shots: 0 })
+    s.enemies.push({ id: s.nextEntityId++, type: 'runner', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1, maxHp: 1, speed: 0, slowFactor: 100, slowTicks: 0, bounty: 1, damage: 1, shield: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
+    const after = step(s, []).state
+    expect(after.kills).toBe(100)
+    expect(after.spireHp).toBe(6)
   })
 
   it('choosing nothing pays wave-scaled gold; bogus picks are rejected', () => {

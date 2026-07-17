@@ -231,6 +231,9 @@ export const RELICS: Record<RelicId, RelicDef> = {
   deep_pockets: { name: 'Deep Pockets', description: '+25% gold from wave clears.', rarity: 'common' },
   echo_chamber: { name: 'Echo Chamber', description: 'Tesla chains hop +1 target and 20% further.', rarity: 'rare' },
   colossus: { name: 'Colossus', description: 'All towers deal +25% damage. No catch.', rarity: 'legendary' },
+  last_stand: { name: 'Last Stand', description: 'All towers deal +30% damage while the Spire is at half HP or less.', rarity: 'rare' },
+  shatter: { name: 'Shatter', description: 'Slowed enemies take +20% damage.', rarity: 'rare' },
+  soul_harvest: { name: 'Soul Harvest', description: 'Every 100th kill knits the Spire +1 HP.', rarity: 'legendary' },
 }
 
 export const RELIC_IDS = Object.keys(RELICS) as RelicId[]
@@ -266,6 +269,10 @@ export function relicSkipGold(wave: number): number {
 
 export const PIERCING_ARROWS_PCT = 40 // relic: arrow damage bonus
 export const GLASS_CANNON_PCT = 30 // relic: all-tower damage bonus
+
+export const LAST_STAND_PCT = 30 // relic: damage while the spire is at half HP or less
+export const SHATTER_BONUS_PCT = 20 // relic: bonus vs slowed enemies
+export const SOUL_HARVEST_EVERY_KILLS = 100 // relic: kills per +1 HP knit
 
 export const CRIT_BASE_DAMAGE_PCT = 200 // a crit deals this % of normal damage
 export const CRIT_RELIC_CHANCE_PCT = 10 // keen_sights
