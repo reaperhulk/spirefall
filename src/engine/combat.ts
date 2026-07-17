@@ -475,9 +475,16 @@ export function tickStatuses(state: RunState): void {
       }
     }
   }
-  for (const key of Object.keys(state.abilities)) {
-    const cd = state.abilities[key]!
-    if (cd > 0) state.abilities[key] = cd - 1
+  // Ability cooldowns recover ONLY while a wave is live. Abilities cannot be
+  // cast in the build phase, so build-time recovery meant any unhurried
+  // player had everything ready every wave — cooldown durations (and every
+  // cooldown-reduction pickup) were dead stats. Combat-only recovery makes
+  // cooldown time a real in-fight resource at every play speed.
+  if (state.phase === 'wave') {
+    for (const key of Object.keys(state.abilities)) {
+      const cd = state.abilities[key]!
+      if (cd > 0) state.abilities[key] = cd - 1
+    }
   }
   if (state.goldRushTicks > 0) state.goldRushTicks -= 1
   if (state.bulwarkTicks > 0) state.bulwarkTicks -= 1

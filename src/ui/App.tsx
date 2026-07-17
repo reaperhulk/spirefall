@@ -922,9 +922,9 @@ export default function App() {
             const maxCd = effectiveAbilityCooldown(state, ability)
             const baseCd = ABILITIES[ability].cooldown
             const cdNote =
-              maxCd < baseCd
+              (maxCd < baseCd
                 ? `${Math.round(maxCd / 30)}s cooldown (base ${Math.round(baseCd / 30)}s — reduced by ${state.relics.includes('overclock') ? 'Overclock' : ''}${state.relics.includes('overclock') && state.mods.abilityCdPct > 0 ? ' + ' : ''}${state.mods.abilityCdPct > 0 ? 'Swift Sigils' : ''})`
-                : `${Math.round(baseCd / 30)}s cooldown`
+                : `${Math.round(baseCd / 30)}s cooldown`) + ' · recovers during waves'
             return (
               <button
                 key={ability}
@@ -944,7 +944,9 @@ export default function App() {
                 {ABILITIES[ability].name}
                 <kbd className="key-hint">{['Q', 'W', 'E', 'F'][i]}</kbd>
                 <span className="cooldown">
-                  {cd > 0 ? `${Math.ceil(cd / 30)}/${Math.round(maxCd / 30)}s` : `${Math.round(maxCd / 30)}s`}
+                  {cd > 0
+                    ? `${Math.ceil(cd / 30)}/${Math.round(maxCd / 30)}s${state.phase !== 'wave' ? ' ⏸' : ''}`
+                    : `${Math.round(maxCd / 30)}s`}
                 </span>
               </button>
             )

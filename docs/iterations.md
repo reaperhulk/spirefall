@@ -38,6 +38,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+52. *(post-marathon, playtest)* **Cooldowns made real** — root cause of
+    "cooldown reductions feel ignorable": abilities can't be CAST in the
+    build phase, but their cooldowns RECOVERED there, so any unhurried
+    player had everything ready every wave and CDR was a dead stat. Ability
+    cooldowns now recover only while a wave is live (⏸ shown in build, one
+    new unit test; goldens hash-only — bots never idled, outcomes byte-
+    identical). Display: single-source-of-truth helpers for effective
+    tower/ability cooldowns; tooltips show true fire rate (the old one
+    ignored Quickdraw entirely), effective DPS, itemized fire-rate line,
+    and ability buttons show remaining/max with reduction sources. Swift
+    Sigils repriced 3/6 → 2/4 embers.
+
 51. *(post-marathon, playtest)* **Armor** — playtest: "arrows still make it
     to wave 20 with very little trouble." Measurement agreed: arrow-only
     tracked the balanced comp wave-for-wave to ~21 and only then hit the

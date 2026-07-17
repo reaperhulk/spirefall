@@ -291,6 +291,29 @@ describe('gold sinks', () => {
 })
 
 describe('abilities', () => {
+  it('cooldowns recover only while a wave is live — build-phase planning is not a refill', () => {
+    let s = cloneRun(freshRun('cd-recovery'))
+    s.phase = 'wave'
+    s.wave = 1
+    s.spireHp = 1000
+    s.spireMaxHp = 1000
+    s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
+    s.abilities['meteor'] = 100
+    // Mid-wave: ticking down.
+    s = step(s, []).state
+    expect(s.abilities['meteor']).toBe(99)
+    // Build phase: frozen, no matter how long you ponder.
+    s.phase = 'build'
+    s.pendingSpawns = []
+    for (let i = 0; i < 50; i++) s = step(s, []).state
+    expect(s.abilities['meteor']).toBe(99)
+    // Back under fire: recovery resumes.
+    s.phase = 'wave'
+    s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
+    s = step(s, []).state
+    expect(s.abilities['meteor']).toBe(98)
+  })
+
   it('meteor kills a cluster and goes on cooldown; casting again is rejected', () => {
     const state = freshRun()
     let s = step(state, [{ type: 'start_wave' }]).state

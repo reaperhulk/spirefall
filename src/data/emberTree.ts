@@ -59,7 +59,7 @@ export const EMBER_TREE: EmberNodeDef[] = [
     name: 'Swift Sigils',
     description: 'Ability cooldowns −10% per level — forever.',
     maxLevel: 2,
-    costs: [3, 6],
+    costs: [2, 4],
   },
 ]
 

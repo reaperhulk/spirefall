@@ -267,8 +267,9 @@ describe('ascension', () => {
     // The discount lands when an ability actually goes on cooldown.
     const live = { ...cloneRun(run), phase: 'wave' as const, wave: 1 }
     const cast = step(live, [{ type: 'cast_ability', ability: 'frost_nova', cell: { cx: 5, cy: 5 } }]).state
-    // −1: the cast's own tick already counted down once.
-    expect(cast.abilities['frost_nova']).toBe(Math.floor((ABILITIES.frost_nova.cooldown * 90) / 100) - 1)
+    // The empty synthetic wave clears within this same step, so no combat
+    // tick elapses — the cooldown sits at its full reduced value.
+    expect(cast.abilities['frost_nova']).toBe(Math.floor((ABILITIES.frost_nova.cooldown * 90) / 100))
   })
 })
 
