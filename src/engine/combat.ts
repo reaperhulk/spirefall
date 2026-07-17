@@ -59,6 +59,8 @@ export function damageBreakdown(
   if (state.relics.includes('glass_cannon')) parts.push({ source: 'Glass Cannon (relic)', pct: GLASS_CANNON_PCT })
   if (state.relics.includes('colossus')) parts.push({ source: 'Colossus (relic)', pct: COLOSSUS_DAMAGE_PCT })
   if (tower.enhance > 0) parts.push({ source: `Enhance +${tower.enhance}`, pct: ENHANCE_DAMAGE_PCT * tower.enhance })
+  const aura = beaconAuraPct(state, tower)
+  if (aura > 0) parts.push({ source: 'Beacon aura', pct: aura })
   const totalPct = 100 + parts.reduce((sum, p) => sum + p.pct, 0)
   return { base, parts, totalPct, effective: Math.floor((base * totalPct) / 100) }
 }
@@ -234,9 +236,22 @@ export function selectTarget(
 // ---------------------------------------------------------------------------
 // Firing
 
+// The strongest beacon aura covering a tower's cell (non-stacking).
+export function beaconAuraPct(state: RunState, tower: Tower): number {
+  let best = 0
+  const at = cellCenter(tower.cell)
+  for (const b of state.towers) {
+    if (b.type !== 'beacon' || b.id === tower.id) continue
+    const def = towerTier('beacon', b.tier)
+    const reach = def.range
+    if (distSq(cellCenter(b.cell), at) <= reach * reach) best = Math.max(best, def.auraPct!)
+  }
+  return best
+}
+
 export function towersFire(state: RunState, map: MapDef, field: Int32Array, events: GameEvent[]): void {
   for (const tower of state.towers) {
-    if (tower.type === 'mint') continue // mints earn, they don't fight
+    if (tower.type === 'mint' || tower.type === 'beacon') continue // support towers don't fight
     if (tower.cooldown > 0) {
       tower.cooldown -= 1
       continue
@@ -252,7 +267,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const target = selectTarget(tower, inRange, map, field)
     if (target === null) continue
 
-    const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance
+    const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance + beaconAuraPct(state, tower)
     const baseDamage = Math.floor((def.damage * pct) / 100)
 
     // One crit roll per shot: a critical cannon shell crits its whole splash,

@@ -18,7 +18,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 9. Mobile: PWA manifest + offline service worker + install icons
 - [x] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
 - [x] 11. Relic depth: rarity tiers, more relics, reroll option
-- [ ] 12. New tower type (7th) with unlock node + hotkey 7
+- [x] 12. New tower type (7th): the Beacon support pylon
 - [x] 13. Save export/import codes
 - [x] 14. Achievements with spark rewards
 - [x] 15. Wave preview enrichment: threat estimate, elite marks
@@ -30,6 +30,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+20. **Beacon** — 7th tower, first support archetype: a pylon that amplifies
+    towers within its radius (+12/18/25% by tier, strongest-only, never
+    stacking so beacon farms can't dominate). Signal Fires unlock node,
+    hotkey 7, rotating-halo rendering, aura itemized in damage breakdowns,
+    wired into bots + the fuzzer's genome space. Fuzz smoke clean.
 
 19. **Juice** — kills burst into shards colored like the fallen (suppressed
     above 3×), bosses rise with a shockwave nova + name-drop float + ominous

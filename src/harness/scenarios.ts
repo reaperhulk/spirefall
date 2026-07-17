@@ -18,6 +18,7 @@ export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
   'tower_damage',
   'starting_gold',
   'unlock_mint',
+  'unlock_beacon',
   'gold_income',
   'wave_skip',
   'unlock_gold_rush',

@@ -66,6 +66,7 @@ export interface TowerTierDef {
   slowTicks?: number // frost: slow duration
   chain?: number // tesla: max enemies hit per shot
   mintYield?: number // mint: gold per wave cleared (does not attack)
+  auraPct?: number // beacon: damage bonus to towers within range (does not attack)
 }
 
 export interface TowerDef {
@@ -129,7 +130,20 @@ export const TOWERS: Record<TowerType, TowerDef> = {
       { cost: 280, damage: 0, range: 0, cooldown: 0, mintYield: 52 },
     ],
   },
+  beacon: {
+    name: 'Beacon',
+    hitsAir: false,
+    tiers: [
+      { cost: 90, damage: 0, range: 1600, cooldown: 0, auraPct: 12 },
+      { cost: 120, damage: 0, range: 1800, cooldown: 0, auraPct: 18 },
+      { cost: 260, damage: 0, range: 2000, cooldown: 0, auraPct: 25 },
+    ],
+  },
 }
+
+// Beacon auras do NOT stack: a tower takes the strongest beacon in range.
+// (Stacking turns beacon farms into the dominant strategy — by design, one
+// good beacon placement is worth exactly one bonus.)
 
 export const SELL_REFUND_PCT = 70
 export const TESLA_CHAIN_RANGE = 1400 // millicells between chain hops

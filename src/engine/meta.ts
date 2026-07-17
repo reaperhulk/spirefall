@@ -136,6 +136,7 @@ export function createRun(meta: MetaState, seed: string): RunState {
   const availableTowers: TowerType[] = ['arrow', 'cannon', 'frost', 'sniper']
   if (metaLevel(meta, 'unlock_tesla') > 0) availableTowers.push('tesla')
   if (metaLevel(meta, 'unlock_mint') > 0) availableTowers.push('mint')
+  if (metaLevel(meta, 'unlock_beacon') > 0) availableTowers.push('beacon')
 
   const abilities: Record<string, number> = { meteor: 0, frost_nova: 0 }
   if (metaLevel(meta, 'unlock_gold_rush') > 0) abilities['gold_rush' satisfies AbilityId] = 0

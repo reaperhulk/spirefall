@@ -5,7 +5,7 @@ import type { Rng } from './rng'
 // (determinism.test.ts proves it).
 
 export type Phase = 'build' | 'wave' | 'defeat' | 'victory'
-export type TowerType = 'arrow' | 'cannon' | 'frost' | 'tesla' | 'sniper' | 'mint'
+export type TowerType = 'arrow' | 'cannon' | 'frost' | 'tesla' | 'sniper' | 'mint' | 'beacon'
 export type Targeting = 'first' | 'last' | 'strongest' | 'nearest'
 export type EnemyType =
   | 'runner'

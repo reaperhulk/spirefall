@@ -15,6 +15,7 @@ export type MetaUpgradeId =
   | 'wave_skip'
   | 'unlock_tesla'
   | 'unlock_mint'
+  | 'unlock_beacon'
   | 'unlock_gold_rush'
 
 export interface MetaNodeDef {
@@ -91,6 +92,13 @@ export const META_TREE: MetaNodeDef[] = [
     description: 'Unlock the Mint — a tower that earns gold every cleared wave.',
     maxLevel: 1,
     costs: [150],
+  },
+  {
+    id: 'unlock_beacon',
+    name: 'Signal Fires',
+    description: 'Unlock the Beacon — a pylon that amplifies nearby towers.',
+    maxLevel: 1,
+    costs: [130],
   },
   {
     id: 'unlock_gold_rush',

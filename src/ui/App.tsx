@@ -36,7 +36,7 @@ function newSeed(runs: number): string {
   return `run-${runs + 1}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint']
+const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon']
 const SPEEDS = [0, 1, 2, 3, 5, 10]
 
 // One-line combat role, shown in tooltips and the tower panel.
@@ -44,6 +44,7 @@ function towerRole(type: TowerType): string {
   if (type === 'arrow') return 'hits ground & air ✈ · 2× vs fliers'
   if (type === 'sniper') return 'hits ground & air ✈ · 1.5× vs elites, pierces shields'
   if (type === 'tesla') return 'hits ground & air ✈'
+  if (type === 'beacon') return 'support — amplifies towers in range, never fires'
   return 'ground only — cannot hit fliers'
 }
 const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush']
@@ -265,7 +266,7 @@ export default function App() {
         sessionRef.current.setSpeed(SPEEDS[next]!)
         return
       }
-      const towerIdx = ['1', '2', '3', '4', '5', '6'].indexOf(e.key)
+      const towerIdx = ['1', '2', '3', '4', '5', '6', '7'].indexOf(e.key)
       if (towerIdx !== -1) {
         const type = TOWER_KEYS[towerIdx]!
         if (sessionRef.current.state.availableTowers.includes(type)) {
@@ -514,8 +515,8 @@ export default function App() {
               {TOWERS[hoveredTower.type].name} · T{hoveredTower.tier}
               {hoveredTower.enhance > 0 && ` +${hoveredTower.enhance}`}
             </strong>
-            {hoveredTower.type === 'mint' ? (
-              <span>{towerTier('mint', hoveredTower.tier).mintYield} gold / cleared wave</span>
+            {hoveredTower.type === 'mint' || hoveredTower.type === 'beacon' ? (
+              <span>{hoveredTower.type === 'beacon' ? `+${towerTier('beacon', hoveredTower.tier).auraPct}% damage to towers in range` : `${towerTier('mint', hoveredTower.tier).mintYield} gold / cleared wave`}</span>
             ) : (
               (() => {
                 const b = damageBreakdown(state, hoveredTower)
@@ -528,7 +529,7 @@ export default function App() {
                 )
               })()
             )}
-            {hoveredTower.type !== 'mint' && (
+            {hoveredTower.type !== 'mint' && hoveredTower.type !== 'beacon' && (
               <span>
                 {towerRole(hoveredTower.type)}
                 {critChance > 0 && ` · ${critChance}% crit ×${(effectiveCritDamagePct(state) / 100).toFixed(1)}`}
@@ -556,8 +557,8 @@ export default function App() {
               {TOWERS[selectedTower.type].name} · Tier {selectedTower.tier}
               {selectedTower.enhance > 0 && ` +${selectedTower.enhance}`}
             </h3>
-            {selectedTower.type === 'mint' ? (
-              <p>{towerTier('mint', selectedTower.tier).mintYield} gold per cleared wave</p>
+            {selectedTower.type === 'mint' || selectedTower.type === 'beacon' ? (
+              <p>{selectedTower.type === 'beacon' ? `+${towerTier('beacon', selectedTower.tier).auraPct}% damage to towers in range` : `${towerTier('mint', selectedTower.tier).mintYield} gold per cleared wave`}</p>
             ) : (
               (() => {
                 const b = damageBreakdown(state, selectedTower)
@@ -584,7 +585,7 @@ export default function App() {
             <p data-testid="tower-stats">
               {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
             </p>
-            {selectedTower.type !== 'mint' && (
+            {selectedTower.type !== 'mint' && selectedTower.type !== 'beacon' && (
               <p className="tower-air-note">
                 {towerRole(selectedTower.type)}
                 {critChance > 0 && ` · ${critChance}% crit`}

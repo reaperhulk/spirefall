@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyHit, damageBreakdown, effectiveDamagePct, selectTarget } from '../combat'
+import { applyHit, beaconAuraPct, damageBreakdown, effectiveDamagePct, selectTarget } from '../combat'
 import { blockedGrid, cellCenter, distanceField, getMap } from '../grid'
 import { createMeta, createRun } from '../meta'
 import { ENHANCE_DAMAGE_PCT, towerTier } from '../../data/content'
@@ -128,5 +128,33 @@ describe('damageBreakdown', () => {
     const b = damageBreakdown(state, tower({ type: 'frost' }))
     expect(b.parts).toEqual([])
     expect(b.effective).toBe(b.base)
+  })
+})
+
+describe('beacon aura', () => {
+  const withTowers = (towers: Tower[]): RunState => {
+    const s = createRun(createMeta(), 'beacon-test')
+    return { ...s, towers }
+  }
+
+  it('amplifies towers in range; strongest beacon wins, never stacking', () => {
+    const arrow = tower({ id: 1, type: 'arrow', tier: 3, cell: { cx: 5, cy: 5 } })
+    const near = tower({ id: 2, type: 'beacon', tier: 1, cell: { cx: 6, cy: 5 } })
+    const stronger = tower({ id: 3, type: 'beacon', tier: 3, cell: { cx: 5, cy: 6 } })
+    const far = tower({ id: 4, type: 'beacon', tier: 3, cell: { cx: 20, cy: 12 } })
+
+    expect(beaconAuraPct(withTowers([arrow]), arrow)).toBe(0)
+    expect(beaconAuraPct(withTowers([arrow, far]), arrow)).toBe(0) // out of range
+    expect(beaconAuraPct(withTowers([arrow, near]), arrow)).toBe(12)
+    // Two beacons in range: take the strongest, not the sum.
+    expect(beaconAuraPct(withTowers([arrow, near, stronger]), arrow)).toBe(25)
+    // Beacons don't buff themselves.
+    expect(beaconAuraPct(withTowers([near, stronger]), near)).toBe(25)
+
+    // And the aura shows up in the damage breakdown pipeline.
+    const state = withTowers([arrow, near])
+    const b = damageBreakdown(state, arrow)
+    expect(b.parts).toContainEqual({ source: 'Beacon aura', pct: 12 })
+    expect(b.effective).toBe(Math.floor((32 * 112) / 100))
   })
 })

@@ -45,6 +45,7 @@ const COLORS = {
     tesla: '#bb9af7',
     sniper: '#73daca',
     mint: '#e5c07b',
+    beacon: '#ff9e64',
   } as Record<TowerType, string>,
   enemies: ENEMY_COLORS,
   hpBack: '#30354a',
@@ -390,6 +391,27 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
         ctx.lineWidth = 1
         circle(ctx, 2, 0, 2.8)
         ctx.stroke()
+        break
+      }
+      case 'beacon': {
+        // A pylon with a rotating amplification halo.
+        ctx.fillStyle = '#33251a'
+        circle(ctx, 0, 2, 6)
+        ctx.fill()
+        ctx.fillStyle = color
+        ctx.fillRect(-2, -8, 4, 11)
+        circle(ctx, 0, -8, 3)
+        ctx.fill()
+        const halo = t0 * 0.05 + t.id
+        ctx.strokeStyle = color
+        ctx.globalAlpha = 0.55
+        ctx.beginPath()
+        ctx.arc(0, 0, 11, halo, halo + 2.1)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.arc(0, 0, 11, halo + Math.PI, halo + Math.PI + 2.1)
+        ctx.stroke()
+        ctx.globalAlpha = 1
         break
       }
       case 'mint': {

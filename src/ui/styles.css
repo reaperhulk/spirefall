@@ -274,6 +274,9 @@ button:disabled {
 .tower-cannon { background: #e0af68; }
 .tower-frost { background: #7dcfff; }
 .tower-tesla { background: #bb9af7; }
+.tower-sniper { background: #73daca; }
+.tower-mint { background: #e5c07b; }
+.tower-beacon { background: #ff9e64; }
 
 .cost {
   color: #e5c07b;
