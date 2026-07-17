@@ -1,6 +1,7 @@
 import { enhanceCost, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
-import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, getMap, inBounds, pathFrom, sameCell } from '../engine/grid'
+import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, inBounds, pathFrom, sameCell } from '../engine/grid'
+import { getRunMap } from '../engine/mapgen'
 import type { CellPos, Command, RelicId, RunState, TowerType } from '../engine/types'
 
 // Bots are deterministic pure functions of the state — no randomness, so a
@@ -10,7 +11,7 @@ export type Bot = (state: RunState) => Command[]
 
 // Buildable cells adjacent to the enemies' natural path, in walk order.
 export function buildCandidates(state: RunState): CellPos[] {
-  const map = getMap(state.mapId)
+  const map = getRunMap(state)
   const field = distanceField(map, blockedGrid(map, state.towers))
   const path = [map.spawn, ...pathFrom(map, field, map.spawn)]
   const seen = new Set<string>()
@@ -209,7 +210,7 @@ export function buildActions(
 
 // Wave-phase triage and ability usage shared by the competent bots.
 export function waveActions(state: RunState, waveRepairPct = 50): Command[] {
-  const map = getMap(state.mapId)
+  const map = getRunMap(state)
   // Emergency repairs mid-assault — but not in the early game, where gold
   // is better spent on towers than triage.
   if (

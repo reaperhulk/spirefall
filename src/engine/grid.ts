@@ -39,6 +39,8 @@ export function distSq(a: Vec, b: Vec): number {
 export function blockedGrid(map: MapDef, towers: Tower[], extraBlocked?: CellPos): Uint8Array {
   const blocked = new Uint8Array(map.width * map.height)
   for (let i = 0; i < map.rocks.length; i++) if (map.rocks[i]) blocked[i] = 1
+  // Mesas: high ground the horde cannot climb (but towers can build on).
+  for (let i = 0; i < map.mesa.length; i++) if (map.mesa[i]) blocked[i] = 1
   for (const t of towers) blocked[cellIndex(map, t.cell)] = 1
   if (extraBlocked) blocked[cellIndex(map, extraBlocked)] = 1
   return blocked
@@ -114,6 +116,7 @@ export function pathFrom(map: MapDef, field: Int32Array, start: CellPos): CellPo
 export function canPlaceTower(state: RunState, map: MapDef, cell: CellPos): { ok: boolean; reason: string } {
   if (!inBounds(map, cell)) return { ok: false, reason: 'out of bounds' }
   if (map.rocks[cellIndex(map, cell)]) return { ok: false, reason: 'blocked by rock' }
+  if (map.marsh[cellIndex(map, cell)]) return { ok: false, reason: 'too soft to build on' }
   if (sameCell(cell, map.spawn) || sameCell(cell, map.spire)) return { ok: false, reason: 'cannot build on gate or Spire' }
   if (state.towers.some((t) => sameCell(t.cell, cell))) return { ok: false, reason: 'cell occupied by tower' }
   if (state.enemies.some((e) => sameCell(cellOf(e.pos), cell))) return { ok: false, reason: 'cell occupied by enemy' }

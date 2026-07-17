@@ -30,7 +30,7 @@ import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createR
 import type { EmberUpgradeId } from '../data/emberTree'
 import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { sameCell } from '../engine/grid'
-import { MAPS } from '../data/maps'
+import { BIOME_IDS, BIOMES, type BiomeId } from '../data/biomes'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { AbilityId, CataclysmId, CellPos, EnemyType, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
 import { Sfx } from './audio'
@@ -105,8 +105,7 @@ function loadTrialPref(): string {
 function loadMapPref(): string {
   try {
     const raw = localStorage.getItem(MAP_PREF_KEY)
-    if (raw !== null && (raw === 'random' || (Number.isInteger(Number(raw)) && Number(raw) >= 0 && Number(raw) < MAPS.length)))
-      return raw
+    if (raw !== null && (raw === 'random' || (BIOME_IDS as string[]).includes(raw))) return raw
   } catch {
     // fall through
   }
@@ -233,9 +232,9 @@ export default function App() {
     // everyone faces the same battlefield.
     const isDaily = seed === dailySeed()
     const pref = mapPrefRef.current
-    const mapOverride = !isDaily && pref !== 'random' ? Number(pref) : undefined
+    const biomeOverride = !isDaily && pref !== 'random' ? (pref as BiomeId) : undefined
     const trials = !isDaily && trialPrefRef.current !== 'none' ? [trialPrefRef.current as TrialId] : []
-    const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), mapOverride, trials)
+    const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), biomeOverride, trials)
     const next = new GameSession(run)
     // Update the ref synchronously: the dev harness (window.__harness) reads
     // sessionRef and may be driven immediately after newRun() returns —
@@ -480,7 +479,7 @@ export default function App() {
           <span className="hud-wave" data-testid="wave-label">
             {state.victoryClaimed ? `Wave ${state.wave} · ENDLESS` : `Wave ${state.wave}/${VICTORY_WAVE}`}
             {' · '}
-            {MAPS[state.mapId]!.name}
+            {BIOMES[state.biome].name}
           </span>
         </div>
         {state.phase === 'wave' && state.activeAffix && (

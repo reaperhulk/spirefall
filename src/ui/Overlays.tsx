@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
-import { MAPS } from '../data/maps'
+import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
 import { canAscend, emberGainOnAscend, emberLevel, emberUpgradeCost, metaLevel, metaUpgradeCost } from '../engine/meta'
@@ -343,13 +343,19 @@ export function RunOverOverlay({
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
         <div className="next-run-row">
           <label className="map-pick">
-            Battlefield
-            <select data-testid="map-select" value={mapPref} onChange={(e) => onMapPref(e.target.value)}>
+            Biome
+            <select
+              data-testid="map-select"
+              value={mapPref}
+              onChange={(e) => onMapPref(e.target.value)}
+              title="The biome sets the battlefield's rules; every run generates a fresh layout inside them."
+            >
               <option value="random">🎲 Random</option>
-              {MAPS.map((m, i) => (
-                <option key={m.name} value={String(i)}>
-                  {m.name}
-                  {(meta.bestWaveByMap[String(i)] ?? 0) > 0 && ` — best ${meta.bestWaveByMap[String(i)]}`}
+              {BIOME_IDS.map((b) => (
+                <option key={b} value={b} disabled={!biomeUnlocked(meta, b)}>
+                  {biomeUnlocked(meta, b)
+                    ? `${BIOMES[b].name}${(meta.bestWaveByMap[b] ?? 0) > 0 ? ` — best ${meta.bestWaveByMap[b]}` : ''}`
+                    : `🔒 ${BIOMES[b].name} — ${BIOMES[b].unlockHint}`}
                 </option>
               ))}
             </select>
@@ -515,10 +521,10 @@ export function SettingsModal({
         </div>
         {Object.keys(meta.bestWaveByMap).length > 0 && (
           <div className="records-row" data-testid="map-records">
-            {MAPS.map((m, i) =>
-              (meta.bestWaveByMap[String(i)] ?? 0) > 0 ? (
-                <span key={m.name}>
-                  {m.name} <strong>{meta.bestWaveByMap[String(i)]}</strong>
+            {BIOME_IDS.map((b) =>
+              (meta.bestWaveByMap[b] ?? 0) > 0 ? (
+                <span key={b}>
+                  {BIOMES[b].name} <strong>{meta.bestWaveByMap[b]}</strong>
                 </span>
               ) : null,
             )}

@@ -5,6 +5,8 @@ import type { CellPos } from '../engine/types'
 export const MAP_WIDTH = 24
 export const MAP_HEIGHT = 14
 
+import type { BiomeId } from './biomes'
+
 export interface MapDef {
   id: number
   name: string
@@ -13,6 +15,11 @@ export interface MapDef {
   rocks: boolean[] // index = cy * width + cx
   spawn: CellPos
   spire: CellPos
+  // Biome terrain (generated maps; empty on the fixed legacy layouts):
+  biome: BiomeId | null
+  marsh: boolean[] // soft ground: unbuildable, slows ground enemies
+  mesa: boolean[] // high ground: enemy-impassable, buildable, +range
+  vents: number[] // cell indices of eruption fissures
 }
 
 const ART: { name: string; rows: string[] }[] = [
@@ -151,7 +158,7 @@ function parse(id: number, name: string, rows: string[]): MapDef {
     }
   })
   if (!spawn || !spire) throw new Error(`map ${name}: missing spawn or spire`)
-  return { id, name, width: MAP_WIDTH, height: MAP_HEIGHT, rocks, spawn, spire }
+  return { id, name, width: MAP_WIDTH, height: MAP_HEIGHT, rocks, spawn, spire, biome: null, marsh: [], mesa: [], vents: [] }
 }
 
 export const MAPS: MapDef[] = ART.map((a, i) => parse(i, a.name, a.rows))

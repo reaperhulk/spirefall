@@ -1,3 +1,4 @@
+import type { BiomeId } from '../data/biomes'
 import type { Rng } from './rng'
 
 // RunState is the entire simulation. It must stay plain JSON data: no classes,
@@ -135,7 +136,9 @@ export interface RunState {
   tick: number
   phase: Phase
   rng: RngStreams
-  mapId: number
+  mapId: number // legacy fixed-map index (used only when mapSeed === '')
+  biome: BiomeId // battlefield rules; structure generates from mapSeed
+  mapSeed: string // '' = legacy fixed map, else seed for generateMap
   wave: number // wave currently active or last started
   startWave: number // waves skipped via meta (sparks only pay past this)
   wavesCleared: number
@@ -202,6 +205,7 @@ export type GameEvent =
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }
   | { type: 'wave_cleared'; wave: number; goldAwarded: number }
   | { type: 'gold_interest'; amount: number; gold: number }
+  | { type: 'vents_erupted'; cells: number[]; seared: number }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

@@ -8,7 +8,6 @@ import {
   metaNodeEffect,
 } from '../../data/metaTree'
 import { ABILITIES, STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
-import { MAPS, RANDOM_MAP_POOL } from '../../data/maps'
 import {
   ascend,
   buyEmberUpgrade,
@@ -130,26 +129,37 @@ describe('createRun applies meta', () => {
     expect(messy.rng).toEqual(plain.rng)
   })
 
-  it('an explicit map choice overrides the roll without touching anything else', () => {
+  it('an explicit biome choice overrides the roll without touching anything else', () => {
     const meta = createMeta()
     const rolled = createRun(meta, 'map-choice')
-    expect(createRun(meta, 'map-choice', 3).mapId).toBe(3)
-    // Invalid choices fall back to the seed's roll.
-    expect(createRun(meta, 'map-choice', 99).mapId).toBe(rolled.mapId)
-    expect(createRun(meta, 'map-choice', -1).mapId).toBe(rolled.mapId)
+    expect(rolled.biome).toBe('verdant') // fresh meta: only Verdant is unlocked
+    expect(rolled.mapSeed).toBe('map-choice')
+    // An explicit biome (picker, harness) may name ANY biome — the picker
+    // enforces unlocks; the engine trusts the caller.
+    const chosen = createRun(meta, 'map-choice', 'highlands')
+    expect(chosen.biome).toBe('highlands')
+    // Bogus choices fall back to the seed's roll.
+    expect(createRun(meta, 'map-choice', 'nowhere' as never).biome).toBe(rolled.biome)
     // The choice must not shift any RNG stream — only the battlefield.
-    const chosen = createRun(meta, 'map-choice', 2)
     expect(chosen.rng).toEqual(rolled.rng)
-    expect({ ...chosen, mapId: 0 }).toEqual({ ...rolled, mapId: 0 })
+    expect({ ...chosen, biome: 'verdant' }).toEqual({ ...rolled, biome: 'verdant' })
   })
 
-  it('picker-only maps never come up on the seed roll but remain choosable', () => {
-    const meta = createMeta()
-    expect(MAPS.length).toBeGreaterThan(RANDOM_MAP_POOL)
-    for (let i = 0; i < 40; i++) {
-      expect(createRun(meta, `pool-${i}`).mapId).toBeLessThan(RANDOM_MAP_POOL)
+  it('the biome roll draws from unlocked biomes only; dailies share all biomes', () => {
+    const fresh = createMeta()
+    for (let i = 0; i < 20; i++) {
+      expect(createRun(fresh, `pool-${i}`).biome).toBe('verdant')
     }
-    expect(createRun(meta, 'pool-x', MAPS.length - 1).mapId).toBe(MAPS.length - 1)
+    // A veteran account rolls across everything it has unlocked.
+    const veteran = { ...fresh, bestWave: 20, victories: 2, ascensions: 1 }
+    const seen = new Set<string>()
+    for (let i = 0; i < 60; i++) seen.add(createRun(veteran, `vet-${i}`).biome)
+    expect(seen.size).toBeGreaterThan(2)
+    // Daily seeds roll over ALL biomes for everyone, unlocked or not — the
+    // shared seed means a shared battlefield.
+    const freshDaily = createRun(fresh, 'daily-2026-07-17')
+    const veteranDaily = createRun(veteran, 'daily-2026-07-17')
+    expect(freshDaily.biome).toBe(veteranDaily.biome)
   })
 })
 
@@ -323,19 +333,19 @@ describe('records', () => {
     expect(meta.history[0]!.wavesCleared).toBe(14) // newest first
   })
 
-  it('per-map bests track each battlefield separately and never regress', () => {
+  it('per-biome bests track each battlefield separately and never regress', () => {
     let meta = createMeta()
-    const settle = (mapId: number, wavesCleared: number) => {
-      const run = { ...createRun(meta, 'map-rec', mapId), phase: 'defeat' as const, wavesCleared, kills: 0, sparksEarned: 0 }
+    const settle = (biome: 'verdant' | 'frostfen', wavesCleared: number) => {
+      const run = { ...createRun(meta, 'map-rec', biome), phase: 'defeat' as const, wavesCleared, kills: 0, sparksEarned: 0 }
       meta = settleRun(meta, run).meta
     }
-    settle(2, 9)
-    settle(4, 12)
-    settle(2, 6) // worse run on map 2 — the record stands
-    expect(meta.bestWaveByMap).toEqual({ '2': 9, '4': 12 })
+    settle('verdant', 9)
+    settle('frostfen', 12)
+    settle('verdant', 6) // worse run on the Reach — the record stands
+    expect(meta.bestWaveByMap).toEqual({ verdant: 9, frostfen: 12 })
     expect(meta.bestWave).toBe(12)
     // Zero-progress runs leave no record entry.
-    settle(1, 0)
-    expect(meta.bestWaveByMap['1']).toBeUndefined()
+    settle('frostfen', 0)
+    expect(meta.bestWaveByMap.frostfen).toBe(12) // unchanged by the wipe
   })
 })

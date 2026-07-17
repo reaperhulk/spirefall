@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { AFFIX_FIRST_WAVE, ENEMIES, TOWERS } from '../../data/content'
 import { buildCandidates } from '../../harness/bots'
-import { cellCenter, distSq, getMap } from '../grid'
+import { cellCenter, distSq } from '../grid'
+import { getRunMap } from '../mapgen'
 import { VICTORY_WAVE } from '../../data/content'
 import { createMeta, createRun } from '../meta'
 import { deriveStream } from '../rng'
@@ -53,7 +54,7 @@ function makeEnemy(state: RunState, overrides: Partial<Enemy> & { type: Enemy['t
 describe('fliers', () => {
   it('fly straight at the spire, ignoring the maze', () => {
     let s = makeEnemy(freshRun(), { type: 'flier', pos: cellCenter({ cx: 2, cy: 2 }) })
-    const map = getMap(s.mapId)
+    const map = getRunMap(s)
     const spire = cellCenter(map.spire)
     const before = distSq(s.enemies[0]!.pos, spire)
     s = step(s, []).state
@@ -156,7 +157,7 @@ describe('spawn-on-spire arrival', () => {
     // or splitlings from a splitter killed there — used to stand on the
     // spire cell with no waypoint, unkillable and unarriving.
     const base = freshRun()
-    const map = getMap(base.mapId)
+    const map = getRunMap(base) // the run's GENERATED battlefield — its spire, not a fixed map's
     let s = makeEnemy(
       { ...base, spireHp: 100, spireMaxHp: 100 },
       { type: 'boss', pos: cellCenter(map.spire) },

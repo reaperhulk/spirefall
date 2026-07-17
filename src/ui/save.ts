@@ -119,6 +119,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.repairsThisWave ??= 0
         data.run.trials ??= []
         data.run.crucible ??= 0
+        // Biome-era fields: old saves keep playing their fixed map.
+        data.run.biome ??= 'verdant'
+        data.run.mapSeed ??= ''
         data.run.mods.critChancePct ??= 0
         data.run.mods.abilityCdPct ??= 0
       }

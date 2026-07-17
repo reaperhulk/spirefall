@@ -1,5 +1,6 @@
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { Command, MetaState, RunState } from '../engine/types'
+import { getRunMap } from '../engine/mapgen'
 import type { GameSession, LoggedCommand } from './session'
 
 // Dev/test harness exposed on window. Everything the Playwright suite and
@@ -17,6 +18,15 @@ export interface HarnessApi {
 export interface GameHarness {
   getState: () => RunState
   getMeta: () => MetaState
+  // The run's battlefield, summarized for tests: gate positions plus which
+  // cells can hold a tower (rocks, mesas, and marsh accounted for).
+  getMapInfo: () => {
+    width: number
+    height: number
+    spawn: { cx: number; cy: number }
+    spire: { cx: number; cy: number }
+    buildable: boolean[]
+  }
   dispatch: (command: Command) => void
   setSpeed: (n: number) => void
   getSpeed: () => number
@@ -51,6 +61,17 @@ export function installHarness(api: HarnessApi): void {
   const harness: GameHarness = {
     getState: () => api.getSession().state,
     getMeta: () => api.getMeta(),
+    getMapInfo: () => {
+      const map = getRunMap(api.getSession().state)
+      const buildable = map.rocks.map(
+        (rock, i) =>
+          !rock &&
+          !map.marsh[i] &&
+          !(i === map.spawn.cy * map.width + map.spawn.cx) &&
+          !(i === map.spire.cy * map.width + map.spire.cx),
+      )
+      return { width: map.width, height: map.height, spawn: { ...map.spawn }, spire: { ...map.spire }, buildable }
+    },
     dispatch: (command) => api.getSession().dispatch(command),
     setSpeed: (n) => {
       api.getSession().speed = Math.max(0, Math.min(100, n))

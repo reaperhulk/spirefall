@@ -2,7 +2,8 @@ import { ABILITIES, ENEMIES, towerTier } from '../data/content'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
-import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, pathFrom } from '../engine/grid'
+import { blockedGrid, canPlaceTower, cellCenter, distanceField, pathFrom } from '../engine/grid'
+import { getRunMap } from '../engine/mapgen'
 import type { AbilityId, CellPos, Enemy, RunState, TowerType, Vec } from '../engine/types'
 import type { GameSession } from './session'
 
@@ -127,8 +128,18 @@ const MAP_THEMES: Record<string, MapTheme> = {
   'The Gauntlet': { bg: '#140c08', checker: '#1a100b', path: '#22150e', gridLine: '#2b1a12', rock: '#4a2f22', rockEdge: '#6b4230', mote: '#ff9d5c', props: 'ember', propColor: '#5c2f16' },
 }
 
+// Generated battlefields carry their biome's display name; each aliases a
+// fitting palette (Frostfen borrows the cold Channels slate, Ember Waste the
+// forge heat, the Highlands the desert mesa tones).
+const BIOME_THEME_ALIAS: Record<string, string> = {
+  'Verdant Reach': 'Greenfield',
+  Frostfen: 'The Channels',
+  'Ember Waste': 'The Gauntlet',
+  'The Highlands': 'The Serpent',
+}
+
 function mapTheme(map: MapDef): MapTheme {
-  return MAP_THEMES[map.name] ?? DEFAULT_THEME
+  return MAP_THEMES[map.name] ?? MAP_THEMES[BIOME_THEME_ALIAS[map.name] ?? ''] ?? DEFAULT_THEME
 }
 
 // --- glow engine ------------------------------------------------------------
@@ -181,13 +192,12 @@ function glow(ctx: CanvasRenderingContext2D, x: number, y: number, radius: numbe
 
 const DECALS = { key: '', canvas: null as HTMLCanvasElement | null, lastFade: 0 }
 
-export function stampDecal(mapId: number, seed: string, at: Vec, color: string): void {
-  const map = getMap(mapId)
-  const key = `${mapId}:${seed}`
+export function stampDecal(mapKey: string, seed: string, at: Vec, color: string): void {
+  const key = `${mapKey}:${seed}`
   if (!DECALS.canvas || DECALS.key !== key) {
     DECALS.canvas = document.createElement('canvas')
-    DECALS.canvas.width = map.width * CELL_PX
-    DECALS.canvas.height = map.height * CELL_PX
+    DECALS.canvas.width = MAP_WIDTH * CELL_PX
+    DECALS.canvas.height = MAP_HEIGHT * CELL_PX
     DECALS.key = key
     DECALS.lastFade = performance.now()
   }
@@ -318,7 +328,7 @@ function drawProp(g: CanvasRenderingContext2D, kind: PropKind, x: number, y: num
 
 function terrainLayer(map: MapDef, theme: MapTheme): HTMLCanvasElement {
   const dpr = Math.min(2, window.devicePixelRatio || 1)
-  const key = `${map.id}:${dpr}`
+  const key = `${map.id}:${map.name}:${map.spawn.cy}:${map.rocks.filter(Boolean).length}:${dpr}`
   if (TERRAIN_CACHE.canvas && TERRAIN_CACHE.key === key) return TERRAIN_CACHE.canvas
   const w = map.width * CELL_PX
   const h = map.height * CELL_PX
@@ -382,6 +392,75 @@ function terrainLayer(map: MapDef, theme: MapTheme): HTMLCanvasElement {
       drawProp(g, theme.props, ox, oy, hash01(cx, cy, 23), theme)
       g.globalAlpha = 1
     }
+  }
+
+  // Marsh pools (Frostfen): soft dark water with a pale sheen — reads as
+  // "wet, unbuildable" at a glance. Merged blobs get one continuous look
+  // because adjacent cells share edge-free fills.
+  for (let cy = 0; cy < map.height; cy++) {
+    for (let cx = 0; cx < map.width; cx++) {
+      if (!map.marsh[cy * map.width + cx]) continue
+      const x = cx * CELL_PX
+      const y = cy * CELL_PX
+      g.fillStyle = 'rgba(14, 34, 46, 0.85)'
+      g.fillRect(x, y, CELL_PX, CELL_PX)
+      const n = hash01(cx, cy, 31)
+      g.globalAlpha = 0.16
+      g.fillStyle = '#8fd0ff'
+      ellipse(g, x + CELL_PX * (0.3 + n * 0.4), y + CELL_PX * (0.35 + n * 0.3), CELL_PX * 0.28, CELL_PX * 0.1)
+      g.fill()
+      g.globalAlpha = 1
+    }
+  }
+
+  // Mesas (Highlands): raised blocks — lit top face, dark cliff edge on the
+  // south side, so "high ground" reads without true elevation.
+  for (let cy = 0; cy < map.height; cy++) {
+    for (let cx = 0; cx < map.width; cx++) {
+      if (!map.mesa[cy * map.width + cx]) continue
+      const x = cx * CELL_PX
+      const y = cy * CELL_PX
+      const below = cy + 1 < map.height && map.mesa[(cy + 1) * map.width + cx]
+      g.fillStyle = 'rgba(0, 0, 0, 0.4)'
+      g.fillRect(x + 2, y + 4, CELL_PX, CELL_PX) // drop shadow
+      g.fillStyle = theme.rock
+      g.fillRect(x, y, CELL_PX, CELL_PX)
+      g.fillStyle = theme.rockEdge
+      g.fillRect(x, y, CELL_PX, 3) // lit north rim
+      if (!below) {
+        g.fillStyle = 'rgba(0, 0, 0, 0.45)'
+        g.fillRect(x, y + CELL_PX - 5, CELL_PX, 5) // cliff face
+      }
+      const n = hash01(cx, cy, 37)
+      g.globalAlpha = 0.12
+      g.fillStyle = '#ffffff'
+      g.fillRect(x + 4 + n * 10, y + 6 + n * 8, 6, 2)
+      g.globalAlpha = 1
+    }
+  }
+
+  // Vents (Ember Waste): glowing fissures — a dark crack with molten veins.
+  for (const idx of map.vents) {
+    const cx = idx % map.width
+    const cy = Math.floor(idx / map.width)
+    const x = cx * CELL_PX + CELL_PX / 2
+    const y = cy * CELL_PX + CELL_PX / 2
+    g.strokeStyle = 'rgba(0, 0, 0, 0.6)'
+    g.lineWidth = 5
+    g.beginPath()
+    g.moveTo(x - 10, y - 6)
+    g.lineTo(x - 2, y + 2)
+    g.lineTo(x + 4, y - 3)
+    g.lineTo(x + 10, y + 6)
+    g.stroke()
+    g.strokeStyle = '#ff7a3c'
+    g.lineWidth = 2
+    g.beginPath()
+    g.moveTo(x - 10, y - 6)
+    g.lineTo(x - 2, y + 2)
+    g.lineTo(x + 4, y - 3)
+    g.lineTo(x + 10, y + 6)
+    g.stroke()
   }
 
   // Rocks: drop shadow, faceted body, lit face — baked, with per-cell jitter.
@@ -471,7 +550,7 @@ function easeOutBack(t: number): number {
 
 export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: RenderUiState): void {
   const state = session.state
-  const map = getMap(state.mapId)
+  const map = getRunMap(state)
   const w = map.width * CELL_PX
   const h = map.height * CELL_PX
 
@@ -1516,7 +1595,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         if (settings.reducedMotion) break // no full-screen flashes
         ctx.fillStyle = '#db4b4b'
         ctx.globalAlpha = fade * 0.25
-        const map = getMap(session.state.mapId)
+        const map = getRunMap(session.state)
         ctx.fillRect(0, 0, map.width * CELL_PX, map.height * CELL_PX)
         break
       }
@@ -1524,7 +1603,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         if (settings.reducedMotion) break // no full-screen flashes
         ctx.fillStyle = '#ffd76e'
         ctx.globalAlpha = fade * 0.15
-        const map = getMap(session.state.mapId)
+        const map = getRunMap(session.state)
         ctx.fillRect(0, 0, map.width * CELL_PX, map.height * CELL_PX)
         break
       }

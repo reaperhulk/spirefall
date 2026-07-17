@@ -115,6 +115,8 @@ export function assertInvariants(state: RunState): void {
   }
   check(new Set(state.trials).size === state.trials.length, 'duplicate trials')
   check(Number.isInteger(state.crucible) && state.crucible >= 0, 'crucible must be a non-negative integer')
+  check(typeof state.mapSeed === 'string', 'mapSeed must be a string')
+  check(['verdant', 'frostfen', 'emberwaste', 'highlands'].includes(state.biome), `unknown biome ${String(state.biome)}`)
 
   // The analytics tallies reconcile exactly with the kill counter.
   let tally = 0

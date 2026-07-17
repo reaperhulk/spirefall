@@ -38,6 +38,30 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+68. *(post-marathon, design)* **Biomes: generated battlefields** — maps are
+    no longer fixed layouts: every run generates a fresh structure from its
+    seed inside its biome's rules. Four biomes, unlocking across the meta
+    ladder: Verdant Reach (baseline, always open), Frostfen (wave 8+ —
+    marsh pools slow ground enemies to 80% but can't be built on), Ember
+    Waste (first victory — fissures erupt every 3s, searing ground enemies,
+    damage riding the wave HP curve), The Highlands (first ascension —
+    mesas are enemy-impassable but BUILDABLE, +20% range: high ground
+    without true elevation, per design). The generator is pure and
+    memoized, draws from its own local stream (other streams untouched),
+    validates every layout (gate-to-Spire path + open-ground minimum,
+    salted retries, bare-field fallback), and keeps gates in the center
+    band — edge gates opened flank detours that collapsed fresh runs at
+    wave ~5 (found via a golden regression, fixed before ship). Dailies
+    share one biome roll across all players regardless of unlocks. The
+    picker is now a biome picker with 🔒 unlock hints; per-biome bests
+    replace per-map bests; legacy saves keep their fixed map via a
+    migration path. Balance held: envelope, careers, and fuzz genomes all
+    pass on generated battlefields unchanged. E2e specs that needed "a
+    legal cell" now derive build spots from the live map through a new
+    harness getMapInfo — layout-agnostic against future generator tweaks.
+    155 unit tests (7 new: generator determinism/playability sweeps ×160
+    layouts, marsh/mesa/vent exact arithmetic), 28 e2e specs.
+
 67. *(post-marathon, playtest)* **Loupe fixes** — (1) releasing a drag off
     the board cancels instead of placing (the loupe vanishes off-board as
     the cancel affordance; e2e pins it); (2) the "weird blue circle" in

@@ -17,6 +17,8 @@ declare global {
       getState: () => {
         phase: string
         wave: number
+        biome: string
+        crucible: number
         gold: number
         towers: { id: number; tier: number; cell: { cx: number; cy: number } }[]
         enemies: unknown[]
@@ -38,6 +40,13 @@ declare global {
       fastForward: (seconds: number) => void
       newRun: (seed?: string) => void
       getMeta: () => { sparks: number; cycleVictories: number }
+      getMapInfo: () => {
+        width: number
+        height: number
+        spawn: { cx: number; cy: number }
+        spire: { cx: number; cy: number }
+        buildable: boolean[]
+      }
       buyMeta: (id: string) => void
       setSpeed: (n: number) => void
       getSpeed: () => number
@@ -75,6 +84,28 @@ async function clickCell(page: Page, cx: number, cy: number) {
 async function tapCell(page: Page, cx: number, cy: number) {
   const p = await cellPoint(page, cx, cy)
   await page.touchscreen.tap(p.x, p.y)
+}
+
+// Battlefields are GENERATED per seed now — specs that just need "somewhere
+// legal to build" derive cells from the live map instead of pinning layouts:
+// open cells flanking the gate's row, spread across columns so a handful of
+// towers never walls off the path.
+async function findBuildCells(page: Page, n: number): Promise<[number, number][]> {
+  return await page.evaluate((count) => {
+    const info = window.__harness.getMapInfo()
+    const cells: [number, number][] = []
+    for (let cx = 2; cx < info.width - 2 && cells.length < count; cx++) {
+      for (const dy of [-1, 1, -2, 2]) {
+        const cy = info.spawn.cy + dy
+        if (cy < 0 || cy >= info.height) continue
+        if (info.buildable[cy * info.width + cx] && !cells.some(([x]) => x === cx)) {
+          cells.push([cx, cy])
+          break
+        }
+      }
+    }
+    return cells
+  }, n)
 }
 
 test('deep links: ?seed starts that exact run, ?daily starts the shared seed', async ({ page }) => {
@@ -156,10 +187,7 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   // Mount a light defense — sparks pay for PROGRESS (waves cleared + kills),
   // so a totally undefended collapse would bank nothing to spend below.
   await page.getByTestId('shop-arrow').click()
-  await clickCell(page, 4, 5)
-  await clickCell(page, 4, 7)
-  await clickCell(page, 5, 5)
-  await clickCell(page, 5, 7)
+  for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
   // Then send waves until the spire falls (fastForward is instant).
   await page.evaluate(() => {
     const send = () => {
@@ -184,12 +212,14 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(replay.log.some((c) => c.command.type === 'place_tower')).toBe(true)
   expect(replay.log.some((c) => c.command.type === 'start_wave')).toBe(true)
 
-  // Spend sparks on starting gold, pick a battlefield, then begin the next run.
+  // Spend sparks on starting gold, pick a biome, then begin the next run.
+  // (A fresh account has only Verdant unlocked — the picker's other biomes
+  // are disabled, which this select would fail on.)
   await page.getByTestId('buy-starting_gold').click()
-  await page.getByTestId('map-select').selectOption('3')
+  await page.getByTestId('map-select').selectOption('verdant')
   await page.getByTestId('trial-select').selectOption('glass_spire')
   await page.getByTestId('next-run').click()
-  expect(await page.evaluate(() => window.__harness.getState().mapId)).toBe(3)
+  expect(await page.evaluate(() => window.__harness.getState().biome)).toBe('verdant')
   const trialState = await page.evaluate(() => {
     const s = window.__harness.getState()
     return { trials: s.trials, maxHp: s.spireMaxHp }
@@ -213,14 +243,20 @@ test('relic offers appear in the UI and apply on click', async ({ page }) => {
     // Freeze the real-time clock: every tick below comes from fastForward, so
     // the whole scripted playthrough is deterministic regardless of rAF timing.
     window.__harness.setSpeed(0)
-    const spots = [
-      [4, 5],
-      [4, 7],
-      [5, 5],
-      [5, 7],
-      [6, 5],
-      [6, 7],
-    ]
+    // Derive spots from the generated battlefield: open cells flanking the
+    // gate's row, one per column, walking outward from the gate.
+    const info = window.__harness.getMapInfo()
+    const spots: [number, number][] = []
+    for (let cx = 2; cx < info.width - 2 && spots.length < 6; cx++) {
+      for (const dy of [-1, 1, -2, 2]) {
+        const cy = info.spawn.cy + dy
+        if (cy < 0 || cy >= info.height) continue
+        if (info.buildable[cy * info.width + cx] && !spots.some(([x]) => x === cx)) {
+          spots.push([cx, cy])
+          break
+        }
+      }
+    }
     const act = (): boolean => {
       const s = window.__harness.getState()
       if (s.towers.length < 4 && s.gold >= 50) {
@@ -598,7 +634,8 @@ test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refun
 test('saves survive a reload mid-run', async ({ page }) => {
   const errors = await boot(page, 'e2e-save')
   await page.getByTestId('shop-cannon').click()
-  await clickCell(page, 6, 5)
+  const [[scx, scy]] = await findBuildCells(page, 1)
+  await clickCell(page, scx!, scy!)
   await page.evaluate(() => {
     window.__harness.dispatch({ type: 'start_wave' })
     window.__harness.fastForward(300)

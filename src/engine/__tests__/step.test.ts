@@ -6,7 +6,8 @@ import { cloneRun } from '../clone'
 import { applyHit, damageBreakdown, drawRelicOffer, effectiveDamagePct } from '../combat'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
-import { cellCenter, getMap } from '../grid'
+import { cellCenter } from '../grid'
+import { getRunMap } from '../mapgen'
 import { computeSparks, previewNextWave, step, wavesUntilCataclysm } from '../step'
 import type { RelicId, RunState } from '../types'
 
@@ -926,7 +927,7 @@ describe('bulwark', () => {
     s.wave = 1
     s.spireHp = 10
     s.spireMaxHp = 10
-    const map = getMap(s.mapId)
+    const map = getRunMap(s)
     // A boss standing on the spire cell arrives next tick for 8 damage.
     s.enemies.push({
       id: s.nextEntityId++,

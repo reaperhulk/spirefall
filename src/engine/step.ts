@@ -44,7 +44,10 @@ import {
   towersFire,
 } from './combat'
 import { cloneRun } from './clone'
-import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, inBounds } from './grid'
+import { VENT_DAMAGE_BASE, VENT_PERIOD_TICKS, VENT_RADIUS } from '../data/biomes'
+import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, inBounds } from './grid'
+import { getRunMap } from './mapgen'
+import type { MapDef } from '../data/maps'
 import type {
   AffixId,
   CataclysmId,
@@ -75,7 +78,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
   const events: GameEvent[] = []
   const s = cloneRun(state)
   s.tick += 1
-  const map = getMap(s.mapId)
+  const map = getRunMap(s)
 
   for (const command of commands) applyCommand(s, command, events)
 
@@ -83,6 +86,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
     const field = distanceField(map, blockedGrid(map, s.towers))
     spawnDue(s, events)
     moveEnemies(s, map, field, events)
+    ventsErupt(s, map, events)
     if (s.spireHp === 0) {
       endRun(s, events)
     } else {
@@ -107,7 +111,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     reject(command, 'run is over', events)
     return
   }
-  const map = getMap(s.mapId)
+  const map = getRunMap(s)
 
   switch (command.type) {
     case 'abandon_run': {
@@ -374,7 +378,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
   const due = s.pendingSpawns.filter((p) => p.tick <= s.tick)
   if (due.length === 0) return
   s.pendingSpawns = s.pendingSpawns.filter((p) => p.tick > s.tick)
-  const map = getMap(s.mapId)
+  const map = getRunMap(s)
   const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
   const surge = 100 + 20 * cataclysmCount(s, 'surge')
   const ironclad = 100 + 50 * cataclysmCount(s, 'ironclad')
@@ -434,6 +438,27 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
     })
     events.push({ type: 'enemy_spawned', id, enemy: spawn.type })
   }
+}
+
+// Ember Waste fissures: every few seconds each vent sears ground enemies
+// near it. Environmental, elemental — armor and shields don't apply, and
+// the damage rides the wave HP curve so it never falls behind the horde.
+function ventsErupt(s: RunState, map: MapDef, events: GameEvent[]): void {
+  if (map.vents.length === 0 || s.tick % VENT_PERIOD_TICKS !== 0) return
+  const damage = Math.max(1, Math.floor((VENT_DAMAGE_BASE * s.hpScalePct) / 100))
+  const radiusSq = VENT_RADIUS * VENT_RADIUS
+  let seared = 0
+  for (const idx of map.vents) {
+    const center = cellCenter({ cx: idx % map.width, cy: Math.floor(idx / map.width) })
+    for (const e of s.enemies) {
+      if (e.hp <= 0 || ENEMIES[e.type].flying) continue
+      if (distSq(center, e.pos) <= radiusSq) {
+        e.hp -= Math.min(e.hp, damage)
+        seared += 1
+      }
+    }
+  }
+  if (seared > 0) events.push({ type: 'vents_erupted', cells: [...map.vents], seared })
 }
 
 function checkWaveEnd(s: RunState, events: GameEvent[]): void {

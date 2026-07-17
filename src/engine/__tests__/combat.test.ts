@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyHit, beaconAuraPct, damageBreakdown, effectiveDamagePct, selectTarget } from '../combat'
 import { blockedGrid, cellCenter, distanceField, getMap } from '../grid'
+import { getRunMap } from '../mapgen'
 import { createMeta, createRun } from '../meta'
 import { ENHANCE_DAMAGE_PCT, towerTier } from '../../data/content'
 import type { Enemy, RunState, Tower } from '../types'
@@ -66,7 +67,7 @@ describe('applyHit', () => {
 
 describe('targeting', () => {
   const state = createRun(createMeta(), 'targeting')
-  const map = getMap(state.mapId)
+  const map = getRunMap(state)
   const field = distanceField(map, blockedGrid(map, []))
 
   // Two enemies: `ahead` sits closer to the Spire, `behind` closer to spawn.

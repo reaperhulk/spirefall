@@ -22,6 +22,7 @@ import {
   WAVE_CLEAR_KNIT_HP,
   type EnemyDef,
 } from '../data/content'
+import { BIOMES, type BiomeId } from '../data/biomes'
 import type { EnemyType, RunState, TowerType } from '../engine/types'
 import {
   effectiveAbilityCooldown,
@@ -338,6 +339,20 @@ export function CodexModal({
                     </p>
                   ),
                 )}
+              </div>
+              <div className="codex-entry">
+                <div className="codex-entry-head">
+                  <strong>Biomes</strong>
+                </div>
+                <p className="codex-trait">
+                  Every battlefield is generated fresh from the run's seed inside its biome's rules — the biome decides
+                  the strategic situation, the seed decides the terrain. Biomes unlock as you progress.
+                </p>
+                {(Object.keys(BIOMES) as BiomeId[]).map((b) => (
+                  <p key={b} className="codex-trait">
+                    <strong>{BIOMES[b].name}</strong> — {BIOMES[b].description}
+                  </p>
+                ))}
               </div>
               <div className="codex-entry">
                 <div className="codex-entry-head">

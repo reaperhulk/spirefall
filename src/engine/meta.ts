@@ -9,7 +9,7 @@ import {
   WAVE_CLEAR_GOLD_BASE,
   WAVE_CLEAR_GOLD_PER_WAVE,
 } from '../data/content'
-import { MAPS, RANDOM_MAP_POOL } from '../data/maps'
+import { BIOME_IDS, unlockedBiomes, type BiomeId } from '../data/biomes'
 import {
   META_CRIT_CHANCE_PCT_PER_LEVEL,
   META_GOLD_INCOME_PCT_PER_LEVEL,
@@ -134,14 +134,24 @@ export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: Meta
   }
 }
 
+// Per-battlefield bests: generated runs key by biome, legacy runs by map id.
+function bestKey(run: RunState): string {
+  return run.mapSeed !== '' ? run.biome : String(run.mapId)
+}
+
 // Snapshot the meta tree into a fresh run. The run never reads meta again.
 // mapId, when valid, overrides the seed's map roll — player map choice. The
 // roll still always happens, so a chosen map never shifts the other streams.
 // trials are opt-in handicaps: their effects apply here (spire, gold) or at
 // spawn time (enemy stats), and computeSparks pays their bonus.
-export function createRun(meta: MetaState, seed: string, mapId?: number, trials?: TrialId[]): RunState {
-  const mapRoll = nextInt(deriveStream(seed, 'map'), 0, RANDOM_MAP_POOL - 1)
-  const chosenMap = mapId !== undefined && Number.isInteger(mapId) && mapId >= 0 && mapId < MAPS.length ? mapId : mapRoll.value
+export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials?: TrialId[]): RunState {
+  // Biome roll: dailies share one roll across every player (a shared seed
+  // means a shared battlefield); normal runs draw from UNLOCKED biomes. An
+  // explicit biome (picker, harness, tests) overrides the roll — the roll
+  // still always happens, so a chosen biome never shifts the other streams.
+  const pool = seed.startsWith('daily-') ? BIOME_IDS : unlockedBiomes(meta)
+  const biomeRoll = nextInt(deriveStream(seed, 'map'), 0, pool.length - 1)
+  const chosenBiome = biome !== undefined && BIOME_IDS.includes(biome) ? biome : pool[biomeRoll.value]!
   const chosenTrials = [...new Set((trials ?? []).filter((t) => Object.prototype.hasOwnProperty.call(TRIALS, t)))]
 
   const availableTowers: TowerType[] = ['arrow', 'cannon', 'frost', 'sniper']
@@ -182,7 +192,9 @@ export function createRun(meta: MetaState, seed: string, mapId?: number, trials?
       combat: deriveStream(seed, 'combat'),
       relics: deriveStream(seed, 'relics'),
     },
-    mapId: chosenMap,
+    mapId: 0, // legacy field; generated runs resolve through (biome, mapSeed)
+    biome: chosenBiome,
+    mapSeed: seed,
     wave: startWave,
     startWave,
     wavesCleared: startWave,
@@ -262,8 +274,8 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
       cycleVictories: meta.cycleVictories + won,
       bestWave: Math.max(meta.bestWave, summary.wavesCleared),
       bestWaveByMap:
-        summary.wavesCleared > (meta.bestWaveByMap[String(run.mapId)] ?? 0)
-          ? { ...meta.bestWaveByMap, [String(run.mapId)]: summary.wavesCleared }
+        summary.wavesCleared > (meta.bestWaveByMap[bestKey(run)] ?? 0)
+          ? { ...meta.bestWaveByMap, [bestKey(run)]: summary.wavesCleared }
           : meta.bestWaveByMap,
       achievements: [...meta.achievements, ...unlocked.map((a) => a.id)],
       lifetimeKills: meta.lifetimeKills + summary.kills,

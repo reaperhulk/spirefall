@@ -1,5 +1,6 @@
 import { ENEMIES } from '../data/content'
-import { cellCenter, getMap } from '../engine/grid'
+import { cellCenter } from '../engine/grid'
+import { getRunMap } from '../engine/mapgen'
 import { enemyColor, stampDecal } from './render'
 import { step, TICKS_PER_SECOND } from '../engine/step'
 import type { Command, GameEvent, RunState, Vec } from '../engine/types'
@@ -191,7 +192,7 @@ export class GameSession {
         }
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
-          stampDecal(this.state.mapId, this.state.seed, e.at, enemyColor(e.enemy))
+          stampDecal(`${this.state.biome}:${this.state.mapId}`, this.state.seed, e.at, enemyColor(e.enemy))
           if (this.speed <= 3) {
             this.effects.push({ kind: 'burst', at: e.at, color: enemyColor(e.enemy), t0: now, dur: 380 })
             this.effects.push({
@@ -207,7 +208,7 @@ export class GameSession {
         case 'spire_repaired':
           this.effects.push({
             kind: 'float',
-            at: cellCenter(getMap(this.state.mapId).spire),
+            at: cellCenter(getRunMap(this.state).spire),
             text: `+${e.amount}`,
             color: '#9ece6a',
             t0: now,
@@ -216,7 +217,7 @@ export class GameSession {
           break
         case 'enemy_spawned':
           if (e.enemy.startsWith('boss')) {
-            const spawn = cellCenter(getMap(this.state.mapId).spawn)
+            const spawn = cellCenter(getRunMap(this.state).spawn)
             this.effects.push({ kind: 'nova', at: spawn, t0: now, dur: 700 })
             this.effects.push({
               kind: 'float',
@@ -240,6 +241,23 @@ export class GameSession {
             })
           }
           break
+        case 'vents_erupted': {
+          // Orange bursts at every fissure — the eruption is readable even
+          // at speed. Suppressed above 3x like other per-hit effects.
+          if (this.speed <= 3) {
+            const map = getRunMap(this.state)
+            for (const idx of e.cells) {
+              this.effects.push({
+                kind: 'burst',
+                at: cellCenter({ cx: idx % map.width, cy: Math.floor(idx / map.width) }),
+                color: '#ff7a3c',
+                t0: now,
+                dur: 420,
+              })
+            }
+          }
+          break
+        }
         case 'cataclysm_struck':
           this.effects.push({
             kind: 'float',
@@ -255,7 +273,7 @@ export class GameSession {
           if (e.relic === null && e.goldAwarded > 0) {
             this.effects.push({
               kind: 'float',
-              at: cellCenter(getMap(this.state.mapId).spire),
+              at: cellCenter(getRunMap(this.state).spire),
               text: `+${e.goldAwarded}`,
               color: '#e5c07b',
               t0: now,

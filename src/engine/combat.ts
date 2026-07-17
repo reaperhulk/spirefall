@@ -34,6 +34,7 @@ import {
   TOWERS,
   towerTier,
 } from '../data/content'
+import { MARSH_SPEED_PCT, MESA_RANGE_PCT } from '../data/biomes'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
 import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower, TowerType } from './types'
@@ -143,6 +144,10 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
 
   for (const enemy of state.enemies) {
     let budget = enemy.slowTicks > 0 ? Math.max(1, Math.floor((enemy.speed * enemy.slowFactor) / 100)) : enemy.speed
+    // Frostfen pools: soft ground drags at ground enemies (fliers skip it).
+    if (map.marsh.length > 0 && !ENEMIES[enemy.type].flying && map.marsh[cellIndex(map, cellOf(enemy.pos))]) {
+      budget = Math.max(1, Math.floor((budget * MARSH_SPEED_PCT) / 100))
+    }
 
     // Fliers ignore the maze entirely: straight for the spire, over
     // everything. Only air-capable towers can touch them.
@@ -310,7 +315,11 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const def = towerTier(tower.type, tower.tier)
     const hitsAir = TOWERS[tower.type].hitsAir
     const origin = cellCenter(tower.cell)
-    const range = effectiveTowerRange(state, tower.type, tower.tier)
+    let range = effectiveTowerRange(state, tower.type, tower.tier)
+    // Highlands: a tower on a mesa overlooks the field.
+    if (map.mesa.length > 0 && map.mesa[cellIndex(map, tower.cell)]) {
+      range = Math.floor((range * MESA_RANGE_PCT) / 100)
+    }
     const rangeSq = range * range
     const alive = hitsAir ? aliveAir : aliveGround
     const target = selectTarget(tower, alive, map, field, rangeSq)
