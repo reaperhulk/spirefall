@@ -24,6 +24,7 @@ import { MAPS } from '../data/maps'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { AbilityId, CataclysmId, CellPos, RunSummary, Targeting, TowerType } from '../engine/types'
 import { Sfx } from './audio'
+import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
 import { RelicModal, RunOverOverlay, SettingsModal, SpireTreeModal } from './Overlays'
@@ -142,6 +143,7 @@ export default function App() {
   useEffect(() => {
     session.setOnEvents((events, s) => {
       sfx.handleEvents(events)
+      handleHaptics(events)
       for (const e of events) {
         if (e.type === 'run_ended') {
           if (s.seed === dailySeed()) {
@@ -885,8 +887,10 @@ export default function App() {
           meta={meta}
           volume={uiSettings.volume}
           reducedMotion={uiSettings.reducedMotion}
+          haptics={uiSettings.haptics}
           onVolume={(v) => setUiSettings({ ...updateSettings({ volume: v }) })}
           onReducedMotion={(v) => setUiSettings({ ...updateSettings({ reducedMotion: v }) })}
+          onHaptics={(v) => setUiSettings({ ...updateSettings({ haptics: v }) })}
           onClose={() => setShowSettings(false)}
         />
       )}

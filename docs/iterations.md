@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+33. **Mobile feel** — haptic feedback (spire hits buzz short, defeats long,
+    victories celebrate, cataclysms rumble; throttled, feature-checked,
+    settable — default on, e2e-persisted), plus notch/home-bar safety:
+    viewport-fit=cover with safe-area insets on the app frame and the
+    bottom-sheet tower panel.
+
 32. **HP timeline** — the engine samples spire HP at every wave clear
     (`hpByWave`, invariant-checked, save-migrated), and the run-over screen
     draws it as a sparkline: dips show exactly which waves drew blood, red

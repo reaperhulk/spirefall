@@ -348,15 +348,19 @@ export function SettingsModal({
   meta,
   volume,
   reducedMotion,
+  haptics,
   onVolume,
   onReducedMotion,
+  onHaptics,
   onClose,
 }: {
   meta: MetaState
   volume: number
   reducedMotion: boolean
+  haptics: boolean
   onVolume: (v: number) => void
   onReducedMotion: (v: boolean) => void
+  onHaptics: (v: boolean) => void
   onClose: () => void
 }) {
   const [transferCode, setTransferCode] = useState('')
@@ -386,6 +390,11 @@ export function SettingsModal({
             onChange={(e) => onReducedMotion(e.target.checked)}
           />
           <span className="settings-note">no screen shake or full-screen flashes</span>
+        </label>
+        <label className="settings-row">
+          Vibration
+          <input type="checkbox" checked={haptics} data-testid="haptics" onChange={(e) => onHaptics(e.target.checked)} />
+          <span className="settings-note">buzz on spire hits & run endings (touch devices)</span>
         </label>
         <h3>Records</h3>
         <div className="records-row" data-testid="records">

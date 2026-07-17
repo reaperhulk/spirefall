@@ -6,11 +6,12 @@ export interface Settings {
   volume: number // 0–100, scales every SFX gain
   reducedMotion: boolean // no screen shake, no full-screen flashes
   autoStart: boolean // build phase auto-sends the next wave after a beat
+  haptics: boolean // vibration feedback on devices that support it
 }
 
 const KEY = 'spirefall-settings'
 
-const DEFAULTS: Settings = { volume: 100, reducedMotion: false, autoStart: false }
+const DEFAULTS: Settings = { volume: 100, reducedMotion: false, autoStart: false, haptics: true }
 
 function load(): Settings {
   try {
@@ -21,6 +22,7 @@ function load(): Settings {
       volume: typeof parsed.volume === 'number' ? Math.max(0, Math.min(100, parsed.volume)) : DEFAULTS.volume,
       reducedMotion: parsed.reducedMotion === true,
       autoStart: parsed.autoStart === true,
+      haptics: parsed.haptics !== false, // default on — only an explicit off sticks
     }
   } catch {
     return { ...DEFAULTS }
