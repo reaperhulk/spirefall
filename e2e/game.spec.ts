@@ -396,6 +396,30 @@ test.describe('touch', () => {
     expect(cell).toEqual({ cx: 5, cy: 7 })
     await expect(loupe).not.toBeVisible()
 
+    // Dragging OFF the board and releasing is a cancel, not a placement.
+    const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
+    await firePointer('pointerdown', 8, 5)
+    await page.evaluate(
+      ([x, y]) => {
+        for (const t of ['pointermove', 'pointerup']) {
+          document.querySelector('[data-testid="playfield"]')!.dispatchEvent(
+            new PointerEvent(t, {
+              bubbles: true,
+              pointerId: 1,
+              pointerType: 'touch',
+              isPrimary: true,
+              clientX: x as number,
+              clientY: y as number,
+            }),
+          )
+        }
+      },
+      [box.x + 40, box.y - 60] as const, // well above the board
+    )
+    await page.waitForTimeout(150)
+    expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1) // still just the first tower
+    await expect(loupe).not.toBeVisible()
+
     // Disarmed again after checking: quick taps (down+up in place) still
     // place instantly — the existing touch spec covers that path.
     expect(errors).toEqual([])

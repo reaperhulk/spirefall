@@ -38,6 +38,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+67. *(post-marathon, playtest)* **Loupe fixes** — (1) releasing a drag off
+    the board cancels instead of placing (the loupe vanishes off-board as
+    the cancel affordance; e2e pins it); (2) the "weird blue circle" in
+    the loupe's corner was the ring drawn after ctx.restore() — raw device
+    px on dpr>1 phones rendered it quarter-scale top-left; it now draws in
+    its own dpr-scaled frame (headless dpr-1 screenshots had hidden this —
+    re-verified at deviceScaleFactor 2); (3) zoom relaxed 46 → 30 px per
+    cell, so ~4 cells of context are visible instead of ~2.6.
+
 66. *(post-marathon, review)* **Transformative relic tier** — seven relics
     that change HOW a tower plays, not its numbers: Ricochet Strings
     (arrows bounce at 50%), Cinder Shells (cannon hits burn 60% over 2s,

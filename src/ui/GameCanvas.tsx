@@ -84,7 +84,8 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
       cx: Math.max(0, Math.min(MAP_WIDTH - 1, Math.floor(x / CELL_PX))),
       cy: Math.max(0, Math.min(MAP_HEIGHT - 1, Math.floor(y / CELL_PX))),
     }
-    return { x, y, sx, sy, cell, screenScale }
+    const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom
+    return { x, y, sx, sy, cell, screenScale, inside }
   }
 
   // Position the loupe overlay near the finger, in SCREEN space. It is not
@@ -146,15 +147,24 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
           if (!aimRef.current || e.pointerType !== 'touch') return
           const aim = aimFromEvent(e)
           aimRef.current = aim
-          placeLoupe(aim)
-          onHover(aim.cell)
+          if (aim.inside) {
+            placeLoupe(aim)
+            onHover(aim.cell)
+          } else {
+            // Off the board: the loupe vanishes — the universal "let go here
+            // to cancel" affordance.
+            if (loupeRef.current) loupeRef.current.style.display = 'none'
+            onHover(null)
+          }
         }}
         onPointerUp={(e) => {
           if (!aimRef.current || e.pointerType !== 'touch') return
-          const cell = aimRef.current.cell
+          const release = aimFromEvent(e)
           endAim()
+          // Released off the board: an aborted placement, not a tower.
+          if (!release.inside) return
           suppressClickRef.current = { armed: true, until: performance.now() + 400 }
-          onCellClick(cell)
+          onCellClick(release.cell)
         }}
         onPointerCancel={() => {
           // The browser took the pointer (e.g. a system gesture): abort the

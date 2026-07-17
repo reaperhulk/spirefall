@@ -1598,6 +1598,7 @@ export interface TouchAim {
   sy: number
   cell: CellPos
   screenScale: number // on-screen px per logical px (CSS downscale factor)
+  inside: boolean // finger still over the board? released outside = cancel
 }
 
 export const LOUPE_D = 120 // loupe diameter, screen px
@@ -1624,8 +1625,9 @@ export function renderLoupe(
   ctx.scale(dpr, dpr)
 
   // Fixed magnification in SCREEN terms: the target cell always appears
-  // ~46 px in the loupe, however far CSS shrank the board.
-  const zoom = 46 / (CELL_PX * Math.max(0.05, aim.screenScale)) // loupe px per screen px
+  // ~30 px in the loupe, however far CSS shrank the board — roughly four
+  // cells of context. (46 px per cell was too zoomed to follow.)
+  const zoom = 30 / (CELL_PX * Math.max(0.05, aim.screenScale)) // loupe px per screen px
   const srcSize = LOUPE_D / (zoom * Math.max(0.05, aim.screenScale)) // logical px covered
   const mapW = MAP_WIDTH * CELL_PX
   const mapH = MAP_HEIGHT * CELL_PX
@@ -1661,10 +1663,15 @@ export function renderLoupe(
   ctx.strokeRect(cx - cellLoupePx / 2, cy - cellLoupePx / 2, cellLoupePx, cellLoupePx)
   ctx.restore()
 
-  // Ring on top of the clipped content.
+  // Ring on top of the clipped content. Drawn in its own dpr-scaled frame:
+  // drawing after restore() in raw device px put a quarter-scale phantom
+  // ring in the top-left corner on every dpr>1 phone.
+  ctx.save()
+  ctx.scale(dpr, dpr)
   ctx.strokeStyle = 'rgba(122, 162, 247, 0.95)'
   ctx.lineWidth = 2.5
   ctx.beginPath()
   ctx.arc(r, r, r - 1.5, 0, Math.PI * 2)
   ctx.stroke()
+  ctx.restore()
 }
