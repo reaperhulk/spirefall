@@ -218,6 +218,12 @@ export function RunOverOverlay({
         <p className="run-summary">
           {summary.wavesCleared} waves cleared · {summary.kills} kills ·{' '}
           <strong data-testid="sparks-earned">✦ {summary.sparks} sparks</strong> earned
+          {summary.wavesCleared > 0 && summary.wavesCleared >= meta.bestWave && (
+            <span className="new-record" data-testid="new-record">
+              {' '}
+              ★ personal best
+            </span>
+          )}
         </p>
         <div className="run-analytics" data-testid="run-analytics">
           <ShareBars
@@ -262,12 +268,14 @@ const SHORTCUTS: [string, string][] = [
 ]
 
 export function SettingsModal({
+  meta,
   volume,
   reducedMotion,
   onVolume,
   onReducedMotion,
   onClose,
 }: {
+  meta: MetaState
   volume: number
   reducedMotion: boolean
   onVolume: (v: number) => void
@@ -302,6 +310,28 @@ export function SettingsModal({
           />
           <span className="settings-note">no screen shake or full-screen flashes</span>
         </label>
+        <h3>Records</h3>
+        <div className="records-row" data-testid="records">
+          <span>Best wave <strong>{meta.bestWave}</strong></span>
+          <span>Runs <strong>{meta.runs}</strong></span>
+          <span>Victories <strong>{meta.victories}</strong></span>
+          <span>Kills <strong>{meta.lifetimeKills.toLocaleString()}</strong></span>
+          <span>Ascensions <strong>{meta.ascensions}</strong></span>
+        </div>
+        {meta.history.length > 0 && (
+          <table className="history-table">
+            <tbody>
+              {meta.history.slice(0, 8).map((h, i) => (
+                <tr key={i} className={h.outcome === 'victory' ? 'won' : ''}>
+                  <td>{h.outcome === 'victory' ? '🏆' : '💀'}</td>
+                  <td>wave {h.wavesCleared}</td>
+                  <td>{h.kills} kills</td>
+                  <td>✦ {h.sparks}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
         <h3>Save transfer</h3>
         <div className="transfer-row">
           <button

@@ -716,6 +716,7 @@ export default function App() {
       )}
       {showSettings && (
         <SettingsModal
+          meta={meta}
           volume={uiSettings.volume}
           reducedMotion={uiSettings.reducedMotion}
           onVolume={(v) => setUiSettings({ ...updateSettings({ volume: v }) })}

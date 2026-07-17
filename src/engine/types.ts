@@ -204,4 +204,7 @@ export interface MetaState {
   ascensions: number
   upgrades: Record<string, number> // MetaUpgradeId -> level (wiped on ascension)
   emberUpgrades: Record<string, number> // EmberUpgradeId -> level (permanent)
+  bestWave: number // furthest wave ever cleared
+  lifetimeKills: number
+  history: { outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }[] // recent runs, newest first
 }

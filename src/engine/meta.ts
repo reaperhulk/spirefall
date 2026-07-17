@@ -42,8 +42,14 @@ export function createMeta(): MetaState {
     ascensions: 0,
     upgrades: {},
     emberUpgrades: {},
+    bestWave: 0,
+    lifetimeKills: 0,
+    history: [],
   }
 }
+
+// Keep the recent-run ledger small enough to live in the save forever.
+export const HISTORY_LIMIT = 12
 
 // --- Ascension: the prestige layer above the Spire Tree -------------------
 
@@ -221,6 +227,12 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
       runs: meta.runs + 1,
       victories: meta.victories + won,
       cycleVictories: meta.cycleVictories + won,
+      bestWave: Math.max(meta.bestWave, summary.wavesCleared),
+      lifetimeKills: meta.lifetimeKills + summary.kills,
+      history: [
+        { outcome: summary.outcome, wavesCleared: summary.wavesCleared, kills: summary.kills, sparks: summary.sparks },
+        ...meta.history,
+      ].slice(0, HISTORY_LIMIT),
     },
     summary,
   }

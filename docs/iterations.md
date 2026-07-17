@@ -23,13 +23,17 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [ ] 14. Achievements with spark rewards
 - [x] 15. Wave preview enrichment: threat estimate, elite marks
 - [ ] 16. First-run tutorial hints
-- [ ] 17. Lifetime stats screen
+- [x] 17. Lifetime stats screen
 - [ ] 18. Boss variety: distinct boss per boss wave
 - [ ] 19. Deep fuzz run + rebalance pass
 - [ ] 20. Death/hit particles, boss entrance, juice pass
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+14. **Records** — meta tracks bestWave, lifetimeKills, and the last 12 runs.
+    Settings shows the records row + recent-run table (trophies for wins);
+    the run-over screen stars a new personal best.
 
 13. **Threat estimate** — the scouting report now shows the wave's exact
     total effective HP (mirrors spawn math through affixes and Juggernaut

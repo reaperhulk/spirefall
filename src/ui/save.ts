@@ -78,6 +78,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
       data.meta.embers ??= 0
       data.meta.ascensions ??= 0
       data.meta.emberUpgrades ??= {}
+      data.meta.bestWave ??= 0
+      data.meta.lifetimeKills ??= 0
+      data.meta.history ??= []
       // Discard finished runs; they only exist mid-play.
       if (data.run && (data.run.phase === 'defeat' || data.run.phase === 'victory')) {
         return { ...data, run: null }

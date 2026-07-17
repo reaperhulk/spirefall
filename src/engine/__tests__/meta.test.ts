@@ -16,6 +16,7 @@ import {
   createMeta,
   createRun,
   emberGainOnAscend,
+  HISTORY_LIMIT,
   metaUpgradeCost,
   settleRun,
 } from '../meta'
@@ -207,5 +208,28 @@ describe('ascension', () => {
     expect(after.sparks).toBe(300) // Ashen Legacy head start
     // Broke accounts cannot buy.
     expect(buyEmberUpgrade({ ...meta, embers: 0 }, 'ember_memory').ok).toBe(false)
+  })
+})
+
+describe('records', () => {
+  it('settleRun tracks best wave, lifetime kills, and a capped history', () => {
+    let meta = createMeta()
+    for (let i = 0; i < 15; i++) {
+      const run = createRun(meta, `rec-${i}`)
+      const ended = {
+        ...run,
+        phase: 'defeat' as const,
+        wavesCleared: i,
+        kills: 10,
+        sparksEarned: 5,
+        damageByTower: {},
+        killsByEnemy: { runner: 10 },
+      }
+      meta = settleRun(meta, ended).meta
+    }
+    expect(meta.bestWave).toBe(14)
+    expect(meta.lifetimeKills).toBe(150)
+    expect(meta.history).toHaveLength(HISTORY_LIMIT)
+    expect(meta.history[0]!.wavesCleared).toBe(14) // newest first
   })
 })

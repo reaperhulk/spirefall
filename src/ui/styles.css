@@ -752,3 +752,35 @@ button:disabled {
   color: #e0af68;
   font-weight: 600;
 }
+
+/* Records. */
+.records-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #8a93ad;
+}
+
+.records-row strong {
+  color: #e5c07b;
+}
+
+.history-table {
+  font-size: 12px;
+  color: #a9b1d6;
+  border-collapse: collapse;
+}
+
+.history-table td {
+  padding: 2px 12px 2px 0;
+}
+
+.history-table tr.won td {
+  color: #9ece6a;
+}
+
+.new-record {
+  color: #e5c07b;
+  font-weight: 700;
+}
