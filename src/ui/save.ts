@@ -65,6 +65,8 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.victoryClaimed ??= false
         data.run.startWave ??= 0
         data.run.cataclysms ??= []
+        data.run.damageByTower ??= {}
+        data.run.killsByEnemy ??= {}
         data.run.mods.critChancePct ??= 0
       }
       return data

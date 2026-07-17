@@ -106,6 +106,17 @@ export function assertInvariants(state: RunState): void {
     'cataclysms can only strike after the victory wave',
   )
 
+  // The analytics tallies reconcile exactly with the kill counter.
+  let tally = 0
+  for (const [enemy, n] of Object.entries(state.killsByEnemy)) {
+    check(Number.isInteger(n) && n >= 0, `killsByEnemy.${enemy} bad count ${n}`)
+    tally += n
+  }
+  check(tally === state.kills, `killsByEnemy sums to ${tally}, kills is ${state.kills}`)
+  for (const [tw, dmg] of Object.entries(state.damageByTower)) {
+    check(Number.isInteger(dmg) && dmg >= 0, `damageByTower.${tw} bad total ${dmg}`)
+  }
+
   check(new Set(state.relics).size === state.relics.length, 'duplicate relics')
   if (state.relicOffer !== null) {
     check(state.relicOffer.length > 0, 'empty relic offer')

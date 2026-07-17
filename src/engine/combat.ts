@@ -272,6 +272,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       const dmg = crit ? Math.floor((preCrit * critPct) / 100) : preCrit
       const dealt = applyHit(enemy, dmg, pierceShield)
       tower.damageDealt += dealt
+      if (dealt > 0) state.damageByTower[tower.type] = (state.damageByTower[tower.type] ?? 0) + dealt
       if (dealt > 0 && enemy.hp === 0) tower.kills += 1
     }
 
@@ -480,6 +481,7 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     }
     state.gold += bounty
     state.kills += 1
+    state.killsByEnemy[e.type] = (state.killsByEnemy[e.type] ?? 0) + 1
     events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty, lucky })
 
     // Splitters burst into shards where they fell.

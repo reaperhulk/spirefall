@@ -78,6 +78,36 @@ export function SpireTree({ meta, onBuy }: { meta: MetaState; onBuy: (id: MetaUp
   )
 }
 
+const TOWER_BAR_COLORS: Record<string, string> = {
+  arrow: '#9ece6a',
+  cannon: '#e0af68',
+  frost: '#7dcfff',
+  tesla: '#bb9af7',
+  sniper: '#73daca',
+  mint: '#e5c07b',
+}
+
+// Compact share bars: who did the work this run, and what died.
+function ShareBars({ title, entries, color }: { title: string; entries: [string, number][]; color: (key: string) => string }) {
+  const total = entries.reduce((sum, [, v]) => sum + v, 0)
+  if (total <= 0) return null
+  const sorted = [...entries].sort((a, b) => b[1] - a[1]).slice(0, 6)
+  return (
+    <div className="share-bars">
+      <h4>{title}</h4>
+      {sorted.map(([key, value]) => (
+        <div key={key} className="share-row">
+          <span className="share-label">{key}</span>
+          <div className="share-track">
+            <div className="share-fill" style={{ width: `${Math.max(2, Math.round((value / total) * 100))}%`, background: color(key) }} />
+          </div>
+          <span className="share-value">{value.toLocaleString()}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function RunOverOverlay({
   summary,
   meta,
@@ -98,6 +128,18 @@ export function RunOverOverlay({
           {summary.wavesCleared} waves cleared · {summary.kills} kills ·{' '}
           <strong data-testid="sparks-earned">✦ {summary.sparks} sparks</strong> earned
         </p>
+        <div className="run-analytics" data-testid="run-analytics">
+          <ShareBars
+            title="Damage by tower"
+            entries={Object.entries(summary.damageByTower) as [string, number][]}
+            color={(k) => TOWER_BAR_COLORS[k] ?? '#8a93ad'}
+          />
+          <ShareBars
+            title="Kills by enemy"
+            entries={Object.entries(summary.killsByEnemy) as [string, number][]}
+            color={() => '#f7768e'}
+          />
+        </div>
         <p className="run-flavor">
           {victory
             ? 'Against every prior collapse, this cycle holds.'

@@ -107,9 +107,24 @@ describe('createRun applies meta', () => {
 describe('settleRun', () => {
   it('banks sparks and counts the run', () => {
     const run = createRun(createMeta(), 'settle')
-    const ended = { ...run, phase: 'defeat' as const, wavesCleared: 7, kills: 40, sparksEarned: 85 }
+    const ended = {
+      ...run,
+      phase: 'defeat' as const,
+      wavesCleared: 7,
+      kills: 40,
+      sparksEarned: 85,
+      damageByTower: { arrow: 900 },
+      killsByEnemy: { runner: 40 },
+    }
     const { meta, summary } = settleRun(createMeta(), ended)
-    expect(summary).toEqual({ outcome: 'defeat', wavesCleared: 7, kills: 40, sparks: 85 })
+    expect(summary).toEqual({
+      outcome: 'defeat',
+      wavesCleared: 7,
+      kills: 40,
+      sparks: 85,
+      damageByTower: { arrow: 900 },
+      killsByEnemy: { runner: 40 },
+    })
     expect(meta.sparks).toBe(85)
     expect(meta.totalSparks).toBe(85)
     expect(meta.runs).toBe(1)

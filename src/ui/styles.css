@@ -555,3 +555,57 @@ button:disabled {
   font-weight: 600;
   letter-spacing: 0.04em;
 }
+
+/* Run-over analytics: share bars for damage/kill attribution. */
+.run-analytics {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.share-bars {
+  flex: 1;
+  min-width: 220px;
+}
+
+.share-bars h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: #565f89;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+
+.share-label {
+  width: 76px;
+  color: #a9b1d6;
+  text-transform: capitalize;
+}
+
+.share-track {
+  flex: 1;
+  height: 8px;
+  background: #1a2030;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.share-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.share-value {
+  width: 64px;
+  text-align: right;
+  color: #8a93ad;
+  font-variant-numeric: tabular-nums;
+}

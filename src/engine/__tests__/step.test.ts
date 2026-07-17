@@ -141,6 +141,9 @@ describe('wave lifecycle', () => {
     expect(s.kills).toBeGreaterThan(0)
     expect(s.spireHp).toBe(s.spireMaxHp) // wave 1 should not scratch a defended spire
     expect(s.gold).toBeGreaterThan(goldAfterBuild)
+    // Analytics tallies reconcile with the counters.
+    expect(Object.values(s.killsByEnemy).reduce((a, b) => a + b, 0)).toBe(s.kills)
+    expect(s.damageByTower.arrow).toBeGreaterThan(0)
   })
 
   it('every afk run ends in defeat: the rogue-lite guarantee', () => {

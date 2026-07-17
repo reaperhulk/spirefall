@@ -109,6 +109,8 @@ export function createRun(meta: MetaState, seed: string): RunState {
     availableTowers,
     activeAffix: null,
     cataclysms: [],
+    damageByTower: {},
+    killsByEnemy: {},
     victoryClaimed: false,
     mods: {
       damagePct: metaLevel(meta, 'tower_damage') * META_TOWER_DAMAGE_PCT_PER_LEVEL,
@@ -130,6 +132,8 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     wavesCleared: run.wavesCleared,
     kills: run.kills,
     sparks: run.sparksEarned,
+    damageByTower: { ...run.damageByTower },
+    killsByEnemy: { ...run.killsByEnemy },
   }
   return {
     meta: {

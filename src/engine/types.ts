@@ -128,6 +128,8 @@ export interface RunState {
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
   cataclysms: CataclysmId[] // permanent endless modifiers, in strike order
+  damageByTower: Partial<Record<TowerType, number>> // run-lifetime, survives sales
+  killsByEnemy: Partial<Record<EnemyType, number>> // run-lifetime tally
   victoryClaimed: boolean // wave VICTORY_WAVE cleared; endless continues after
   sparksEarned: number // set once, at run end
 }
@@ -175,6 +177,8 @@ export interface RunSummary {
   wavesCleared: number
   kills: number
   sparks: number
+  damageByTower: Partial<Record<TowerType, number>>
+  killsByEnemy: Partial<Record<EnemyType, number>>
 }
 
 // Permanent progression. Lives outside runs; same purity rules.
