@@ -61,6 +61,8 @@ export class GameSession {
   // Render-only: last firing angle per tower id, so turrets visibly track
   // their targets. Never read by the sim.
   aim: Record<number, number> = {}
+  // Render-only: enemy id → time it was last struck, for hit flashes.
+  hits: Map<number, number> = new Map()
 
   private onEvents: ((events: GameEvent[], state: RunState) => void) | null = null
   // Events raised before a handler attaches (e.g. the harness drives a brand
@@ -155,6 +157,8 @@ export class GameSession {
       switch (e.type) {
         case 'tower_fired': {
           this.aim[e.id] = Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x)
+          for (const id of e.targets) this.hits.set(id, now)
+          if (this.hits.size > 600) this.hits.clear()
           const color = e.crit ? '#ffffff' : (TOWER_BEAM_COLORS[e.tower] ?? '#ffffff')
           this.effects.push({ kind: 'flash', at: e.from, color, t0: now, dur: 90 })
           switch (e.tower) {

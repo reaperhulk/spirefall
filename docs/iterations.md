@@ -31,6 +31,10 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+22. **Hit feedback** — struck enemies flash white for 110ms (render-side hit
+    map fed by tower_fired targets); shielded enemies wear a ⛨N label showing
+    the block threshold, so bounced shots explain themselves.
+
 21. **Auto-advance** — ▶▶ toggle (persisted) auto-sends the next wave after a
     1.2s beat, pausing itself whenever a relic offer, victory prompt, or
     run-over needs the player.

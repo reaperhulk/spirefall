@@ -729,6 +729,27 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
       ctx.arc(x, y, r + 3, 0, Math.PI * 2)
       ctx.stroke()
     }
+    // Fresh hits flash the body white for a blink.
+    const hitAt = session.hits.get(e.id)
+    if (hitAt !== undefined) {
+      const hitAge = (performance.now() - hitAt) / 110
+      if (hitAge < 1) {
+        ctx.fillStyle = '#ffffff'
+        ctx.globalAlpha = 0.55 * (1 - hitAge)
+        circle(ctx, x, y, r)
+        ctx.fill()
+        ctx.globalAlpha = 1
+      }
+    }
+    // Shielded enemies wear their block threshold — if your shots deal less,
+    // they bounce.
+    if (e.shield > 0) {
+      ctx.font = 'bold 8px ui-monospace, monospace'
+      ctx.textAlign = 'center'
+      ctx.fillStyle = '#c0caf5'
+      ctx.fillText(`⛨${e.shield}`, x, y + r + 9)
+      ctx.textAlign = 'left'
+    }
     // HP bar
     if (e.hp < e.maxHp) {
       const bw = r * 2
