@@ -598,6 +598,157 @@ button:disabled {
   flex-shrink: 0;
 }
 
+/* Codex: the in-game reference. Rendered from the same data objects the
+   engine reads, so it can never drift from the sim. */
+.modal.codex {
+  max-width: 720px;
+}
+
+.codex-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.codex-head h2 {
+  margin: 0;
+}
+
+.codex-head .panel-close {
+  margin-left: auto;
+}
+
+.codex-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.codex-tab {
+  background: #1a1b26;
+  border: 1px solid #2c3448;
+  border-radius: 6px;
+  color: #a9b1d6;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.codex-tab.active {
+  border-color: #7aa2f7;
+  color: #c0caf5;
+  background: #1f2637;
+}
+
+.codex-body {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.codex-entry {
+  background: #131824;
+  border: 1px solid #232a3d;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.codex-entry.focused {
+  border-color: #e0af68;
+  box-shadow: 0 0 0 1px #e0af68;
+}
+
+.codex-entry-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #c0caf5;
+}
+
+.codex-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.codex-elite {
+  color: #e0af68;
+  font-size: 12px;
+}
+
+.codex-noair {
+  color: #565f89;
+  font-size: 12px;
+}
+
+.codex-unlock {
+  margin-left: auto;
+  color: #565f89;
+  font-size: 12px;
+}
+
+.codex-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  color: #a9b1d6;
+  font-size: 13px;
+}
+
+.codex-trait {
+  margin: 6px 0 0;
+  color: #9aa5ce;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.codex-tiers {
+  width: 100%;
+  margin-top: 8px;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #a9b1d6;
+}
+
+.codex-tiers th {
+  text-align: left;
+  color: #565f89;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px 4px 0;
+}
+
+.codex-tiers td {
+  padding: 3px 8px 3px 0;
+  border-top: 1px solid #1d2333;
+  white-space: nowrap;
+}
+
+/* The Special column carries prose — it alone may wrap. */
+.codex-tiers td:last-child {
+  white-space: normal;
+}
+
+/* The scouting-report chips are buttons now (they open the Codex) — keep
+   the original chip look. */
+button.preview-unit {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+button.preview-unit:hover {
+  border-color: #7aa2f7;
+}
+
 /* Phone: the scouting report wraps instead of scrolling — chips past the
    right edge would be forgotten. Two compact rows are RESERVED (constant
    min-height) so the playfield still never shifts between waves. This block

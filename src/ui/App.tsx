@@ -30,8 +30,9 @@ import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { sameCell } from '../engine/grid'
 import { MAPS } from '../data/maps'
 import type { MetaUpgradeId } from '../data/metaTree'
-import type { AbilityId, CataclysmId, CellPos, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
+import type { AbilityId, CataclysmId, CellPos, EnemyType, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
 import { Sfx } from './audio'
+import { CodexModal } from './Codex'
 import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
@@ -136,6 +137,8 @@ export default function App() {
   const [showTree, setShowTree] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showStats, setShowStats] = useState(false)
+  const [showCodex, setShowCodex] = useState(false)
+  const [codexFocus, setCodexFocus] = useState<EnemyType | null>(null)
   const [uiSettings, setUiSettings] = useState(() => ({ ...settings }))
   const [shopSelection, setShopSelection] = useState<TowerType | null>(null)
   const [abilitySelection, setAbilitySelection] = useState<AbilityId | null>(null)
@@ -337,6 +340,8 @@ export default function App() {
         setShowTree(false)
         setShowSettings(false)
         setShowStats(false)
+        setShowCodex(false)
+        setCodexFocus(null)
         return
       }
       // Never hijack typing/selects (e.g. the targeting dropdown).
@@ -376,6 +381,11 @@ export default function App() {
       }
       if (key === 's') {
         setShowStats((v) => !v)
+        return
+      }
+      if (key === 'c') {
+        setCodexFocus(null)
+        setShowCodex((v) => !v)
         return
       }
       if (key === 'm') {
@@ -609,6 +619,18 @@ export default function App() {
           >
             📊
           </button>
+          <button
+            className="ghost-btn"
+            onClick={() => {
+              setCodexFocus(null)
+              setShowCodex(true)
+            }}
+            data-testid="open-codex"
+            aria-label="Codex — enemies, towers, and mechanics"
+            title="Codex — enemies, towers & mechanics (C)"
+          >
+            📖
+          </button>
           <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree" title="Spire Tree (T)">
             Spire Tree
           </button>
@@ -689,7 +711,16 @@ export default function App() {
               {(Object.entries(preview.counts) as [keyof typeof ENEMIES, number][])
                 .sort(([ta, a], [tb, b]) => (ta === 'boss' ? -1 : tb === 'boss' ? 1 : b - a || ta.localeCompare(tb)))
                 .map(([type, n]) => (
-                  <span key={type} className={`preview-unit${type === 'boss' ? ' boss' : ''}`}>
+                  <button
+                    key={type}
+                    className={`preview-unit${type === 'boss' ? ' boss' : ''}`}
+                    data-testid={`preview-unit-${type}`}
+                    title={`${ENEMIES[type].name} — tap for the Codex entry`}
+                    onClick={() => {
+                      setCodexFocus(type as EnemyType)
+                      setShowCodex(true)
+                    }}
+                  >
                     {n}× {ENEMIES[type].name}
                     {ENEMIES[type].flying && <span className="air-mark" title="Flying — only Arrow, Tesla, and Sniper can hit it">✈</span>}
                     {(ENEMIES[type].armor ?? 0) > 0 && (
@@ -697,7 +728,7 @@ export default function App() {
                         ▣
                       </span>
                     )}
-                  </span>
+                  </button>
                 ))}
               {preview.affix && (
                 <span className="affix-badge" title={AFFIXES[preview.affix].description}>
@@ -1041,6 +1072,15 @@ export default function App() {
         />
       )}
       {showStats && !summary && <RunStatsModal state={state} onClose={() => setShowStats(false)} />}
+      {showCodex && !summary && (
+        <CodexModal
+          focusEnemy={codexFocus}
+          onClose={() => {
+            setShowCodex(false)
+            setCodexFocus(null)
+          }}
+        />
+      )}
       {showTree && !summary && (
         <SpireTreeModal
           meta={meta}

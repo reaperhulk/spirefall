@@ -355,6 +355,7 @@ const HUD_CONTROLS = [
   'mute',
   'daily-run',
   'open-stats',
+  'open-codex',
   'open-tree',
   'open-settings',
   'abandon-run',
@@ -645,5 +646,42 @@ test('daily run: shared date seed, best-of-today recorded', async ({ page }) => 
   await expect(page.getByTestId('run-over')).toBeVisible()
   const stored = await page.evaluate(() => localStorage.getItem('spirefall-daily'))
   expect(JSON.parse(stored!).date).toBe(today)
+  expect(errors).toEqual([])
+})
+
+test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape closes', async ({ page }) => {
+  const errors = await boot(page, 'e2e-wave')
+  await page.locator('.hint-close').click()
+
+  // HUD button → full reference with all three tabs.
+  await page.getByTestId('open-codex').click()
+  await expect(page.getByTestId('codex-modal')).toBeVisible()
+  await expect(page.getByTestId('codex-enemy-runner')).toBeVisible()
+  await page.getByTestId('codex-tab-towers').click()
+  await expect(page.getByTestId('codex-tower-arrow')).toBeVisible()
+  // Tower data comes straight from the data file: arrow tier-1 cost.
+  await expect(page.getByTestId('codex-tower-arrow')).toContainText('⛀ 50')
+  await page.getByTestId('codex-tab-mechanics').click()
+  await expect(page.getByTestId('codex-mechanic-armor')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('codex-modal')).not.toBeVisible()
+
+  // A scouting-report chip opens the codex focused on that enemy.
+  const chip = page.locator('[data-testid^="preview-unit-"]').first()
+  const chipId = await chip.getAttribute('data-testid')
+  const enemy = chipId!.replace('preview-unit-', '')
+  await chip.click()
+  await expect(page.getByTestId('codex-modal')).toBeVisible()
+  const focused = page.locator('[data-focused="true"]')
+  await expect(focused).toHaveAttribute('data-codex-enemy', enemy)
+  await expect(focused).toBeInViewport()
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('codex-modal')).not.toBeVisible()
+
+  // C toggles it from the keyboard.
+  await page.keyboard.press('c')
+  await expect(page.getByTestId('codex-modal')).toBeVisible()
+  await page.keyboard.press('c')
+  await expect(page.getByTestId('codex-modal')).not.toBeVisible()
   expect(errors).toEqual([])
 })

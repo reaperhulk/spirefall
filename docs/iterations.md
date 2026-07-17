@@ -38,6 +38,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+58. *(post-marathon, playtest)* **The Codex** — an in-game reference with
+    three tabs: Enemies (stats, traits, unlock waves, color swatches),
+    Towers (full tier tables + niche notes), and Mechanics (armor math,
+    shields, elites, crits-vs-shields, repair caps, combat-only cooldowns,
+    relic cadence, victory/endless). Everything renders from the same data
+    objects the engine reads — the reference cannot drift from the sim.
+    Three ways in: a 📖 HUD button, the C hotkey, and tapping any
+    scouting-report chip, which opens the codex scrolled to and
+    highlighting that enemy's entry. E2e covers all three paths plus a
+    data-fidelity assertion (arrow tier-1 cost shown = data file); the
+    viewport matrix now guards the 📖 button too. 26 e2e specs.
+
 57. *(post-marathon, playtest)* **Sound 2.0** — every tower has its own
     voice now (arrow pluck, cannon kick-drum boom, frost shimmer, tesla
     crackle, sniper crack + whistle tail) instead of one shared blip, built

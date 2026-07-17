@@ -402,6 +402,7 @@ const SHORTCUTS: [string, string][] = [
   ['R', 'Repair the Spire'],
   ['T', 'Toggle the Spire Tree'],
   ['S', 'This run’s stats so far'],
+  ['C', 'Codex — enemies, towers & mechanics'],
   ['M', 'Mute / unmute'],
   ['− / =', 'Slower / faster game speed'],
   ['?', 'Settings & shortcuts'],
