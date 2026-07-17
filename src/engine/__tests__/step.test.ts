@@ -644,3 +644,32 @@ describe('relic depth', () => {
     for (const id of offer) expect(s.relics).not.toContain(id)
   })
 })
+
+describe('threat estimate', () => {
+  it('preview totalHp matches the wave that actually spawns, affixes and all', () => {
+    for (const seed of ['threat-a', 'threat-b']) {
+      // Deep enough that affixes can roll; tall spire so waves clear.
+      let s = { ...cloneRun(freshRun(seed)), spireHp: 100_000, spireMaxHp: 100_000 }
+      for (let wave = 1; wave <= 9; wave++) {
+        const preview = previewNextWave(s)!
+        let started = step(s, [{ type: 'start_wave' }]).state
+        let spawnedHp = 0
+        let spawned = 0
+        while ((started.pendingSpawns.length > 0 || started.enemies.length > 0) && started.tick < 60_000) {
+          const before = new Set(started.enemies.map((e) => e.id))
+          started = step(started, []).state
+          for (const e of started.enemies) {
+            if (!before.has(e.id) && e.type !== 'splitling' && e.bounty !== 0) {
+              // count only wave spawns (not splits/broods)
+              spawnedHp += e.maxHp
+              spawned += 1
+            }
+          }
+        }
+        expect(spawned, `${seed} wave ${wave}`).toBe(preview.total)
+        expect(spawnedHp, `${seed} wave ${wave}`).toBe(preview.totalHp)
+        s = cloneRun(started)
+      }
+    }
+  })
+})

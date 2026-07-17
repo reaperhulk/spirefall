@@ -284,6 +284,8 @@ export interface WavePreview {
   boss: boolean
   counts: Partial<Record<EnemyType, number>>
   total: number
+  totalHp: number // exact effective HP the wave will field (affixes + cataclysms included)
+  elites: number // count of elite units in the wave
 }
 
 // A pure scouting report of the next wave. It runs the real generator against
@@ -295,13 +297,27 @@ export function previewNextWave(s: RunState): WavePreview | null {
   const { wave, fielded } = nextWaveBudget(s)
   const generated = generateWave(s.rng.waves, wave, fielded)
   const counts: Partial<Record<EnemyType, number>> = {}
-  for (const spawn of generated.spawns) counts[spawn.type] = (counts[spawn.type] ?? 0) + 1
+  // Mirror spawnDue's HP math exactly so the threat estimate can never lie.
+  const nextHpScale = wave === 1 ? 100 : Math.floor((s.hpScalePct * hpGrowthPct(wave)) / 100)
+  const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
+  let totalHp = 0
+  let elites = 0
+  for (const spawn of generated.spawns) {
+    counts[spawn.type] = (counts[spawn.type] ?? 0) + 1
+    totalHp += Math.max(
+      1,
+      Math.floor((scaledHp(spawn.type, nextHpScale) * affixHpPct(generated.affix) * juggernaut) / 10_000),
+    )
+    if (ENEMIES[spawn.type].elite) elites += 1
+  }
   return {
     wave,
     affix: generated.affix,
     boss: wave % BOSS_WAVE_INTERVAL === 0,
     counts,
     total: generated.spawns.length,
+    totalHp,
+    elites,
   }
 }
 

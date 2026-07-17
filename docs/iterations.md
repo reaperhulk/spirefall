@@ -21,7 +21,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [ ] 12. New tower type (7th) with unlock node + hotkey 7
 - [x] 13. Save export/import codes
 - [ ] 14. Achievements with spark rewards
-- [ ] 15. Wave preview enrichment: threat estimate, elite marks
+- [x] 15. Wave preview enrichment: threat estimate, elite marks
 - [ ] 16. First-run tutorial hints
 - [ ] 17. Lifetime stats screen
 - [ ] 18. Boss variety: distinct boss per boss wave
@@ -30,6 +30,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+13. **Threat estimate** — the scouting report now shows the wave's exact
+    total effective HP (mirrors spawn math through affixes and Juggernaut
+    cataclysms; pinned by a test that spawns the wave and reconciles) and an
+    elite count chip.
 
 12. **Save transfer codes** — Settings gains Export (base64 of the save JSON,
     auto-copied) and Import (validated through the normal migrate() path,

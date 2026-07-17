@@ -430,6 +430,14 @@ export default function App() {
       {preview && (
         <div className="wave-preview" data-testid="wave-preview">
           <span className="preview-label">Next wave:</span>
+          <span className="preview-threat" title="Total effective enemy HP this wave will field">
+            ≈{preview.totalHp.toLocaleString()} HP
+          </span>
+          {preview.elites > 0 && (
+            <span className="preview-elites" title="Elite units — snipers deal bonus damage to these">
+              ⚔ {preview.elites} elite{preview.elites > 1 ? 's' : ''}
+            </span>
+          )}
           {(Object.entries(preview.counts) as [keyof typeof ENEMIES, number][])
             .sort(([ta, a], [tb, b]) => (ta === 'boss' ? -1 : tb === 'boss' ? 1 : b - a || ta.localeCompare(tb)))
             .map(([type, n]) => (

@@ -741,3 +741,14 @@ button:disabled {
   color: #db4b4b;
   font-size: 12px;
 }
+
+.preview-threat {
+  color: #f7768e;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.preview-elites {
+  color: #e0af68;
+  font-weight: 600;
+}
