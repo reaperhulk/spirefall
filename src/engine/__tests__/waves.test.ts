@@ -74,3 +74,19 @@ describe('wave generation', () => {
     expect(scaledHp('swarmling', 1)).toBeGreaterThanOrEqual(1)
   })
 })
+
+describe('boss roster', () => {
+  it('boss waves rotate through the roster deterministically', () => {
+    const rng = deriveStream('boss-rotation', 'waves')
+    const bossOf = (wave: number) => {
+      const gen = generateWave(rng, wave, 5000)
+      const bosses = gen.spawns.filter((s) => s.type.startsWith('boss'))
+      expect(bosses.length, `wave ${wave}`).toBe(1)
+      return bosses[0]!.type
+    }
+    expect(bossOf(10)).toBe('boss')
+    expect(bossOf(20)).toBe('boss2')
+    expect(bossOf(30)).toBe('boss3')
+    expect(bossOf(40)).toBe('boss') // and around again
+  })
+})

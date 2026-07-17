@@ -24,12 +24,18 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 15. Wave preview enrichment: threat estimate, elite marks
 - [ ] 16. First-run tutorial hints
 - [x] 17. Lifetime stats screen
-- [ ] 18. Boss variety: distinct boss per boss wave
+- [x] 18. Boss variety: distinct boss per boss wave
 - [ ] 19. Deep fuzz run + rebalance pass
 - [ ] 20. Death/hit particles, boss entrance, juice pass
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+15. **Boss roster** — waves 10/20/30 rotate Spirebreaker (tank), Gravemind
+    (splits into Amalgams on death → cascading shards), Stormcaller (FLYING
+    boss: ground-only comps have no answer). Deterministic rotation, honest
+    unlock waves (a property test caught the 99 sentinel), shared boss
+    rendering with per-boss palette.
 
 14. **Records** — meta tracks bestWave, lifetimeKills, and the last 12 runs.
     Settings shows the records row + recent-run table (trophies for wins);

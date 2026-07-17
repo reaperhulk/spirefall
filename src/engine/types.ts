@@ -19,6 +19,8 @@ export type EnemyType =
   | 'wraith'
   | 'carrier'
   | 'boss'
+  | 'boss2'
+  | 'boss3'
 export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush'
 export type RelicId =
   | 'piercing_arrows'

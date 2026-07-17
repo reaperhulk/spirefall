@@ -2,6 +2,7 @@ import {
   AFFIX_CHANCE_PCT,
   AFFIX_FIRST_WAVE,
   AFFIX_IDS,
+  BOSS_ROSTER,
   BOSS_WAVE_INTERVAL,
   ENEMIES,
   MAX_UNITS_PER_WAVE,
@@ -52,7 +53,8 @@ export function generateWave(rng: Rng, wave: number, budget: number): GeneratedW
   const unitCap = waveUnitCap(wave)
 
   if (wave % BOSS_WAVE_INTERVAL === 0) {
-    spawns.push({ type: 'boss', tick: t })
+    const boss = BOSS_ROSTER[(wave / BOSS_WAVE_INTERVAL - 1) % BOSS_ROSTER.length]!
+    spawns.push({ type: boss, tick: t })
     units += 1
     t += 40
     remaining = Math.floor(remaining / 2) // escort gets half the budget

@@ -45,7 +45,13 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   wraith: { name: 'Wraith', hp: 35, speed: 88, cost: 11, pack: 2, spacing: 12, bounty: 2, damage: 2, shield: 0, unlockWave: 12, phasing: { visibleTicks: 60, hiddenTicks: 45 } },
   carrier: { name: 'Broodmother', hp: 80, speed: 40, cost: 30, pack: 1, spacing: 26, bounty: 8, damage: 4, shield: 3, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 140 } },
   boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, unlockWave: 10, elite: true },
+  boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 } },
+  boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, unlockWave: 30, elite: true, flying: true },
 }
+
+// Boss waves rotate through the roster: 10 → Spirebreaker (tank),
+// 20 → Gravemind (splits on death), 30 → Stormcaller (flies) — and repeat.
+export const BOSS_ROSTER: EnemyType[] = ['boss', 'boss2', 'boss3']
 
 // ---------------------------------------------------------------------------
 // Towers

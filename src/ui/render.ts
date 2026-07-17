@@ -42,6 +42,8 @@ const COLORS = {
     wraith: '#9aa5ce',
     carrier: '#d16d9e',
     boss: '#ff007c',
+    boss2: '#c53b53',
+    boss3: '#ffc777',
   } as Record<string, string>,
   hpBack: '#30354a',
   hpFill: '#9ece6a',
@@ -63,6 +65,8 @@ const ENEMY_RADIUS: Record<string, number> = {
   wraith: 8,
   carrier: 13,
   boss: 16,
+  boss2: 16,
+  boss3: 15,
 }
 
 function px(v: number): number {
@@ -660,7 +664,9 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.fill()
         break
       }
-      case 'boss': {
+      case 'boss':
+      case 'boss2':
+      case 'boss3': {
         // The Spirebreaker: rotating spike crown, breathing core, aura.
         const breathe = 1 + 0.05 * Math.sin(phase * 0.5)
         ctx.strokeStyle = color
