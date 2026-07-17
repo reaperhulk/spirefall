@@ -225,6 +225,34 @@ describe('ascension', () => {
     expect(canAscend(createMeta())).toBe(false)
   })
 
+  it('the Crucible: each cycle victory hardens the next run and sweetens the pot', () => {
+    const meta = winner(winner()) // two victories this cycle
+    expect(meta.cycleVictories).toBe(2)
+    const run = createRun(meta, 'crucible-run')
+    expect(run.crucible).toBe(2)
+    // Sparks scale +15% per rank on the same progress.
+    const base = { ...run, wavesCleared: run.startWave + 10, kills: 120 }
+    const fresh = { ...createRun(createMeta(), 'crucible-run'), wavesCleared: run.startWave + 10, kills: 120 }
+    expect(computeSparks({ ...base, crucible: 0 })).toBe(computeSparks(fresh))
+    expect(computeSparks(base)).toBe(Math.floor((computeSparks(fresh) * 130) / 100))
+    // Enemy HP: the crucible stage multiplies last, +10% per rank. Same
+    // seed, same streams — only the crucible differs between these twins.
+    const advance = (start: ReturnType<typeof createRun>) => {
+      let st = step(start, [{ type: 'start_wave' }]).state
+      while (st.enemies.length === 0) st = step(st, []).state
+      return st
+    }
+    const hardened = advance(run)
+    const control = advance({ ...run, crucible: 0 })
+    expect(hardened.enemies.length).toBe(control.enemies.length)
+    hardened.enemies.forEach((e, i) => {
+      expect(e.hp).toBe(Math.floor((control.enemies[i]!.hp * 120) / 100))
+    })
+    // Ascending resets the Crucible along with the cycle.
+    expect(ascend({ ...meta, sparks: 0 }).cycleVictories).toBe(0)
+    expect(createRun(ascend({ ...meta, sparks: 0 }), 'post-ascend').crucible).toBe(0)
+  })
+
   it('ascending burns the Spire Tree for embers and keeps the Ember Tree', () => {
     let meta = winner({ ...createMeta(), sparks: 5000 })
     meta = buyMetaUpgrade(meta, 'unlock_tesla').meta

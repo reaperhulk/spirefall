@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
-import { RELICS, TRIAL_IDS, TRIALS } from '../data/content'
+import { CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
 import { MAPS } from '../data/maps'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
@@ -308,6 +308,16 @@ export function RunOverOverlay({
             ? 'Against every prior collapse, this cycle holds.'
             : 'Its embers remember. Spend them, and reach further next time.'}
         </p>
+        {canAscend(meta) && (
+          <div className="ascend-callout" data-testid="runover-ascend-callout">
+            <p>
+              🔥 <strong>Ascension is ready</strong> — burn the Spire Tree below for{' '}
+              <strong>{emberGainOnAscend(meta)} Embers</strong>, or keep winning: each victory this cycle adds{' '}
+              <strong>+1 Ember</strong> while the Crucible hardens the horde (+{CRUCIBLE_HP_PCT_PER_RANK}% HP) and
+              raises the Spark payout (+{CRUCIBLE_SPARK_PCT_PER_RANK}%).
+            </p>
+          </div>
+        )}
         <div className="replay-row">
           <button
             className="ghost-btn"
@@ -360,6 +370,16 @@ export function RunOverOverlay({
               ))}
             </select>
           </label>
+          {meta.cycleVictories > 0 && (
+            <span
+              className="trial-badge crucible-badge"
+              data-testid="next-run-crucible"
+              title="The horde remembers your victories this cycle. Ascend to reset the Crucible."
+            >
+              🔥 Next run: Crucible {meta.cycleVictories} — enemies +{CRUCIBLE_HP_PCT_PER_RANK * meta.cycleVictories}%
+              HP, Sparks +{CRUCIBLE_SPARK_PCT_PER_RANK * meta.cycleVictories}%
+            </span>
+          )}
           <button className="primary-btn" onClick={onNextRun} data-testid="next-run">
             Begin next run
           </button>

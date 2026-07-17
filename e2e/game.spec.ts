@@ -37,7 +37,7 @@ declare global {
       dispatch: (command: unknown) => void
       fastForward: (seconds: number) => void
       newRun: (seed?: string) => void
-      getMeta: () => { sparks: number }
+      getMeta: () => { sparks: number; cycleVictories: number }
       buyMeta: (id: string) => void
       setSpeed: (n: number) => void
       getSpeed: () => number
@@ -769,5 +769,25 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
   await expect(page.getByTestId('codex-tower-arrow')).toContainText('117')
   await expect(page.getByTestId('codex-tower-arrow')).toContainText('(96)')
   await page.keyboard.press('Escape')
+  expect(errors).toEqual([])
+})
+
+test('the Crucible: cycle victories harden the next run and surface in the HUD', async ({ page }) => {
+  const errors = await boot(page, 'e2e-wave')
+  await page.locator('.hint-close').click()
+
+  // No victories yet: no badge, no fire on the tree button.
+  await expect(page.getByTestId('crucible')).not.toBeVisible()
+  await expect(page.getByTestId('open-tree')).not.toContainText('🔥')
+
+  // Two victories this cycle -> the next run is Crucible II.
+  await page.evaluate(() => {
+    window.__harness.getMeta().cycleVictories = 2
+    window.__harness.newRun('e2e-crucible')
+  })
+  await expect(page.getByTestId('crucible')).toBeVisible()
+  await expect(page.getByTestId('crucible')).toContainText('Crucible II')
+  await expect(page.getByTestId('open-tree')).toContainText('🔥')
+  expect(await page.evaluate(() => window.__harness.getState().crucible)).toBe(2)
   expect(errors).toEqual([])
 })

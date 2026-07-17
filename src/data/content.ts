@@ -323,6 +323,12 @@ export const TRIALS: Record<TrialId, TrialDef> = {
 
 export const TRIAL_IDS = Object.keys(TRIALS) as TrialId[]
 export const TRIAL_IRON_HP_PCT = 125
+
+// The Crucible: after each victory in a cycle, the next run's horde returns
+// harder and richer. Applied per victory-this-cycle, snapshotted at run
+// creation (RunState.crucible).
+export const CRUCIBLE_HP_PCT_PER_RANK = 10
+export const CRUCIBLE_SPARK_PCT_PER_RANK = 15
 export const TRIAL_SWIFT_SPEED_PCT = 115
 export const TRIAL_FAMINE_GOLD_PCT = -25
 

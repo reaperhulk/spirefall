@@ -38,6 +38,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+65. *(post-marathon, playtest)* **The Crucible + ascension discoverability**
+    — answering "why play again after winning?". Each victory in a cycle
+    now hardens the next run (+10% enemy HP per victory, applied as a
+    final stage in the same HP pipeline as Iron Horde — preview mirror
+    included) and sweetens it (+15% Sparks per victory), on top of the
+    existing +1 Ember per cycle victory at ascension. A repeat win is an
+    escalating ladder with visible stakes, not a replay of a solved
+    puzzle; ascending resets the Crucible with the cycle. Pre-victory
+    balance untouched (envelope + fuzz + careers all bind on fresh meta).
+    Discoverability: the victory prompt now explains the choice concretely
+    (ascend for N Embers vs. win again for +1 Ember at +10%/+15% stakes),
+    the run-over screen shows an Ascension-ready callout above the trees,
+    the Spire Tree button wears 🔥 whenever ascension is available, the
+    HUD shows a Crucible badge during hardened runs, and the next-run row
+    states the coming run's rank. New RunState field `crucible` (save
+    migration backfills 0; goldens regenerated — hash-only diff, all
+    outcomes byte-identical). 141 unit tests, 28 e2e specs.
+
 64. *(post-marathon, playtest)* **Approach lane: shipped, then reverted** —
     a two-cell pre-battlefield strip where pending spawns marched in ahead
     of the gate. Playtest verdict: the shifted playfield looked ugly; the

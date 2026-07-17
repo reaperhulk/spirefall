@@ -150,6 +150,10 @@ export interface RunState {
   activeAffix: AffixId | null // wave modifier for the current/last wave
   cataclysms: CataclysmId[] // permanent endless modifiers, in strike order
   trials: TrialId[] // opt-in handicaps chosen at run start; pay bonus sparks
+  // Victories won this cycle when the run began. Each one hardens the horde
+  // (+HP) and sweetens the pot (+sparks): repeat wins are an escalating
+  // ladder, not a replay of a solved puzzle. Resets with ascension.
+  crucible: number
   damageByTower: Partial<Record<TowerType, number>> // run-lifetime, survives sales
   killsByEnemy: Partial<Record<EnemyType, number>> // run-lifetime tally
   hpByWave: number[] // spire HP sampled at each wave clear, in clear order

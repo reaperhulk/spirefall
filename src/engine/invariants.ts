@@ -114,6 +114,7 @@ export function assertInvariants(state: RunState): void {
     check(['glass_spire', 'swift_horde', 'iron_horde', 'famine'].includes(t), `unknown trial ${String(t)}`)
   }
   check(new Set(state.trials).size === state.trials.length, 'duplicate trials')
+  check(Number.isInteger(state.crucible) && state.crucible >= 0, 'crucible must be a non-negative integer')
 
   // The analytics tallies reconcile exactly with the kill counter.
   let tally = 0

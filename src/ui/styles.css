@@ -408,6 +408,30 @@ button:disabled {
   font-size: 15px;
 }
 
+.ascend-callout {
+  background: #1f1712;
+  border: 1px solid #e0af68;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.ascend-callout p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #d8c49a;
+  line-height: 1.5;
+}
+
+.ascend-callout strong {
+  color: #e0af68;
+}
+
+.crucible-badge {
+  border-color: #e0af68;
+  color: #e0af68;
+  background: #1f1712;
+}
+
 .run-flavor {
   margin: 0;
   color: #8a93ad;

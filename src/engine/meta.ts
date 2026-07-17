@@ -206,6 +206,7 @@ export function createRun(meta: MetaState, seed: string, mapId?: number, trials?
     activeAffix: null,
     cataclysms: [],
     trials: chosenTrials,
+    crucible: meta.cycleVictories,
     damageByTower: {},
     hpByWave: [],
     repairsThisWave: 0,

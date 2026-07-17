@@ -7,6 +7,8 @@ import {
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   relicSkipGold,
+  CRUCIBLE_HP_PCT_PER_RANK,
+  CRUCIBLE_SPARK_PCT_PER_RANK,
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
   repairCostPerHp,
@@ -495,6 +497,15 @@ export default function App() {
             {cataclysmIn === 1 ? '⚠ Cataclysm this wave' : `⚠ Cataclysm in ${cataclysmIn} waves`}
           </span>
         )}
+        {state.crucible > 0 && (
+          <span
+            className="trial-badge crucible-badge"
+            data-testid="crucible"
+            title={`The Crucible: ${state.crucible} ${state.crucible === 1 ? 'victory' : 'victories'} this cycle — enemies +${CRUCIBLE_HP_PCT_PER_RANK * state.crucible}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * state.crucible}%. Ascend to reset.`}
+          >
+            🔥 Crucible {'I'.repeat(Math.min(state.crucible, 3))}{state.crucible > 3 ? `×${state.crucible}` : ''}
+          </span>
+        )}
         {state.trials.length > 0 && (
           <span className="cataclysm-badges" data-testid="trials">
             {state.trials.map((t) => (
@@ -631,8 +642,13 @@ export default function App() {
           >
             📖
           </button>
-          <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree" title="Spire Tree (T)">
-            Spire Tree
+          <button
+            className="ghost-btn"
+            onClick={() => setShowTree(true)}
+            data-testid="open-tree"
+            title={canAscend(meta) ? 'Spire Tree (T) — Ascension is ready 🔥' : 'Spire Tree (T)'}
+          >
+            Spire Tree{canAscend(meta) ? ' 🔥' : ''}
           </button>
           <button
             className="ghost-btn"
@@ -1000,6 +1016,17 @@ export default function App() {
               End the run now and bank the victory, or push into the endless dark. Sparks keep accruing either way;
               the victory bonus is yours whenever this run ends.
             </p>
+            <div className="ascend-callout" data-testid="victory-ascend-callout">
+              <p>
+                🔥 <strong>Ascension will be ready</strong> — once this run ends you can burn the Spire Tree for{' '}
+                <strong>{emberGainOnAscend(meta) + 1} Embers</strong> (permanent Ember Tree power).
+              </p>
+              <p>
+                Or win again first: every victory this cycle pays <strong>+1 Ember</strong> — and the horde returns{' '}
+                <strong>+{CRUCIBLE_HP_PCT_PER_RANK}% harder</strong>, worth{' '}
+                <strong>+{CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks</strong>. The Crucible deepens with each win.
+              </p>
+            </div>
             <button className="primary-btn" data-testid="claim-victory" onClick={() => session.dispatch({ type: 'abandon_run' })}>
               Claim victory & end run
             </button>

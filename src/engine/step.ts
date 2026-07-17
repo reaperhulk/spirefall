@@ -15,6 +15,8 @@ import {
   relicSkipGold,
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
+  CRUCIBLE_HP_PCT_PER_RANK,
+  CRUCIBLE_SPARK_PCT_PER_RANK,
   TRIAL_IRON_HP_PCT,
   TRIAL_SWIFT_SPEED_PCT,
   TRIALS,
@@ -315,13 +317,18 @@ export function previewNextWave(s: RunState): WavePreview | null {
   const nextHpScale = wave === 1 ? 100 : Math.floor((s.hpScalePct * hpGrowthPct(wave)) / 100)
   const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
   const iron = s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100
+  const crucible = 100 + CRUCIBLE_HP_PCT_PER_RANK * s.crucible
   let totalHp = 0
   let elites = 0
   for (const spawn of generated.spawns) {
     counts[spawn.type] = (counts[spawn.type] ?? 0) + 1
     totalHp += Math.max(
       1,
-      Math.floor((Math.floor((scaledHp(spawn.type, nextHpScale) * affixHpPct(generated.affix) * juggernaut) / 10_000) * iron) / 100),
+      Math.floor(
+        (Math.floor((Math.floor((scaledHp(spawn.type, nextHpScale) * affixHpPct(generated.affix) * juggernaut) / 10_000) * iron) / 100) *
+          crucible) /
+          100,
+      ),
     )
     if (ENEMIES[spawn.type].elite) elites += 1
   }
@@ -371,11 +378,16 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
   const ironclad = 100 + 50 * cataclysmCount(s, 'ironclad')
   const iron = s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100
   const swift = s.trials.includes('swift_horde') ? TRIAL_SWIFT_SPEED_PCT : 100
+  const crucible = 100 + CRUCIBLE_HP_PCT_PER_RANK * s.crucible
   for (const spawn of due) {
     const def = ENEMIES[spawn.type]
     const hp = Math.max(
       1,
-      Math.floor((Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix) * juggernaut) / 10_000) * iron) / 100),
+      Math.floor(
+        (Math.floor((Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix) * juggernaut) / 10_000) * iron) / 100) *
+          crucible) /
+          100,
+      ),
     )
     const speed = Math.floor((Math.floor((def.speed * affixSpeedPct(s.activeAffix) * surge) / 10_000) * swift) / 100)
     // Shields grow at HALF the HP curve's rate. A static shield is trivia
@@ -500,6 +512,7 @@ export function computeSparks(s: RunState): number {
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
   for (const t of s.trials) pct += TRIALS[t].sparkBonusPct // opt-in hardship pays
+  pct += CRUCIBLE_SPARK_PCT_PER_RANK * s.crucible // the hardened horde pays too
   return Math.floor((base * pct) / 100)
 }
 
