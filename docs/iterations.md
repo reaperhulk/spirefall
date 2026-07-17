@@ -14,7 +14,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 5. Run summary analytics: damage by tower type, kills by enemy type
 - [x] 6. Graphics: real projectiles (cannon shells, sniper tracers), muzzle flash
 - [ ] 7. Graphics: terrain texture, path styling, spire/gate glow-up
-- [ ] 8. UX: settings panel (volume, reduced motion) + shortcuts help overlay
+- [x] 8. UX: settings panel (volume, reduced motion) + shortcuts help overlay
 - [ ] 9. Mobile: PWA manifest + offline service worker + install icons
 - [ ] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
 - [ ] 11. Relic depth: rarity tiers, more relics, reroll option
@@ -30,6 +30,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+5. **Settings & shortcuts** — ⚙/? opens a modal with an SFX volume slider,
+   a reduced-motion toggle (kills screen shake + full-screen flashes), and
+   the complete keyboard reference. Persisted separately from the save so a
+   progress wipe never wipes accessibility choices. Escape now always works,
+   even from inside form controls. E2e proves persistence across reloads.
 
 4. **Projectiles** — cannon shells lob along an arc and the splash lands on
    impact (future-scheduled effects), sniper tracers with a leading slug,

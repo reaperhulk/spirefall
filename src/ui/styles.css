@@ -609,3 +609,46 @@ button:disabled {
   color: #8a93ad;
   font-variant-numeric: tabular-nums;
 }
+
+/* Settings modal. */
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.settings-row input[type='range'] {
+  flex: 1;
+  max-width: 220px;
+}
+
+.settings-value {
+  color: #7dcfff;
+  min-width: 44px;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-note {
+  color: #565f89;
+  font-size: 12px;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 4px 16px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #a9b1d6;
+}
+
+.shortcut-row .key-hint {
+  min-width: 52px;
+  text-align: center;
+}

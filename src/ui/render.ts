@@ -1,4 +1,5 @@
 import { ABILITIES, ENEMIES, towerTier } from '../data/content'
+import { settings } from './settings'
 import type { MapDef } from '../data/maps'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, pathFrom } from '../engine/grid'
 import type { AbilityId, CellPos, Enemy, RunState, TowerType, Vec } from '../engine/types'
@@ -805,6 +806,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         break
       }
       case 'spire_hit': {
+        if (settings.reducedMotion) break // no full-screen flashes
         ctx.fillStyle = '#db4b4b'
         ctx.globalAlpha = fade * 0.25
         const map = getMap(session.state.mapId)
@@ -812,6 +814,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         break
       }
       case 'gold_rush': {
+        if (settings.reducedMotion) break // no full-screen flashes
         ctx.fillStyle = '#ffd76e'
         ctx.globalAlpha = fade * 0.15
         const map = getMap(session.state.mapId)

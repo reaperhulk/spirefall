@@ -24,7 +24,8 @@ import type { AbilityId, CataclysmId, CellPos, RunSummary, Targeting, TowerType 
 import { Sfx } from './audio'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
-import { RelicModal, RunOverOverlay, SpireTreeModal } from './Overlays'
+import { RelicModal, RunOverOverlay, SettingsModal, SpireTreeModal } from './Overlays'
+import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
 import { clearSave, loadSave, persistSave } from './save'
 import { GameSession } from './session'
@@ -58,6 +59,8 @@ export default function App() {
   const [summary, setSummary] = useState<RunSummary | null>(null)
   const [victoryPrompt, setVictoryPrompt] = useState(false)
   const [showTree, setShowTree] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [uiSettings, setUiSettings] = useState(() => ({ ...settings }))
   const [shopSelection, setShopSelection] = useState<TowerType | null>(null)
   const [abilitySelection, setAbilitySelection] = useState<AbilityId | null>(null)
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
@@ -173,6 +176,15 @@ export default function App() {
   // Keyboard shortcuts.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Escape always works, even from inside a form control.
+      if (e.key === 'Escape') {
+        setShopSelection(null)
+        setAbilitySelection(null)
+        setSelectedTowerId(null)
+        setShowTree(false)
+        setShowSettings(false)
+        return
+      }
       // Never hijack typing/selects (e.g. the targeting dropdown).
       const t = e.target
       if (t instanceof HTMLSelectElement || t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) return
@@ -183,11 +195,8 @@ export default function App() {
         else if (sessionRef.current.state.phase === 'build') sessionRef.current.dispatch({ type: 'start_wave' })
         return
       }
-      if (e.key === 'Escape') {
-        setShopSelection(null)
-        setAbilitySelection(null)
-        setSelectedTowerId(null)
-        setShowTree(false)
+      if (e.key === '?') {
+        setShowSettings((v) => !v)
         return
       }
       const key = e.key.toLowerCase()
@@ -347,6 +356,14 @@ export default function App() {
           </div>
           <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree" title="Spire Tree (T)">
             Spire Tree
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => setShowSettings(true)}
+            data-testid="open-settings"
+            title="Settings & shortcuts (?)"
+          >
+            ⚙
           </button>
           {!summary && (
             <button
@@ -643,6 +660,15 @@ export default function App() {
         />
       )}
       {summary && <RunOverOverlay summary={summary} meta={meta} onBuy={buyMeta} onNextRun={() => beginNextRun()} />}
+      {showSettings && (
+        <SettingsModal
+          volume={uiSettings.volume}
+          reducedMotion={uiSettings.reducedMotion}
+          onVolume={(v) => setUiSettings({ ...updateSettings({ volume: v }) })}
+          onReducedMotion={(v) => setUiSettings({ ...updateSettings({ reducedMotion: v }) })}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
       {showTree && !summary && (
         <SpireTreeModal
           meta={meta}

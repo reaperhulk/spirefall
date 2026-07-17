@@ -349,3 +349,21 @@ test('saves survive a reload mid-run', async ({ page }) => {
   expect(after.spireHp).toBe(before.spireHp)
   expect(errors).toEqual([])
 })
+
+test('settings: volume and reduced motion persist across reloads', async ({ page }) => {
+  const errors = await boot(page, 'e2e-settings')
+  await page.getByTestId('open-settings').click()
+  await expect(page.getByTestId('settings-modal')).toBeVisible()
+  await page.getByTestId('volume-slider').fill('40')
+  await page.getByTestId('reduced-motion').check()
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('settings-modal')).not.toBeVisible()
+
+  await page.reload()
+  await page.waitForSelector('[data-testid="playfield"]')
+  await page.keyboard.press('?') // keyboard route in
+  await expect(page.getByTestId('settings-modal')).toBeVisible()
+  await expect(page.getByTestId('volume-slider')).toHaveValue('40')
+  await expect(page.getByTestId('reduced-motion')).toBeChecked()
+  expect(errors).toEqual([])
+})

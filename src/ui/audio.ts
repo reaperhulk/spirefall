@@ -1,4 +1,5 @@
 import type { GameEvent } from '../engine/types'
+import { settings } from './settings'
 
 // Tiny synthesized SFX — WebAudio oscillators, no assets. The AudioContext is
 // created lazily on the first user gesture (browser autoplay policy), sounds
@@ -188,7 +189,9 @@ export class Sfx {
       osc.type = note.type
       osc.frequency.setValueAtTime(note.freq, at)
       if (note.sweep) osc.frequency.exponentialRampToValueAtTime(note.freq * note.sweep, at + note.dur)
-      gain.gain.setValueAtTime(note.gain, at)
+      const scaled = (note.gain * Math.max(0, Math.min(100, settings.volume))) / 100
+      if (scaled <= 0) continue
+      gain.gain.setValueAtTime(scaled, at)
       gain.gain.exponentialRampToValueAtTime(0.0001, at + note.dur)
       osc.connect(gain)
       gain.connect(this.ctx.destination)

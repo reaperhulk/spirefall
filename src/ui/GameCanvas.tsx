@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import type { CellPos } from '../engine/types'
 import { CELL_PX, draw, type RenderUiState } from './render'
+import { settings } from './settings'
 import type { GameSession } from './session'
 
 interface Props {
@@ -35,7 +36,8 @@ export function GameCanvas({ session, ui, onCellClick, onHover }: Props) {
       ctx.save()
       ctx.scale(dpr, dpr)
       // Screen shake while a spire hit is fresh (rendering-only randomness).
-      const hit = session.effects.find((fx) => fx.kind === 'spire_hit' && now - fx.t0 < fx.dur)
+      const hit =
+        !settings.reducedMotion && session.effects.find((fx) => fx.kind === 'spire_hit' && now - fx.t0 < fx.dur)
       if (hit) {
         const strength = 3 * (1 - (now - hit.t0) / hit.dur)
         ctx.translate((Math.random() - 0.5) * 2 * strength, (Math.random() - 0.5) * 2 * strength)

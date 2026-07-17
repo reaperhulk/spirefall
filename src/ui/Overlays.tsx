@@ -155,6 +155,76 @@ export function RunOverOverlay({
   )
 }
 
+const SHORTCUTS: [string, string][] = [
+  ['1–6', 'Arm a tower for placement'],
+  ['Q / W / E', 'Cast Meteor / Frost Nova / Gold Rush'],
+  ['Space', 'Start the next wave (or begin the next run)'],
+  ['U', 'Upgrade / enhance the selected tower'],
+  ['X', 'Sell the selected tower'],
+  ['R', 'Repair the Spire'],
+  ['T', 'Toggle the Spire Tree'],
+  ['M', 'Mute / unmute'],
+  ['− / =', 'Slower / faster game speed'],
+  ['?', 'Settings & shortcuts'],
+  ['Esc', 'Deselect / close panels'],
+]
+
+export function SettingsModal({
+  volume,
+  reducedMotion,
+  onVolume,
+  onReducedMotion,
+  onClose,
+}: {
+  volume: number
+  reducedMotion: boolean
+  onVolume: (v: number) => void
+  onReducedMotion: (v: boolean) => void
+  onClose: () => void
+}) {
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} data-testid="settings-modal">
+        <h2>Settings</h2>
+        <label className="settings-row">
+          Sound volume
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={volume}
+            data-testid="volume-slider"
+            onChange={(e) => onVolume(Number(e.target.value))}
+          />
+          <span className="settings-value">{volume}%</span>
+        </label>
+        <label className="settings-row">
+          Reduced motion
+          <input
+            type="checkbox"
+            checked={reducedMotion}
+            data-testid="reduced-motion"
+            onChange={(e) => onReducedMotion(e.target.checked)}
+          />
+          <span className="settings-note">no screen shake or full-screen flashes</span>
+        </label>
+        <h3>Keyboard shortcuts</h3>
+        <div className="shortcuts-grid">
+          {SHORTCUTS.map(([keys, what]) => (
+            <div key={keys} className="shortcut-row">
+              <kbd className="key-hint">{keys}</kbd>
+              <span>{what}</span>
+            </div>
+          ))}
+        </div>
+        <button className="ghost-btn" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function SpireTreeModal({
   meta,
   onBuy,
