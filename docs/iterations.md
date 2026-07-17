@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+26. **Targeting depth** — two new tower targeting modes: *Weakest* (finish
+    low-HP stragglers — pairs with splash chip damage) and *Elite Hunter*
+    (prioritize elites/bosses over the horde, falling back to first-past when
+    no elite is up). Full six-mode cycle in the popover + engine validation,
+    unit-tested target selection for both.
+
 25. **Perf** — towersFire candidate lists hoisted to once-per-tick (was two
     array allocations per tower per tick); range check inlined into
     selectTarget. Live-checks preserve exact mid-tick kill semantics —

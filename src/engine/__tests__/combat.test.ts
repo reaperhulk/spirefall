@@ -158,3 +158,22 @@ describe('beacon aura', () => {
     expect(b.effective).toBe(Math.floor((32 * 112) / 100))
   })
 })
+
+describe('new targeting modes', () => {
+  const map = getMap(0)
+  const field = distanceField(map, blockedGrid(map, []))
+
+  it('weakest picks minimum hp; elites hunt elite units before anything else', () => {
+    const wounded = enemy({ id: 1, hp: 5, pos: cellCenter({ cx: 6, cy: 6 }) })
+    const healthy = enemy({ id: 2, hp: 45, pos: cellCenter({ cx: 7, cy: 6 }) })
+    const brute = enemy({ id: 3, type: 'brute', hp: 70, maxHp: 70, pos: cellCenter({ cx: 5, cy: 6 }) })
+    const t = tower({ targeting: 'weakest', cell: { cx: 6, cy: 7 } })
+    expect(selectTarget(t, [wounded, healthy, brute], map, field)!.id).toBe(1)
+
+    const hunter = tower({ targeting: 'elites', cell: { cx: 6, cy: 7 } })
+    expect(selectTarget(hunter, [wounded, healthy, brute], map, field)!.id).toBe(3)
+    // With no elite present, elites falls back to path progress.
+    const fallback = selectTarget(hunter, [wounded, healthy], map, field)!
+    expect(['1', '2']).toContain(String(fallback.id))
+  })
+})

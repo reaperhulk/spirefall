@@ -95,7 +95,7 @@ describe('tower commands', () => {
     const id = s.towers[0]!.id
     const ok = step(s, [{ type: 'set_targeting', id, targeting: 'strongest' }])
     expect(ok.state.towers[0]!.targeting).toBe('strongest')
-    const bad = step(s, [{ type: 'set_targeting', id, targeting: 'weakest' as never }])
+    const bad = step(s, [{ type: 'set_targeting', id, targeting: 'bogus' as never }])
     expect(bad.events[0]).toMatchObject({ type: 'command_rejected' })
   })
 })

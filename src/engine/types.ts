@@ -6,7 +6,7 @@ import type { Rng } from './rng'
 
 export type Phase = 'build' | 'wave' | 'defeat' | 'victory'
 export type TowerType = 'arrow' | 'cannon' | 'frost' | 'tesla' | 'sniper' | 'mint' | 'beacon'
-export type Targeting = 'first' | 'last' | 'strongest' | 'nearest'
+export type Targeting = 'first' | 'last' | 'strongest' | 'weakest' | 'nearest' | 'elites'
 export type EnemyType =
   | 'runner'
   | 'swarmling'

@@ -225,8 +225,15 @@ export function selectTarget(
       case 'strongest':
         key = -e.hp
         break
+      case 'weakest':
+        key = e.hp
+        break
       case 'nearest':
         key = distSq(origin, e.pos)
+        break
+      case 'elites':
+        // Elites first (by path progress); non-elites only as fallback.
+        key = (ENEMIES[e.type].elite ? 0 : 1_000_000_000_000) + progressKey(map, field, e)
         break
     }
     if (best === null || key < bestKey || (key === bestKey && e.id < best.id)) {

@@ -53,7 +53,7 @@ import { affixHpPct, affixSpeedPct, generateWave, scaledHp } from './waves'
 
 export const TICKS_PER_SECOND = 30
 
-const TARGETING_MODES: Targeting[] = ['first', 'last', 'strongest', 'nearest']
+const TARGETING_MODES: Targeting[] = ['first', 'last', 'strongest', 'weakest', 'nearest', 'elites']
 
 function isTerminal(state: RunState): boolean {
   return state.phase === 'defeat' || state.phase === 'victory'

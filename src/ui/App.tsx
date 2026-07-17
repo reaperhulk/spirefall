@@ -70,7 +70,7 @@ function towerRole(type: TowerType): string {
   return 'ground only — cannot hit fliers'
 }
 const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush', 'bulwark']
-const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'nearest']
+const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'weakest', 'nearest', 'elites']
 
 export default function App() {
   const [boot] = useState(() => {
