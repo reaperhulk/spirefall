@@ -122,6 +122,14 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
       continue
     }
 
+    // Standing on the spire cell IS arrival — enemies hatched or split
+    // right on top of it have no waypoint to walk toward and would
+    // otherwise stand there forever, stalling the wave.
+    if (sameCell(cellOf(enemy.pos), map.spire)) {
+      arrived.push(enemy.id)
+      continue
+    }
+
     // Re-path if we have no waypoint or ours was built over.
     if (enemy.targetCell !== null && blocked[cellIndex(map, enemy.targetCell)] === 1) enemy.targetCell = null
     if (enemy.targetCell === null) enemy.targetCell = nextCell(map, field, cellOf(enemy.pos))
@@ -233,7 +241,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     if (target === null) continue
 
     const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance
-    let damage = Math.floor((def.damage * pct) / 100)
+    const baseDamage = Math.floor((def.damage * pct) / 100)
 
     // One crit roll per shot: a critical cannon shell crits its whole splash,
     // a critical tesla arc crits the whole chain.
@@ -242,21 +250,23 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     if (critChance > 0) {
       const roll = nextInt(state.rng.combat, 1, 100)
       state.rng.combat = roll.rng
-      if (roll.value <= critChance) {
-        crit = true
-        damage = Math.floor((damage * effectiveCritDamagePct(state)) / 100)
-      }
+      crit = roll.value <= critChance
     }
+    const critPct = crit ? effectiveCritDamagePct(state) : 100
     const hitIds: number[] = [target.id]
 
     // Every hit is attributed to the tower: damage always, kill on the blow
     // that empties the enemy's hp — so per-tower stats answer "what is this
     // tower actually doing?" Snipers pierce shields outright; per-target
     // bonuses (arrow vs air, sniper vs elites) apply on top of crits.
+    // Shields judge a shot by its HONEST (pre-crit) weight: a lucky crit
+    // never slips a light shot through — piercing or heavy hits only.
     const pierceShield = tower.type === 'sniper'
     const hit = (enemy: Enemy): void => {
       const bonus = bonusPctVs(tower.type, enemy)
-      const dmg = bonus > 0 ? Math.floor((damage * (100 + bonus)) / 100) : damage
+      const preCrit = bonus > 0 ? Math.floor((baseDamage * (100 + bonus)) / 100) : baseDamage
+      if (!pierceShield && preCrit <= enemy.shield) return // fully blocked
+      const dmg = crit ? Math.floor((preCrit * critPct) / 100) : preCrit
       const dealt = applyHit(enemy, dmg, pierceShield)
       tower.damageDealt += dealt
       if (dealt > 0 && enemy.hp === 0) tower.kills += 1
@@ -379,6 +389,45 @@ export function tickStatuses(state: RunState): void {
   if (state.goldRushTicks > 0) state.goldRushTicks -= 1
 }
 
+// Carriers hatch broods of lesser enemies at their own position while alive.
+// Children get fresh (highest) ids, so appending preserves spawn order.
+export function carrierBroods(state: RunState, events: GameEvent[]): void {
+  const children: Enemy[] = []
+  for (const carrier of state.enemies) {
+    const brood = ENEMIES[carrier.type].brood
+    if (!brood || carrier.hp <= 0) continue
+    if (carrier.broodCooldown > 0) {
+      carrier.broodCooldown -= 1
+      continue
+    }
+    carrier.broodCooldown = brood.everyTicks
+    const def = ENEMIES[brood.type]
+    for (let i = 0; i < brood.count; i++) {
+      const hp = scaledHp(brood.type, state.hpScalePct)
+      const id = state.nextEntityId
+      state.nextEntityId += 1
+      children.push({
+        id,
+        type: brood.type,
+        pos: { ...carrier.pos },
+        hp,
+        maxHp: hp,
+        speed: def.speed,
+        slowFactor: 100,
+        slowTicks: 0,
+        bounty: 0, // hatchlings pay nothing — stalling a carrier is never profit
+        damage: def.damage,
+        shield: def.shield,
+        healCooldown: 0,
+        broodCooldown: 0,
+        targetCell: null,
+      })
+      events.push({ type: 'enemy_spawned', id, enemy: brood.type })
+    }
+  }
+  if (children.length > 0) state.enemies = state.enemies.concat(children)
+}
+
 // Healers pulse healing to nearby wounded allies. Runs after movement so the
 // pulse lands where enemies actually are this tick.
 export function enemyAuras(state: RunState, events: GameEvent[]): void {
@@ -451,6 +500,7 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
           damage: def.damage,
           shield: def.shield,
           healCooldown: 0,
+          broodCooldown: 0,
           targetCell: null,
         })
         events.push({ type: 'enemy_spawned', id, enemy: split.type })

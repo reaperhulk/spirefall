@@ -1,4 +1,4 @@
-import { ABILITIES, towerTier } from '../data/content'
+import { ABILITIES, ENEMIES, towerTier } from '../data/content'
 import type { MapDef } from '../data/maps'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, pathFrom } from '../engine/grid'
 import type { AbilityId, CellPos, Enemy, RunState, TowerType, Vec } from '../engine/types'
@@ -38,6 +38,7 @@ const COLORS = {
     healer: '#9ece6a',
     splitter: '#d19a66',
     splitling: '#f0a45d',
+    carrier: '#d16d9e',
     boss: '#ff007c',
   } as Record<string, string>,
   hpBack: '#30354a',
@@ -57,6 +58,7 @@ const ENEMY_RADIUS: Record<string, number> = {
   healer: 10,
   splitter: 9,
   splitling: 5,
+  carrier: 13,
   boss: 16,
 }
 
@@ -518,6 +520,28 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
         circle(ctx, -r * 0.35, jiggle, r * 0.32)
         ctx.fill()
         circle(ctx, r * 0.35, -jiggle, r * 0.32)
+        ctx.fill()
+        break
+      }
+      case 'carrier': {
+        // Broodmother: a swollen sac-laden body; the sacs swell as the next
+        // brood nears hatching.
+        const hatch = 1 - e.broodCooldown / (ENEMIES[e.type].brood?.everyTicks ?? 90)
+        ctx.rotate(heading)
+        ctx.fillStyle = color
+        ellipse(ctx, 0, 0, r * 1.15, r * 0.9)
+        ctx.fill()
+        ctx.fillStyle = COLORS.enemies['swarmling']!
+        for (const [ox, oy] of [
+          [-r * 0.45, -r * 0.3],
+          [-r * 0.1, r * 0.35],
+          [r * 0.4, -r * 0.15],
+        ] as const) {
+          circle(ctx, ox, oy, r * (0.18 + 0.14 * Math.max(0, Math.min(1, hatch))))
+          ctx.fill()
+        }
+        ctx.fillStyle = '#0b0e14'
+        circle(ctx, r * 0.8, 0, 1.8)
         ctx.fill()
         break
       }

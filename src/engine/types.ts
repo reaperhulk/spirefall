@@ -16,6 +16,7 @@ export type EnemyType =
   | 'healer'
   | 'splitter'
   | 'splitling'
+  | 'carrier'
   | 'boss'
 export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush'
 export type RelicId =
@@ -79,6 +80,7 @@ export interface Enemy {
   damage: number // dealt to the Spire on arrival
   shield: number // hits dealing <= this are fully blocked
   healCooldown: number // healers: ticks until next healing pulse
+  broodCooldown: number // carriers: ticks until the next brood hatches
   targetCell: CellPos | null // next waypoint; null = needs (re)pathing (unused by fliers)
 }
 

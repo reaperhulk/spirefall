@@ -21,7 +21,16 @@ import {
   WAVE_CLEAR_GOLD_PER_WAVE,
   WAVE_CLEAR_KNIT_HP,
 } from '../data/content'
-import { castAbility, collectDead, drawRelicOffer, enemyAuras, moveEnemies, tickStatuses, towersFire } from './combat'
+import {
+  carrierBroods,
+  castAbility,
+  collectDead,
+  drawRelicOffer,
+  enemyAuras,
+  moveEnemies,
+  tickStatuses,
+  towersFire,
+} from './combat'
 import { cloneRun } from './clone'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, inBounds } from './grid'
 import type { AffixId, Command, EnemyType, GameEvent, RelicId, RunState, StepResult, Targeting } from './types'
@@ -55,6 +64,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
       endRun(s, events)
     } else {
       enemyAuras(s, events)
+      carrierBroods(s, events)
       towersFire(s, map, field, events)
       collectDead(s, events)
       checkWaveEnd(s, events)
@@ -278,11 +288,13 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
     const def = ENEMIES[spawn.type]
     const hp = Math.max(1, Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix)) / 100))
     const speed = Math.floor((def.speed * affixSpeedPct(s.activeAffix)) / 100)
-    // Shields grow on the same curve as HP. A static shield is trivia once
-    // damage multipliers stack; a scaling one is a composition check — late
-    // shieldbearers shrug off cheap rapid-fire entirely, and only piercing
-    // snipers or heavy shells (or a lucky crit) get through.
-    const shield = def.shield > 0 ? Math.max(def.shield, Math.floor((def.shield * s.hpScalePct) / 100)) : 0
+    // Shields grow at HALF the HP curve's rate. A static shield is trivia
+    // once damage multipliers stack; full-rate scaling walls out even heavy
+    // shells at a sharp cliff. Half-rate keeps the composition check honest:
+    // permanently above rapid-fire chip damage, below cannon shells until
+    // deep endless, and always pierced by snipers.
+    const shieldScalePct = 100 + Math.floor((s.hpScalePct - 100) / 2)
+    const shield = def.shield > 0 ? Math.max(def.shield, Math.floor((def.shield * shieldScalePct) / 100)) : 0
     const id = s.nextEntityId
     s.nextEntityId += 1
     s.enemies.push({
@@ -298,6 +310,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       damage: def.damage,
       shield,
       healCooldown: def.heal ? def.heal.everyTicks : 0,
+      broodCooldown: def.brood ? def.brood.everyTicks : 0,
       targetCell: null,
     })
     events.push({ type: 'enemy_spawned', id, enemy: spawn.type })

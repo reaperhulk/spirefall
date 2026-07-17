@@ -17,7 +17,12 @@ export interface EnemyDef {
   damage: number // damage to the Spire on arrival
   shield: number // hits dealing <= this are fully blocked
   unlockWave: number
+  weight?: number // wave-composition pick weight (default 1) — keeps the
+  // comp-check enemies frequent no matter how many types unlock
   elite?: boolean // heavy units: snipers deal bonus damage to these
+  // Carriers hatch these while alive. Hatchlings pay NO bounty — a carrier
+  // left alive must never become a gold farm.
+  brood?: { type: EnemyType; count: number; everyTicks: number }
   flying?: boolean // ignores the maze; only air-capable towers can hit it
   heal?: { everyTicks: number; amount: number; radius: number } // healer pulse (amount scales with hp curve)
   splitInto?: { type: EnemyType; count: number } // spawned at death position
@@ -36,6 +41,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   healer: { name: 'Mendwitch', hp: 60, speed: 66, cost: 17, pack: 1, spacing: 18, bounty: 4, damage: 1, shield: 0, unlockWave: 11, elite: true, heal: { everyTicks: 60, amount: 4, radius: 1800 } },
   splitter: { name: 'Amalgam', hp: 45, speed: 82, cost: 13, pack: 2, spacing: 14, bounty: 2, damage: 1, shield: 0, unlockWave: 13, elite: true, splitInto: { type: 'splitling', count: 2 } },
   splitling: { name: 'Shard', hp: 13, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
+  carrier: { name: 'Broodmother', hp: 80, speed: 40, cost: 30, pack: 1, spacing: 26, bounty: 8, damage: 4, shield: 3, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 140 } },
   boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, unlockWave: 10, elite: true },
 }
 

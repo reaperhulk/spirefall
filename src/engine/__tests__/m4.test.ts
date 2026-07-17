@@ -31,6 +31,7 @@ function makeEnemy(state: RunState, overrides: Partial<Enemy> & { type: Enemy['t
     damage: def.damage,
     shield: def.shield,
     healCooldown: def.heal ? def.heal.everyTicks : 0,
+    broodCooldown: def.brood ? def.brood.everyTicks : 0,
     targetCell: null,
     ...overrides,
   }
@@ -101,6 +102,64 @@ describe('splitters', () => {
       expect(moved).toBeLessThanOrEqual(ENEMIES.splitter.speed)
     }
     expect(result.events.filter((e) => e.type === 'enemy_spawned' && e.enemy === 'splitling')).toHaveLength(2)
+  })
+})
+
+describe('carriers', () => {
+  it('hatch broods on a cadence while alive, preserving spawn order', () => {
+    const every = ENEMIES.carrier.brood!.everyTicks
+    let s = makeEnemy({ ...freshRun(), spireHp: 1000, spireMaxHp: 1000 }, { type: 'carrier', broodCooldown: 2 })
+    const before = s.enemies.length
+    s = step(s, []).state // cooldown 2 → 1
+    s = step(s, []).state // 1 → 0
+    expect(s.enemies.length).toBe(before)
+    s = step(s, []).state // 0 → hatch
+    const brood = s.enemies.filter((e) => e.type === ENEMIES.carrier.brood!.type)
+    expect(brood.length).toBe(ENEMIES.carrier.brood!.count)
+    const carrier = s.enemies.find((e) => e.type === 'carrier')!
+    expect(carrier.broodCooldown).toBe(every)
+    // Spawn order stays strictly ascending (the structural invariant).
+    for (let i = 1; i < s.enemies.length; i++) {
+      expect(s.enemies[i]!.id).toBeGreaterThan(s.enemies[i - 1]!.id)
+    }
+  })
+
+  it('broods hatch where the carrier is and inherit the wave HP curve', () => {
+    let s = makeEnemy(
+      { ...freshRun(), spireHp: 1000, spireMaxHp: 1000, hpScalePct: 400 },
+      { type: 'carrier', broodCooldown: 1 },
+    )
+    const carrierPos = { ...s.enemies.find((e) => e.type === 'carrier')!.pos }
+    s = step(s, []).state
+    s = step(s, []).state
+    const brood = s.enemies.filter((e) => e.type === ENEMIES.carrier.brood!.type)
+    expect(brood.length).toBeGreaterThan(0)
+    for (const b of brood) {
+      // Hatched at (or one movement-tick from) the carrier's position...
+      const moved = Math.abs(b.pos.x - carrierPos.x) + Math.abs(b.pos.y - carrierPos.y)
+      expect(moved).toBeLessThanOrEqual(ENEMIES.carrier.speed + b.speed)
+      // ...with hp scaled by the current wave curve (5 base × 4).
+      expect(b.maxHp).toBe(Math.floor((ENEMIES[b.type].hp * 400) / 100))
+    }
+  })
+})
+
+describe('spawn-on-spire arrival', () => {
+  it('an enemy standing on the spire cell arrives instead of stalling the wave forever', () => {
+    // Regression: brood swarmlings hatched by a carrier dying at the gate —
+    // or splitlings from a splitter killed there — used to stand on the
+    // spire cell with no waypoint, unkillable and unarriving.
+    const base = freshRun()
+    const map = getMap(base.mapId)
+    let s = makeEnemy(
+      { ...base, spireHp: 100, spireMaxHp: 100 },
+      { type: 'boss', pos: cellCenter(map.spire) },
+    )
+    s = step(s, []).state
+    expect(s.enemies).toHaveLength(0)
+    // Boss damage lands, then the wave clears and the spire knits +1.
+    expect(s.spireHp).toBe(100 - ENEMIES.boss.damage + 1)
+    expect(s.phase).toBe('build') // the wave can actually end
   })
 })
 

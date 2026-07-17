@@ -10,16 +10,18 @@ import { BOTS, type BotName } from './bots'
 
 export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
   // With per-type spire damage, surviving leaks is the first problem to buy
-  // your way out of — Reinforced Core leads.
+  // your way out of — Reinforced Core leads. Crit sits late: shields judge
+  // shots by pre-crit weight, so raw damage breaks walls and crit only
+  // multiplies what already lands.
   'spire_hp',
   'unlock_tesla',
   'tower_damage',
-  'crit_chance',
   'starting_gold',
   'unlock_mint',
   'gold_income',
   'wave_skip',
   'unlock_gold_rush',
+  'crit_chance',
   'spark_gain',
 ]
 

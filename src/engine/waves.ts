@@ -12,7 +12,7 @@ import type { AffixId, EnemyType, PendingSpawn } from './types'
 const GROUP_GAP_TICKS = 8
 const FIRST_SPAWN_DELAY = 15
 
-const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shieldbearer', 'healer', 'splitter']
+const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shieldbearer', 'healer', 'splitter', 'carrier']
 
 // Early waves are capped in unit count so seed variance can't triple the
 // pressure on a fresh two-tower defense; the cap fades out by mid-game.
@@ -65,9 +65,20 @@ export function generateWave(rng: Rng, wave: number, budget: number): GeneratedW
     })
     if (affordable.length === 0 || units >= unitCap) break
 
-    const pick = nextInt(r, 0, affordable.length - 1)
+    // Weighted pick: comp-check enemies (e.g. shieldbearers) keep their
+    // frequency no matter how many types have unlocked.
+    const totalWeight = affordable.reduce((sum, type) => sum + (ENEMIES[type].weight ?? 1), 0)
+    const pick = nextInt(r, 1, totalWeight)
     r = pick.rng
-    const type = affordable[pick.value]!
+    let roll = pick.value
+    let type = affordable[0]!
+    for (const candidate of affordable) {
+      roll -= ENEMIES[candidate].weight ?? 1
+      if (roll <= 0) {
+        type = candidate
+        break
+      }
+    }
     const def = ENEMIES[type]
     remaining -= def.cost * def.pack
     for (let i = 0; i < def.pack && units < unitCap; i++) {
