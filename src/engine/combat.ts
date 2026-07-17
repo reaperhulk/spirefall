@@ -26,7 +26,7 @@ import {
 } from '../data/content'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
-import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower } from './types'
+import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower, TowerType } from './types'
 import { scaledHp } from './waves'
 
 // All functions in this file mutate a draft RunState that step() has already
@@ -385,9 +385,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       }
     }
 
-    tower.cooldown = state.relics.includes('quickdraw')
-      ? Math.max(3, Math.floor((def.cooldown * QUICKDRAW_COOLDOWN_PCT) / 100))
-      : def.cooldown
+    tower.cooldown = effectiveTowerCooldown(state, tower.type, tower.tier)
     tower.shots += 1
     events.push({
       type: 'tower_fired',
@@ -436,11 +434,26 @@ export function castAbility(
       break
     }
   }
-  let cooldown = def.cooldown
+  state.abilities[ability] = effectiveAbilityCooldown(state, ability)
+  events.push({ type: 'ability_cast', ability, cell })
+}
+
+// The ability cooldown a cast will actually incur — Overclock and Swift
+// Sigils included, 1s floor. The UI shows this number; castAbility uses it,
+// so the display can never drift from the engine.
+export function effectiveAbilityCooldown(state: RunState, ability: AbilityId): number {
+  let cooldown = ABILITIES[ability].cooldown
   if (state.relics.includes('overclock')) cooldown = Math.floor((cooldown * 75) / 100)
   if (state.mods.abilityCdPct > 0) cooldown = Math.max(30, Math.floor((cooldown * (100 - state.mods.abilityCdPct)) / 100))
-  state.abilities[ability] = cooldown
-  events.push({ type: 'ability_cast', ability, cell })
+  return cooldown
+}
+
+// Ticks between shots for a tower of this type/tier — Quickdraw included.
+// Same single-source-of-truth deal: towersFire reloads with this, and the
+// tower panel's fire rate is computed from it.
+export function effectiveTowerCooldown(state: RunState, type: TowerType, tier: 1 | 2 | 3): number {
+  const base = towerTier(type, tier).cooldown
+  return state.relics.includes('quickdraw') ? Math.max(3, Math.floor((base * QUICKDRAW_COOLDOWN_PCT) / 100)) : base
 }
 
 // ---------------------------------------------------------------------------

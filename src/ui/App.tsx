@@ -17,7 +17,13 @@ import {
   TRIALS,
   VICTORY_WAVE,
 } from '../data/content'
-import { damageBreakdown, effectiveCritChancePct, effectiveCritDamagePct } from '../engine/combat'
+import {
+  damageBreakdown,
+  effectiveAbilityCooldown,
+  effectiveCritChancePct,
+  effectiveCritDamagePct,
+  effectiveTowerCooldown,
+} from '../engine/combat'
 import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
 import type { EmberUpgradeId } from '../data/emberTree'
 import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
@@ -737,10 +743,11 @@ export default function App() {
             ) : (
               (() => {
                 const b = damageBreakdown(state, hoveredTower)
+                const rate = 30 / effectiveTowerCooldown(state, hoveredTower.type, hoveredTower.tier)
                 return (
                   <span>
                     {b.effective} dmg{b.parts.length > 0 && ` (${b.base} base +${b.totalPct - 100}%)`} ·{' '}
-                    {(30 / towerTier(hoveredTower.type, hoveredTower.tier).cooldown).toFixed(1)}/s ·{' '}
+                    {rate.toFixed(1)}/s · ≈{Math.round(b.effective * rate)} DPS ·{' '}
                     {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
                   </span>
                 )
@@ -779,20 +786,25 @@ export default function App() {
             ) : (
               (() => {
                 const b = damageBreakdown(state, selectedTower)
+                const baseCd = towerTier(selectedTower.type, selectedTower.tier).cooldown
+                const cd = effectiveTowerCooldown(state, selectedTower.type, selectedTower.tier)
+                const rate = 30 / cd
+                const ratePct = cd < baseCd ? Math.round((baseCd / cd - 1) * 100) : 0
                 return (
                   <>
                     <p>
                       DMG {b.effective}
-                      {b.parts.length > 0 && ` (base ${b.base})`} ·{' '}
-                      {(30 / towerTier(selectedTower.type, selectedTower.tier).cooldown).toFixed(1)} shots/s
+                      {b.parts.length > 0 && ` (base ${b.base})`} · {rate.toFixed(1)} shots/s · ≈
+                      {Math.round(b.effective * rate)} DPS
                     </p>
-                    {b.parts.length > 0 && (
+                    {(b.parts.length > 0 || ratePct > 0) && (
                       <ul className="dmg-breakdown" data-testid="dmg-breakdown">
                         {b.parts.map((p) => (
                           <li key={p.source}>
                             +{p.pct}% {p.source}
                           </li>
                         ))}
+                        {ratePct > 0 && <li>+{ratePct}% fire rate Quickdraw (relic)</li>}
                       </ul>
                     )}
                   </>
@@ -907,13 +919,19 @@ export default function App() {
           {ABILITY_KEYS.filter((a) => a in state.abilities).map((ability, i) => {
             const cd = state.abilities[ability] ?? 0
             const ready = cd === 0 && state.phase === 'wave'
+            const maxCd = effectiveAbilityCooldown(state, ability)
+            const baseCd = ABILITIES[ability].cooldown
+            const cdNote =
+              maxCd < baseCd
+                ? `${Math.round(maxCd / 30)}s cooldown (base ${Math.round(baseCd / 30)}s — reduced by ${state.relics.includes('overclock') ? 'Overclock' : ''}${state.relics.includes('overclock') && state.mods.abilityCdPct > 0 ? ' + ' : ''}${state.mods.abilityCdPct > 0 ? 'Swift Sigils' : ''})`
+                : `${Math.round(baseCd / 30)}s cooldown`
             return (
               <button
                 key={ability}
                 className={`ability-btn${abilitySelection === ability ? ' selected' : ''}`}
                 data-testid={`ability-${ability}`}
                 disabled={!ready}
-                title={`Hotkey ${['Q', 'W', 'E', 'F'][i]}`}
+                title={`${cdNote} · Hotkey ${['Q', 'W', 'E', 'F'][i]}`}
                 onClick={() => {
                   if (ability === 'gold_rush' || ability === 'bulwark')
                     session.dispatch({ type: 'cast_ability', ability, cell: { cx: 0, cy: 0 } })
@@ -925,7 +943,9 @@ export default function App() {
               >
                 {ABILITIES[ability].name}
                 <kbd className="key-hint">{['Q', 'W', 'E', 'F'][i]}</kbd>
-                {cd > 0 && <span className="cooldown">{Math.ceil(cd / 30)}s</span>}
+                <span className="cooldown">
+                  {cd > 0 ? `${Math.ceil(cd / 30)}/${Math.round(maxCd / 30)}s` : `${Math.round(maxCd / 30)}s`}
+                </span>
               </button>
             )
           })}
