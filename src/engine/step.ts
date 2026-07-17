@@ -264,7 +264,10 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.relics.push(command.relic)
       s.relicOffer = null
       if (command.relic === 'golden_touch') reduceSpireMax(s, 90)
-      if (command.relic === 'glass_cannon') reduceSpireMax(s, 80)
+      // 60: the 2026-07 deep hunt won at 5k AND 8k sparks with Glass Cannon
+      // as the linchpin — at −20% the downside never bound, and even −35%
+      // left an 8k win standing. Truly glass: −40% max HP.
+      if (command.relic === 'glass_cannon') reduceSpireMax(s, 60)
       events.push({ type: 'relic_chosen', relic: command.relic, goldAwarded: 0 })
       return
     }

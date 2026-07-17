@@ -24,11 +24,11 @@
     "stateHash": "ac0bc010"
   },
   "balanced-rich": {
-    "ticks": 7925,
+    "ticks": 7877,
     "wavesCleared": 13,
-    "kills": 810,
+    "kills": 804,
     "outcome": "defeat",
     "sparks": 262,
-    "stateHash": "bd02fb3d"
+    "stateHash": "f33305f1"
   }
 }

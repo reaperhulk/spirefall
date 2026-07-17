@@ -1,9 +1,16 @@
 # Overnight iteration log
 
-A living backlog + log for the autonomous improvement marathon (50 cycles).
-Each iteration: plan against the current codebase → implement → verify
-(`npm run check`, e2e/goldens when touched) → commit → push. Themes rotate
-across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
+A living backlog + log for the autonomous improvement marathon — **50 cycles,
+complete**. Each iteration: plan against the current codebase → implement →
+verify (`npm run check`, e2e/goldens when touched) → commit → push. Themes
+rotated across gameplay depth, game length/post-game, graphics, UX, and
+mobile parity.
+
+**Closing state:** 137 unit/harness tests + 18 Playwright specs, all green.
+Two fuzzer-found exploit families killed and pinned as regressions (mid-wave
+repair tanking; Bounty-Banner/Glass-Cannon economy). 7 towers, 23 relics,
+13 enemy types, 6 maps, 4 trials, 6 cataclysms, 12 achievements, full
+Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Backlog (revised every cycle)
 
@@ -30,6 +37,19 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+50. **The closer: deep fuzz → two relic exploits killed** — the final
+    full-depth hunt (1600 runs, 4 seeds) found a mint-heavy economy comp
+    winning at 5k/8k on beta/gamma. Ablation isolated TWO enablers: Bounty
+    Banner (+1 gold on every kill — linear in the horde's body count, it
+    out-earned mints) and Glass Cannon (−20% max HP never actually bound).
+    Fixes: Bounty Banner pays on every second kill; Glass Cannon costs 40%
+    max HP. Every 5k win is dead on all four seeds; one razor-thin 8k win
+    on beta survives all reasonable relic tuning (it's build-order
+    optimality, not a relic exploit) and is pinned as a containment
+    regression — any 5k win or any 8k spread trips CI. Full sweep green:
+    137 unit tests, 18 e2e specs, goldens re-pinned (one-wave-scale drift
+    only). Fifty iterations, complete.
 
 49. **Design contract refresh** — PLAN.md brought back in line with shipped
     reality: Trials and achievements join the meta loop, the repair-cast cap

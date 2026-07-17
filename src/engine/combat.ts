@@ -542,7 +542,10 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     }
     let bounty = e.bounty
     if (state.relics.includes('golden_touch')) bounty += 2
-    if (state.relics.includes('bounty_banner')) bounty += 1
+    // Every second kill: the horde rebalance made flat per-kill gold scale
+    // with body count — at +1 on EVERY kill this common relic out-earned
+    // mints and carried a 5k-spark victory in the 2026-07 deep hunt.
+    if (state.relics.includes('bounty_banner') && state.kills % 2 === 1) bounty += 1
     bounty = Math.floor((bounty * (100 + state.mods.goldPct)) / 100)
     if (state.goldRushTicks > 0) bounty *= 2
     // Fortune Idol: a seeded chance for any kill to pay out double.

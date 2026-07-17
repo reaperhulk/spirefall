@@ -77,6 +77,51 @@ describe('build fuzzer', () => {
     }
   }, 300_000)
 
+  // Second pinned find (2026-07, iteration-50 deep hunt): a mint-heavy
+  // economy comp riding Bounty Banner (+1 gold per kill — linear in the
+  // horde's body count) plus Glass Cannon into 5k/8k victories on beta and
+  // gamma. Bounty Banner now pays on every SECOND kill and Glass Cannon
+  // costs 40% max HP; those kill every 5k win. One razor-thin 8k win on
+  // beta survives all reasonable relic tuning — it is build-order
+  // optimality, not a relic exploit — so this pin holds the line exactly
+  // there: any 5k win, or any 8k win beyond beta, is a regression.
+  const BOUNTY_ECONOMY: PolicyGenome = {
+    ratio: { arrow: 7, cannon: 6, frost: 5, tesla: 1, sniper: 7, mint: 8, beacon: 0 },
+    earlyType: 'arrow',
+    upgradeAtTowers: 6,
+    targetBase: 2,
+    targetPerWave: 1,
+    targetMax: 21,
+    enhanceStrategy: 'frost',
+    repairDeficit: 2,
+    repairMinGold: 170,
+    waveRepairPct: 70,
+    relicPriority: [
+      'bounty_banner', 'glass_cannon', 'echo_chamber', 'last_stand', 'deep_pockets', 'stoneskin',
+      'spark_siphon', 'soul_harvest', 'colossus', 'fortune_idol', 'shatter', 'keen_sights',
+      'mint_condition', 'piercing_arrows', 'executioners_seal', 'quickdraw', 'overclock', 'longsight',
+      'field_medicine', 'winters_grip', 'overcharge', 'golden_touch', 'heavy_powder',
+    ],
+    metaPriority: [
+      'tower_damage', 'unlock_tesla', 'unlock_bulwark', 'gold_income', 'spire_hp', 'wave_skip',
+      'unlock_gold_rush', 'unlock_beacon', 'unlock_mint', 'spark_gain', 'starting_gold', 'crit_chance',
+    ],
+  }
+
+  it('pinned find: the Bounty-Banner economy comp stays contained', () => {
+    const bot = makePolicyBot(BOUNTY_ECONOMY)
+    const play = (budget: number, seed: string) => {
+      const meta = spendSparks({ ...createMeta(), sparks: budget }, BOUNTY_ECONOMY.metaPriority)
+      return autoplay(createRun(meta, seed), bot, 120_000).state
+    }
+    for (const seed of ['alpha', 'beta', 'gamma', 'delta']) {
+      expect(play(5000, seed).phase, `${seed} @ 5000`).toBe('defeat')
+    }
+    for (const seed of ['alpha', 'gamma', 'delta']) {
+      expect(play(8000, seed).phase, `${seed} @ 8000`).toBe('defeat')
+    }
+  }, 600_000)
+
   it('sweep finds no curve-breaking build (deep mode: npm run fuzz:builds)', () => {
     const result = fuzzBuilds({
       fuzzSeed: process.env['FUZZ_SEED'] ?? 'ci-sweep',
