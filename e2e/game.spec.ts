@@ -362,6 +362,7 @@ const HUD_CONTROLS = [
   'auto-start',
   'repair-spire',
   'shop-arrow',
+  'shop-beacon', // the LAST tower card: all seven must share the row, never scroll off-edge
 ]
 
 for (const [name, width, height] of STANDARD_VIEWPORTS) {
@@ -386,6 +387,14 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
           expect(box!.x, `${phase}: ${id} clipped left`).toBeGreaterThanOrEqual(-0.5)
           expect(box!.x + box!.width, `${phase}: ${id} clipped right`).toBeLessThanOrEqual(width + 0.5)
         }
+        // Every tower name must render whole — an ellipsized shop card means
+        // the compact layout no longer fits this viewport.
+        const clipped = await page.evaluate(() =>
+          [...document.querySelectorAll('.shop-card-name')]
+            .filter((el) => el.scrollWidth > el.clientWidth + 0.5)
+            .map((el) => el.textContent),
+        )
+        expect(clipped, `${phase}: tower names ellipsized`).toEqual([])
       }
 
       await assertLayout('build phase')

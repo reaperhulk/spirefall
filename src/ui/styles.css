@@ -262,21 +262,46 @@ button:disabled {
 .shop-abilities {
   display: flex;
   gap: 8px;
-  /* Never widen the page: on narrow screens the strip scrolls within
-     itself. A shop overflowing the document lets the whole layout pan
-     sideways on phones. */
+  /* Belt-and-suspenders: never widen the page. With equal-share cards the
+     strip can't overflow, but a future card must degrade to scrolling,
+     not to a sideways-pannable document. */
   max-width: 100%;
   overflow-x: auto;
   scrollbar-width: thin;
-  padding-bottom: 2px;
 }
 
+.shop-towers {
+  width: 100%;
+}
+
+/* Compact two-line cards that split the row evenly: all seven towers are
+   ALWAYS visible at once, at every viewport. A horizontal scroll here made
+   players forget the towers past the right edge existed. */
 .shop-card {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 4px;
+}
+
+.shop-card-top,
+.shop-card-bottom {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  flex-shrink: 0;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.shop-card-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
 }
 
 .shop-card.selected {
@@ -484,6 +509,57 @@ button:disabled {
   .btn-repair {
     min-width: 118px;
     font-size: 12px;
+  }
+
+  /* Phone-sized shop cards: tighter type, no hotkey badges (they're
+     touch screens), smaller dots — seven cards still share one row. */
+  .shop-towers {
+    gap: 3px;
+  }
+
+  .shop-card {
+    padding: 5px 1px;
+    gap: 2px;
+  }
+
+  .shop-card-name {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .shop-card .key-hint {
+    display: none;
+  }
+
+  .shop-card .cost {
+    font-size: 10px;
+  }
+
+  /* No room for the dot: the NAME wears the tower's color instead. */
+  .shop-card .tower-dot {
+    display: none;
+  }
+
+  .shop-card[data-tower='arrow'] .shop-card-name { color: #9ece6a; }
+  .shop-card[data-tower='cannon'] .shop-card-name { color: #e0af68; }
+  .shop-card[data-tower='frost'] .shop-card-name { color: #7dcfff; }
+  .shop-card[data-tower='tesla'] .shop-card-name { color: #bb9af7; }
+  .shop-card[data-tower='sniper'] .shop-card-name { color: #73daca; }
+  .shop-card[data-tower='mint'] .shop-card-name { color: #e5c07b; }
+  .shop-card[data-tower='beacon'] .shop-card-name { color: #ff9e64; }
+
+  /* The ✈ becomes a corner badge: air identity kept, zero row width. */
+  .shop-card {
+    position: relative;
+  }
+
+  .shop-card .air-mark {
+    position: absolute;
+    top: 0;
+    right: 2px;
+    font-size: 8px;
+    margin-left: 0;
   }
 
   /* The board is too small to host a floating panel — it would spill into

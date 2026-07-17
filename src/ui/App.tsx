@@ -895,6 +895,7 @@ export default function App() {
                 key={type}
                 className={`shop-card${shopSelection === type ? ' selected' : ''}${unlocked && !affordable ? ' unaffordable' : ''}`}
                 data-testid={`shop-${type}`}
+                data-tower={type}
                 disabled={!unlocked}
                 title={unlocked ? `Hotkey ${i + 1}` : 'Unlock in the Spire Tree'}
                 onClick={() => {
@@ -902,15 +903,19 @@ export default function App() {
                   setAbilitySelection(null)
                 }}
               >
-                <span className={`tower-dot tower-${type}`} />
-                {TOWERS[type].name}
-                {TOWERS[type].hitsAir && (
-                  <span className="air-mark" title="Can hit fliers">
-                    ✈
-                  </span>
-                )}
-                {unlocked && <kbd className="key-hint">{i + 1}</kbd>}
-                <span className="cost">{unlocked ? `⛀ ${cost}` : '🔒'}</span>
+                <span className="shop-card-top">
+                  <span className={`tower-dot tower-${type}`} />
+                  <span className="shop-card-name">{TOWERS[type].name}</span>
+                  {TOWERS[type].hitsAir && (
+                    <span className="air-mark" title="Can hit fliers">
+                      ✈
+                    </span>
+                  )}
+                </span>
+                <span className="shop-card-bottom">
+                  {unlocked && <kbd className="key-hint">{i + 1}</kbd>}
+                  <span className="cost">{unlocked ? `⛀ ${cost}` : '🔒'}</span>
+                </span>
               </button>
             )
           })}

@@ -38,6 +38,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+55. *(post-marathon, playtest)* **Condensed tower shop** — the horizontal
+    scroll strip hid towers past the right edge and players forgot they
+    existed. Cards are now compact two-line columns that split the row
+    evenly, so all seven towers are always visible at every viewport. On
+    phones: hotkey badges dropped (touch), the color dot is replaced by
+    coloring the name itself, and ✈ becomes a corner badge — verified
+    zero ellipsized names at 375px. The viewport matrix now also asserts
+    the LAST shop card is on-screen and that no tower name ever clips.
+
 54. *(post-marathon, playtest)* **Viewport matrix** — a portrait phone was
     getting a sideways-pannable page: the tower shop strip (1052px of
     cards, no wrap, no overflow constraint) widened the whole document to
