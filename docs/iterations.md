@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+29. **Shareable replays** — 🐞 Copy replay on the run-over screen exports
+    seed + map + meta snapshot + the full command log as JSON (clipboard +
+    visible textarea). Same seed, same commands, same run — every bug report
+    and balance complaint is now reproducible. E2e drives the button and
+    parses the payload.
+
 28. **Relic pity** — from wave 15 on, an offer never rolls all commons while
     the pool still holds better: the last slot upgrades to a random rare+.
     Pity draws from the relics stream only when it fires, so pinned goldens

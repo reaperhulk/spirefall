@@ -136,6 +136,16 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   const sparksText = await page.getByTestId('sparks-earned').textContent()
   expect(Number(sparksText!.replace(/\D/g, ''))).toBeGreaterThan(0)
 
+  // The replay button exposes seed + the full command log as JSON.
+  await page.getByTestId('copy-replay').click()
+  const replay = JSON.parse(await page.getByTestId('replay-json').inputValue()) as {
+    seed: string
+    log: { command: { type: string } }[]
+  }
+  expect(replay.seed).toBe('e2e-loop')
+  expect(replay.log.some((c) => c.command.type === 'place_tower')).toBe(true)
+  expect(replay.log.some((c) => c.command.type === 'start_wave')).toBe(true)
+
   // Spend sparks on starting gold, then begin the next run.
   await page.getByTestId('buy-starting_gold').click()
   await page.getByTestId('next-run').click()

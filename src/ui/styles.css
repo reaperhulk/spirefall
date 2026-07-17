@@ -594,6 +594,20 @@ button:disabled {
   }
 }
 
+/* Replay capture: seed + command log for reproducible bug reports. */
+.replay-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.replay-hint {
+  font-size: 12px;
+  color: #8a93ad;
+}
+
 /* Run-over analytics: share bars for damage/kill attribution. */
 .run-analytics {
   display: flex;

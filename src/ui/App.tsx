@@ -829,6 +829,16 @@ export default function App() {
         <RunOverOverlay
           summary={summary}
           meta={meta}
+          replay={() =>
+            JSON.stringify({
+              v: 1,
+              seed: session.state.seed,
+              map: session.state.mapId,
+              upgrades: meta.upgrades,
+              emberUpgrades: meta.emberUpgrades,
+              log: session.commandLog,
+            })
+          }
           onBuy={buyMeta}
           onBuyEmber={buyEmber}
           onAscend={doAscend}

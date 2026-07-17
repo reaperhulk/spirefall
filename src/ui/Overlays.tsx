@@ -199,6 +199,7 @@ function ShareBars({ title, entries, color }: { title: string; entries: [string,
 export function RunOverOverlay({
   summary,
   meta,
+  replay,
   onBuy,
   onBuyEmber,
   onAscend,
@@ -206,12 +207,14 @@ export function RunOverOverlay({
 }: {
   summary: RunSummary
   meta: MetaState
+  replay: () => string
   onBuy: (id: MetaUpgradeId) => void
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
   onNextRun: () => void
 }) {
   const victory = summary.outcome === 'victory'
+  const [replayText, setReplayText] = useState<string | null>(null)
   return (
     <div className="modal-backdrop" data-testid="run-over">
       <div className="modal run-over">
@@ -253,6 +256,26 @@ export function RunOverOverlay({
             ? 'Against every prior collapse, this cycle holds.'
             : 'Its embers remember. Spend them, and reach further next time.'}
         </p>
+        <div className="replay-row">
+          <button
+            className="ghost-btn"
+            data-testid="copy-replay"
+            title="Copies the run's seed and full command log — anyone can replay this exact run."
+            onClick={() => {
+              const text = replay()
+              setReplayText(text)
+              void navigator.clipboard?.writeText(text).catch(() => {})
+            }}
+          >
+            {replayText === null ? '🐞 Copy replay' : 'Replay copied ✓'}
+          </button>
+          {replayText !== null && (
+            <span className="replay-hint">Paste it into a bug report — same seed, same commands, same run.</span>
+          )}
+        </div>
+        {replayText !== null && (
+          <textarea className="transfer-code" data-testid="replay-json" readOnly value={replayText} />
+        )}
         <h3>The Spire Tree — ✦ {meta.sparks} available</h3>
         <SpireTree meta={meta} onBuy={onBuy} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
