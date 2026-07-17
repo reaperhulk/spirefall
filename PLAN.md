@@ -76,8 +76,16 @@ choose loadout → BUILD phase (place towers, no timer)
   starting-wave skip.
 - **Ascension (shipped):** after any victory, the Spire Tree (and banked Sparks,
   and unlocks) can be burned for **Embers** — 1 + 1 per victory that cycle. The
-  Ember Tree (damage, Spire HP, Spark gain, a banked-Spark head start) survives
-  every ascension and compounds with the rebuilt Spire Tree.
+  Ember Tree (damage, Spire HP, Spark gain, a banked-Spark head start, gold,
+  ability cooldowns) survives every ascension and compounds with the rebuilt
+  Spire Tree.
+- **Trials (shipped):** opt-in run handicaps chosen at run start — Glass Spire
+  (half HP, +40% sparks), Swift Horde (+15% speed, +25%), Iron Horde (+25% HP,
+  +35%), Famine (−25% gold, +30%). Hardship is a strong account's spark
+  accelerator; daily runs ignore trials so the shared seed stays a shared
+  ruleset.
+- **Achievements (shipped):** a dozen one-shot goals paying spark bounties at
+  settle, including deep-endless and trial-victory targets.
 
 ### 2.3 The difficulty curve (the contract we test)
 
@@ -94,7 +102,7 @@ intentionally moves):
 | +20k sparks | reaches ~23–25, wins on a good map |
 | +60k sparks (deep tree) | wins (wave 24) while mowing down hundreds per wave |
 | Arrow-only spam, +20k sparks | dies at the shield wall (~wave 22) on every map — composition is mandatory |
-| Career (bot) | first victory around run ~16, repeating wins after, then endless |
+| Career (bot) | first victory around run ~13, repeating wins after, then endless |
 
 Shieldbearer shields scale on the same curve as enemy HP, so cheap rapid-fire
 chip damage stops working on them in the late game — piercing snipers or heavy
@@ -107,7 +115,10 @@ nearly one-shots an unupgraded spire. Early on *everything* kills you easily;
 Reinforced Core (+2 HP × 12 levels) is what turns leak-triage into a skill:
 an invested spire can afford to ignore chip damage and focus heavies. The spire
 knits +1 HP per cleared wave (chip is forgivable, floods are not) and paid
-repairs cost 40+3×wave gold per point, 3 max per cast. The ramp is two-phase:
+repairs cost 40+3×wave gold per point, 3 max per cast — and at most **one cast
+while a wave is live**: the build fuzzer proved unlimited mid-wave repairs let
+an all-offense account tank the endgame on a 10-HP spire and win at 5k sparks.
+The ramp is two-phase:
 enemy HP ×1.12/wave through wave 8, ×1.20/wave after, with waves 1–4 fielding
 reduced budgets so opening RNG can't end you pre-build. The deep Spire Tree is
 the only way through, priced to span 10+ runs.
@@ -252,9 +263,18 @@ after every tick in dev/test builds (compiled out of production).
 
 ### 5.5 Fuzzing
 
-A CI job runs the property suite with a larger iteration budget on a schedule
-(nightly), with failing seeds automatically shrunk by fast-check and printed as
-ready-to-paste reproduction cases.
+Two layers:
+
+- **Property fuzzing** — the fast-check suite, with failing seeds shrunk and
+  printed as ready-to-paste reproduction cases.
+- **The build fuzzer** (`src/harness/policy.ts` + `fuzz.ts`) — a seeded
+  evolutionary search over whole strategies as data (`PolicyGenome`: tower
+  ratios, upgrade thresholds, relic and meta spending priorities, repair
+  habits). The oracle flags any victory at ≤10k sparks as *breaking* (the
+  curve says ~20k) and cheap wins / overperformance / soft endless as
+  warnings. CI runs a smoke sweep; `npm run fuzz:builds` runs the deep hunt.
+  Every find is a JSON genome — trivially reproducible, and confirmed exploits
+  get pinned as named regression tests (see the mid-wave repair cap).
 
 ### 5.6 Bot playtests / balance regression (the rogue-lite guarantee)
 
@@ -389,9 +409,16 @@ npm run goldens:update regenerate golden replay hashes (balance changes)
 - ✅ **M5 — Balance & feel:** curve re-tuned against bot envelopes each change,
   floating bounty/repair text, screen shake, synthesized WebAudio SFX with a
   persisted mute, responsive canvas for small screens.
-- **M6 — Incremental depth:** Ascension layer, achievements, unlockable game
-  modifiers (endless mode, challenge seeds — free content via determinism: daily
-  seed = same run for everyone, shareable).
+- ✅ **M6 — Incremental depth:** Ascension + Ember Tree, achievements, endless
+  Cataclysms (permanent stacking modifiers every 5th post-victory wave),
+  Trials, daily seeds, deep links (`?seed=`), map select with a picker-only
+  sixth map, per-map records — free content via determinism.
+- ✅ **M6.5 — The overnight marathon** (`docs/iterations.md`): ~50 logged
+  plan→implement→verify→ship cycles covering the build fuzzer (and the balance
+  holes it found: sniper/mint trims, the mid-wave repair cap), relic
+  rarity/reroll/pity + 23-relic pool, boss roster + boss bar, map themes +
+  ambient motes, PWA + haptics + safe areas, accessibility (aria, color
+  assist), live run stats, HP timeline, shareable replays.
 - **M7 — Optional WebGL renderer** if entity counts demand it.
 
 ## 9. Risks & mitigations

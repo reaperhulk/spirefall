@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+49. **Design contract refresh** — PLAN.md brought back in line with shipped
+    reality: Trials and achievements join the meta loop, the repair-cast cap
+    and its fuzzer origin enter the curve contract (career first win ~13),
+    §5.5 documents the two-layer fuzzing story, and M6/M6.5 are marked
+    shipped with the marathon's scope.
+
 48. **Boss bar** — a marquee health bar across the top of the field while a
     boss walks: its name in caps, exact HP, framed and filled in the boss's
     own color (color-assist aware). No more squinting at a 3px strip over a
