@@ -300,9 +300,11 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
 }
 
 export function computeSparks(s: RunState): number {
-  // Only waves cleared THIS run pay — skipped starting waves don't.
+  // Sparks are earned by PROGRESS only: waves cleared this run (skipped
+  // starting waves excluded) and kills. No flat participation payout — a
+  // zero-progress run pays zero, so instantly abandoning runs farms nothing.
   const cleared = Math.max(0, s.wavesCleared - s.startWave)
-  const base = cleared * 15 + Math.floor(s.kills / 6) + 10 + (s.victoryClaimed ? 500 : 0)
+  const base = cleared * 15 + Math.floor(s.kills / 6) + (s.victoryClaimed ? 500 : 0)
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
   return Math.floor((base * pct) / 100)

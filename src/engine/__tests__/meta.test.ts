@@ -74,9 +74,9 @@ describe('createRun applies meta', () => {
     expect(run.wavesCleared).toBe(2)
     expect(run.waveBudget).toBeGreaterThan(0) // budget curve advanced to match
     expect(run.gold).toBeGreaterThan(STARTING_GOLD) // catch-up gold for the skipped waves
-    // Sparks only pay for waves cleared THIS run.
-    expect(computeSparks({ ...run, wavesCleared: 2, kills: 0 })).toBe(10)
-    expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(10 * 15 + 10)
+    // Sparks only pay for waves cleared THIS run — a skip-then-abandon pays 0.
+    expect(computeSparks({ ...run, wavesCleared: 2, kills: 0 })).toBe(0)
+    expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(10 * 15)
   })
 
   it('the same meta and seed always create the identical run', () => {
@@ -108,7 +108,7 @@ describe('computeSparks', () => {
     const base = { ...run, wavesCleared: 10, kills: 40 }
     const defeat = computeSparks(base)
     const victory = computeSparks({ ...base, victoryClaimed: true })
-    expect(defeat).toBe(10 * 15 + Math.floor(40 / 6) + 10)
+    expect(defeat).toBe(10 * 15 + Math.floor(40 / 6))
     expect(victory).toBe(defeat + 500)
 
     const boosted = computeSparks({ ...base, mods: { ...base.mods, sparkPct: 24 } })

@@ -132,20 +132,33 @@ describe('wave lifecycle', () => {
     expect(state.sparksEarned).toBeGreaterThan(0)
   })
 
-  it('abandon_run concedes immediately and still pays sparks', () => {
+  it('abandon_run concedes immediately — but zero progress pays zero sparks', () => {
+    // The exploit guard: repeatedly starting and abandoning runs must farm
+    // nothing. Sparks come from progress only.
     const s = step(freshRun('quitter'), [{ type: 'start_wave' }]).state
     expect(s.phase).toBe('wave')
     const result = step(s, [{ type: 'abandon_run' }])
     expect(result.state.phase).toBe('defeat')
     expect(result.state.spireHp).toBe(0)
-    expect(result.state.sparksEarned).toBeGreaterThan(0)
+    expect(result.state.sparksEarned).toBe(0) // wave 1 started but not cleared, no kills
     expect(result.events.some((e) => e.type === 'run_ended')).toBe(true)
     expect(() => assertInvariants(result.state)).not.toThrow()
     // Works from the build phase too, and only once.
     const fromBuild = step(freshRun('quitter-2'), [{ type: 'abandon_run' }])
     expect(fromBuild.state.phase).toBe('defeat')
+    expect(fromBuild.state.sparksEarned).toBe(0)
     const again = step(result.state, [{ type: 'abandon_run' }])
     expect(again.events[0]).toMatchObject({ type: 'command_rejected', reason: 'run is over' })
+  })
+
+  it('abandoning WITH progress still pays for that progress', () => {
+    // Clear wave 1 undefended, then concede: the cleared wave pays.
+    let s = step(freshRun('honest-quitter'), [{ type: 'start_wave' }]).state
+    s = stepUntil(s, (st) => st.phase !== 'wave', 20_000)
+    expect(s.phase).toBe('build')
+    expect(s.wavesCleared).toBe(1)
+    const result = step(s, [{ type: 'abandon_run' }])
+    expect(result.state.sparksEarned).toBeGreaterThan(0)
   })
 
   it('commands after the run ends are rejected', () => {

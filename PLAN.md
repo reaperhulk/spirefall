@@ -16,7 +16,9 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
    priorities, ability timing, and mid-run choices matter. An AFK player should lose
    noticeably earlier than an engaged one (and we assert this with bots — see §5.6).
 2. **Failure is currency.** Wave difficulty grows geometrically; per-run power is
-   capped. Every run ends, and every end pays Sparks. Meta upgrades raise the cap so
+   capped. Every run ends, and progress made before the end — waves cleared, kills —
+   pays Sparks (a zero-progress abandon pays nothing, so conceding can't be farmed).
+   Meta upgrades raise the cap so
    the next run goes further. The incremental fantasy comes from the compounding
    meta-layer, not from idle accumulation.
 3. **Runs are different.** Seeded map layouts, wave compositions, and relic offers

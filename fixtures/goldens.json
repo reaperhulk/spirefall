@@ -4,31 +4,31 @@
     "wavesCleared": 1,
     "kills": 0,
     "outcome": "defeat",
-    "sparks": 25,
-    "stateHash": "b1017e1b"
+    "sparks": 15,
+    "stateHash": "6f402416"
   },
   "greedy-fresh": {
     "ticks": 1284,
     "wavesCleared": 3,
     "kills": 25,
     "outcome": "defeat",
-    "sparks": 59,
-    "stateHash": "468fa062"
+    "sparks": 49,
+    "stateHash": "b45fa189"
   },
   "balanced-fresh": {
     "ticks": 1767,
     "wavesCleared": 4,
     "kills": 56,
     "outcome": "defeat",
-    "sparks": 79,
-    "stateHash": "82234268"
+    "sparks": 69,
+    "stateHash": "efcaa11f"
   },
   "balanced-rich": {
     "ticks": 9761,
     "wavesCleared": 15,
     "kills": 524,
     "outcome": "defeat",
-    "sparks": 402,
-    "stateHash": "4f75e50a"
+    "sparks": 390,
+    "stateHash": "b09647f8"
   }
 }

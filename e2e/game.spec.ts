@@ -109,7 +109,12 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   page,
 }) => {
   const errors = await boot(page, 'e2e-loop')
-  // Send waves undefended until the spire falls (fastForward is instant).
+  // Mount a light defense — sparks pay for PROGRESS (waves cleared + kills),
+  // so a totally undefended collapse would bank nothing to spend below.
+  await page.getByTestId('shop-arrow').click()
+  await clickCell(page, 4, 5)
+  await clickCell(page, 4, 7)
+  // Then send waves until the spire falls (fastForward is instant).
   await page.evaluate(() => {
     const send = () => {
       const s = window.__harness.getState()
@@ -219,7 +224,9 @@ test('an armed but unaffordable shop selection never traps you', async ({ page }
   expect(errors).toEqual([])
 })
 
-test('give up ends the run with sparks, and high speeds are selectable', async ({ page }) => {
+test('give up ends the run, zero-progress abandons pay zero sparks, and high speeds are selectable', async ({
+  page,
+}) => {
   const errors = await boot(page, 'e2e-giveup')
   await page.getByRole('button', { name: '10×' }).click()
   expect(await page.evaluate(() => window.__harness.getSpeed())).toBe(10)
@@ -227,8 +234,10 @@ test('give up ends the run with sparks, and high speeds are selectable', async (
   page.on('dialog', (dialog) => dialog.accept())
   await page.getByTestId('abandon-run').click()
   await expect(page.getByTestId('run-over')).toBeVisible()
+  // Exploit guard: giving up before clearing anything must earn NOTHING —
+  // otherwise mashing "give up → next run" farms unlimited sparks.
   const sparksText = await page.getByTestId('sparks-earned').textContent()
-  expect(Number(sparksText!.replace(/\D/g, ''))).toBeGreaterThan(0)
+  expect(Number(sparksText!.replace(/\D/g, ''))).toBe(0)
   await page.getByTestId('next-run').click()
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
