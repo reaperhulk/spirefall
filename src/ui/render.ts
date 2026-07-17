@@ -56,6 +56,44 @@ const COLORS = {
   rangeEdge: 'rgba(255, 255, 255, 0.25)',
 }
 
+// Per-map terrain palettes: each battlefield reads distinct at a glance.
+// Presentation only — the sim never sees color. Keyed by map name so map
+// reordering can't silently swap themes.
+interface MapTheme {
+  bg: string
+  checker: string
+  path: string
+  gridLine: string
+  rock: string
+  rockEdge: string
+}
+
+const DEFAULT_THEME: MapTheme = {
+  bg: COLORS.bg,
+  checker: '#0d1119',
+  path: COLORS.path,
+  gridLine: COLORS.gridLine,
+  rock: COLORS.rock,
+  rockEdge: COLORS.rockEdge,
+}
+
+const MAP_THEMES: Record<string, MapTheme> = {
+  // Verdant lowlands: mossy greens.
+  Greenfield: { bg: '#0a1210', checker: '#0d1713', path: '#101c15', gridLine: '#14231c', rock: '#2b3d33', rockEdge: '#3c5245' },
+  // Flooded cuts: cold blue slate.
+  'The Channels': { bg: '#091018', checker: '#0c141f', path: '#0f1a29', gridLine: '#132133', rock: '#28374d', rockEdge: '#365071' },
+  // Fortress stone: neutral grey masonry.
+  'The Bulwark': { bg: '#0f0f12', checker: '#131318', path: '#17171e', gridLine: '#1d1d26', rock: '#34343f', rockEdge: '#4a4a59' },
+  // Sun-scoured desert: warm sand.
+  'The Serpent': { bg: '#14100a', checker: '#1a150d', path: '#211a11', gridLine: '#2a2115', rock: '#453824', rockEdge: '#5e4d31' },
+  // Ashen wastes: scorched violet dusk.
+  Crossroads: { bg: '#100b14', checker: '#150e1b', path: '#1b1223', gridLine: '#23172e', rock: '#3a2c4a', rockEdge: '#503e66' },
+}
+
+function mapTheme(map: MapDef): MapTheme {
+  return MAP_THEMES[map.name] ?? DEFAULT_THEME
+}
+
 const ENEMY_RADIUS: Record<string, number> = {
   runner: 8,
   swarmling: 5,
@@ -86,13 +124,14 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   const w = map.width * CELL_PX
   const h = map.height * CELL_PX
 
-  ctx.fillStyle = COLORS.bg
+  const theme = mapTheme(map)
+  ctx.fillStyle = theme.bg
   ctx.fillRect(0, 0, w, h)
 
-  drawTerrain(ctx, map)
-  drawPathHighlight(ctx, state, map, animTime(session))
-  drawGrid(ctx, map)
-  drawRocks(ctx, map)
+  drawTerrain(ctx, map, theme)
+  drawPathHighlight(ctx, state, map, animTime(session), theme)
+  drawGrid(ctx, map, theme)
+  drawRocks(ctx, map, theme)
   drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
   drawEnemies(ctx, session)
@@ -106,8 +145,8 @@ function animTime(session: GameSession): number {
   return session.state.tick + session.alpha
 }
 
-function drawGrid(ctx: CanvasRenderingContext2D, map: MapDef): void {
-  ctx.strokeStyle = COLORS.gridLine
+function drawGrid(ctx: CanvasRenderingContext2D, map: MapDef, theme: MapTheme): void {
+  ctx.strokeStyle = theme.gridLine
   ctx.lineWidth = 1
   ctx.beginPath()
   for (let x = 0; x <= map.width; x++) {
@@ -122,8 +161,8 @@ function drawGrid(ctx: CanvasRenderingContext2D, map: MapDef): void {
 }
 
 // Subtle checkered ground so buildable terrain doesn't read as void.
-function drawTerrain(ctx: CanvasRenderingContext2D, map: MapDef): void {
-  ctx.fillStyle = '#0d1119'
+function drawTerrain(ctx: CanvasRenderingContext2D, map: MapDef, theme: MapTheme): void {
+  ctx.fillStyle = theme.checker
   for (let cy = 0; cy < map.height; cy++) {
     for (let cx = 0; cx < map.width; cx++) {
       if ((cx + cy) % 2 === 0) ctx.fillRect(cx * CELL_PX, cy * CELL_PX, CELL_PX, CELL_PX)
@@ -131,10 +170,10 @@ function drawTerrain(ctx: CanvasRenderingContext2D, map: MapDef): void {
   }
 }
 
-function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef, t0: number): void {
+function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef, t0: number, theme: MapTheme): void {
   const field = distanceField(map, blockedGrid(map, state.towers))
   const path = [map.spawn, ...pathFrom(map, field, map.spawn)]
-  ctx.fillStyle = COLORS.path
+  ctx.fillStyle = theme.path
   for (const c of path) ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
 
   // Drifting chevrons make the flow direction legible at a glance.
@@ -163,7 +202,7 @@ function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: 
   ctx.lineWidth = 1
 }
 
-function drawRocks(ctx: CanvasRenderingContext2D, map: MapDef): void {
+function drawRocks(ctx: CanvasRenderingContext2D, map: MapDef, theme: MapTheme): void {
   for (let cy = 0; cy < map.height; cy++) {
     for (let cx = 0; cx < map.width; cx++) {
       if (!map.rocks[cy * map.width + cx]) continue
@@ -172,7 +211,7 @@ function drawRocks(ctx: CanvasRenderingContext2D, map: MapDef): void {
       const x = cx * CELL_PX + 2
       const y = cy * CELL_PX + 2
       const s = CELL_PX - 4
-      ctx.fillStyle = COLORS.rock
+      ctx.fillStyle = theme.rock
       ctx.beginPath()
       ctx.moveTo(x + 4 + jitter, y)
       ctx.lineTo(x + s - 2, y + 2)
@@ -183,7 +222,7 @@ function drawRocks(ctx: CanvasRenderingContext2D, map: MapDef): void {
       ctx.closePath()
       ctx.fill()
       // A lit facet on the upper-left gives it mass.
-      ctx.fillStyle = COLORS.rockEdge
+      ctx.fillStyle = theme.rockEdge
       ctx.beginPath()
       ctx.moveTo(x + 4 + jitter, y)
       ctx.lineTo(x + s - 2, y + 2)

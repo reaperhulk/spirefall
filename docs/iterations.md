@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+31. **Map themes** — each battlefield now wears its own terrain palette
+    (Greenfield moss, Channels cold slate, Bulwark grey masonry, Serpent
+    desert sand, Crossroads ashen violet): background, checker, path, grid,
+    and rocks all keyed by map name, presentation-only. Verified with
+    headless screenshots of all five maps.
+
 30. **Map select** — the run-over screen gains a Battlefield picker (🎲
     Random or any of the five maps, persisted). createRun takes an optional
     map override that swaps only the battlefield — the roll still burns, so
