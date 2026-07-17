@@ -85,6 +85,8 @@ const COLORS = {
 // Per-map terrain palettes: each battlefield reads distinct at a glance.
 // Presentation only — the sim never sees color. Keyed by map name so map
 // reordering can't silently swap themes.
+type PropKind = 'tuft' | 'puddle' | 'crack' | 'pebbles' | 'bones' | 'ember'
+
 interface MapTheme {
   bg: string
   checker: string
@@ -93,6 +95,8 @@ interface MapTheme {
   rock: string
   rockEdge: string
   mote: string // ambient drifting particles: fireflies, spray, dust, embers
+  props: PropKind // scattered ground detail baked into the terrain layer
+  propColor: string
 }
 
 const DEFAULT_THEME: MapTheme = {
@@ -103,25 +107,276 @@ const DEFAULT_THEME: MapTheme = {
   rock: COLORS.rock,
   rockEdge: COLORS.rockEdge,
   mote: '#9aa5ce',
+  props: 'pebbles',
+  propColor: '#2a3248',
 }
 
 const MAP_THEMES: Record<string, MapTheme> = {
   // Verdant lowlands: mossy greens, drifting fireflies.
-  Greenfield: { bg: '#0a1210', checker: '#0d1713', path: '#101c15', gridLine: '#14231c', rock: '#2b3d33', rockEdge: '#3c5245', mote: '#b8e08a' },
+  Greenfield: { bg: '#0a1210', checker: '#0d1713', path: '#101c15', gridLine: '#14231c', rock: '#2b3d33', rockEdge: '#3c5245', mote: '#b8e08a', props: 'tuft', propColor: '#2e4a34' },
   // Flooded cuts: cold blue slate, hanging spray.
-  'The Channels': { bg: '#091018', checker: '#0c141f', path: '#0f1a29', gridLine: '#132133', rock: '#28374d', rockEdge: '#365071', mote: '#8fd0ff' },
+  'The Channels': { bg: '#091018', checker: '#0c141f', path: '#0f1a29', gridLine: '#132133', rock: '#28374d', rockEdge: '#365071', mote: '#8fd0ff', props: 'puddle', propColor: '#1a2c44' },
   // Fortress stone: neutral grey masonry, settling dust.
-  'The Bulwark': { bg: '#0f0f12', checker: '#131318', path: '#17171e', gridLine: '#1d1d26', rock: '#34343f', rockEdge: '#4a4a59', mote: '#9a9aa8' },
+  'The Bulwark': { bg: '#0f0f12', checker: '#131318', path: '#17171e', gridLine: '#1d1d26', rock: '#34343f', rockEdge: '#4a4a59', mote: '#9a9aa8', props: 'crack', propColor: '#232329' },
   // Sun-scoured desert: warm sand on the wind.
-  'The Serpent': { bg: '#14100a', checker: '#1a150d', path: '#211a11', gridLine: '#2a2115', rock: '#453824', rockEdge: '#5e4d31', mote: '#e0c080' },
+  'The Serpent': { bg: '#14100a', checker: '#1a150d', path: '#211a11', gridLine: '#2a2115', rock: '#453824', rockEdge: '#5e4d31', mote: '#e0c080', props: 'pebbles', propColor: '#3a2e1c' },
   // Ashen wastes: scorched violet dusk, rising embers.
-  Crossroads: { bg: '#100b14', checker: '#150e1b', path: '#1b1223', gridLine: '#23172e', rock: '#3a2c4a', rockEdge: '#503e66', mote: '#c586e0' },
+  Crossroads: { bg: '#100b14', checker: '#150e1b', path: '#1b1223', gridLine: '#23172e', rock: '#3a2c4a', rockEdge: '#503e66', mote: '#c586e0', props: 'bones', propColor: '#4a3c5c' },
   // Forge iron: rust and heat, sparks off the anvil.
-  'The Gauntlet': { bg: '#140c08', checker: '#1a100b', path: '#22150e', gridLine: '#2b1a12', rock: '#4a2f22', rockEdge: '#6b4230', mote: '#ff9d5c' },
+  'The Gauntlet': { bg: '#140c08', checker: '#1a100b', path: '#22150e', gridLine: '#2b1a12', rock: '#4a2f22', rockEdge: '#6b4230', mote: '#ff9d5c', props: 'ember', propColor: '#5c2f16' },
 }
 
 function mapTheme(map: MapDef): MapTheme {
   return MAP_THEMES[map.name] ?? DEFAULT_THEME
+}
+
+// --- glow engine ------------------------------------------------------------
+// One soft radial sprite per color, drawn with additive ('lighter')
+// compositing: every luminous thing in the game — arcs, bolts, the portal,
+// the spire, kills — becomes a light source instead of a flat shape. Sprites
+// are cached per color; drawing one is a single drawImage.
+
+const GLOW_SPRITES = new Map<string, HTMLCanvasElement>()
+const GLOW_SIZE = 64
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function glowSprite(color: string): HTMLCanvasElement {
+  let sprite = GLOW_SPRITES.get(color)
+  if (sprite) return sprite
+  sprite = document.createElement('canvas')
+  sprite.width = GLOW_SIZE
+  sprite.height = GLOW_SIZE
+  const g = sprite.getContext('2d')!
+  const half = GLOW_SIZE / 2
+  const grad = g.createRadialGradient(half, half, 0, half, half, half)
+  grad.addColorStop(0, hexToRgba(color, 0.85))
+  grad.addColorStop(0.35, hexToRgba(color, 0.32))
+  grad.addColorStop(1, hexToRgba(color, 0))
+  g.fillStyle = grad
+  g.fillRect(0, 0, GLOW_SIZE, GLOW_SIZE)
+  GLOW_SPRITES.set(color, sprite)
+  return sprite
+}
+
+function glow(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string, alpha = 1): void {
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.globalAlpha = alpha
+  ctx.drawImage(glowSprite(color), x - radius, y - radius, radius * 2, radius * 2)
+  ctx.restore()
+}
+
+// --- terrain layer ----------------------------------------------------------
+// The whole static battlefield — ground noise, checker, grid, props, rocks
+// with shadows, vignette — is rendered ONCE per map to an offscreen canvas
+// and blitted per frame. Richer than the old per-cell loop, and cheaper.
+// Everything is seeded by integer hashes: same map, same ground, no RNG.
+
+const TERRAIN_CACHE = { key: '', canvas: null as HTMLCanvasElement | null }
+
+function hash01(a: number, b: number, salt = 0): number {
+  let h = (Math.imul(a, 374761393) + Math.imul(b, 668265263) + Math.imul(salt, 2246822519)) | 0
+  h = Math.imul(h ^ (h >>> 13), 1274126177)
+  h ^= h >>> 16
+  return (h >>> 0) / 4294967295
+}
+
+function drawProp(g: CanvasRenderingContext2D, kind: PropKind, x: number, y: number, n: number, theme: MapTheme): void {
+  g.strokeStyle = theme.propColor
+  g.fillStyle = theme.propColor
+  g.lineWidth = 1
+  switch (kind) {
+    case 'tuft': {
+      g.beginPath()
+      for (let i = -1; i <= 1; i++) {
+        g.moveTo(x + i * 2, y + 3)
+        g.quadraticCurveTo(x + i * 2 + i, y - 1, x + i * 3 + n * 2, y - 4 - n * 3)
+      }
+      g.stroke()
+      break
+    }
+    case 'puddle': {
+      g.globalAlpha = 0.55
+      ellipse(g, x, y, 5 + n * 4, 2.5 + n * 2)
+      g.fill()
+      g.globalAlpha = 0.35
+      g.strokeStyle = '#8fd0ff'
+      g.beginPath()
+      g.ellipse(x, y, 5 + n * 4, 2.5 + n * 2, 0, Math.PI * 1.1, Math.PI * 1.7)
+      g.stroke()
+      g.globalAlpha = 1
+      break
+    }
+    case 'crack': {
+      g.beginPath()
+      g.moveTo(x - 5, y + 2 - n * 4)
+      g.lineTo(x - 1, y + n * 3)
+      g.lineTo(x + 2, y - 2 + n * 2)
+      g.lineTo(x + 6, y + 1 + n * 3)
+      g.stroke()
+      break
+    }
+    case 'pebbles': {
+      for (let i = 0; i < 3; i++) {
+        const px2 = x + (hash01(i, Math.round(x), 7) - 0.5) * 10
+        const py2 = y + (hash01(i, Math.round(y), 11) - 0.5) * 8
+        circle(g, px2, py2, 1 + hash01(i, Math.round(x + y), 13) * 1.4)
+        g.fill()
+      }
+      break
+    }
+    case 'bones': {
+      g.save()
+      g.translate(x, y)
+      g.rotate(n * Math.PI)
+      g.beginPath()
+      g.moveTo(-4, 0)
+      g.lineTo(4, 0)
+      g.moveTo(-1.5, -2.5)
+      g.lineTo(-1.5, 2.5)
+      g.stroke()
+      g.restore()
+      break
+    }
+    case 'ember': {
+      g.beginPath()
+      g.moveTo(x - 4, y + 1)
+      g.lineTo(x + 1, y - 1)
+      g.lineTo(x + 4, y + 1 - n * 2)
+      g.stroke()
+      g.globalAlpha = 0.5 + n * 0.4
+      g.fillStyle = '#ff9d5c'
+      circle(g, x + 1, y - 1, 1)
+      g.fill()
+      g.globalAlpha = 1
+      break
+    }
+  }
+}
+
+function terrainLayer(map: MapDef, theme: MapTheme): HTMLCanvasElement {
+  const dpr = Math.min(2, window.devicePixelRatio || 1)
+  const key = `${map.id}:${dpr}`
+  if (TERRAIN_CACHE.canvas && TERRAIN_CACHE.key === key) return TERRAIN_CACHE.canvas
+  const w = map.width * CELL_PX
+  const h = map.height * CELL_PX
+  const canvas = document.createElement('canvas')
+  canvas.width = w * dpr
+  canvas.height = h * dpr
+  const g = canvas.getContext('2d')!
+  g.scale(dpr, dpr)
+
+  // Ground: base wash + soft checker.
+  g.fillStyle = theme.bg
+  g.fillRect(0, 0, w, h)
+  g.fillStyle = theme.checker
+  for (let cy = 0; cy < map.height; cy++) {
+    for (let cx = 0; cx < map.width; cx++) {
+      if ((cx + cy) % 2 === 0) g.fillRect(cx * CELL_PX, cy * CELL_PX, CELL_PX, CELL_PX)
+    }
+  }
+
+  // Speckle noise: hashed light/dark grain breaks up the flat fills.
+  for (let y = 0; y < h; y += 5) {
+    for (let x = 0; x < w; x += 5) {
+      const n = hash01(x, y, map.id + 1)
+      if (n > 0.86) {
+        g.globalAlpha = 0.028 + (n - 0.86) * 0.2
+        g.fillStyle = '#ffffff'
+        g.fillRect(x + n * 3, y + n * 2, 2.5, 2.5)
+      } else if (n < 0.14) {
+        g.globalAlpha = 0.05 + n * 0.2
+        g.fillStyle = '#000000'
+        g.fillRect(x + n * 4, y + n * 5, 3.5, 3.5)
+      }
+    }
+  }
+  g.globalAlpha = 1
+
+  // Grid, baked faintly under everything dynamic.
+  g.strokeStyle = theme.gridLine
+  g.lineWidth = 1
+  g.beginPath()
+  for (let x = 0; x <= map.width; x++) {
+    g.moveTo(x * CELL_PX + 0.5, 0)
+    g.lineTo(x * CELL_PX + 0.5, h)
+  }
+  for (let y = 0; y <= map.height; y++) {
+    g.moveTo(0, y * CELL_PX + 0.5)
+    g.lineTo(w, y * CELL_PX + 0.5)
+  }
+  g.stroke()
+
+  // Scattered props on open ground (never on rocks or the gates).
+  for (let cy = 0; cy < map.height; cy++) {
+    for (let cx = 0; cx < map.width; cx++) {
+      if (map.rocks[cy * map.width + cx]) continue
+      if ((cx === map.spawn.cx && cy === map.spawn.cy) || (cx === map.spire.cx && cy === map.spire.cy)) continue
+      const n = hash01(cx, cy, map.id + 5)
+      if (n > 0.16) continue
+      const ox = cx * CELL_PX + 6 + hash01(cx, cy, 21) * (CELL_PX - 12)
+      const oy = cy * CELL_PX + 6 + hash01(cx, cy, 22) * (CELL_PX - 12)
+      g.globalAlpha = 0.8
+      drawProp(g, theme.props, ox, oy, hash01(cx, cy, 23), theme)
+      g.globalAlpha = 1
+    }
+  }
+
+  // Rocks: drop shadow, faceted body, lit face — baked, with per-cell jitter.
+  for (let cy = 0; cy < map.height; cy++) {
+    for (let cx = 0; cx < map.width; cx++) {
+      if (!map.rocks[cy * map.width + cx]) continue
+      const jitter = (cx * 7 + cy * 13) % 4
+      const x = cx * CELL_PX + 2
+      const y = cy * CELL_PX + 2
+      const s = CELL_PX - 4
+      g.fillStyle = 'rgba(0, 0, 0, 0.35)'
+      ellipse(g, x + s / 2 + 2, y + s - 2, s * 0.55, s * 0.18)
+      g.fill()
+      g.fillStyle = theme.rock
+      g.beginPath()
+      g.moveTo(x + 4 + jitter, y)
+      g.lineTo(x + s - 2, y + 2)
+      g.lineTo(x + s, y + s - 4 + (jitter % 2))
+      g.lineTo(x + s - 6, y + s)
+      g.lineTo(x + 2, y + s - 2)
+      g.lineTo(x, y + 6 - (jitter % 3))
+      g.closePath()
+      g.fill()
+      g.fillStyle = theme.rockEdge
+      g.beginPath()
+      g.moveTo(x + 4 + jitter, y)
+      g.lineTo(x + s - 2, y + 2)
+      g.lineTo(x + s * 0.55, y + s * 0.45)
+      g.lineTo(x + 3, y + 8)
+      g.closePath()
+      g.globalAlpha = 0.5
+      g.fill()
+      g.globalAlpha = 1
+    }
+  }
+
+  // Vignette + a whisper of top-left light: the field reads lit, not flat.
+  const light = g.createLinearGradient(0, 0, w, h)
+  light.addColorStop(0, 'rgba(255, 255, 255, 0.045)')
+  light.addColorStop(0.5, 'rgba(255, 255, 255, 0)')
+  g.fillStyle = light
+  g.fillRect(0, 0, w, h)
+  const vig = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.max(w, h) * 0.62)
+  vig.addColorStop(0, 'rgba(0, 0, 0, 0)')
+  vig.addColorStop(1, 'rgba(0, 0, 0, 0.42)')
+  g.fillStyle = vig
+  g.fillRect(0, 0, w, h)
+
+  TERRAIN_CACHE.key = key
+  TERRAIN_CACHE.canvas = canvas
+  return canvas
 }
 
 const ENEMY_RADIUS: Record<string, number> = {
@@ -155,14 +410,9 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   const h = map.height * CELL_PX
 
   const theme = mapTheme(map)
-  ctx.fillStyle = theme.bg
-  ctx.fillRect(0, 0, w, h)
-
-  drawTerrain(ctx, map, theme)
+  ctx.drawImage(terrainLayer(map, theme), 0, 0, w, h)
   drawPathHighlight(ctx, state, map, animTime(session), theme)
-  drawGrid(ctx, map, theme)
   drawAmbient(ctx, map, animTime(session), theme)
-  drawRocks(ctx, map, theme)
   drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
   drawEnemies(ctx, session)
@@ -202,36 +452,30 @@ function animTime(session: GameSession): number {
   return session.state.tick + session.alpha
 }
 
-function drawGrid(ctx: CanvasRenderingContext2D, map: MapDef, theme: MapTheme): void {
-  ctx.strokeStyle = theme.gridLine
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  for (let x = 0; x <= map.width; x++) {
-    ctx.moveTo(x * CELL_PX + 0.5, 0)
-    ctx.lineTo(x * CELL_PX + 0.5, map.height * CELL_PX)
-  }
-  for (let y = 0; y <= map.height; y++) {
-    ctx.moveTo(0, y * CELL_PX + 0.5)
-    ctx.lineTo(map.width * CELL_PX, y * CELL_PX + 0.5)
-  }
-  ctx.stroke()
-}
-
-// Subtle checkered ground so buildable terrain doesn't read as void.
-function drawTerrain(ctx: CanvasRenderingContext2D, map: MapDef, theme: MapTheme): void {
-  ctx.fillStyle = theme.checker
-  for (let cy = 0; cy < map.height; cy++) {
-    for (let cx = 0; cx < map.width; cx++) {
-      if ((cx + cy) % 2 === 0) ctx.fillRect(cx * CELL_PX, cy * CELL_PX, CELL_PX, CELL_PX)
-    }
-  }
-}
-
 function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef, t0: number, theme: MapTheme): void {
   const field = distanceField(map, blockedGrid(map, state.towers))
   const path = [map.spawn, ...pathFrom(map, field, map.spawn)]
-  ctx.fillStyle = theme.path
-  for (const c of path) ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
+
+  // A brushed road: two rounded strokes through the cell centers — a soft
+  // dark trench with a worn core — instead of hard checkerboard rectangles.
+  if (path.length > 1) {
+    ctx.save()
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    path.forEach((c, i) => {
+      const p = cellCenter(c)
+      if (i === 0) ctx.moveTo(px(p.x), px(p.y))
+      else ctx.lineTo(px(p.x), px(p.y))
+    })
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.38)'
+    ctx.lineWidth = CELL_PX * 0.98
+    ctx.stroke()
+    ctx.strokeStyle = theme.path
+    ctx.lineWidth = CELL_PX * 0.8
+    ctx.stroke()
+    ctx.restore()
+  }
 
   // Drifting chevrons make the flow direction legible at a glance.
   ctx.strokeStyle = '#2a3248'
@@ -267,7 +511,6 @@ function drawAmbient(ctx: CanvasRenderingContext2D, map: MapDef, t: number, them
   if (settings.reducedMotion) return
   const w = map.width * CELL_PX
   const h = map.height * CELL_PX
-  ctx.fillStyle = theme.mote
   for (let i = 0; i < 26; i++) {
     // Deterministic per-particle constants from cheap integer hashes.
     const ox = ((i * 73) % 97) / 97
@@ -275,45 +518,9 @@ function drawAmbient(ctx: CanvasRenderingContext2D, map: MapDef, t: number, them
     const drift = 0.12 + ((i * 37) % 13) / 60
     const x = (ox * w + t * drift + Math.sin(t * 0.015 + i * 1.7) * 8 + w) % w
     const y = (oy * h + Math.sin(t * 0.011 + i * 2.3) * 10 - t * 0.03 * (i % 3) + 4 * h) % h
-    const a = 0.1 + 0.08 * Math.sin(t * 0.03 + i * 2.1)
-    ctx.globalAlpha = Math.max(0.03, a)
-    circle(ctx, x, y, 1 + (i % 3) * 0.7)
-    ctx.fill()
-  }
-  ctx.globalAlpha = 1
-}
-
-function drawRocks(ctx: CanvasRenderingContext2D, map: MapDef, theme: MapTheme): void {
-  for (let cy = 0; cy < map.height; cy++) {
-    for (let cx = 0; cx < map.width; cx++) {
-      if (!map.rocks[cy * map.width + cx]) continue
-      // Deterministic per-cell variation: same rock, same face, every frame.
-      const jitter = (cx * 7 + cy * 13) % 4
-      const x = cx * CELL_PX + 2
-      const y = cy * CELL_PX + 2
-      const s = CELL_PX - 4
-      ctx.fillStyle = theme.rock
-      ctx.beginPath()
-      ctx.moveTo(x + 4 + jitter, y)
-      ctx.lineTo(x + s - 2, y + 2)
-      ctx.lineTo(x + s, y + s - 4 + (jitter % 2))
-      ctx.lineTo(x + s - 6, y + s)
-      ctx.lineTo(x + 2, y + s - 2)
-      ctx.lineTo(x, y + 6 - (jitter % 3))
-      ctx.closePath()
-      ctx.fill()
-      // A lit facet on the upper-left gives it mass.
-      ctx.fillStyle = theme.rockEdge
-      ctx.beginPath()
-      ctx.moveTo(x + 4 + jitter, y)
-      ctx.lineTo(x + s - 2, y + 2)
-      ctx.lineTo(x + s * 0.55, y + s * 0.45)
-      ctx.lineTo(x + 3, y + 8)
-      ctx.closePath()
-      ctx.globalAlpha = 0.5
-      ctx.fill()
-      ctx.globalAlpha = 1
-    }
+    const a = 0.16 + 0.12 * Math.sin(t * 0.03 + i * 2.1)
+    // Additive glow dots: fireflies and embers actually shine.
+    glow(ctx, x, y, 3.5 + (i % 3) * 2, theme.mote, Math.max(0.05, a))
   }
 }
 
@@ -322,9 +529,12 @@ function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, 
   const spawn = cellCenter(map.spawn)
   const sx = px(spawn.x)
   const sy = px(spawn.y)
+  // The portal casts violet light on the ground around it.
+  glow(ctx, sx, sy, CELL_PX * (1.5 + 0.15 * Math.sin(t0 * 0.05)), COLORS.spawn, 0.5)
   ctx.fillStyle = COLORS.spawn
   circle(ctx, sx, sy, CELL_PX * 0.28)
   ctx.fill()
+  glow(ctx, sx, sy, CELL_PX * 0.5, '#c0a0ff', 0.8)
   ctx.strokeStyle = COLORS.spawn
   ctx.lineWidth = 2
   for (const [dir, r, span] of [
@@ -348,9 +558,8 @@ function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, 
   const r = CELL_PX * 0.46
   const hpFrac = state.spireMaxHp > 0 ? state.spireHp / state.spireMaxHp : 0
   const breathe = 1 + 0.05 * Math.sin(t0 * 0.07)
-  ctx.save()
-  ctx.shadowColor = COLORS.spire
-  ctx.shadowBlur = (6 + 14 * hpFrac) * breathe
+  // The Spire lights its surroundings; the pool of light shrinks as it dies.
+  glow(ctx, cx, cy, CELL_PX * (1.1 + 1.5 * hpFrac) * breathe, COLORS.spire, 0.35 + 0.4 * hpFrac)
   ctx.fillStyle = COLORS.spire
   ctx.beginPath()
   ctx.moveTo(cx, cy - r * breathe)
@@ -359,7 +568,7 @@ function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, 
   ctx.lineTo(cx - r * 0.7, cy)
   ctx.closePath()
   ctx.fill()
-  ctx.restore()
+  glow(ctx, cx, cy, r * breathe, '#fff2cc', 0.5 + 0.3 * hpFrac)
   // Inner facet.
   ctx.fillStyle = '#8a6a2a'
   ctx.beginPath()
@@ -454,6 +663,7 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
       case 'frost': {
         // Crystal: a pulsing hexagon with an inner snowflake.
         const pulse = 0.75 + 0.25 * Math.sin(t0 * 0.12 + t.id)
+        glow(ctx, 0, 0, 10, color, 0.35 * pulse)
         ctx.strokeStyle = color
         ctx.fillStyle = 'rgba(125, 207, 255, 0.18)'
         ctx.lineWidth = 1.5
@@ -488,6 +698,7 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
         ctx.fillStyle = color
         circle(ctx, 0, -7, 4)
         ctx.fill()
+        glow(ctx, 0, -7, 8, color, 0.5 + 0.3 * Math.abs(Math.sin(t0 * 0.1 + t.id)))
         // Idle spark, flickering around the orb.
         const sparkA = t0 * 0.31 + t.id * 2.1
         ctx.strokeStyle = '#e0d0ff'
@@ -532,6 +743,7 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
         ctx.fillRect(-2, -8, 4, 11)
         circle(ctx, 0, -8, 3)
         ctx.fill()
+        glow(ctx, 0, -8, 7, color, 0.55 + 0.25 * Math.sin(t0 * 0.08 + t.id))
         const halo = t0 * 0.05 + t.id
         ctx.strokeStyle = color
         ctx.globalAlpha = 0.55
@@ -955,6 +1167,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         if (!fx.from || !fx.to) break
         const x = px(fx.from.x + (fx.to.x - fx.from.x) * age)
         const y = px(fx.from.y + (fx.to.y - fx.from.y) * age) - Math.sin(age * Math.PI) * 10
+        glow(ctx, x, y, fx.crit ? 12 : 8, COLORS.towers.cannon, 0.55)
         ctx.fillStyle = fx.crit ? '#ffffff' : '#2c2418'
         circle(ctx, x, y, fx.crit ? 4.5 : 3.5)
         ctx.fill()
@@ -977,7 +1190,10 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.moveTo(px(fx.from.x), px(fx.from.y))
         ctx.lineTo(tipX, tipY)
         ctx.stroke()
+        ctx.globalAlpha = 1
+        glow(ctx, tipX, tipY, fx.crit ? 10 : 7, fx.color ?? '#73daca', fade)
         ctx.fillStyle = '#ffffff'
+        ctx.globalAlpha = fade
         circle(ctx, tipX, tipY, fx.crit ? 3 : 2)
         ctx.fill()
         ctx.lineWidth = 1
@@ -1005,6 +1221,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.lineTo(1, 2)
         ctx.closePath()
         ctx.fill()
+        glow(ctx, 3, 0, 6, fx.color ?? COLORS.towers.arrow, 0.5)
         ctx.restore()
         ctx.lineWidth = 1
         break
@@ -1019,31 +1236,38 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         const len = Math.max(1, Math.hypot(dx, dy))
         const nx = -dy / len
         const ny = dx / len
-        ctx.strokeStyle = fx.color ?? COLORS.towers.tesla
-        ctx.globalAlpha = fade
-        ctx.lineWidth = fx.crit ? 3 : 2
-        ctx.beginPath()
-        ctx.moveTo(fxp.x, fxp.y)
-        for (const [t, wobble] of [
-          [0.3, 7],
-          [0.55, -6],
-          [0.8, 5],
+        // Two-pass additive lightning: a wide soft haze under a hot core.
+        ctx.save()
+        ctx.globalCompositeOperation = 'lighter'
+        for (const [width, color, a] of [
+          [fx.crit ? 7 : 5, fx.color ?? COLORS.towers.tesla, fade * 0.35],
+          [fx.crit ? 3 : 2, '#e8ddff', fade],
         ] as const) {
-          const jitter = Math.sin(fx.t0 * 13 + t * 40) * 2
-          ctx.lineTo(fxp.x + dx * t + nx * (wobble + jitter), fxp.y + dy * t + ny * (wobble + jitter))
+          ctx.strokeStyle = color
+          ctx.globalAlpha = a
+          ctx.lineWidth = width
+          ctx.beginPath()
+          ctx.moveTo(fxp.x, fxp.y)
+          for (const [t, wobble] of [
+            [0.3, 7],
+            [0.55, -6],
+            [0.8, 5],
+          ] as const) {
+            const jitter = Math.sin(fx.t0 * 13 + t * 40) * 2
+            ctx.lineTo(fxp.x + dx * t + nx * (wobble + jitter), fxp.y + dy * t + ny * (wobble + jitter))
+          }
+          ctx.lineTo(txp.x, txp.y)
+          ctx.stroke()
         }
-        ctx.lineTo(txp.x, txp.y)
-        ctx.stroke()
+        ctx.restore()
+        glow(ctx, txp.x, txp.y, 9, fx.color ?? COLORS.towers.tesla, fade * 0.8)
         ctx.lineWidth = 1
         break
       }
       case 'flash': {
-        // Muzzle flash: a brief radial burst at the firing tower.
+        // Muzzle flash: a hot additive pop at the firing tower.
         if (!fx.at) break
-        ctx.fillStyle = fx.color ?? '#ffffff'
-        ctx.globalAlpha = fade * 0.8
-        circle(ctx, px(fx.at.x), px(fx.at.y), 3 + (1 - fade) * 5)
-        ctx.fill()
+        glow(ctx, px(fx.at.x), px(fx.at.y), 6 + (1 - fade) * 9, fx.color ?? '#ffffff', fade * 0.9)
         break
       }
       case 'splash': {
@@ -1057,21 +1281,32 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
       }
       case 'meteor': {
         if (!fx.at) break
+        const mx = px(fx.at.x)
+        const my = px(fx.at.y)
         ctx.fillStyle = '#ff5f3c'
-        ctx.globalAlpha = fade * 0.6
+        ctx.globalAlpha = fade * 0.5
         ctx.beginPath()
-        ctx.arc(px(fx.at.x), px(fx.at.y), px(ABILITIES.meteor.radius) * Math.min(1, age * 2), 0, Math.PI * 2)
+        ctx.arc(mx, my, px(ABILITIES.meteor.radius) * Math.min(1, age * 2), 0, Math.PI * 2)
         ctx.fill()
+        ctx.globalAlpha = 1
+        glow(ctx, mx, my, px(ABILITIES.meteor.radius) * 0.9, '#ff7a3c', fade * 0.9)
+        glow(ctx, mx, my, px(ABILITIES.meteor.radius) * 0.4, '#ffd9a0', fade)
         break
       }
       case 'nova': {
         if (!fx.at) break
+        ctx.save()
+        ctx.globalCompositeOperation = 'lighter'
         ctx.strokeStyle = COLORS.towers.frost
         ctx.globalAlpha = fade
-        ctx.lineWidth = 3
+        ctx.lineWidth = 4
         ctx.beginPath()
         ctx.arc(px(fx.at.x), px(fx.at.y), px(ABILITIES.frost_nova.radius) * age, 0, Math.PI * 2)
         ctx.stroke()
+        ctx.strokeStyle = '#eaf7ff'
+        ctx.lineWidth = 1.5
+        ctx.stroke()
+        ctx.restore()
         ctx.lineWidth = 1
         break
       }
@@ -1104,8 +1339,10 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         break
       }
       case 'burst': {
-        // Shards flying outward from a kill, colored like the fallen.
+        // Shards flying outward from a kill, colored like the fallen, over a
+        // brief additive pop of light.
         if (!fx.at) break
+        glow(ctx, px(fx.at.x), px(fx.at.y), 5 + age * 10, fx.color ?? '#ffd76e', fade * 0.7)
         ctx.fillStyle = fx.color ?? '#ffd76e'
         ctx.globalAlpha = fade
         const spin = fx.t0 % (Math.PI * 2)
