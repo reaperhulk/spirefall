@@ -31,6 +31,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+48. **Boss bar** — a marquee health bar across the top of the field while a
+    boss walks: its name in caps, exact HP, framed and filled in the boss's
+    own color (color-assist aware). No more squinting at a 3px strip over a
+    crowd. Verified with a wave-10 screenshot.
+
 47. **Gauntlet audit** — measured the new map against the rolled pool at
     0/3k/8k sparks: the 5-leg serpentine was a spark farm (fresh accounts
     +4–8 waves). Trimmed to 4 legs: parity at real budgets (+0–1 wave at

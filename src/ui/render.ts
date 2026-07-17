@@ -168,6 +168,32 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   drawEnemies(ctx, session)
   drawEffects(ctx, session)
   drawPlacementGhost(ctx, session, ui, map)
+  drawBossBar(ctx, state, map)
+}
+
+// While a boss walks, it owns a marquee health bar across the top of the
+// field — its name, its remaining HP, no squinting at a 3px strip.
+function drawBossBar(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef): void {
+  const boss = state.enemies.find((e) => e.type.startsWith('boss') && e.hp > 0)
+  if (!boss) return
+  const w = map.width * CELL_PX
+  const barW = Math.min(360, w * 0.5)
+  const x = (w - barW) / 2
+  const y = 8
+  ctx.fillStyle = 'rgba(10, 12, 18, 0.75)'
+  ctx.fillRect(x - 8, y - 4, barW + 16, 26)
+  ctx.strokeStyle = enemyColor(boss.type)
+  ctx.lineWidth = 1
+  ctx.strokeRect(x - 8.5, y - 4.5, barW + 17, 27)
+  ctx.fillStyle = '#30354a'
+  ctx.fillRect(x, y + 10, barW, 7)
+  ctx.fillStyle = enemyColor(boss.type)
+  ctx.fillRect(x, y + 10, Math.max(2, (barW * boss.hp) / boss.maxHp), 7)
+  ctx.font = 'bold 10px ui-monospace, monospace'
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#e8ecf5'
+  ctx.fillText(`${ENEMIES[boss.type].name.toUpperCase()} — ${boss.hp}/${boss.maxHp}`, w / 2, y + 7)
+  ctx.textAlign = 'left'
 }
 
 // Animation clock: sim time (ticks) plus the interpolation fraction, so
