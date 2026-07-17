@@ -38,6 +38,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+63. *(post-marathon, playtest)* **Sound 3.0: real synthesis voices** — the
+    per-action sounds themselves rebuilt (feedback: layering polish wasn't
+    enough; oscillator beeps read as programmer art). Two new voices:
+    Karplus-Strong plucked string (noise burst ringing in a tuned feedback
+    delay — the arrow is an actual bowstring now, placement is a planted
+    post) and two-operator FM (modulation depth collapsing inside each hit:
+    frost chimes, tesla discharge, kill clink, spire-hit clang, relic glass
+    bell, coin tinks, victory bell fanfare, and a real gong for Bulwark).
+    Every note gets an attack ramp (no envelope clicks), tonal notes play
+    as detuned pairs through a softening lowpass, a procedurally generated
+    convolution reverb adds room air (stingers wet, rapid combat dry), and
+    combat sounds pan to their battlefield position. Still zero assets.
+
 62. *(post-marathon, playtest)* **Loupe unbound from the board** — the
     aim loupe was drawn inside the playfield canvas, and on a phone the
     board is only ~170 screen px tall: for most cells "above the finger"

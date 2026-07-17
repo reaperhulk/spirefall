@@ -1,12 +1,18 @@
+import { MAP_WIDTH } from '../data/maps'
 import type { GameEvent, TowerType } from '../engine/types'
 import { settings } from './settings'
 
 // Synthesized SFX — WebAudio oscillators + filtered noise, no assets. Every
 // tower has its own voice, abilities and cataclysms get stingers, and the
 // whole mix runs through a compressor so layered combat stays punchy instead
-// of clipping. The AudioContext is created lazily on the first user gesture
-// (browser autoplay policy), sounds are throttled per kind and globally so
-// 10× speed doesn't become a wall of noise, and the mute preference persists.
+// of clipping. Polish layer: every note gets a real attack ramp (no envelope
+// clicks), tonal notes play as detuned pairs through a softening lowpass
+// (synth-organ warmth instead of raw beeps), a procedurally generated
+// convolution reverb adds room air, and combat sounds pan to where they
+// happen on the battlefield. The AudioContext is created lazily on the first
+// user gesture (browser autoplay policy), sounds are throttled per kind and
+// globally so 10× speed doesn't become a wall of noise, and the mute
+// preference persists.
 
 const MUTE_KEY = 'spirefall-muted'
 
@@ -30,16 +36,30 @@ type SoundKind =
   | 'gold_rush'
   | 'bulwark'
 
+// Four synthesis voices, because plain oscillators sound like programmer
+// art no matter how they're layered:
+// - 'noise':  looped white noise through a bandpass at `freq` (q, sweep) —
+//             cracks, booms, whooshes, air.
+// - 'pluck':  Karplus-Strong — a noise burst ringing in a tuned feedback
+//             delay. A physically-modelled string: real twang, not a beep.
+// - 'fm':     two-operator FM — modulator depth `index` (in multiples of
+//             the carrier) decaying to `indexEnd`. Bells, clinks, zaps,
+//             gongs; the timbre evolves inside every single hit.
+// - oscillator types: pads and drones, played as a detuned pair through a
+//             softening lowpass unless `pure`.
 interface Note {
   freq: number
   dur: number
-  // 'noise' plays a looped white-noise buffer through a bandpass centred on
-  // `freq` (with optional `q`); anything else is a plain oscillator.
-  type: OscillatorType | 'noise'
+  type: OscillatorType | 'noise' | 'pluck' | 'fm'
   gain: number
   sweep?: number // multiply freq (or bandpass centre) by this over the duration
   q?: number // bandpass resonance for noise notes (default 1)
+  ratio?: number // fm: modulator/carrier frequency ratio (default 2)
+  index?: number // fm: starting modulation depth (default 2)
+  indexEnd?: number // fm: depth at the end of the note (default 5% of index)
   at?: number // seconds offset from the sound's start; notes sharing at:0 layer
+  attack?: number // seconds to ramp in (default 4ms — kills envelope clicks)
+  pure?: boolean // oscillators: skip the detune pair + lowpass softening
 }
 
 // Layered recipes. Notes with an explicit `at` are placed at that offset so a
@@ -47,95 +67,106 @@ interface Note {
 // sequentially (each starting at 90% of the previous note's duration) for
 // melodic figures like the victory arpeggio.
 const SOUNDS: Record<SoundKind, Note[]> = {
-  // Arrow: short bright pluck — a filtered tick with a fast square chirp.
+  // Arrow: an actual bowstring — Karplus pluck with a tiny release tick.
   shot_arrow: [
-    { freq: 2200, dur: 0.03, type: 'noise', gain: 0.03, q: 2, at: 0 },
-    { freq: 660, dur: 0.05, type: 'square', gain: 0.02, sweep: 0.6, at: 0 },
+    { freq: 480, dur: 0.16, type: 'pluck', gain: 0.06, at: 0 },
+    { freq: 1900, dur: 0.02, type: 'noise', gain: 0.015, q: 1.5, at: 0 },
   ],
-  // Cannon: boom — low-passed thump (noise through a low bandpass) over a
-  // sine drop, like a kick drum.
+  // Cannon: kick-drum physics — click transient, pitch-dropping sine body,
+  // low noise boom.
   shot_cannon: [
-    { freq: 240, dur: 0.2, type: 'noise', gain: 0.065, q: 0.7, sweep: 0.5, at: 0 },
-    { freq: 72, dur: 0.22, type: 'sine', gain: 0.055, sweep: 0.6, at: 0 },
+    { freq: 2600, dur: 0.012, type: 'noise', gain: 0.04, q: 0.5, at: 0 },
+    { freq: 120, dur: 0.2, type: 'sine', gain: 0.07, sweep: 0.35, at: 0, pure: true, attack: 0.002 },
+    { freq: 200, dur: 0.22, type: 'noise', gain: 0.055, q: 0.6, sweep: 0.5, at: 0 },
   ],
-  // Frost: airy crystalline shimmer — high sine with a breathy noise wash.
+  // Frost: icy FM chime with a breath of air — crystalline, not beepy.
   shot_frost: [
-    { freq: 1560, dur: 0.09, type: 'sine', gain: 0.028, sweep: 1.25, at: 0 },
-    { freq: 4200, dur: 0.08, type: 'noise', gain: 0.018, q: 1.5, at: 0 },
+    { freq: 1900, dur: 0.12, type: 'fm', gain: 0.03, ratio: 3.02, index: 2, at: 0 },
+    { freq: 5000, dur: 0.1, type: 'noise', gain: 0.012, q: 1, at: 0 },
   ],
-  // Tesla: zap — narrow resonant noise crackle plus a detuned saw bite.
+  // Tesla: FM zap — high modulation depth collapsing fast reads as electric
+  // discharge; resonant crackle on top.
   shot_tesla: [
-    { freq: 1800, dur: 0.06, type: 'noise', gain: 0.035, q: 8, sweep: 0.45, at: 0 },
-    { freq: 520, dur: 0.05, type: 'sawtooth', gain: 0.022, sweep: 1.4, at: 0 },
+    { freq: 620, dur: 0.09, type: 'fm', gain: 0.035, ratio: 1.417, index: 8, indexEnd: 0.5, at: 0 },
+    { freq: 2200, dur: 0.05, type: 'noise', gain: 0.028, q: 6, sweep: 0.4, at: 0 },
   ],
-  // Sniper: crack + whistle — sharp noise snap, then a thin descending tail.
+  // Sniper: rifle crack + thin whistle tail.
   shot_sniper: [
-    { freq: 3000, dur: 0.05, type: 'noise', gain: 0.05, q: 1.2, sweep: 0.4, at: 0 },
-    { freq: 1150, dur: 0.16, type: 'triangle', gain: 0.02, sweep: 0.55, at: 0.02 },
+    { freq: 3200, dur: 0.06, type: 'noise', gain: 0.055, q: 0.8, sweep: 0.35, at: 0 },
+    { freq: 1900, dur: 0.22, type: 'sine', gain: 0.013, sweep: 0.18, at: 0.02, pure: true },
   ],
+  // Kill: metallic clink over a body thud — a "chunk", not a chirp.
   kill: [
-    { freq: 300, dur: 0.09, type: 'triangle', gain: 0.05, sweep: 1.6, at: 0 },
-    { freq: 1400, dur: 0.04, type: 'noise', gain: 0.02, q: 2, at: 0 },
+    { freq: 820, dur: 0.1, type: 'fm', gain: 0.045, ratio: 2.756, index: 3, at: 0 },
+    { freq: 170, dur: 0.12, type: 'sine', gain: 0.04, sweep: 0.5, at: 0, pure: true },
   ],
+  // Spire hit: deep impact + dissonant metal clang + debris.
   spire_hit: [
-    { freq: 110, dur: 0.25, type: 'sawtooth', gain: 0.09, sweep: 0.5, at: 0 },
-    { freq: 300, dur: 0.12, type: 'noise', gain: 0.04, q: 0.8, sweep: 0.5, at: 0 },
+    { freq: 105, dur: 0.3, type: 'sine', gain: 0.09, sweep: 0.36, at: 0, pure: true, attack: 0.002 },
+    { freq: 260, dur: 0.22, type: 'fm', gain: 0.045, ratio: 1.93, index: 5, at: 0.01 },
+    { freq: 400, dur: 0.18, type: 'noise', gain: 0.03, q: 0.7, sweep: 0.4, at: 0 },
   ],
+  // Wave cleared: two FM bells, rising.
   wave_cleared: [
-    { freq: 440, dur: 0.09, type: 'triangle', gain: 0.06 },
-    { freq: 660, dur: 0.12, type: 'triangle', gain: 0.06 },
+    { freq: 660, dur: 0.35, type: 'fm', gain: 0.05, ratio: 3.51, index: 1.5 },
+    { freq: 990, dur: 0.5, type: 'fm', gain: 0.05, ratio: 3.51, index: 1.5 },
   ],
+  // Victory: a bell fanfare — same figure, real bells now.
   victory: [
-    { freq: 523, dur: 0.12, type: 'triangle', gain: 0.08 },
-    { freq: 659, dur: 0.12, type: 'triangle', gain: 0.08 },
-    { freq: 784, dur: 0.12, type: 'triangle', gain: 0.08 },
-    { freq: 1046, dur: 0.25, type: 'triangle', gain: 0.08 },
+    { freq: 523, dur: 0.3, type: 'fm', gain: 0.06, ratio: 3.01, index: 1.2 },
+    { freq: 659, dur: 0.3, type: 'fm', gain: 0.06, ratio: 3.01, index: 1.2 },
+    { freq: 784, dur: 0.3, type: 'fm', gain: 0.06, ratio: 3.01, index: 1.2 },
+    { freq: 1046, dur: 0.7, type: 'fm', gain: 0.065, ratio: 3.01, index: 1.4 },
   ],
   defeat: [
-    { freq: 330, dur: 0.18, type: 'sawtooth', gain: 0.07 },
-    { freq: 262, dur: 0.18, type: 'sawtooth', gain: 0.07 },
-    { freq: 196, dur: 0.35, type: 'sawtooth', gain: 0.07 },
+    { freq: 330, dur: 0.18, type: 'sawtooth', gain: 0.06 },
+    { freq: 262, dur: 0.18, type: 'sawtooth', gain: 0.06 },
+    { freq: 196, dur: 0.4, type: 'sawtooth', gain: 0.06 },
   ],
+  // Relic: glass bell with a shimmer partial — treasure, not a doorbell.
   relic: [
-    { freq: 880, dur: 0.08, type: 'sine', gain: 0.06 },
-    { freq: 1320, dur: 0.14, type: 'sine', gain: 0.06 },
+    { freq: 1320, dur: 0.6, type: 'fm', gain: 0.05, ratio: 3.53, index: 1.8, at: 0 },
+    { freq: 1980, dur: 0.4, type: 'fm', gain: 0.028, ratio: 2.0, index: 0.8, at: 0.06 },
   ],
+  // Place: planting a post — low pluck plus a soft ground thud.
   place: [
-    { freq: 220, dur: 0.06, type: 'square', gain: 0.045, sweep: 1.3, at: 0 },
-    { freq: 900, dur: 0.03, type: 'noise', gain: 0.02, q: 1.5, at: 0 },
+    { freq: 180, dur: 0.22, type: 'pluck', gain: 0.06, at: 0 },
+    { freq: 90, dur: 0.08, type: 'sine', gain: 0.035, sweep: 0.7, at: 0, pure: true },
   ],
+  // Boss: saw drone with an FM sub-growl underneath.
   boss: [
-    { freq: 98, dur: 0.3, type: 'sawtooth', gain: 0.09, sweep: 0.8 },
-    { freq: 73, dur: 0.5, type: 'sawtooth', gain: 0.09, sweep: 0.9 },
+    { freq: 98, dur: 0.3, type: 'sawtooth', gain: 0.08, sweep: 0.8, at: 0 },
+    { freq: 73, dur: 0.5, type: 'sawtooth', gain: 0.08, sweep: 0.9, at: 0.25 },
+    { freq: 55, dur: 0.6, type: 'fm', gain: 0.05, ratio: 0.5, index: 6, indexEnd: 2, at: 0 },
   ],
-  // Cataclysm: ominous rumble — sub drone with a slow dark noise swell.
+  // Cataclysm: rumble + a dissonant iron toll.
   cataclysm: [
-    { freq: 55, dur: 0.7, type: 'sawtooth', gain: 0.08, sweep: 0.7, at: 0 },
-    { freq: 160, dur: 0.6, type: 'noise', gain: 0.045, q: 0.6, sweep: 0.4, at: 0.05 },
-    { freq: 82, dur: 0.45, type: 'square', gain: 0.03, sweep: 0.8, at: 0.15 },
+    { freq: 55, dur: 0.7, type: 'sawtooth', gain: 0.07, sweep: 0.7, at: 0 },
+    { freq: 160, dur: 0.6, type: 'noise', gain: 0.04, q: 0.6, sweep: 0.4, at: 0.05 },
+    { freq: 110, dur: 0.8, type: 'fm', gain: 0.05, ratio: 1.19, index: 7, indexEnd: 0.5, at: 0.1 },
   ],
-  // Meteor: whistle-down then impact thud.
+  // Meteor: whistle-down, then a real impact — thud + debris.
   meteor: [
-    { freq: 1800, dur: 0.28, type: 'noise', gain: 0.035, q: 3, sweep: 0.2, at: 0 },
-    { freq: 90, dur: 0.3, type: 'sine', gain: 0.07, sweep: 0.45, at: 0.24 },
-    { freq: 200, dur: 0.18, type: 'noise', gain: 0.05, q: 0.7, sweep: 0.4, at: 0.24 },
+    { freq: 1800, dur: 0.28, type: 'noise', gain: 0.032, q: 3, sweep: 0.2, at: 0 },
+    { freq: 85, dur: 0.3, type: 'sine', gain: 0.075, sweep: 0.45, at: 0.24, pure: true, attack: 0.002 },
+    { freq: 180, dur: 0.2, type: 'noise', gain: 0.05, q: 0.6, sweep: 0.4, at: 0.24 },
   ],
-  // Frost nova: glassy bloom that sweeps upward.
+  // Frost nova: glassy FM bloom sweeping upward with shimmer.
   frost_nova: [
-    { freq: 780, dur: 0.25, type: 'sine', gain: 0.05, sweep: 2.2, at: 0 },
-    { freq: 3600, dur: 0.3, type: 'noise', gain: 0.025, q: 1.2, sweep: 1.6, at: 0.03 },
+    { freq: 900, dur: 0.3, type: 'fm', gain: 0.05, ratio: 3.02, index: 2, sweep: 1.8, at: 0 },
+    { freq: 3600, dur: 0.3, type: 'noise', gain: 0.02, q: 1.2, sweep: 1.6, at: 0.04 },
   ],
-  // Gold rush: quick rising coin arpeggio.
+  // Gold rush: coin tinks — tiny bright FM bells, rising.
   gold_rush: [
-    { freq: 988, dur: 0.06, type: 'triangle', gain: 0.05 },
-    { freq: 1319, dur: 0.06, type: 'triangle', gain: 0.05 },
-    { freq: 1568, dur: 0.1, type: 'triangle', gain: 0.05 },
+    { freq: 1567, dur: 0.07, type: 'fm', gain: 0.045, ratio: 3.0, index: 1 },
+    { freq: 1975, dur: 0.07, type: 'fm', gain: 0.045, ratio: 3.0, index: 1 },
+    { freq: 2349, dur: 0.13, type: 'fm', gain: 0.05, ratio: 3.0, index: 1 },
   ],
-  // Bulwark: temple-gong — low fundamental with an octave partial and a tick.
+  // Bulwark: a real FM gong — inharmonic partials that bloom then settle.
   bulwark: [
-    { freq: 196, dur: 0.8, type: 'sine', gain: 0.06, sweep: 0.96, at: 0 },
-    { freq: 392, dur: 0.55, type: 'sine', gain: 0.03, sweep: 0.97, at: 0 },
-    { freq: 1200, dur: 0.04, type: 'noise', gain: 0.025, q: 2, at: 0 },
+    { freq: 98, dur: 1.0, type: 'fm', gain: 0.07, ratio: 1.4, index: 5, indexEnd: 0.3, at: 0 },
+    { freq: 196, dur: 0.7, type: 'fm', gain: 0.03, ratio: 2.01, index: 2, at: 0.02 },
+    { freq: 1200, dur: 0.04, type: 'noise', gain: 0.02, q: 2, at: 0 },
   ],
 }
 
@@ -162,6 +193,36 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
 }
 const DEFAULT_MIN_GAP = 140
 
+// Reverb send per kind: stingers get room air, rapid combat stays dry-ish so
+// 10x speed doesn't smear into wash. Values are the wet-path gain share.
+const REVERB_SEND: Partial<Record<SoundKind, number>> = {
+  shot_arrow: 0.05,
+  shot_cannon: 0.1,
+  shot_frost: 0.09,
+  shot_tesla: 0.05,
+  shot_sniper: 0.12,
+  kill: 0.06,
+  spire_hit: 0.12,
+  wave_cleared: 0.22,
+  victory: 0.25,
+  defeat: 0.2,
+  relic: 0.22,
+  place: 0.06,
+  boss: 0.18,
+  cataclysm: 0.28,
+  meteor: 0.2,
+  frost_nova: 0.22,
+  gold_rush: 0.16,
+  bulwark: 0.3,
+}
+
+// Millicell x-position -> stereo pan. The battlefield runs left (portal) to
+// right (spire); sounds happen where you look for them.
+function panFromX(xMillicells: number): number {
+  const frac = xMillicells / (MAP_WIDTH * 1000)
+  return Math.max(-0.8, Math.min(0.8, (frac - 0.5) * 1.3))
+}
+
 // Combat percussion gets a little random pitch drift so rapid fire doesn't
 // sound like a machine stamping the same sample. UI layer — Math.random is
 // fine here; the engine never sees it.
@@ -178,6 +239,7 @@ const JITTERED: ReadonlySet<SoundKind> = new Set([
 export class Sfx {
   private ctx: AudioContext | null = null
   private master: DynamicsCompressorNode | null = null
+  private reverb: ConvolverNode | null = null
   private noiseBuffer: AudioBuffer | null = null
   private lastPlayed: Partial<Record<SoundKind, number>> = {}
   private recentCount = 0
@@ -215,14 +277,15 @@ export class Sfx {
       switch (e.type) {
         case 'tower_fired': {
           const kind = SHOT_BY_TOWER[e.tower]
-          if (kind) this.play(kind)
+          if (kind) this.play(kind, panFromX(e.from.x))
           break
         }
         case 'enemy_killed':
-          this.play('kill')
+          this.play('kill', panFromX(e.at.x))
           break
         case 'enemy_reached_spire':
-          this.play('spire_hit')
+          // The Spire sits on the right edge of every battlefield.
+          this.play('spire_hit', 0.5)
           break
         case 'wave_cleared':
           this.play('wave_cleared')
@@ -237,7 +300,7 @@ export class Sfx {
           if (e.relic !== null) this.play('relic')
           break
         case 'tower_placed':
-          this.play('place')
+          this.play('place', panFromX((e.cell.cx + 0.5) * 1000))
           break
         case 'enemy_spawned':
           if (e.enemy.startsWith('boss')) this.play('boss')
@@ -307,6 +370,25 @@ export class Sfx {
     comp.connect(ctx.destination)
     this.master = comp
 
+    // Procedural room reverb: a short stereo noise burst with an exponential
+    // decay as the impulse response — no assets, ~40KB, built once.
+    try {
+      const irLen = Math.floor(ctx.sampleRate * 0.9)
+      const ir = ctx.createBuffer(2, irLen, ctx.sampleRate)
+      for (let ch = 0; ch < 2; ch++) {
+        const d = ir.getChannelData(ch)
+        for (let i = 0; i < irLen; i++) {
+          d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.8)
+        }
+      }
+      const rev = ctx.createConvolver()
+      rev.buffer = ir
+      rev.connect(comp)
+      this.reverb = rev
+    } catch {
+      this.reverb = null // dry-only is fine
+    }
+
     const len = Math.floor(ctx.sampleRate * 0.5)
     const buf = ctx.createBuffer(1, len, ctx.sampleRate)
     const data = buf.getChannelData(0)
@@ -328,7 +410,7 @@ export class Sfx {
     }
   }
 
-  private play(kind: SoundKind): void {
+  private play(kind: SoundKind, pan = 0): void {
     if (this.muted || !this.ctx || !this.master || !this.noiseBuffer) return
     if (this.ctx.state !== 'running') {
       // Kick off an async revival; this sound is lost but the next one plays.
@@ -349,6 +431,27 @@ export class Sfx {
     this.lastPlayed[kind] = now
 
     const ctx = this.ctx
+    // Per-sound bus: notes -> (panner) -> master, with a parallel send into
+    // the shared convolution reverb. Panning places combat on the
+    // battlefield; the send amount decides how much room a sound gets.
+    let bus: AudioNode = this.master
+    if (pan !== 0 && typeof ctx.createStereoPanner === 'function') {
+      const panner = ctx.createStereoPanner()
+      panner.pan.value = pan
+      panner.connect(this.master)
+      bus = panner
+    }
+    let wet: GainNode | null = null
+    if (this.reverb) {
+      wet = ctx.createGain()
+      wet.gain.value = REVERB_SEND[kind] ?? 0.08
+      wet.connect(this.reverb)
+    }
+    const connect = (node: AudioNode) => {
+      node.connect(bus)
+      if (wet) node.connect(wet)
+    }
+
     const base = ctx.currentTime
     const pitch = JITTERED.has(kind) ? 1 + (Math.random() * 2 - 1) * 0.04 : 1
     let chained = 0 // running offset for notes without an explicit `at`
@@ -358,11 +461,66 @@ export class Sfx {
       const scaled = (note.gain * Math.max(0, Math.min(100, settings.volume))) / 100
       if (scaled <= 0) continue
       const gain = ctx.createGain()
-      gain.gain.setValueAtTime(scaled, at)
+      // Real attack ramp: starting a gain at full value clicks. A few ms of
+      // linear rise reads as the same transient without the pop.
+      const attack = Math.min(note.attack ?? 0.004, note.dur * 0.4)
+      gain.gain.setValueAtTime(0.0001, at)
+      gain.gain.linearRampToValueAtTime(scaled, at + attack)
       gain.gain.exponentialRampToValueAtTime(0.0001, at + note.dur)
-      gain.connect(this.master)
+      connect(gain)
       const freq = note.freq * pitch
-      if (note.type === 'noise') {
+      if (note.type === 'pluck') {
+        // Karplus-Strong: a 2-period noise burst excites a tuned feedback
+        // delay; a lowpass in the loop damps it like a real string. The
+        // feedback gain is derived so the string rings for exactly `dur`.
+        const period = 1 / freq
+        const src = ctx.createBufferSource()
+        src.buffer = this.noiseBuffer
+        src.loop = true
+        const burst = ctx.createGain()
+        burst.gain.setValueAtTime(1, at)
+        burst.gain.exponentialRampToValueAtTime(0.001, at + period * 2)
+        const delay = ctx.createDelay(0.05)
+        delay.delayTime.value = period
+        const damp = ctx.createBiquadFilter()
+        damp.type = 'lowpass'
+        damp.frequency.value = Math.min(12000, freq * 6)
+        const fb = ctx.createGain()
+        fb.gain.setValueAtTime(Math.pow(0.001, period / note.dur), at)
+        src.connect(burst)
+        burst.connect(delay)
+        delay.connect(damp)
+        damp.connect(fb)
+        fb.connect(delay) // the string loop
+        damp.connect(gain)
+        src.start(at)
+        src.stop(at + period * 2 + 0.01)
+        // Cut the loop once the note ends so the feedback graph dies.
+        fb.gain.setValueAtTime(fb.gain.value, at + note.dur)
+        fb.gain.linearRampToValueAtTime(0, at + note.dur + 0.05)
+      } else if (note.type === 'fm') {
+        // Two-operator FM: modulator depth starts at `index` carriers and
+        // collapses toward `indexEnd`, so the timbre evolves inside the hit
+        // (bright metallic attack -> clean ring) like a struck object.
+        const carrier = ctx.createOscillator()
+        carrier.type = 'sine'
+        carrier.frequency.setValueAtTime(freq, at)
+        if (note.sweep) carrier.frequency.exponentialRampToValueAtTime(freq * note.sweep, at + note.dur)
+        const mod = ctx.createOscillator()
+        mod.type = 'sine'
+        mod.frequency.setValueAtTime(freq * (note.ratio ?? 2), at)
+        const depth = ctx.createGain()
+        const index = note.index ?? 2
+        depth.gain.setValueAtTime(freq * index, at)
+        depth.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * (note.indexEnd ?? index * 0.05)), at + note.dur)
+        mod.connect(depth)
+        depth.connect(carrier.frequency)
+        carrier.connect(gain)
+        mod.start(at)
+        carrier.start(at)
+        mod.stop(at + note.dur + 0.02)
+        carrier.stop(at + note.dur + 0.02)
+      } else if (note.type === 'noise') {
         const src = ctx.createBufferSource()
         src.buffer = this.noiseBuffer
         src.loop = true
@@ -376,13 +534,33 @@ export class Sfx {
         src.start(at)
         src.stop(at + note.dur + 0.02)
       } else {
-        const osc = ctx.createOscillator()
-        osc.type = note.type
-        osc.frequency.setValueAtTime(freq, at)
-        if (note.sweep) osc.frequency.exponentialRampToValueAtTime(freq * note.sweep, at + note.dur)
-        osc.connect(gain)
-        osc.start(at)
-        osc.stop(at + note.dur + 0.02)
+        // Tonal notes play as a detuned pair through a softening lowpass:
+        // the chorus thickens thin oscillators and the filter shaves the
+        // raw-synth harshness off saws and squares.
+        const startOsc = (detuneCents: number, g: number) => {
+          const osc = ctx.createOscillator()
+          osc.type = note.type as OscillatorType
+          osc.frequency.setValueAtTime(freq, at)
+          osc.detune.value = detuneCents
+          if (note.sweep) osc.frequency.exponentialRampToValueAtTime(freq * note.sweep, at + note.dur)
+          const into = ctx.createGain()
+          into.gain.value = g
+          osc.connect(into)
+          osc.start(at)
+          osc.stop(at + note.dur + 0.02)
+          return into
+        }
+        if (note.pure) {
+          startOsc(0, 1).connect(gain)
+        } else {
+          const lp = ctx.createBiquadFilter()
+          lp.type = 'lowpass'
+          lp.frequency.value = Math.min(12000, Math.max(1400, freq * 3.2))
+          lp.Q.value = 0.5
+          startOsc(-6, 0.55).connect(lp)
+          startOsc(6, 0.55).connect(lp)
+          lp.connect(gain)
+        }
       }
     }
   }
