@@ -95,6 +95,17 @@ export function assertInvariants(state: RunState): void {
     `mods.critChancePct must be in [0, 100], got ${state.mods.critChancePct}`,
   )
 
+  for (const c of state.cataclysms) {
+    check(
+      ['surge', 'juggernaut', 'swarm', 'dampening', 'crumbling', 'ironclad'].includes(c),
+      `unknown cataclysm ${String(c)}`,
+    )
+  }
+  check(
+    state.cataclysms.length === 0 || state.victoryClaimed,
+    'cataclysms can only strike after the victory wave',
+  )
+
   check(new Set(state.relics).size === state.relics.length, 'duplicate relics')
   if (state.relicOffer !== null) {
     check(state.relicOffer.length > 0, 'empty relic offer')

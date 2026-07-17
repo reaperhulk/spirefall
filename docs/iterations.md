@@ -10,7 +10,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 1. Carrier enemy: late-game spawner that births swarmlings while alive
 - [ ] 2. Wraith enemy: phases untargetable — punishes pure-DPS, rewards timing
 - [ ] 3. Two new maps (Serpent, Crossroads) + map name in HUD; recalibrate seeds
-- [ ] 4. Endless mutators: stacking wave modifiers past the victory wave
+- [x] 4. Endless mutators: stacking wave modifiers past the victory wave (Cataclysms)
 - [ ] 5. Run summary analytics: damage by tower type, kills by enemy type
 - [ ] 6. Graphics: real projectiles (cannon shells, sniper tracers), muzzle flash
 - [ ] 7. Graphics: terrain texture, path styling, spire/gate glow-up
@@ -30,6 +30,14 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+2. **Endless Cataclysms** — clearing waves 24, 29, 34… permanently stacks a
+   seeded modifier (Surge +20% speed, Juggernaut +30% HP, Endless Swarm +25%
+   budget, Dampening −10% tower damage, Crumbling −2 max HP, Ironclad +50%
+   shields). Struck at wave CLEAR so the build phase and scouting report see
+   the new world. HUD badges with ×n stacking, strike flash + float, damage
+   breakdown shows Dampening as a negative part, tower output floored at 10%
+   of base. Endless is a gauntlet now, not a flat grind.
 
 1. **Carrier (Broodmother)** — wave-18+ elite spawner hatching bounty-less
    swarmlings every ~4.7s. Fallout fixed along the way: (a) engine bug —

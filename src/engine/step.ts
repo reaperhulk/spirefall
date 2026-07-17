@@ -2,6 +2,8 @@ import {
   ABILITIES,
   BASE_WAVE_BUDGET,
   BOSS_WAVE_INTERVAL,
+  CATACLYSM_IDS,
+  CATACLYSM_WAVE_INTERVAL,
   ENEMIES,
   enhanceCost,
   hpGrowthPct,
@@ -33,7 +35,18 @@ import {
 } from './combat'
 import { cloneRun } from './clone'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, inBounds } from './grid'
-import type { AffixId, Command, EnemyType, GameEvent, RelicId, RunState, StepResult, Targeting } from './types'
+import type {
+  AffixId,
+  CataclysmId,
+  Command,
+  EnemyType,
+  GameEvent,
+  RelicId,
+  RunState,
+  StepResult,
+  Targeting,
+} from './types'
+import { nextInt } from './rng'
 import { affixHpPct, affixSpeedPct, generateWave, scaledHp } from './waves'
 
 export const TICKS_PER_SECOND = 30
@@ -236,11 +249,18 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
 // with previewNextWave so the scouting report can never drift from reality.
 // The first waves field reduced strength: at 10 spire HP a fresh defense must
 // not be forced to leak half its life to opening RNG.
+function cataclysmCount(s: RunState, id: CataclysmId): number {
+  let n = 0
+  for (const c of s.cataclysms) if (c === id) n += 1
+  return n
+}
+
 function nextWaveBudget(s: RunState): { wave: number; waveBudget: number; fielded: number } {
   const wave = s.wave + 1
   const waveBudget = wave === 1 ? BASE_WAVE_BUDGET : Math.floor((s.waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
   const budgetPct = wave === 1 ? 50 : wave === 2 ? 65 : wave === 3 ? 80 : wave === 4 ? 90 : 100
-  return { wave, waveBudget, fielded: Math.floor((waveBudget * budgetPct) / 100) }
+  const swarm = 100 + 25 * cataclysmCount(s, 'swarm')
+  return { wave, waveBudget, fielded: Math.floor((waveBudget * budgetPct * swarm) / 10_000) }
 }
 
 export interface WavePreview {
@@ -284,17 +304,26 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
   if (due.length === 0) return
   s.pendingSpawns = s.pendingSpawns.filter((p) => p.tick > s.tick)
   const map = getMap(s.mapId)
+  const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
+  const surge = 100 + 20 * cataclysmCount(s, 'surge')
+  const ironclad = 100 + 50 * cataclysmCount(s, 'ironclad')
   for (const spawn of due) {
     const def = ENEMIES[spawn.type]
-    const hp = Math.max(1, Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix)) / 100))
-    const speed = Math.floor((def.speed * affixSpeedPct(s.activeAffix)) / 100)
+    const hp = Math.max(
+      1,
+      Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix) * juggernaut) / 10_000),
+    )
+    const speed = Math.floor((def.speed * affixSpeedPct(s.activeAffix) * surge) / 10_000)
     // Shields grow at HALF the HP curve's rate. A static shield is trivia
     // once damage multipliers stack; full-rate scaling walls out even heavy
     // shells at a sharp cliff. Half-rate keeps the composition check honest:
     // permanently above rapid-fire chip damage, below cannon shells until
     // deep endless, and always pierced by snipers.
     const shieldScalePct = 100 + Math.floor((s.hpScalePct - 100) / 2)
-    const shield = def.shield > 0 ? Math.max(def.shield, Math.floor((def.shield * shieldScalePct) / 100)) : 0
+    const shield =
+      def.shield > 0
+        ? Math.max(def.shield, Math.floor((def.shield * shieldScalePct * ironclad) / 10_000))
+        : 0
     const id = s.nextEntityId
     s.nextEntityId += 1
     s.enemies.push({
@@ -350,6 +379,22 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (s.wave >= VICTORY_WAVE && !s.victoryClaimed) {
     s.victoryClaimed = true
     events.push({ type: 'victory_achieved', wave: s.wave })
+  }
+
+  // Past the cycle, every 5th cleared wave strikes a Cataclysm: a permanent,
+  // stacking run modifier. Struck at wave CLEAR so the build phase (and the
+  // scouting report) see the new world before the next wave fields under it.
+  if (s.wave >= VICTORY_WAVE && (s.wave - VICTORY_WAVE) % CATACLYSM_WAVE_INTERVAL === 0) {
+    const pick = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 1)
+    s.rng.relics = pick.rng
+    const cataclysm = CATACLYSM_IDS[pick.value]!
+    s.cataclysms.push(cataclysm)
+    if (cataclysm === 'dampening') s.mods.damagePct -= 10
+    if (cataclysm === 'crumbling') {
+      s.spireMaxHp = Math.max(1, s.spireMaxHp - 2)
+      s.spireHp = Math.max(1, Math.min(s.spireHp, s.spireMaxHp))
+    }
+    events.push({ type: 'cataclysm_struck', cataclysm, wave: s.wave })
   }
 
   s.phase = 'build'

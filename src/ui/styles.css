@@ -537,3 +537,21 @@ button:disabled {
 .tower-panel h3 {
   padding-right: 30px;
 }
+
+/* Cataclysm badges: permanent endless modifiers. */
+.cataclysm-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cataclysm-badge {
+  background: #2a1a33;
+  border: 1px solid #bb9af7;
+  color: #bb9af7;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}

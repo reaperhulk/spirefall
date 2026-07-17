@@ -15,6 +15,7 @@ export function cloneRun(s: RunState): RunState {
     pendingSpawns: s.pendingSpawns.map((p) => ({ ...p })),
     abilities: { ...s.abilities },
     relics: [...s.relics],
+    cataclysms: [...s.cataclysms],
     relicOffer: s.relicOffer ? [...s.relicOffer] : null,
     availableTowers: [...s.availableTowers],
     mods: { ...s.mods },

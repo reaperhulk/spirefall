@@ -37,6 +37,8 @@ export type RelicId =
 
 export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 
+export type CataclysmId = 'surge' | 'juggernaut' | 'swarm' | 'dampening' | 'crumbling' | 'ironclad'
+
 export interface CellPos {
   cx: number
   cy: number
@@ -125,6 +127,7 @@ export interface RunState {
   availableTowers: TowerType[]
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
+  cataclysms: CataclysmId[] // permanent endless modifiers, in strike order
   victoryClaimed: boolean // wave VICTORY_WAVE cleared; endless continues after
   sparksEarned: number // set once, at run end
 }
@@ -152,6 +155,7 @@ export type GameEvent =
   | { type: 'enemy_healed'; healer: number; targets: number[]; amount: number }
   | { type: 'mint_income'; id: number; amount: number }
   | { type: 'victory_achieved'; wave: number }
+  | { type: 'cataclysm_struck'; cataclysm: CataclysmId; wave: number }
   | { type: 'tower_sold'; id: number; refund: number }
   | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[]; crit: boolean }
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }

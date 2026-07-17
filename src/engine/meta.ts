@@ -108,6 +108,7 @@ export function createRun(meta: MetaState, seed: string): RunState {
     relicOffer: null,
     availableTowers,
     activeAffix: null,
+    cataclysms: [],
     victoryClaimed: false,
     mods: {
       damagePct: metaLevel(meta, 'tower_damage') * META_TOWER_DAMAGE_PCT_PER_LEVEL,

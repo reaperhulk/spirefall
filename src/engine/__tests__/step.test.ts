@@ -362,6 +362,62 @@ describe('wave preview', () => {
   })
 })
 
+describe('cataclysms', () => {
+  const clearedAt = (wave: number, extra: Partial<RunState> = {}) => {
+    const s = cloneRun(freshRun('cataclysm'))
+    s.phase = 'wave'
+    s.wave = wave
+    s.wavesCleared = wave - 1
+    s.spireHp = 100
+    s.spireMaxHp = 100
+    Object.assign(s, extra)
+    return step(s, [])
+  }
+
+  it('clearing the victory wave claims victory AND strikes the first cataclysm', () => {
+    const { state, events } = clearedAt(24)
+    expect(state.victoryClaimed).toBe(true)
+    expect(state.cataclysms).toHaveLength(1)
+    expect(events.some((e) => e.type === 'cataclysm_struck')).toBe(true)
+    expect(() => assertInvariants(state)).not.toThrow()
+    // Strikes repeat every 5th cleared wave…
+    const later = clearedAt(29, { victoryClaimed: true, cataclysms: [...state.cataclysms] })
+    expect(later.state.cataclysms).toHaveLength(2)
+    // …and never off-cycle.
+    const off = clearedAt(27, { victoryClaimed: true, cataclysms: [...state.cataclysms] })
+    expect(off.state.cataclysms).toHaveLength(1)
+  })
+
+  it('juggernaut/surge bend the next wave; swarm inflates the scouting report', () => {
+    const base = {
+      ...cloneRun(freshRun('cataclysm-fx')),
+      victoryClaimed: true,
+      wave: 25,
+      wavesCleared: 25,
+      waveBudget: 3000,
+      hpScalePct: 2000,
+      spireHp: 100,
+      spireMaxHp: 100,
+    }
+    const spawnFirst = (cataclysms: RunState['cataclysms']) => {
+      let s = cloneRun({ ...base, cataclysms })
+      s = step(s, [{ type: 'start_wave' }]).state
+      s = stepUntil(s, (st) => st.enemies.length > 0, 200)
+      return s.enemies[0]!
+    }
+    const plain = spawnFirst([])
+    const bent = spawnFirst(['juggernaut', 'surge'])
+    expect(bent.maxHp).toBe(Math.floor((plain.maxHp * 130) / 100))
+    expect(bent.speed).toBe(Math.floor((plain.speed * 120) / 100))
+
+    // Small budget so the wave unit cap doesn't mask the swarm inflation.
+    const lean = { ...base, waveBudget: 600 }
+    const calm = previewNextWave(cloneRun({ ...lean, cataclysms: [] }))!
+    const swarmed = previewNextWave(cloneRun({ ...lean, cataclysms: ['swarm', 'swarm'] }))!
+    expect(swarmed.total).toBeGreaterThan(calm.total)
+  })
+})
+
 describe('single-target niches', () => {
   // One tower, one tanky enemy in range, one tick: the first shot isolates
   // per-target bonuses with no targeting or hp-cap noise.

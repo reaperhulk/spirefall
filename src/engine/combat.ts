@@ -27,7 +27,9 @@ export function effectiveDamagePct(state: RunState, tower: Tower['type']): numbe
   let pct = 100 + state.mods.damagePct
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += PIERCING_ARROWS_PCT
   if (state.relics.includes('glass_cannon')) pct += GLASS_CANNON_PCT
-  return pct
+  // Stacked Dampening cataclysms can drive mods negative; towers never go
+  // below a tenth of their base output.
+  return Math.max(10, pct)
 }
 
 export interface DamagePart {
@@ -45,6 +47,7 @@ export function damageBreakdown(
   const base = towerTier(tower.type, tower.tier).damage
   const parts: DamagePart[] = []
   if (state.mods.damagePct > 0) parts.push({ source: 'Honed Arsenal (Spire Tree)', pct: state.mods.damagePct })
+  else if (state.mods.damagePct < 0) parts.push({ source: 'Dampening Field (cataclysm)', pct: state.mods.damagePct })
   if (tower.type === 'arrow' && state.relics.includes('piercing_arrows'))
     parts.push({ source: 'Piercing Arrows (relic)', pct: PIERCING_ARROWS_PCT })
   if (state.relics.includes('glass_cannon')) parts.push({ source: 'Glass Cannon (relic)', pct: GLASS_CANNON_PCT })

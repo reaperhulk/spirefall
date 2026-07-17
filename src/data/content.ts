@@ -1,4 +1,4 @@
-import type { AbilityId, AffixId, EnemyType, RelicId, TowerType } from '../engine/types'
+import type { AbilityId, AffixId, CataclysmId, EnemyType, RelicId, TowerType } from '../engine/types'
 
 // All gameplay numbers live here as plain data. Distances are in millicells
 // (1 cell = 1000), durations in ticks (30 ticks = 1 second).
@@ -242,6 +242,27 @@ export const AFFIXES: Record<AffixId, AffixDef> = {
 export const AFFIX_IDS = Object.keys(AFFIXES) as AffixId[]
 export const AFFIX_FIRST_WAVE = 6
 export const AFFIX_CHANCE_PCT = 35
+
+// ---------------------------------------------------------------------------
+// Cataclysms: permanent, stacking run modifiers struck every 5th cleared wave
+// past the victory wave. Endless is an escalating gauntlet, not a flat grind.
+
+export interface CataclysmDef {
+  name: string
+  description: string
+}
+
+export const CATACLYSMS: Record<CataclysmId, CataclysmDef> = {
+  surge: { name: 'Surge', description: 'Enemies move 20% faster — permanently.' },
+  juggernaut: { name: 'Juggernaut', description: 'Enemies gain 30% HP — permanently.' },
+  swarm: { name: 'Endless Swarm', description: 'Wave budgets grow 25% — permanently.' },
+  dampening: { name: 'Dampening Field', description: 'All towers lose 10% damage — permanently.' },
+  crumbling: { name: 'Crumbling', description: 'The Spire loses 2 max HP.' },
+  ironclad: { name: 'Ironclad', description: 'Enemy shields are 50% stronger — permanently.' },
+}
+
+export const CATACLYSM_IDS = Object.keys(CATACLYSMS) as CataclysmId[]
+export const CATACLYSM_WAVE_INTERVAL = 5 // struck on clearing waves 24, 29, 34, …
 
 // ---------------------------------------------------------------------------
 // Run pacing

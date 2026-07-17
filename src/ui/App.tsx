@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ABILITIES,
   AFFIXES,
+  CATACLYSMS,
   ENEMIES,
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
@@ -19,7 +20,7 @@ import { buyMetaUpgrade, createMeta, createRun, settleRun } from '../engine/meta
 import { previewNextWave } from '../engine/step'
 import { sameCell } from '../engine/grid'
 import type { MetaUpgradeId } from '../data/metaTree'
-import type { AbilityId, CellPos, RunSummary, Targeting, TowerType } from '../engine/types'
+import type { AbilityId, CataclysmId, CellPos, RunSummary, Targeting, TowerType } from '../engine/types'
 import { Sfx } from './audio'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
@@ -280,6 +281,21 @@ export default function App() {
         {state.phase === 'wave' && state.activeAffix && (
           <span className="affix-badge" data-testid="affix" title={AFFIXES[state.activeAffix].description}>
             {AFFIXES[state.activeAffix].name}
+          </span>
+        )}
+        {state.cataclysms.length > 0 && (
+          <span className="cataclysm-badges" data-testid="cataclysms">
+            {Object.entries(
+              state.cataclysms.reduce<Record<string, number>>((acc, c) => {
+                acc[c] = (acc[c] ?? 0) + 1
+                return acc
+              }, {}),
+            ).map(([id, n]) => (
+              <span key={id} className="cataclysm-badge" title={CATACLYSMS[id as CataclysmId].description}>
+                {CATACLYSMS[id as CataclysmId].name}
+                {n > 1 && ` ×${n}`}
+              </span>
+            ))}
           </span>
         )}
         <div className="hud-spire" title={`Spire ${state.spireHp}/${state.spireMaxHp}`}>

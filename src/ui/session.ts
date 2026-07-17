@@ -171,6 +171,17 @@ export class GameSession {
             dur: 800,
           })
           break
+        case 'cataclysm_struck':
+          this.effects.push({
+            kind: 'float',
+            at: { x: 12_000, y: 6_000 },
+            text: `CATACLYSM: ${e.cataclysm.toUpperCase()}`,
+            color: '#f7768e',
+            t0: now,
+            dur: 1600,
+          })
+          this.effects.push({ kind: 'spire_hit', t0: now, dur: 500 })
+          break
         case 'relic_chosen':
           if (e.relic === null && e.goldAwarded > 0) {
             this.effects.push({
