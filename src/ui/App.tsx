@@ -209,6 +209,20 @@ export default function App() {
     setSelectedTowerId(tower ? tower.id : null)
   }
 
+  // Auto-advance: with the toggle on, the build phase sends the next wave
+  // after a short beat — unless something needs the player (relic offer,
+  // victory prompt, run over).
+  const autoStart = uiSettings.autoStart
+  useEffect(() => {
+    if (!autoStart || summary || victoryPrompt) return
+    if (state.phase !== 'build' || state.relicOffer !== null) return
+    const timer = setTimeout(() => {
+      const s = sessionRef.current.state
+      if (s.phase === 'build' && s.relicOffer === null) sessionRef.current.dispatch({ type: 'start_wave' })
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [autoStart, state.phase, state.relicOffer, state.wave, summary, victoryPrompt])
+
   // Keyboard shortcuts.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -453,6 +467,14 @@ export default function App() {
               Start wave {state.wave + 1}
             </button>
           )}
+          <button
+            className={`ghost-btn${autoStart ? ' auto-on' : ''}`}
+            data-testid="auto-start"
+            title={autoStart ? 'Auto-advance is ON — waves send themselves' : 'Auto-advance waves'}
+            onClick={() => setUiSettings({ ...updateSettings({ autoStart: !autoStart }) })}
+          >
+            ▶▶
+          </button>
         </div>
       </header>
 

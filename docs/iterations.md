@@ -31,6 +31,10 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+21. **Auto-advance** — ▶▶ toggle (persisted) auto-sends the next wave after a
+    1.2s beat, pausing itself whenever a relic offer, victory prompt, or
+    run-over needs the player.
+
 20. **Beacon** — 7th tower, first support archetype: a pylon that amplifies
     towers within its radius (+12/18/25% by tier, strongest-only, never
     stacking so beacon farms can't dominate). Signal Fires unlock node,

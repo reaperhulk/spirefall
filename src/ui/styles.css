@@ -837,3 +837,8 @@ button:disabled {
   border-color: #2c3448;
   color: #565f89;
 }
+
+.ghost-btn.auto-on {
+  border-color: #9ece6a;
+  color: #9ece6a;
+}

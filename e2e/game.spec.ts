@@ -432,3 +432,18 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
   await expect(page.getByTestId('hint')).not.toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('auto-advance sends the next wave by itself', async ({ page }) => {
+  const errors = await boot(page, 'e2e-auto')
+  await page.getByTestId('shop-arrow').click()
+  const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
+  for (const [cx, cy] of [[4, 5], [4, 7], [5, 5], [5, 7]]) {
+    await page.mouse.click(box.x + cx * CELL + CELL / 2, box.y + cy * CELL + CELL / 2)
+  }
+  await page.getByTestId('auto-start').click()
+  await page.getByTestId('start-wave').click()
+  await page.evaluate(() => window.__harness.fastForward(120)) // clear wave 1
+  // Without touching anything, wave 2 should start on its own.
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).wave, { timeout: 8000 }).toBe(2)
+  expect(errors).toEqual([])
+})
