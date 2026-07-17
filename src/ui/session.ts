@@ -40,6 +40,9 @@ export class GameSession {
   effects: VisualEffect[] = []
   commandLog: LoggedCommand[] = []
   version = 0
+  // Render-only: last firing angle per tower id, so turrets visibly track
+  // their targets. Never read by the sim.
+  aim: Record<number, number> = {}
 
   private onEvents: ((events: GameEvent[], state: RunState) => void) | null = null
   // Events raised before a handler attaches (e.g. the harness drives a brand
@@ -133,6 +136,7 @@ export class GameSession {
     for (const e of events) {
       switch (e.type) {
         case 'tower_fired':
+          this.aim[e.id] = Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x)
           // Crits flash white and pop at the impact point.
           this.effects.push({
             kind: 'beam',
