@@ -2,16 +2,20 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ABILITIES,
   AFFIXES,
+  ENEMIES,
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
+  relicSkipGold,
+  REPAIR_MAX_PER_CAST,
   repairCostPerHp,
   TOWERS,
   towerInvested,
   towerTier,
   VICTORY_WAVE,
 } from '../data/content'
-import { effectiveDamagePct } from '../engine/combat'
+import { effectiveCritChancePct, effectiveCritDamagePct, effectiveDamagePct } from '../engine/combat'
 import { buyMetaUpgrade, createMeta, createRun, settleRun } from '../engine/meta'
+import { previewNextWave } from '../engine/step'
 import { sameCell } from '../engine/grid'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { AbilityId, CellPos, RunSummary, Targeting, TowerType } from '../engine/types'
@@ -203,6 +207,14 @@ export default function App() {
   const selectedTower = selectedTowerId !== null ? state.towers.find((t) => t.id === selectedTowerId) : undefined
   const hoveredTower = hoveredTowerId !== null ? state.towers.find((t) => t.id === hoveredTowerId) : undefined
   const hpPct = Math.round((state.spireHp / state.spireMaxHp) * 100)
+  const critChance = effectiveCritChancePct(state)
+
+  // Repair is a gold trade, not a freebie — surface exactly what a click buys.
+  const repairPerHp = repairCostPerHp(state.wave)
+  const repairHp = Math.min(REPAIR_MAX_PER_CAST, state.spireMaxHp - state.spireHp, Math.floor(state.gold / repairPerHp))
+
+  // Scouting report: deterministic preview of what start_wave will field.
+  const preview = state.phase === 'build' && !summary ? previewNextWave(state) : null
 
   return (
     <div className="app">
@@ -229,11 +241,11 @@ export default function App() {
             <button
               className="ghost-btn"
               data-testid="repair-spire"
-              disabled={state.gold < repairCostPerHp(state.wave)}
-              title={`Repair up to 3 HP at ${repairCostPerHp(state.wave)} gold per HP`}
+              disabled={repairHp <= 0}
+              title={`Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs with each wave`}
               onClick={() => session.dispatch({ type: 'repair_spire' })}
             >
-              Repair
+              {repairHp > 0 ? `Repair +${repairHp} (⛀ ${repairHp * repairPerHp})` : `Repair (⛀ ${repairPerHp}/HP)`}
             </button>
           )}
         </div>
@@ -294,6 +306,25 @@ export default function App() {
         </div>
       </header>
 
+      {preview && (
+        <div className="wave-preview" data-testid="wave-preview">
+          <span className="preview-label">Next wave:</span>
+          {(Object.entries(preview.counts) as [keyof typeof ENEMIES, number][])
+            .sort(([ta, a], [tb, b]) => (ta === 'boss' ? -1 : tb === 'boss' ? 1 : b - a || ta.localeCompare(tb)))
+            .map(([type, n]) => (
+              <span key={type} className={`preview-unit${type === 'boss' ? ' boss' : ''}`}>
+                {n}× {ENEMIES[type].name}
+                {ENEMIES[type].flying && <span className="air-mark" title="Flying — only Arrow, Tesla, and Sniper can hit it">✈</span>}
+              </span>
+            ))}
+          {preview.affix && (
+            <span className="affix-badge" title={AFFIXES[preview.affix].description}>
+              {AFFIXES[preview.affix].name}
+            </span>
+          )}
+        </div>
+      )}
+
       <main className="board">
         <GameCanvas
           session={session}
@@ -331,6 +362,12 @@ export default function App() {
                 {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
               </span>
             )}
+            {hoveredTower.type !== 'mint' && (
+              <span>
+                {TOWERS[hoveredTower.type].hitsAir ? 'hits ground & air ✈' : 'ground only — cannot hit fliers'}
+                {critChance > 0 && ` · ${critChance}% crit ×${(effectiveCritDamagePct(state) / 100).toFixed(1)}`}
+              </span>
+            )}
             <span>
               {hoveredTower.type === 'mint'
                 ? `earned via waves`
@@ -361,6 +398,12 @@ export default function App() {
             <p data-testid="tower-stats">
               {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
             </p>
+            {selectedTower.type !== 'mint' && (
+              <p className="tower-air-note">
+                {TOWERS[selectedTower.type].hitsAir ? 'Hits ground & air ✈' : 'Ground only — cannot hit fliers'}
+                {critChance > 0 && ` · ${critChance}% crit`}
+              </p>
+            )}
             <label>
               Target:{' '}
               <select
@@ -434,6 +477,11 @@ export default function App() {
               >
                 <span className={`tower-dot tower-${type}`} />
                 {TOWERS[type].name}
+                {TOWERS[type].hitsAir && (
+                  <span className="air-mark" title="Can hit fliers">
+                    ✈
+                  </span>
+                )}
                 <span className="cost">{unlocked ? `⛀ ${cost}` : '🔒'}</span>
               </button>
             )
@@ -485,7 +533,11 @@ export default function App() {
         </div>
       )}
       {state.relicOffer && !summary && !victoryPrompt && (
-        <RelicModal options={state.relicOffer} onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })} />
+        <RelicModal
+          options={state.relicOffer}
+          skipGold={relicSkipGold(state.wave)}
+          onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })}
+        />
       )}
       {summary && <RunOverOverlay summary={summary} meta={meta} onBuy={buyMeta} onNextRun={() => beginNextRun()} />}
       {showTree && !summary && (

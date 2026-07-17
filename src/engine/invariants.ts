@@ -87,6 +87,11 @@ export function assertInvariants(state: RunState): void {
     check(Number.isInteger(cd) && cd >= 0, `ability ${ability} cooldown ${cd}`)
   }
 
+  check(
+    Number.isInteger(state.mods.critChancePct) && state.mods.critChancePct >= 0 && state.mods.critChancePct <= 100,
+    `mods.critChancePct must be in [0, 100], got ${state.mods.critChancePct}`,
+  )
+
   check(new Set(state.relics).size === state.relics.length, 'duplicate relics')
   if (state.relicOffer !== null) {
     check(state.relicOffer.length > 0, 'empty relic offer')

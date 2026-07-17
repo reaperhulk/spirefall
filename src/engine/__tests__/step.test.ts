@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { ENHANCE_COST_GROWTH_PCT, TOWERS } from '../../data/content'
+import { ENHANCE_COST_GROWTH_PCT, relicSkipGold, TOWERS } from '../../data/content'
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
-import { step } from '../step'
+import { previewNextWave, step } from '../step'
 import type { RunState } from '../types'
 
 function freshRun(seed = 'step-test'): RunState {
@@ -283,12 +283,147 @@ describe('relics', () => {
     expect(full.spireHp).toBe(full.spireMaxHp)
   })
 
-  it('choosing nothing clears the offer; bogus picks are rejected', () => {
-    const state = { ...freshRun(), relicOffer: ['overcharge', 'heavy_powder'] as RunState['relicOffer'] }
+  it('choosing nothing pays wave-scaled gold; bogus picks are rejected', () => {
+    const state = { ...freshRun(), wave: 5, relicOffer: ['overcharge', 'heavy_powder'] as RunState['relicOffer'] }
     const skipped = step(state, [{ type: 'choose_relic', relic: null }])
     expect(skipped.state.relicOffer).toBeNull()
     expect(skipped.state.relics).toHaveLength(0)
+    expect(skipped.state.gold).toBe(state.gold + relicSkipGold(5)) // skipping is compensated, not a dead end
+    expect(skipped.events[0]).toMatchObject({ type: 'relic_chosen', relic: null, goldAwarded: relicSkipGold(5) })
     const bogus = step(state, [{ type: 'choose_relic', relic: 'spark_siphon' }])
     expect(bogus.events[0]).toMatchObject({ type: 'command_rejected', reason: 'relic not in the offer' })
+  })
+})
+
+describe('wave preview', () => {
+  it('previews exactly what start_wave then fields — types, counts, and affix', () => {
+    for (const seed of ['scout-a', 'scout-b', 'scout-c']) {
+      let s = freshRun(seed)
+      // Walk several waves deep (past AFFIX_FIRST_WAVE) comparing every one.
+      for (let wave = 1; wave <= 8; wave++) {
+        const preview = previewNextWave(s)!
+        expect(preview.wave).toBe(wave)
+        const started = step(s, [{ type: 'start_wave' }]).state
+        expect(started.activeAffix).toBe(preview.affix)
+        const counts: Record<string, number> = {}
+        for (const p of started.pendingSpawns) counts[p.type] = (counts[p.type] ?? 0) + 1
+        expect(counts).toEqual(preview.counts)
+        expect(started.pendingSpawns.length).toBe(preview.total)
+        // Fast-forward to the next build phase with no towers (undefended),
+        // topping up spire HP so the run survives all 8 waves.
+        s = stepUntil(started, (st) => st.phase !== 'wave', 60_000)
+        if (s.phase === 'defeat') {
+          s = { ...cloneRun(s), phase: 'build', spireHp: 1000, spireMaxHp: 1000 }
+        } else {
+          s = { ...cloneRun(s), spireHp: 1000, spireMaxHp: 1000 }
+        }
+      }
+    }
+  })
+
+  it('previewing is pure: state (including rng streams) is untouched', () => {
+    const s = freshRun('scout-pure')
+    const before = JSON.stringify(s)
+    previewNextWave(s)
+    previewNextWave(s)
+    expect(JSON.stringify(s)).toBe(before)
+    // And repeated previews agree with each other.
+    expect(previewNextWave(s)).toEqual(previewNextWave(s))
+  })
+
+  it('marks boss waves and returns null outside the build phase', () => {
+    const s = { ...freshRun('scout-boss'), wave: 9, waveBudget: 2000, hpScalePct: 300 }
+    const preview = previewNextWave(s)!
+    expect(preview.boss).toBe(true)
+    expect(preview.counts['boss']).toBe(1)
+    const inWave = step(s, [{ type: 'start_wave' }]).state
+    expect(previewNextWave(inWave)).toBeNull()
+  })
+})
+
+describe('probability layer', () => {
+  it('crit chance 100 doubles every shot; executioners_seal makes it triple', () => {
+    // One arrow (7 dmg), one tanky brute in range: the first tick's shot
+    // isolates the multiplier with no hp-cap or targeting noise.
+    const duel = (critPct: number, relics: RunState['relics']) => {
+      const s = cloneRun(freshRun('crit-duel'))
+      s.phase = 'wave'
+      s.wave = 1
+      s.mods = { ...s.mods, critChancePct: critPct }
+      s.relics = relics
+      s.towers.push({
+        id: s.nextEntityId++,
+        type: 'arrow',
+        tier: 1,
+        enhance: 0,
+        cell: { cx: 5, cy: 5 },
+        cooldown: 0,
+        targeting: 'first',
+        kills: 0,
+        damageDealt: 0,
+      })
+      s.enemies.push({
+        id: s.nextEntityId++,
+        type: 'brute',
+        pos: { x: 6500, y: 5500 },
+        hp: 1000,
+        maxHp: 1000,
+        speed: 0,
+        slowFactor: 100,
+        slowTicks: 0,
+        bounty: 6,
+        damage: 5,
+        shield: 0,
+        healCooldown: 0,
+        targetCell: null,
+      })
+      const { state, events } = step(s, [])
+      const fired = events.find((e) => e.type === 'tower_fired')!
+      return { dealt: state.towers[0]!.damageDealt, crit: fired.crit }
+    }
+    expect(duel(0, [])).toEqual({ dealt: 7, crit: false })
+    expect(duel(100, [])).toEqual({ dealt: 14, crit: true }) // ×2
+    expect(duel(100, ['executioners_seal'])).toEqual({ dealt: 21, crit: true }) // ×3
+  })
+
+  it('zero crit investment never touches the combat stream', () => {
+    let s = { ...freshRun('crit-zero'), gold: 10_000 }
+    const combatBefore = { ...s.rng.combat }
+    for (let i = 0; i < 6; i++) {
+      const cell = buildCandidates(s)[0]
+      if (cell) s = step(s, [{ type: 'place_tower', tower: 'arrow', cell }]).state
+    }
+    s = step(s, [{ type: 'start_wave' }]).state
+    s = stepUntil(s, (st) => st.phase !== 'wave', 20_000)
+    expect(s.kills).toBeGreaterThan(0)
+    expect(s.rng.combat).toEqual(combatBefore) // no crit, no fortune_idol: stream untouched
+  })
+
+  it('fortune_idol doubles some bounties, never more, and stays deterministic', () => {
+    const play = (relics: RunState['relics']) => {
+      let s = { ...freshRun('fortune-run'), gold: 10_000, relics }
+      for (let i = 0; i < 6; i++) {
+        const cell = buildCandidates(s)[0]
+        if (cell) s = step(s, [{ type: 'place_tower', tower: 'arrow', cell }]).state
+      }
+      const goldBefore = s.gold
+      const luckyKills: boolean[] = []
+      s = step(s, [{ type: 'start_wave' }]).state
+      for (let t = 0; t < 20_000 && s.phase === 'wave'; t++) {
+        const r = step(s, [])
+        s = r.state
+        for (const e of r.events) if (e.type === 'enemy_killed') luckyKills.push(e.lucky)
+      }
+      return { earned: s.gold - goldBefore, luckyKills, kills: s.kills }
+    }
+    const plain = play([])
+    const lucky = play(['fortune_idol'])
+    expect(plain.luckyKills.every((l) => !l)).toBe(true)
+    expect(lucky.kills).toBe(plain.kills) // same seed, same fight
+    expect(lucky.luckyKills.some((l) => l)).toBe(true) // ~20% of ~30 kills: some fire
+    expect(lucky.luckyKills.every((l) => !l)).toBe(false)
+    expect(lucky.earned).toBeGreaterThan(plain.earned)
+    expect(lucky.earned).toBeLessThanOrEqual(plain.earned * 2)
+    expect(play(['fortune_idol'])).toEqual(lucky) // seeded: perfectly reproducible
   })
 })

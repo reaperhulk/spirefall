@@ -1,5 +1,16 @@
 import type { MapDef } from '../data/maps'
-import { ABILITIES, ENEMIES, ENHANCE_DAMAGE_PCT, TESLA_CHAIN_RANGE, TOWERS, towerTier } from '../data/content'
+import {
+  ABILITIES,
+  CRIT_BASE_DAMAGE_PCT,
+  CRIT_RELIC_CHANCE_PCT,
+  CRIT_RELIC_DAMAGE_PCT,
+  ENEMIES,
+  ENHANCE_DAMAGE_PCT,
+  FORTUNE_IDOL_CHANCE_PCT,
+  TESLA_CHAIN_RANGE,
+  TOWERS,
+  towerTier,
+} from '../data/content'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
 import type { AbilityId, CellPos, Enemy, GameEvent, RunState, Tower } from './types'
@@ -12,6 +23,22 @@ export function effectiveDamagePct(state: RunState, tower: Tower['type']): numbe
   let pct = 100 + state.mods.damagePct
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += 40
   if (state.relics.includes('glass_cannon')) pct += 30
+  return pct
+}
+
+// The probability layer: crit chance comes from the meta tree and relics,
+// crit damage starts at double and relics push it further. Rolls happen on
+// the combat stream — and only when the chance is nonzero, so runs without
+// any crit investment never touch the stream at all.
+export function effectiveCritChancePct(state: RunState): number {
+  let pct = state.mods.critChancePct
+  if (state.relics.includes('keen_sights')) pct += CRIT_RELIC_CHANCE_PCT
+  return Math.min(100, pct)
+}
+
+export function effectiveCritDamagePct(state: RunState): number {
+  let pct = CRIT_BASE_DAMAGE_PCT
+  if (state.relics.includes('executioners_seal')) pct += CRIT_RELIC_DAMAGE_PCT
   return pct
 }
 
@@ -172,7 +199,20 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     if (target === null) continue
 
     const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance
-    const damage = Math.floor((def.damage * pct) / 100)
+    let damage = Math.floor((def.damage * pct) / 100)
+
+    // One crit roll per shot: a critical cannon shell crits its whole splash,
+    // a critical tesla arc crits the whole chain.
+    let crit = false
+    const critChance = effectiveCritChancePct(state)
+    if (critChance > 0) {
+      const roll = nextInt(state.rng.combat, 1, 100)
+      state.rng.combat = roll.rng
+      if (roll.value <= critChance) {
+        crit = true
+        damage = Math.floor((damage * effectiveCritDamagePct(state)) / 100)
+      }
+    }
     const hitIds: number[] = [target.id]
 
     // Every hit is attributed to the tower: damage always, kill on the blow
@@ -241,6 +281,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       from: origin,
       to: { ...target.pos },
       targets: hitIds,
+      crit,
     })
   }
 }
@@ -336,9 +377,19 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     if (state.relics.includes('bounty_banner')) bounty += 1
     bounty = Math.floor((bounty * (100 + state.mods.goldPct)) / 100)
     if (state.goldRushTicks > 0) bounty *= 2
+    // Fortune Idol: a seeded chance for any kill to pay out double.
+    let lucky = false
+    if (state.relics.includes('fortune_idol')) {
+      const roll = nextInt(state.rng.combat, 1, 100)
+      state.rng.combat = roll.rng
+      if (roll.value <= FORTUNE_IDOL_CHANCE_PCT) {
+        lucky = true
+        bounty *= 2
+      }
+    }
     state.gold += bounty
     state.kills += 1
-    events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty })
+    events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty, lucky })
 
     // Splitters burst into shards where they fell.
     const split = ENEMIES[e.type].splitInto

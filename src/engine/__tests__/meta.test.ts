@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { META_SPIRE_HP_PER_LEVEL, META_TOWER_DAMAGE_PCT_PER_LEVEL, META_TREE, metaNode } from '../../data/metaTree'
+import {
+  META_CRIT_CHANCE_PCT_PER_LEVEL,
+  META_SPIRE_HP_PER_LEVEL,
+  META_TOWER_DAMAGE_PCT_PER_LEVEL,
+  META_TREE,
+  metaNode,
+} from '../../data/metaTree'
 import { STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
 import { buyMetaUpgrade, createMeta, createRun, metaUpgradeCost, settleRun } from '../meta'
 import { computeSparks } from '../step'
@@ -47,7 +53,7 @@ describe('createRun applies meta', () => {
     expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP)
     expect(run.availableTowers).not.toContain('tesla')
     expect(Object.keys(run.abilities)).not.toContain('gold_rush')
-    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0 })
+    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0 })
   })
 
   it('upgrades show up as run bonuses and unlocks', () => {
@@ -55,12 +61,15 @@ describe('createRun applies meta', () => {
     meta = buyMetaUpgrade(meta, 'starting_gold').meta
     meta = buyMetaUpgrade(meta, 'spire_hp').meta
     meta = buyMetaUpgrade(meta, 'tower_damage').meta
+    meta = buyMetaUpgrade(meta, 'crit_chance').meta
+    meta = buyMetaUpgrade(meta, 'crit_chance').meta
     meta = buyMetaUpgrade(meta, 'unlock_tesla').meta
     meta = buyMetaUpgrade(meta, 'unlock_gold_rush').meta
     const run = createRun(meta, 'meta-rich')
     expect(run.gold).toBe(STARTING_GOLD + 30)
     expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP + META_SPIRE_HP_PER_LEVEL)
     expect(run.mods.damagePct).toBe(META_TOWER_DAMAGE_PCT_PER_LEVEL)
+    expect(run.mods.critChancePct).toBe(2 * META_CRIT_CHANCE_PCT_PER_LEVEL)
     expect(run.availableTowers).toContain('tesla')
     expect(Object.keys(run.abilities)).toContain('gold_rush')
   })

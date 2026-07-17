@@ -9,6 +9,7 @@ import {
 } from '../data/content'
 import { MAPS } from '../data/maps'
 import {
+  META_CRIT_CHANCE_PCT_PER_LEVEL,
   META_GOLD_INCOME_PCT_PER_LEVEL,
   META_SPARK_GAIN_PCT_PER_LEVEL,
   META_SPIRE_HP_PER_LEVEL,
@@ -112,6 +113,7 @@ export function createRun(meta: MetaState, seed: string): RunState {
       damagePct: metaLevel(meta, 'tower_damage') * META_TOWER_DAMAGE_PCT_PER_LEVEL,
       goldPct: metaLevel(meta, 'gold_income') * META_GOLD_INCOME_PCT_PER_LEVEL,
       sparkPct: metaLevel(meta, 'spark_gain') * META_SPARK_GAIN_PCT_PER_LEVEL,
+      critChancePct: metaLevel(meta, 'crit_chance') * META_CRIT_CHANCE_PCT_PER_LEVEL,
     },
     sparksEarned: 0,
   }

@@ -176,11 +176,30 @@ export const RELICS: Record<RelicId, RelicDef> = {
   bounty_banner: { name: 'Bounty Banner', description: '+1 gold per kill.' },
   mint_condition: { name: 'Mint Condition', description: 'Mints yield +50% gold.' },
   stoneskin: { name: 'Stoneskin', description: 'Heavy hitters (Brutes, bosses) deal 1 less damage to the Spire (min 1).' },
+  keen_sights: { name: 'Keen Sights', description: '+10% critical hit chance.' },
+  executioners_seal: { name: "Executioner's Seal", description: 'Critical hits deal +100% extra damage.' },
+  fortune_idol: { name: 'Fortune Idol', description: 'Kills have a 20% chance to drop double gold.' },
 }
 
 export const RELIC_IDS = Object.keys(RELICS) as RelicId[]
 export const RELIC_WAVE_INTERVAL = 5
 export const RELIC_OFFER_SIZE = 3
+
+// Declining a relic offer is a real choice, not a trap: some relics carry
+// downsides, and passing pays wave-scaled gold instead.
+export function relicSkipGold(wave: number): number {
+  return 40 + wave * 8
+}
+
+// ---------------------------------------------------------------------------
+// Probability layer: seeded chances that scale damage and income. All rolls
+// come from the run's combat RNG stream — deterministic per seed, never
+// Math.random.
+
+export const CRIT_BASE_DAMAGE_PCT = 200 // a crit deals this % of normal damage
+export const CRIT_RELIC_CHANCE_PCT = 10 // keen_sights
+export const CRIT_RELIC_DAMAGE_PCT = 100 // executioners_seal: added to the multiplier
+export const FORTUNE_IDOL_CHANCE_PCT = 20 // chance a kill drops double gold
 
 // ---------------------------------------------------------------------------
 // Wave affixes: seeded modifiers that make waves feel distinct as they scale.

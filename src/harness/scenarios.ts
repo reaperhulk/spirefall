@@ -14,6 +14,7 @@ export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
   'spire_hp',
   'unlock_tesla',
   'tower_damage',
+  'crit_chance',
   'starting_gold',
   'unlock_mint',
   'gold_income',

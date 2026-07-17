@@ -1,12 +1,14 @@
 import {
   ABILITIES,
   BASE_WAVE_BUDGET,
+  BOSS_WAVE_INTERVAL,
   ENEMIES,
   enhanceCost,
   hpGrowthPct,
   RELIC_IDS,
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
+  relicSkipGold,
   REPAIR_MAX_PER_CAST,
   repairCostPerHp,
   SELL_REFUND_PCT,
@@ -22,7 +24,7 @@ import {
 import { castAbility, collectDead, drawRelicOffer, enemyAuras, moveEnemies, tickStatuses, towersFire } from './combat'
 import { cloneRun } from './clone'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, inBounds } from './grid'
-import type { Command, GameEvent, RelicId, RunState, StepResult, Targeting } from './types'
+import type { AffixId, Command, EnemyType, GameEvent, RelicId, RunState, StepResult, Targeting } from './types'
 import { affixHpPct, affixSpeedPct, generateWave, scaledHp } from './waves'
 
 export const TICKS_PER_SECOND = 30
@@ -85,14 +87,11 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
 
     case 'start_wave': {
       if (s.phase !== 'build') return reject(command, `phase is ${s.phase}`, events)
-      const wave = s.wave + 1
+      const { wave, waveBudget, fielded } = nextWaveBudget(s)
       s.wave = wave
-      s.waveBudget = wave === 1 ? BASE_WAVE_BUDGET : Math.floor((s.waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
+      s.waveBudget = waveBudget
       s.hpScalePct = wave === 1 ? 100 : Math.floor((s.hpScalePct * hpGrowthPct(wave)) / 100)
-      // The first waves field reduced strength: at 10 spire HP a fresh
-      // defense must not be forced to leak half its life to opening RNG.
-      const budgetPct = wave === 1 ? 50 : wave === 2 ? 65 : wave === 3 ? 80 : wave === 4 ? 90 : 100
-      const generated = generateWave(s.rng.waves, wave, Math.floor((s.waveBudget * budgetPct) / 100))
+      const generated = generateWave(s.rng.waves, wave, fielded)
       s.rng.waves = generated.rng
       s.activeAffix = generated.affix
       s.pendingSpawns = generated.spawns.map((p) => ({ type: p.type, tick: s.tick + p.tick }))
@@ -200,8 +199,12 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     case 'choose_relic': {
       if (s.relicOffer === null) return reject(command, 'no relic offer pending', events)
       if (command.relic === null) {
+        // Passing on all three is a paid choice, not a dead end — some
+        // relics carry downsides worth more than the gold.
+        const goldAwarded = relicSkipGold(s.wave)
+        s.gold += goldAwarded
         s.relicOffer = null
-        events.push({ type: 'relic_chosen', relic: null })
+        events.push({ type: 'relic_chosen', relic: null, goldAwarded })
         return
       }
       if (!s.relicOffer.includes(command.relic)) return reject(command, 'relic not in the offer', events)
@@ -209,9 +212,47 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.relicOffer = null
       if (command.relic === 'golden_touch') reduceSpireMax(s, 90)
       if (command.relic === 'glass_cannon') reduceSpireMax(s, 80)
-      events.push({ type: 'relic_chosen', relic: command.relic })
+      events.push({ type: 'relic_chosen', relic: command.relic, goldAwarded: 0 })
       return
     }
+  }
+}
+
+// The exact budget arithmetic start_wave will use for the NEXT wave — shared
+// with previewNextWave so the scouting report can never drift from reality.
+// The first waves field reduced strength: at 10 spire HP a fresh defense must
+// not be forced to leak half its life to opening RNG.
+function nextWaveBudget(s: RunState): { wave: number; waveBudget: number; fielded: number } {
+  const wave = s.wave + 1
+  const waveBudget = wave === 1 ? BASE_WAVE_BUDGET : Math.floor((s.waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
+  const budgetPct = wave === 1 ? 50 : wave === 2 ? 65 : wave === 3 ? 80 : wave === 4 ? 90 : 100
+  return { wave, waveBudget, fielded: Math.floor((waveBudget * budgetPct) / 100) }
+}
+
+export interface WavePreview {
+  wave: number
+  affix: AffixId | null
+  boss: boolean
+  counts: Partial<Record<EnemyType, number>>
+  total: number
+}
+
+// A pure scouting report of the next wave. It runs the real generator against
+// the CURRENT waves stream without committing the advanced stream back, so
+// previewing never changes anything and start_wave always fields exactly what
+// was previewed.
+export function previewNextWave(s: RunState): WavePreview | null {
+  if (s.phase !== 'build') return null
+  const { wave, fielded } = nextWaveBudget(s)
+  const generated = generateWave(s.rng.waves, wave, fielded)
+  const counts: Partial<Record<EnemyType, number>> = {}
+  for (const spawn of generated.spawns) counts[spawn.type] = (counts[spawn.type] ?? 0) + 1
+  return {
+    wave,
+    affix: generated.affix,
+    boss: wave % BOSS_WAVE_INTERVAL === 0,
+    counts,
+    total: generated.spawns.length,
   }
 }
 

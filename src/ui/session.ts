@@ -133,13 +133,28 @@ export class GameSession {
     for (const e of events) {
       switch (e.type) {
         case 'tower_fired':
-          this.effects.push({ kind: 'beam', from: e.from, to: e.to, color: TOWER_BEAM_COLORS[e.tower] ?? '#ffffff', t0: now, dur: 120 })
-          if (e.tower === 'cannon') this.effects.push({ kind: 'splash', at: e.to, t0: now, dur: 250 })
+          // Crits flash white and pop at the impact point.
+          this.effects.push({
+            kind: 'beam',
+            from: e.from,
+            to: e.to,
+            color: e.crit ? '#ffffff' : (TOWER_BEAM_COLORS[e.tower] ?? '#ffffff'),
+            t0: now,
+            dur: e.crit ? 180 : 120,
+          })
+          if (e.tower === 'cannon' || e.crit) this.effects.push({ kind: 'splash', at: e.to, t0: now, dur: 250 })
           break
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
           if (this.speed <= 3) {
-            this.effects.push({ kind: 'float', at: e.at, text: `+${e.bounty}`, color: '#e5c07b', t0: now, dur: 700 })
+            this.effects.push({
+              kind: 'float',
+              at: e.at,
+              text: e.lucky ? `+${e.bounty} LUCKY!` : `+${e.bounty}`,
+              color: e.lucky ? '#ffd700' : '#e5c07b',
+              t0: now,
+              dur: e.lucky ? 1000 : 700,
+            })
           }
           break
         case 'spire_repaired':
@@ -151,6 +166,18 @@ export class GameSession {
             t0: now,
             dur: 800,
           })
+          break
+        case 'relic_chosen':
+          if (e.relic === null && e.goldAwarded > 0) {
+            this.effects.push({
+              kind: 'float',
+              at: cellCenter(getMap(this.state.mapId).spire),
+              text: `+${e.goldAwarded}`,
+              color: '#e5c07b',
+              t0: now,
+              dur: 900,
+            })
+          }
           break
         case 'mint_income':
           this.effects.push({ kind: 'float', at: { x: 12_000, y: 1_000 }, text: `Mint +${e.amount}`, color: '#e5c07b', t0: now, dur: 900 })

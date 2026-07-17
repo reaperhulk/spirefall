@@ -66,6 +66,9 @@ test('boots clean: canvas, HUD, and harness all present, no console errors', asy
   await expect(page.getByTestId('spire-hp')).toContainText('10/10')
   await expect(page.getByTestId('wave-label')).toContainText('Wave 0/')
   await expect(page.getByTestId('start-wave')).toBeVisible()
+  // The scouting report shows what wave 1 will field before it's sent.
+  await expect(page.getByTestId('wave-preview')).toContainText('Next wave:')
+  await expect(page.locator('.preview-unit').first()).toBeVisible()
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
   expect(errors).toEqual([])

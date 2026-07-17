@@ -30,6 +30,9 @@ export type RelicId =
   | 'bounty_banner'
   | 'mint_condition'
   | 'stoneskin'
+  | 'keen_sights'
+  | 'executioners_seal'
+  | 'fortune_idol'
 
 export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 
@@ -89,6 +92,7 @@ export interface RunMods {
   damagePct: number
   goldPct: number
   sparkPct: number
+  critChancePct: number // % chance a tower shot crits (rolled on the combat stream)
 }
 
 export interface RunState {
@@ -136,7 +140,7 @@ export type Command =
 export type GameEvent =
   | { type: 'wave_started'; wave: number; spawnCount: number; affix: AffixId | null }
   | { type: 'enemy_spawned'; id: number; enemy: EnemyType }
-  | { type: 'enemy_killed'; id: number; enemy: EnemyType; at: Vec; bounty: number }
+  | { type: 'enemy_killed'; id: number; enemy: EnemyType; at: Vec; bounty: number; lucky: boolean }
   | { type: 'enemy_reached_spire'; id: number; enemy: EnemyType; damage: number; spireHp: number }
   | { type: 'tower_placed'; id: number; tower: TowerType; cell: CellPos }
   | { type: 'tower_upgraded'; id: number; tier: number }
@@ -146,11 +150,11 @@ export type GameEvent =
   | { type: 'mint_income'; id: number; amount: number }
   | { type: 'victory_achieved'; wave: number }
   | { type: 'tower_sold'; id: number; refund: number }
-  | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[] }
+  | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[]; crit: boolean }
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }
   | { type: 'wave_cleared'; wave: number; goldAwarded: number }
   | { type: 'relic_offered'; options: RelicId[] }
-  | { type: 'relic_chosen'; relic: RelicId | null }
+  | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }
   | { type: 'command_rejected'; command: Command; reason: string }
 

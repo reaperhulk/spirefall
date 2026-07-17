@@ -4,7 +4,15 @@ import { metaLevel, metaUpgradeCost } from '../engine/meta'
 import type { MetaState, RelicId, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
 
-export function RelicModal({ options, onChoose }: { options: RelicId[]; onChoose: (relic: RelicId | null) => void }) {
+export function RelicModal({
+  options,
+  skipGold,
+  onChoose,
+}: {
+  options: RelicId[]
+  skipGold: number
+  onChoose: (relic: RelicId | null) => void
+}) {
   return (
     <div className="modal-backdrop" data-testid="relic-modal">
       <div className="modal">
@@ -17,8 +25,8 @@ export function RelicModal({ options, onChoose }: { options: RelicId[]; onChoose
             </button>
           ))}
         </div>
-        <button className="ghost-btn" onClick={() => onChoose(null)}>
-          Take nothing
+        <button className="ghost-btn" data-testid="relic-skip" onClick={() => onChoose(null)}>
+          Take nothing (+⛀ {skipGold})
         </button>
       </div>
     </div>

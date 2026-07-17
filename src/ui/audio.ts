@@ -52,14 +52,17 @@ export class Sfx {
 
   constructor() {
     this.muted = localStorage.getItem(MUTE_KEY) === '1'
-    // Browsers require a user gesture before audio can start.
-    const unlock = () => {
-      this.ensureContext()
-      window.removeEventListener('pointerdown', unlock)
-      window.removeEventListener('keydown', unlock)
-    }
-    window.addEventListener('pointerdown', unlock)
-    window.addEventListener('keydown', unlock)
+    // Browsers require a user gesture before audio can start — and can
+    // suspend a running context at any time (tab switch, OS interruption).
+    // The listeners stay attached for the whole session so every gesture is
+    // a chance to create OR revive the context; a one-shot unlock would
+    // leave a later-suspended context dead until reload.
+    const revive = () => this.ensureRunning()
+    window.addEventListener('pointerdown', revive)
+    window.addEventListener('keydown', revive)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this.ensureRunning()
+    })
   }
 
   toggleMute(): boolean {
@@ -105,17 +108,29 @@ export class Sfx {
     }
   }
 
-  private ensureContext(): void {
-    if (this.ctx) return
-    try {
-      this.ctx = new AudioContext()
-    } catch {
-      this.ctx = null
+  private ensureRunning(): void {
+    if (this.ctx && this.ctx.state === 'closed') this.ctx = null
+    if (!this.ctx) {
+      try {
+        this.ctx = new AudioContext()
+      } catch {
+        this.ctx = null
+        return
+      }
+    }
+    // 'suspended' (and Safari's 'interrupted') contexts revive on resume().
+    if (this.ctx.state !== 'running') {
+      void this.ctx.resume().catch(() => {})
     }
   }
 
   private play(kind: SoundKind): void {
-    if (this.muted || !this.ctx || this.ctx.state !== 'running') return
+    if (this.muted || !this.ctx) return
+    if (this.ctx.state !== 'running') {
+      // Kick off an async revival; this sound is lost but the next one plays.
+      this.ensureRunning()
+      return
+    }
     const now = performance.now()
 
     // Per-kind cooldown plus a global cap keep fast-forward bearable.

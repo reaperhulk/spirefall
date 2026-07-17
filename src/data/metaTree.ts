@@ -9,6 +9,7 @@ export type MetaUpgradeId =
   | 'starting_gold'
   | 'spire_hp'
   | 'tower_damage'
+  | 'crit_chance'
   | 'gold_income'
   | 'spark_gain'
   | 'wave_skip'
@@ -48,6 +49,13 @@ export const META_TREE: MetaNodeDef[] = [
       30, 41, 55, 74, 100, 135, 182, 246, 332, 448, 605, 817, 1103, 1489, 2010, 2714, 3664, 4946, 6677, 9014,
       12169, 16428, 22178, 29940, 40419,
     ],
+  },
+  {
+    id: 'crit_chance',
+    name: 'Killer Instinct',
+    description: '+2% critical hit chance per level. Crits deal double damage.',
+    maxLevel: 12,
+    costs: [35, 50, 72, 104, 150, 216, 311, 448, 645, 929, 1338, 1927],
   },
   {
     id: 'gold_income',
@@ -96,6 +104,7 @@ export const META_TREE: MetaNodeDef[] = [
 export const META_STARTING_GOLD_PER_LEVEL = 30
 export const META_SPIRE_HP_PER_LEVEL = 2
 export const META_TOWER_DAMAGE_PCT_PER_LEVEL = 8
+export const META_CRIT_CHANCE_PCT_PER_LEVEL = 2
 export const META_GOLD_INCOME_PCT_PER_LEVEL = 8
 export const META_SPARK_GAIN_PCT_PER_LEVEL = 10
 export const META_WAVE_SKIP_PER_LEVEL = 2

@@ -421,3 +421,46 @@ button:disabled {
     font-size: 12px;
   }
 }
+
+/* Scouting report: what the next wave will field. */
+.wave-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 4px 16px;
+  font-size: 13px;
+  color: #a9b1d6;
+}
+
+.preview-label {
+  color: #565f89;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.preview-unit {
+  background: #1a1b26;
+  border: 1px solid #2a2e42;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.preview-unit.boss {
+  border-color: #f7768e;
+  color: #f7768e;
+  font-weight: 700;
+}
+
+.air-mark {
+  margin-left: 4px;
+  color: #7dcfff;
+}
+
+.tower-air-note {
+  font-size: 12px;
+  color: #a9b1d6;
+}

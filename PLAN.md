@@ -59,7 +59,12 @@ choose loadout → BUILD phase (place towers, no timer)
   interactive layer beyond placement.
 - **Relics:** every 5 waves, pick 1 of 3 seeded relic offers (e.g. "Arrow towers
   pierce", "+2 gold per kill, −10% Spire HP"). Run-scoped, gone on death. This is the
-  rogue-lite "build variety" axis.
+  rogue-lite "build variety" axis. Declining the offer pays wave-scaled gold, so
+  "take nothing" is a real economic choice rather than a dodge for downside relics.
+- **Probability layer:** crit chance (meta tree + relics, crits deal double damage,
+  relics push the multiplier and chance further) and lucky gold drops. Every roll
+  comes from the run's seeded combat RNG stream — never `Math.random` — so runs
+  stay perfectly replayable.
 
 ### 2.2 The meta loop
 
@@ -67,7 +72,8 @@ choose loadout → BUILD phase (place towers, no timer)
   bonuses) × meta multipliers`. Defeat pays; victory pays more.
 - **The Spire Tree** (permanent upgrades, bought with Sparks): starting gold, Spire
   max HP, unlock tower types / ability slots / relic rarities, gold income %, tower
-  damage %, Spark gain % (the compounding incremental node), starting-wave skip.
+  damage %, crit chance %, Spark gain % (the compounding incremental node),
+  starting-wave skip.
 - **Ascension (later milestone):** once runs are consistently won, an Antimatter-
   Dimensions-style second prestige layer resets the Spire Tree for a higher-order
   currency. Designed now (the meta state is versioned and nested), built at M6.
