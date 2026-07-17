@@ -598,6 +598,33 @@ button:disabled {
   flex-shrink: 0;
 }
 
+/* Phone: the scouting report wraps instead of scrolling — chips past the
+   right edge would be forgotten. Two compact rows are RESERVED (constant
+   min-height) so the playfield still never shifts between waves. This block
+   must come AFTER the base .wave-preview rules to win the cascade. */
+@media (max-width: 640px) {
+  .wave-preview {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    align-content: flex-start;
+    min-height: 50px;
+    padding: 3px 8px;
+    gap: 3px 5px;
+    font-size: 11px;
+  }
+
+  .preview-unit {
+    padding: 1px 5px;
+    font-size: 10px;
+  }
+
+  .preview-label,
+  .preview-threat,
+  .preview-elites {
+    font-size: 10px;
+  }
+}
+
 .preview-label {
   color: #565f89;
   font-weight: 600;

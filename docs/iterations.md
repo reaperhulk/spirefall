@@ -38,6 +38,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+56. *(post-marathon, playtest)* **Wave preview fits phones** — the scouting
+    report was one nowrap line that scrolled sideways on a 375px screen, so
+    late-wave chips (elites, affix, threat) hung off the right edge. On
+    phones (≤640px) the strip now wraps into two compact RESERVED rows
+    (constant min-height, so the playfield still never shifts between
+    waves); chips/labels drop to 10px. The first fix landed in the phone
+    media block *above* the base rule and silently lost the cascade —
+    moved below it. Verified at 375px on wave 9 (11 elites + boss chip):
+    strip scrollWidth == clientWidth, document never pans. The viewport
+    matrix now asserts the preview has no internal sideways scroll on
+    sub-640px screens.
+
 55. *(post-marathon, playtest)* **Condensed tower shop** — the horizontal
     scroll strip hid towers past the right edge and players forgot they
     existed. Cards are now compact two-line columns that split the row

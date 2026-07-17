@@ -395,6 +395,17 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
             .map((el) => el.textContent),
         )
         expect(clipped, `${phase}: tower names ellipsized`).toEqual([])
+        // On phones the scouting report wraps — internal horizontal scroll
+        // would hide wave data past the right edge.
+        if (width < 640) {
+          const preview = await page.evaluate(() => {
+            const el = document.querySelector('[data-testid="wave-preview"]')
+            return el ? { scrollW: el.scrollWidth, clientW: el.clientWidth } : null
+          })
+          if (preview) {
+            expect(preview.scrollW, `${phase}: wave preview scrolls internally`).toBeLessThanOrEqual(preview.clientW + 1)
+          }
+        }
       }
 
       await assertLayout('build phase')
