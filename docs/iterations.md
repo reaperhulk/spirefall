@@ -12,7 +12,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [ ] 3. Two new maps (Serpent, Crossroads) + map name in HUD; recalibrate seeds
 - [x] 4. Endless mutators: stacking wave modifiers past the victory wave (Cataclysms)
 - [x] 5. Run summary analytics: damage by tower type, kills by enemy type
-- [ ] 6. Graphics: real projectiles (cannon shells, sniper tracers), muzzle flash
+- [x] 6. Graphics: real projectiles (cannon shells, sniper tracers), muzzle flash
 - [ ] 7. Graphics: terrain texture, path styling, spire/gate glow-up
 - [ ] 8. UX: settings panel (volume, reduced motion) + shortcuts help overlay
 - [ ] 9. Mobile: PWA manifest + offline service worker + install icons
@@ -30,6 +30,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+4. **Projectiles** — cannon shells lob along an arc and the splash lands on
+   impact (future-scheduled effects), sniper tracers with a leading slug,
+   arrow darts, jagged flickering tesla arcs, muzzle flashes on every shot.
+   Render-only.
 
 3. **Run analytics** — run-lifetime damageByTower / killsByEnemy tallies in
    RunState (survive tower sales), carried into RunSummary, rendered as share

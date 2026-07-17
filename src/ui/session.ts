@@ -9,12 +9,27 @@ import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 // replayable log of every command it feeds to the sim.
 
 export interface VisualEffect {
-  kind: 'beam' | 'splash' | 'meteor' | 'nova' | 'death' | 'spire_hit' | 'gold_rush' | 'heal' | 'float'
+  kind:
+    | 'beam'
+    | 'splash'
+    | 'meteor'
+    | 'nova'
+    | 'death'
+    | 'spire_hit'
+    | 'gold_rush'
+    | 'heal'
+    | 'float'
+    | 'shell' // cannon: arcing projectile from→to
+    | 'tracer' // sniper: bright line with a leading slug
+    | 'bolt' // arrow: fast small projectile
+    | 'arc' // tesla: jagged lightning
+    | 'flash' // muzzle flash at the firing tower
   from?: Vec
   to?: Vec
   at?: Vec
   color?: string
   text?: string
+  crit?: boolean
   t0: number // performance.now() timestamp
   dur: number // ms
 }
@@ -135,19 +150,34 @@ export class GameSession {
     const now = performance.now()
     for (const e of events) {
       switch (e.type) {
-        case 'tower_fired':
+        case 'tower_fired': {
           this.aim[e.id] = Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x)
-          // Crits flash white and pop at the impact point.
-          this.effects.push({
-            kind: 'beam',
-            from: e.from,
-            to: e.to,
-            color: e.crit ? '#ffffff' : (TOWER_BEAM_COLORS[e.tower] ?? '#ffffff'),
-            t0: now,
-            dur: e.crit ? 180 : 120,
-          })
-          if (e.tower === 'cannon' || e.crit) this.effects.push({ kind: 'splash', at: e.to, t0: now, dur: 250 })
+          const color = e.crit ? '#ffffff' : (TOWER_BEAM_COLORS[e.tower] ?? '#ffffff')
+          this.effects.push({ kind: 'flash', at: e.from, color, t0: now, dur: 90 })
+          switch (e.tower) {
+            case 'cannon': {
+              // Shell flies, THEN the splash lands.
+              const flight = 240
+              this.effects.push({ kind: 'shell', from: e.from, to: e.to, crit: e.crit, t0: now, dur: flight })
+              this.effects.push({ kind: 'splash', at: e.to, t0: now + flight, dur: 250 })
+              break
+            }
+            case 'sniper':
+              this.effects.push({ kind: 'tracer', from: e.from, to: e.to, color, crit: e.crit, t0: now, dur: 160 })
+              break
+            case 'tesla':
+              this.effects.push({ kind: 'arc', from: e.from, to: e.to, color, crit: e.crit, t0: now, dur: 140 })
+              break
+            case 'arrow':
+              this.effects.push({ kind: 'bolt', from: e.from, to: e.to, color, crit: e.crit, t0: now, dur: 110 })
+              break
+            default:
+              this.effects.push({ kind: 'beam', from: e.from, to: e.to, color, t0: now, dur: e.crit ? 180 : 120 })
+              break
+          }
+          if (e.crit && e.tower !== 'cannon') this.effects.push({ kind: 'splash', at: e.to, t0: now, dur: 250 })
           break
+        }
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
           if (this.speed <= 3) {

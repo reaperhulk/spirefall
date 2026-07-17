@@ -637,7 +637,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
   const now = performance.now()
   for (const fx of session.effects) {
     const age = (now - fx.t0) / fx.dur
-    if (age > 1) continue
+    if (age > 1 || age < 0) continue // future-scheduled effects wait their turn
     const fade = 1 - age
     switch (fx.kind) {
       case 'beam': {
@@ -649,6 +649,102 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.moveTo(px(fx.from.x), px(fx.from.y))
         ctx.lineTo(px(fx.to.x), px(fx.to.y))
         ctx.stroke()
+        break
+      }
+      case 'shell': {
+        // A cannonball lobbed along a shallow arc, spinning as it flies.
+        if (!fx.from || !fx.to) break
+        const x = px(fx.from.x + (fx.to.x - fx.from.x) * age)
+        const y = px(fx.from.y + (fx.to.y - fx.from.y) * age) - Math.sin(age * Math.PI) * 10
+        ctx.fillStyle = fx.crit ? '#ffffff' : '#2c2418'
+        circle(ctx, x, y, fx.crit ? 4.5 : 3.5)
+        ctx.fill()
+        ctx.strokeStyle = COLORS.towers.cannon
+        ctx.lineWidth = 1.5
+        circle(ctx, x, y, fx.crit ? 4.5 : 3.5)
+        ctx.stroke()
+        ctx.lineWidth = 1
+        break
+      }
+      case 'tracer': {
+        // Sniper round: hot line that collapses toward the target, slug at the tip.
+        if (!fx.from || !fx.to) break
+        const tipX = px(fx.from.x + (fx.to.x - fx.from.x) * Math.min(1, age * 2))
+        const tipY = px(fx.from.y + (fx.to.y - fx.from.y) * Math.min(1, age * 2))
+        ctx.strokeStyle = fx.color ?? '#73daca'
+        ctx.globalAlpha = fade
+        ctx.lineWidth = fx.crit ? 2.5 : 1.5
+        ctx.beginPath()
+        ctx.moveTo(px(fx.from.x), px(fx.from.y))
+        ctx.lineTo(tipX, tipY)
+        ctx.stroke()
+        ctx.fillStyle = '#ffffff'
+        circle(ctx, tipX, tipY, fx.crit ? 3 : 2)
+        ctx.fill()
+        ctx.lineWidth = 1
+        break
+      }
+      case 'bolt': {
+        // Arrow bolt: a short dart racing the whole distance in one blink.
+        if (!fx.from || !fx.to) break
+        const bx = fx.from.x + (fx.to.x - fx.from.x) * age
+        const by = fx.from.y + (fx.to.y - fx.from.y) * age
+        const angle = Math.atan2(fx.to.y - fx.from.y, fx.to.x - fx.from.x)
+        ctx.save()
+        ctx.translate(px(bx), px(by))
+        ctx.rotate(angle)
+        ctx.strokeStyle = fx.color ?? COLORS.towers.arrow
+        ctx.lineWidth = fx.crit ? 2.5 : 1.5
+        ctx.beginPath()
+        ctx.moveTo(-5, 0)
+        ctx.lineTo(3, 0)
+        ctx.stroke()
+        ctx.fillStyle = fx.color ?? COLORS.towers.arrow
+        ctx.beginPath()
+        ctx.moveTo(5, 0)
+        ctx.lineTo(1, -2)
+        ctx.lineTo(1, 2)
+        ctx.closePath()
+        ctx.fill()
+        ctx.restore()
+        ctx.lineWidth = 1
+        break
+      }
+      case 'arc': {
+        // Tesla lightning: a jagged 3-segment arc that flickers as it fades.
+        if (!fx.from || !fx.to) break
+        const fxp = { x: px(fx.from.x), y: px(fx.from.y) }
+        const txp = { x: px(fx.to.x), y: px(fx.to.y) }
+        const dx = txp.x - fxp.x
+        const dy = txp.y - fxp.y
+        const len = Math.max(1, Math.hypot(dx, dy))
+        const nx = -dy / len
+        const ny = dx / len
+        ctx.strokeStyle = fx.color ?? COLORS.towers.tesla
+        ctx.globalAlpha = fade
+        ctx.lineWidth = fx.crit ? 3 : 2
+        ctx.beginPath()
+        ctx.moveTo(fxp.x, fxp.y)
+        for (const [t, wobble] of [
+          [0.3, 7],
+          [0.55, -6],
+          [0.8, 5],
+        ] as const) {
+          const jitter = Math.sin(fx.t0 * 13 + t * 40) * 2
+          ctx.lineTo(fxp.x + dx * t + nx * (wobble + jitter), fxp.y + dy * t + ny * (wobble + jitter))
+        }
+        ctx.lineTo(txp.x, txp.y)
+        ctx.stroke()
+        ctx.lineWidth = 1
+        break
+      }
+      case 'flash': {
+        // Muzzle flash: a brief radial burst at the firing tower.
+        if (!fx.at) break
+        ctx.fillStyle = fx.color ?? '#ffffff'
+        ctx.globalAlpha = fade * 0.8
+        circle(ctx, px(fx.at.x), px(fx.at.y), 3 + (1 - fade) * 5)
+        ctx.fill()
         break
       }
       case 'splash': {
