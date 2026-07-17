@@ -7,7 +7,7 @@ import {
   metaNode,
   metaNodeEffect,
 } from '../../data/metaTree'
-import { STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
+import { ABILITIES, STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
 import {
   ascend,
   buyEmberUpgrade,
@@ -20,7 +20,8 @@ import {
   metaUpgradeCost,
   settleRun,
 } from '../meta'
-import { computeSparks } from '../step'
+import { computeSparks, step } from '../step'
+import { cloneRun } from '../clone'
 
 describe('meta tree', () => {
   it('node cost tables match their max levels', () => {
@@ -65,7 +66,7 @@ describe('createRun applies meta', () => {
     expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP)
     expect(run.availableTowers).not.toContain('tesla')
     expect(Object.keys(run.abilities)).not.toContain('gold_rush')
-    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0 })
+    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0, abilityCdPct: 0 })
   })
 
   it('upgrades show up as run bonuses and unlocks', () => {
@@ -243,6 +244,21 @@ describe('ascension', () => {
     expect(after.sparks).toBe(300) // Ashen Legacy head start
     // Broke accounts cannot buy.
     expect(buyEmberUpgrade({ ...meta, embers: 0 }, 'ember_memory').ok).toBe(false)
+  })
+
+  it('Molten Vaults and Swift Sigils bend gold and ability cooldowns', () => {
+    let meta = { ...winner(), embers: 20 }
+    meta = buyEmberUpgrade(meta, 'molten_vaults').meta
+    meta = buyEmberUpgrade(meta, 'swift_sigils').meta
+    const plain = createRun(createMeta(), 'sigil-run')
+    const run = createRun(meta, 'sigil-run')
+    expect(run.mods.goldPct).toBe(plain.mods.goldPct + 15)
+    expect(run.mods.abilityCdPct).toBe(10)
+    // The discount lands when an ability actually goes on cooldown.
+    const live = { ...cloneRun(run), phase: 'wave' as const, wave: 1 }
+    const cast = step(live, [{ type: 'cast_ability', ability: 'frost_nova', cell: { cx: 5, cy: 5 } }]).state
+    // −1: the cast's own tick already counted down once.
+    expect(cast.abilities['frost_nova']).toBe(Math.floor((ABILITIES.frost_nova.cooldown * 90) / 100) - 1)
   })
 })
 

@@ -31,6 +31,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+40. **Ember depth** — the ascension layer grows from 4 to 6 nodes: Molten
+    Vaults (+15% gold/level ×3) and Swift Sigils (ability cooldowns −10%
+    /level ×2, new mods.abilityCdPct honored at cast time, floor 1s).
+    Save-migrated; goldens hash-only.
+
 39. **Ambient atmosphere** — each battlefield breathes: 26 drifting motes
     in the map's own accent (Greenfield fireflies, Channels spray, Bulwark
     dust, Serpent windblown sand, Crossroads embers). Pure function of the

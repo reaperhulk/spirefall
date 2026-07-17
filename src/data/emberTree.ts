@@ -2,7 +2,13 @@
 // spark upgrades and banks Embers; these upgrades survive every ascension and
 // compound with (not replace) the spark tree. Applied by createRun and ascend.
 
-export type EmberUpgradeId = 'kindled_arsenal' | 'eternal_core' | 'ember_memory' | 'ashen_legacy'
+export type EmberUpgradeId =
+  | 'kindled_arsenal'
+  | 'eternal_core'
+  | 'ember_memory'
+  | 'ashen_legacy'
+  | 'molten_vaults'
+  | 'swift_sigils'
 
 export interface EmberNodeDef {
   id: EmberUpgradeId
@@ -41,12 +47,28 @@ export const EMBER_TREE: EmberNodeDef[] = [
     maxLevel: 3,
     costs: [2, 4, 7],
   },
+  {
+    id: 'molten_vaults',
+    name: 'Molten Vaults',
+    description: '+15% gold from all sources per level — forever.',
+    maxLevel: 3,
+    costs: [2, 3, 5],
+  },
+  {
+    id: 'swift_sigils',
+    name: 'Swift Sigils',
+    description: 'Ability cooldowns −10% per level — forever.',
+    maxLevel: 2,
+    costs: [3, 6],
+  },
 ]
 
 export const EMBER_DAMAGE_PCT_PER_LEVEL = 10
 export const EMBER_SPIRE_HP_PER_LEVEL = 2
 export const EMBER_SPARK_PCT_PER_LEVEL = 25
 export const EMBER_LEGACY_SPARKS_PER_LEVEL = 300
+export const EMBER_GOLD_PCT_PER_LEVEL = 15
+export const EMBER_ABILITY_CD_PCT_PER_LEVEL = 10
 
 export function emberNode(id: EmberUpgradeId): EmberNodeDef {
   const node = EMBER_TREE.find((n) => n.id === id)

@@ -428,6 +428,7 @@ export function castAbility(
   }
   let cooldown = def.cooldown
   if (state.relics.includes('overclock')) cooldown = Math.floor((cooldown * 75) / 100)
+  if (state.mods.abilityCdPct > 0) cooldown = Math.max(30, Math.floor((cooldown * (100 - state.mods.abilityCdPct)) / 100))
   state.abilities[ability] = cooldown
   events.push({ type: 'ability_cast', ability, cell })
 }

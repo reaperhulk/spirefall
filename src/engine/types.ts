@@ -112,6 +112,7 @@ export interface RunMods {
   goldPct: number
   sparkPct: number
   critChancePct: number // % chance a tower shot crits (rolled on the combat stream)
+  abilityCdPct: number // % shaved off ability cooldowns (ember: Swift Sigils)
 }
 
 export interface RunState {

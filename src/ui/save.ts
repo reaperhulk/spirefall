@@ -114,6 +114,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.repairsThisWave ??= 0
         data.run.trials ??= []
         data.run.mods.critChancePct ??= 0
+        data.run.mods.abilityCdPct ??= 0
       }
       return data
     }
