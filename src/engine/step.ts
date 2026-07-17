@@ -278,6 +278,11 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
     const def = ENEMIES[spawn.type]
     const hp = Math.max(1, Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix)) / 100))
     const speed = Math.floor((def.speed * affixSpeedPct(s.activeAffix)) / 100)
+    // Shields grow on the same curve as HP. A static shield is trivia once
+    // damage multipliers stack; a scaling one is a composition check — late
+    // shieldbearers shrug off cheap rapid-fire entirely, and only piercing
+    // snipers or heavy shells (or a lucky crit) get through.
+    const shield = def.shield > 0 ? Math.max(def.shield, Math.floor((def.shield * s.hpScalePct) / 100)) : 0
     const id = s.nextEntityId
     s.nextEntityId += 1
     s.enemies.push({
@@ -291,7 +296,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       slowTicks: 0,
       bounty: def.bounty,
       damage: def.damage,
-      shield: def.shield,
+      shield,
       healCooldown: def.heal ? def.heal.everyTicks : 0,
       targetCell: null,
     })

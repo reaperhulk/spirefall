@@ -85,6 +85,22 @@ describe('balance envelope', () => {
     expect(victories).toBeGreaterThanOrEqual(2)
   }, 240_000)
 
+  it('mono-tower cheese loses: arrow spam with a deep tree cannot win', () => {
+    // A playtester once won with nothing but arrows plus Honed Arsenal.
+    // Scaling shieldbearer shields exist to kill that: late shields shrug
+    // off rapid-fire chip damage, so a composition without piercing or
+    // heavy hits stalls out short of the victory wave.
+    const meta = richMeta(20_000)
+    for (const seed of ['alpha', 'beta', 'gamma', 'delta']) {
+      const arrows = play(seed, 'arrowOnly', meta)
+      expect(arrows.phase, seed).toBe('defeat')
+      expect(arrows.wavesCleared, seed).toBeLessThan(VICTORY_WAVE)
+      // And a mixed composition is at least as good at identical investment.
+      const mixed = play(seed, 'balanced', meta)
+      expect(mixed.wavesCleared, seed).toBeGreaterThanOrEqual(arrows.wavesCleared)
+    }
+  }, 300_000)
+
   it('a six-run career climbs steadily but has NOT won yet — the grind is real', () => {
     const { history, meta } = playProgression(6, 'career', BOTS.balanced, DEFAULT_BUY_PRIORITY)
     const first = history[0]!.wavesCleared

@@ -86,83 +86,97 @@ function pickBuildType(state: RunState): TowerType {
   return best
 }
 
-// A competent heuristic player: mixes tower types, upgrades, uses abilities.
-// This is the reference point of the balance envelope.
-export const balancedBot: Bot = (state) => {
+// Build-phase economy shared by the competent bots: relic pick, tier
+// upgrades, expansion via pickType, repairs, then enhancements.
+function buildActions(state: RunState, pickType: (s: RunState) => TowerType): Command[] {
+  if (state.relicOffer !== null) {
+    const pick = RELIC_PRIORITY.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
+    return [{ type: 'choose_relic', relic: pick }]
+  }
+
+  // Once a small killbox exists, tier-2 upgrades beat new tier-1 towers.
+  let upgrade: { id: number; cost: number; tier: number } | null = null
+  for (const t of state.towers) {
+    if (t.tier >= 3) continue
+    const cost = towerTier(t.type, (t.tier + 1) as 2 | 3).cost
+    if (state.gold >= cost && (upgrade === null || t.tier < upgrade.tier)) {
+      upgrade = { id: t.id, cost, tier: t.tier }
+    }
+  }
+  if (upgrade !== null && upgrade.tier === 1 && state.towers.length >= 6) {
+    return [{ type: 'upgrade_tower', id: upgrade.id }]
+  }
+
+  const targetTowers = Math.min(4 + state.wave, 24)
+  if (state.towers.length < targetTowers) {
+    const type = pickType(state)
+    const cost = towerTier(type, 1).cost
+    if (state.gold >= cost) {
+      const spot = buildCandidates(state)[0]
+      if (spot) return [{ type: 'place_tower', tower: type, cell: spot }]
+    }
+  }
+  if (upgrade !== null) return [{ type: 'upgrade_tower', id: upgrade.id }]
+
+  // Patch the spire up between waves before banking gold.
+  if (state.spireHp <= state.spireMaxHp - 2 && state.gold >= 150) return [{ type: 'repair_spire' }]
+
+  // Everything built and maxed: sink gold into the cheapest enhancement.
+  let enhance: { id: number; cost: number } | null = null
+  for (const t of state.towers) {
+    if (t.tier !== 3) continue
+    const cost = enhanceCost(t.type, t.enhance)
+    if (state.gold >= cost && (enhance === null || cost < enhance.cost)) enhance = { id: t.id, cost }
+  }
+  if (enhance !== null) return [{ type: 'upgrade_tower', id: enhance.id }]
+
+  return [{ type: 'start_wave' }]
+}
+
+// Wave-phase triage and ability usage shared by the competent bots.
+function waveActions(state: RunState): Command[] {
   const map = getMap(state.mapId)
-
-  if (state.phase === 'build') {
-    if (state.relicOffer !== null) {
-      const pick = RELIC_PRIORITY.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
-      return [{ type: 'choose_relic', relic: pick }]
-    }
-
-    // Once a small killbox exists, tier-2 upgrades beat new tier-1 towers.
-    let upgrade: { id: number; cost: number; tier: number } | null = null
-    for (const t of state.towers) {
-      if (t.tier >= 3) continue
-      const cost = towerTier(t.type, (t.tier + 1) as 2 | 3).cost
-      if (state.gold >= cost && (upgrade === null || t.tier < upgrade.tier)) {
-        upgrade = { id: t.id, cost, tier: t.tier }
-      }
-    }
-    if (upgrade !== null && upgrade.tier === 1 && state.towers.length >= 6) {
-      return [{ type: 'upgrade_tower', id: upgrade.id }]
-    }
-
-    const targetTowers = Math.min(4 + state.wave, 24)
-    if (state.towers.length < targetTowers) {
-      const type = pickBuildType(state)
-      const cost = towerTier(type, 1).cost
-      if (state.gold >= cost) {
-        const spot = buildCandidates(state)[0]
-        if (spot) return [{ type: 'place_tower', tower: type, cell: spot }]
-      }
-    }
-    if (upgrade !== null) return [{ type: 'upgrade_tower', id: upgrade.id }]
-
-    // Patch the spire up between waves before banking gold.
-    if (state.spireHp <= state.spireMaxHp - 2 && state.gold >= 150) return [{ type: 'repair_spire' }]
-
-    // Everything built and maxed: sink gold into the cheapest enhancement.
-    let enhance: { id: number; cost: number } | null = null
-    for (const t of state.towers) {
-      if (t.tier !== 3) continue
-      const cost = enhanceCost(t.type, t.enhance)
-      if (state.gold >= cost && (enhance === null || cost < enhance.cost)) enhance = { id: t.id, cost }
-    }
-    if (enhance !== null) return [{ type: 'upgrade_tower', id: enhance.id }]
-
-    return [{ type: 'start_wave' }]
+  // Emergency repairs mid-assault — but not in the early game, where gold
+  // is better spent on towers than triage.
+  if (state.wave >= 10 && state.spireHp < state.spireMaxHp / 2 && state.gold >= 100) {
+    return [{ type: 'repair_spire' }]
   }
-
-  if (state.phase === 'wave') {
-    // Emergency repairs mid-assault — but not in the early game, where gold
-    // is better spent on towers than triage.
-    if (state.wave >= 10 && state.spireHp < state.spireMaxHp / 2 && state.gold >= 100) {
-      return [{ type: 'repair_spire' }]
-    }
-    const alive = state.enemies.length
-    if ((state.abilities['meteor'] ?? 1) === 0 && alive >= 6) {
-      const cell = densestEnemyCell(state, 1500)
-      if (cell) return [{ type: 'cast_ability', ability: 'meteor', cell }]
-    }
-    if ((state.abilities['frost_nova'] ?? 1) === 0 && alive >= 5) {
-      const spireCenter = cellCenter(map.spire)
-      const threats = state.enemies.filter((e) => distSq(e.pos, spireCenter) <= 6000 * 6000)
-      if (threats.length >= 5) {
-        const nearest = threats.reduce((a, b) => (distSq(a.pos, spireCenter) <= distSq(b.pos, spireCenter) ? a : b))
-        const cell = { cx: Math.floor(nearest.pos.x / 1000), cy: Math.floor(nearest.pos.y / 1000) }
-        if (!sameCell(cell, map.spire)) return [{ type: 'cast_ability', ability: 'frost_nova', cell }]
-      }
-    }
-    if ((state.abilities['gold_rush'] ?? 1) === 0 && alive >= 10) {
-      return [{ type: 'cast_ability', ability: 'gold_rush', cell: map.spawn }]
+  const alive = state.enemies.length
+  if ((state.abilities['meteor'] ?? 1) === 0 && alive >= 6) {
+    const cell = densestEnemyCell(state, 1500)
+    if (cell) return [{ type: 'cast_ability', ability: 'meteor', cell }]
+  }
+  if ((state.abilities['frost_nova'] ?? 1) === 0 && alive >= 5) {
+    const spireCenter = cellCenter(map.spire)
+    const threats = state.enemies.filter((e) => distSq(e.pos, spireCenter) <= 6000 * 6000)
+    if (threats.length >= 5) {
+      const nearest = threats.reduce((a, b) => (distSq(a.pos, spireCenter) <= distSq(b.pos, spireCenter) ? a : b))
+      const cell = { cx: Math.floor(nearest.pos.x / 1000), cy: Math.floor(nearest.pos.y / 1000) }
+      if (!sameCell(cell, map.spire)) return [{ type: 'cast_ability', ability: 'frost_nova', cell }]
     }
   }
-
+  if ((state.abilities['gold_rush'] ?? 1) === 0 && alive >= 10) {
+    return [{ type: 'cast_ability', ability: 'gold_rush', cell: map.spawn }]
+  }
   return []
 }
 
-export const BOTS = { afk: afkBot, greedy: greedyBot, balanced: balancedBot } as const
+// A competent heuristic player: mixes tower types, upgrades, uses abilities.
+// This is the reference point of the balance envelope.
+export const balancedBot: Bot = (state) => {
+  if (state.phase === 'build') return buildActions(state, pickBuildType)
+  if (state.phase === 'wave') return waveActions(state)
+  return []
+}
+
+// The degenerate strategy a playtester actually won with: nothing but arrow
+// towers, buffed by meta damage and gold. Scaling shields exist to kill it —
+// the balance envelope pins this bot as a LOSER at any realistic spark depth.
+export const arrowOnlyBot: Bot = (state) => {
+  if (state.phase === 'build') return buildActions(state, () => 'arrow')
+  if (state.phase === 'wave') return waveActions(state)
+  return []
+}
+
+export const BOTS = { afk: afkBot, greedy: greedyBot, balanced: balancedBot, arrowOnly: arrowOnlyBot } as const
 export type BotName = keyof typeof BOTS
