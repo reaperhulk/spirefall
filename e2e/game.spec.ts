@@ -337,6 +337,81 @@ test.describe('touch', () => {
   })
 })
 
+// Standard-viewport layout matrix: the standing guard against layout
+// regressions on real device sizes. For every viewport: the document must
+// never overflow horizontally (an overflowing child lets the whole page pan
+// sideways on touch), and every HUD control must sit fully on screen —
+// at boot, with the tower panel open, and during a live wave.
+const STANDARD_VIEWPORTS: [string, number, number][] = [
+  ['phone-small', 375, 667],
+  ['phone', 390, 844],
+  ['phone-large', 412, 915],
+  ['tablet-portrait', 768, 1024],
+  ['tablet-landscape', 1024, 768],
+  ['desktop', 1280, 720],
+]
+
+const HUD_CONTROLS = [
+  'mute',
+  'daily-run',
+  'open-stats',
+  'open-tree',
+  'open-settings',
+  'abandon-run',
+  'start-wave',
+  'auto-start',
+  'repair-spire',
+  'shop-arrow',
+]
+
+for (const [name, width, height] of STANDARD_VIEWPORTS) {
+  test.describe(`layout @ ${name} (${width}×${height})`, () => {
+    test.use({ viewport: { width, height } })
+
+    test('no horizontal overflow; every control fully on screen', async ({ page }) => {
+      // Same seed everywhere: the map (and thus buildable cells) stays
+      // fixed, so the viewport is the only variable under test.
+      const errors = await boot(page, 'e2e-wave')
+      await page.locator('.hint-close').click()
+
+      const assertLayout = async (phase: string) => {
+        const m = await page.evaluate(() => ({
+          scrollW: document.documentElement.scrollWidth,
+          innerW: window.innerWidth,
+        }))
+        expect(m.scrollW, `${phase}: page overflows horizontally`).toBeLessThanOrEqual(m.innerW)
+        for (const id of HUD_CONTROLS) {
+          const box = await page.getByTestId(id).boundingBox()
+          expect(box, `${phase}: ${id} not rendered`).not.toBeNull()
+          expect(box!.x, `${phase}: ${id} clipped left`).toBeGreaterThanOrEqual(-0.5)
+          expect(box!.x + box!.width, `${phase}: ${id} clipped right`).toBeLessThanOrEqual(width + 0.5)
+        }
+      }
+
+      await assertLayout('build phase')
+
+      // Tower panel open (a bottom sheet on phones) must not break layout.
+      await page.getByTestId('shop-arrow').click()
+      await clickCell(page, 4, 5)
+      await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+      await page.getByTestId('shop-arrow').click() // disarm
+      await clickCell(page, 4, 5)
+      await expect(page.getByTestId('tower-panel')).toBeVisible()
+      const panel = (await page.getByTestId('tower-panel').boundingBox())!
+      expect(panel.x, 'tower panel clipped left').toBeGreaterThanOrEqual(-0.5)
+      expect(panel.x + panel.width, 'tower panel clipped right').toBeLessThanOrEqual(width + 0.5)
+      await assertLayout('tower panel open')
+      await page.keyboard.press('Escape')
+
+      // Mid-wave (start-wave disabled, live-status strip) must hold too.
+      await page.getByTestId('start-wave').click()
+      await expect(page.getByTestId('start-wave')).toBeDisabled()
+      await assertLayout('wave live')
+      expect(errors).toEqual([])
+    })
+  })
+}
+
 test.describe('tablet portrait', () => {
   test.use({ viewport: { width: 768, height: 1024 } })
 

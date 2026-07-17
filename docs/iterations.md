@@ -38,6 +38,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+54. *(post-marathon, playtest)* **Viewport matrix** — a portrait phone was
+    getting a sideways-pannable page: the tower shop strip (1052px of
+    cards, no wrap, no overflow constraint) widened the whole document to
+    1060px on a 375px screen. Shop and ability strips now scroll within
+    themselves; the phone header tightened from five loose rows (~220px)
+    to four (~130px) via compact paddings and shrunken reserved widths.
+    New standing guard: a six-viewport e2e matrix (375/390/412 phones,
+    768×1024 + 1024×768 tablets, 1280×720 desktop) asserting zero
+    horizontal overflow and every HUD control fully on-screen at build,
+    with the tower panel open, and mid-wave. 25 e2e specs total.
+
 53. *(post-marathon)* **Graphics 2.0** — the renderer's biggest jump since
     pixels landed, all Canvas 2D, all render-only. Stage 1: an additive glow
     engine (cached radial sprites, 'lighter' compositing) turns every
