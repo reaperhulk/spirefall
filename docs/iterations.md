@@ -38,6 +38,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+60. *(post-marathon, playtest)* **Codex shows YOUR numbers** — the tower
+    tables and ability reference now quote effective values through the
+    same engine helpers combat uses (`effectiveDamagePct`,
+    `effectiveTowerCooldown`, new `effectiveTowerRange`,
+    `effectiveAbilityCooldown`), with base values in muted parentheses
+    when a modifier moved them and an amber note explaining why. Spire
+    Tree damage levels, relics (Quickdraw, Longsight, Glass Cannon…), and
+    Dampening cataclysms all flow in. The Longsight range math was inlined
+    in towersFire — extracted to a shared helper first (goldens prove the
+    refactor behavior-identical). On phones the wider tables scroll within
+    themselves. E2e: buying 3 Honed Arsenal levels must move sniper tier 3
+    from 260 to 322 with the base alongside.
+
 59. *(post-marathon, playtest)* **Hold-to-aim placement loupe** — on phones
     the board is CSS-downscaled to ~46% (a cell ≈ 16 screen px), so the
     finger hides the exact cell it's placing on. With a tower or ability

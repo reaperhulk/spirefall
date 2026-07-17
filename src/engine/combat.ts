@@ -291,7 +291,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const def = towerTier(tower.type, tower.tier)
     const hitsAir = TOWERS[tower.type].hitsAir
     const origin = cellCenter(tower.cell)
-    const range = state.relics.includes('longsight') ? Math.floor((def.range * LONGSIGHT_RANGE_PCT) / 100) : def.range
+    const range = effectiveTowerRange(state, tower.type, tower.tier)
     const rangeSq = range * range
     const alive = hitsAir ? aliveAir : aliveGround
     const target = selectTarget(tower, alive, map, field, rangeSq)
@@ -454,6 +454,14 @@ export function effectiveAbilityCooldown(state: RunState, ability: AbilityId): n
 export function effectiveTowerCooldown(state: RunState, type: TowerType, tier: 1 | 2 | 3): number {
   const base = towerTier(type, tier).cooldown
   return state.relics.includes('quickdraw') ? Math.max(3, Math.floor((base * QUICKDRAW_COOLDOWN_PCT) / 100)) : base
+}
+
+// Targeting range for a tower of this type/tier — Longsight included. Used
+// by towersFire and by every UI surface that quotes a range, so the numbers
+// players read are the numbers the engine rolls.
+export function effectiveTowerRange(state: RunState, type: TowerType, tier: 1 | 2 | 3): number {
+  const base = towerTier(type, tier).range
+  return state.relics.includes('longsight') ? Math.floor((base * LONGSIGHT_RANGE_PCT) / 100) : base
 }
 
 // ---------------------------------------------------------------------------

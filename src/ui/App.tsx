@@ -1075,6 +1075,7 @@ export default function App() {
       {showStats && !summary && <RunStatsModal state={state} onClose={() => setShowStats(false)} />}
       {showCodex && !summary && (
         <CodexModal
+          state={state}
           focusEnemy={codexFocus}
           onClose={() => {
             setShowCodex(false)

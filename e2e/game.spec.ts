@@ -37,6 +37,8 @@ declare global {
       dispatch: (command: unknown) => void
       fastForward: (seconds: number) => void
       newRun: (seed?: string) => void
+      getMeta: () => { sparks: number }
+      buyMeta: (id: string) => void
       setSpeed: (n: number) => void
       getSpeed: () => number
       getReplay: () => { seed: string; log: unknown[] }
@@ -728,5 +730,23 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
   await expect(page.getByTestId('codex-modal')).toBeVisible()
   await page.keyboard.press('c')
   await expect(page.getByTestId('codex-modal')).not.toBeVisible()
+
+  // Permanent upgrades flow into the numbers. Three Honed Arsenal levels
+  // (+24% damage) must move the tower tables: sniper tier 3 reads the
+  // effective 322 with the base 260 alongside — via the same engine helper
+  // combat uses, so the codex can never drift from what towers actually do.
+  await page.evaluate(() => {
+    window.__harness.getMeta().sparks = 99999
+    window.__harness.buyMeta('tower_damage')
+    window.__harness.buyMeta('tower_damage')
+    window.__harness.buyMeta('tower_damage')
+    window.__harness.newRun('e2e-wave')
+  })
+  await page.getByTestId('open-codex').click()
+  await page.getByTestId('codex-tab-towers').click()
+  await expect(page.getByTestId('codex-modifier-note')).toBeVisible()
+  await expect(page.getByTestId('codex-tower-sniper')).toContainText('322')
+  await expect(page.getByTestId('codex-tower-sniper')).toContainText('(260)')
+  await page.keyboard.press('Escape')
   expect(errors).toEqual([])
 })

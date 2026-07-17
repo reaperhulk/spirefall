@@ -700,6 +700,17 @@ button:disabled {
   font-size: 13px;
 }
 
+.codex-note {
+  margin: 0;
+  color: #e0af68;
+  font-size: 12px;
+}
+
+.codex-base {
+  color: #565f89;
+  font-size: 11px;
+}
+
 .codex-trait {
   margin: 6px 0 0;
   color: #9aa5ce;
@@ -713,6 +724,10 @@ button:disabled {
   border-collapse: collapse;
   font-size: 13px;
   color: #a9b1d6;
+  /* With modifier parentheticals the table can outgrow a phone — it
+     scrolls within itself rather than clipping the last column. */
+  display: block;
+  overflow-x: auto;
 }
 
 .codex-tiers th {

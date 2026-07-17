@@ -22,7 +22,13 @@ import {
   WAVE_CLEAR_KNIT_HP,
   type EnemyDef,
 } from '../data/content'
-import type { EnemyType, TowerType } from '../engine/types'
+import type { EnemyType, RunState, TowerType } from '../engine/types'
+import {
+  effectiveAbilityCooldown,
+  effectiveDamagePct,
+  effectiveTowerCooldown,
+  effectiveTowerRange,
+} from '../engine/combat'
 import { enemyColor } from './render'
 
 // The Codex: an in-game reference for enemies, towers, and the rules that
@@ -142,9 +148,32 @@ const MECHANICS: MechanicEntry[] = [
   },
 ]
 
-export function CodexModal({ focusEnemy, onClose }: { focusEnemy?: EnemyType | null; onClose: () => void }) {
+export function CodexModal({
+  state,
+  focusEnemy,
+  onClose,
+}: {
+  state: RunState
+  focusEnemy?: EnemyType | null
+  onClose: () => void
+}) {
   const [tab, setTab] = useState<CodexTab>('enemies')
   const bodyRef = useRef<HTMLDivElement | null>(null)
+
+  // Effective vs base: when this run modifies a number (Spire Tree, relics,
+  // cataclysms), show what YOUR towers actually do, with base alongside.
+  const withBase = (effective: string | number, base: string | number) =>
+    String(effective) === String(base) ? (
+      <>{effective}</>
+    ) : (
+      <>
+        {effective} <span className="codex-base">({base})</span>
+      </>
+    )
+  const anyTowerModifiers =
+    (Object.keys(TOWERS) as TowerType[]).some((t) => effectiveDamagePct(state, t) !== 100) ||
+    state.relics.includes('quickdraw') ||
+    state.relics.includes('longsight')
 
   // Opened from a wave-preview chip: land on that enemy's entry.
   useEffect(() => {
@@ -223,44 +252,59 @@ export function CodexModal({ focusEnemy, onClose }: { focusEnemy?: EnemyType | n
               </div>
             ))}
 
-          {tab === 'towers' &&
-            (Object.keys(TOWERS) as TowerType[]).map((type) => {
-              const def = TOWERS[type]
-              return (
-                <div key={type} className="codex-entry" data-testid={`codex-tower-${type}`}>
-                  <div className="codex-entry-head">
-                    <span className={`tower-dot tower-${type}`} />
-                    <strong>{def.name}</strong>
-                    {def.hitsAir ? <span className="air-mark" title="Can target fliers">✈</span> : <span className="codex-noair">ground only</span>}
-                  </div>
-                  <table className="codex-tiers">
-                    <thead>
-                      <tr>
-                        <th>Tier</th>
-                        <th>Cost</th>
-                        <th>Dmg</th>
-                        <th>Range</th>
-                        <th>Rate</th>
-                        <th>Special</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {def.tiers.map((t, i) => (
-                        <tr key={i}>
-                          <td>{i + 1}</td>
-                          <td>⛀ {t.cost}</td>
-                          <td>{t.damage || '—'}</td>
-                          <td>{t.range ? cells(t.range) : '—'}</td>
-                          <td>{t.cooldown ? `${(30 / t.cooldown).toFixed(1)}/s` : '—'}</td>
-                          <td>{tierSpecial(type, i)}</td>
+          {tab === 'towers' && (
+            <>
+              {anyTowerModifiers && (
+                <p className="codex-note" data-testid="codex-modifier-note">
+                  Numbers include this run's modifiers — Spire Tree, relics, cataclysms. Base values in parentheses.
+                </p>
+              )}
+              {(Object.keys(TOWERS) as TowerType[]).map((type) => {
+                const def = TOWERS[type]
+                const dmgPct = effectiveDamagePct(state, type)
+                return (
+                  <div key={type} className="codex-entry" data-testid={`codex-tower-${type}`}>
+                    <div className="codex-entry-head">
+                      <span className={`tower-dot tower-${type}`} />
+                      <strong>{def.name}</strong>
+                      {def.hitsAir ? <span className="air-mark" title="Can target fliers">✈</span> : <span className="codex-noair">ground only</span>}
+                    </div>
+                    <table className="codex-tiers">
+                      <thead>
+                        <tr>
+                          <th>Tier</th>
+                          <th>Cost</th>
+                          <th>Dmg</th>
+                          <th>Range</th>
+                          <th>Rate</th>
+                          <th>Special</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {TOWER_NOTES[type] && <p className="codex-trait">{TOWER_NOTES[type]}</p>}
-                </div>
-              )
-            })}
+                      </thead>
+                      <tbody>
+                        {def.tiers.map((t, i) => {
+                          const tier = (i + 1) as 1 | 2 | 3
+                          const dmg = Math.floor((t.damage * dmgPct) / 100)
+                          const range = effectiveTowerRange(state, type, tier)
+                          const cd = effectiveTowerCooldown(state, type, tier)
+                          return (
+                            <tr key={i}>
+                              <td>{tier}</td>
+                              <td>⛀ {t.cost}</td>
+                              <td>{t.damage ? withBase(dmg, t.damage) : '—'}</td>
+                              <td>{t.range ? withBase(cells(range), cells(t.range)) : '—'}</td>
+                              <td>{t.cooldown ? withBase(`${(30 / cd).toFixed(1)}/s`, `${(30 / t.cooldown).toFixed(1)}/s`) : '—'}</td>
+                              <td>{tierSpecial(type, i)}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                    {TOWER_NOTES[type] && <p className="codex-trait">{TOWER_NOTES[type]}</p>}
+                  </div>
+                )
+              })}
+            </>
+          )}
 
           {tab === 'mechanics' && (
             <>
@@ -276,14 +320,16 @@ export function CodexModal({ focusEnemy, onClose }: { focusEnemy?: EnemyType | n
                 <div className="codex-entry-head">
                   <strong>Ability reference</strong>
                 </div>
-                {Object.values(ABILITIES).map((a) => (
-                  <p key={a.name} className="codex-trait">
-                    <strong>{a.name}</strong> — {secs(a.cooldown)} cooldown
-                    {a.damage ? `, ${a.damage} damage in ${cells(a.radius)} cells` : ''}
-                    {a.slowFactor ? `, slows to ${a.slowFactor}% for ${secs(a.slowTicks ?? 0)} in ${cells(a.radius)} cells` : ''}
-                    {a.durationTicks ? `, lasts ${secs(a.durationTicks)}` : ''}
-                  </p>
-                ))}
+                {(Object.entries(ABILITIES) as [Parameters<typeof effectiveAbilityCooldown>[1], (typeof ABILITIES)[keyof typeof ABILITIES]][]).map(
+                  ([id, a]) => (
+                    <p key={a.name} className="codex-trait">
+                      <strong>{a.name}</strong> — {withBase(secs(effectiveAbilityCooldown(state, id)), secs(a.cooldown))} cooldown
+                      {a.damage ? `, ${a.damage} damage in ${cells(a.radius)} cells` : ''}
+                      {a.slowFactor ? `, slows to ${a.slowFactor}% for ${secs(a.slowTicks ?? 0)} in ${cells(a.radius)} cells` : ''}
+                      {a.durationTicks ? `, lasts ${secs(a.durationTicks)}` : ''}
+                    </p>
+                  ),
+                )}
               </div>
               <div className="codex-entry">
                 <div className="codex-entry-head">
