@@ -31,6 +31,13 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+47. **Gauntlet audit** — measured the new map against the rolled pool at
+    0/3k/8k sparks: the 5-leg serpentine was a spark farm (fresh accounts
+    +4–8 waves). Trimmed to 4 legs: parity at real budgets (+0–1 wave at
+    3k/8k across three seeds), with only a gentler fresh-account on-ramp
+    remaining — acceptable for an opt-in battlefield that careers and the
+    envelope never roll.
+
 46. **The Gauntlet** — a sixth map: a forced serpentine where the horde
     marches every switchback and each corridor is a kill box, dressed in
     forge-iron rust with spark motes. Picker-only via the new
