@@ -11,5 +11,14 @@
   "icons": [
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Daily run",
+      "short_name": "Daily",
+      "description": "Play today's shared seed — same map and waves for everyone.",
+      "url": "./?daily=1",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

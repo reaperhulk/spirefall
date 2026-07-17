@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+42. **Deep links** — ?seed=&lt;x&gt; boots straight into that run (shareable
+    challenges, one-click bug repros) and ?daily=1 into today's shared
+    seed; meta carries over, the param strips itself so reloads resume
+    normally. The PWA manifest gains a "Daily run" app shortcut. New e2e
+    spec (18 total).
+
 41. **Live run stats** — 📊 button / S key opens the run-over analytics
     mid-run: waves + kills, sparks banked if the run ended now, active
     trials, the HP timeline so far, and damage/kill share bars. Read-only

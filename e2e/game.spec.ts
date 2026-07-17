@@ -75,6 +75,19 @@ async function tapCell(page: Page, cx: number, cy: number) {
   await page.touchscreen.tap(p.x, p.y)
 }
 
+test('deep links: ?seed starts that exact run, ?daily starts the shared seed', async ({ page }) => {
+  await page.goto('/?seed=challenge-me')
+  await page.waitForSelector('[data-testid="playfield"]')
+  expect(await page.evaluate(() => window.__harness.getReplay().seed)).toBe('challenge-me')
+  // The param is stripped so a reload resumes normally instead of restarting.
+  expect(await page.evaluate(() => window.location.search)).toBe('')
+
+  await page.goto('/?daily=1')
+  await page.waitForSelector('[data-testid="playfield"]')
+  const seed = await page.evaluate(() => window.__harness.getReplay().seed)
+  expect(seed).toMatch(/^daily-\d{4}-\d{2}-\d{2}$/)
+})
+
 test('boots clean: canvas, HUD, and harness all present, no console errors', async ({ page }) => {
   const errors = await boot(page, 'e2e-boot')
   await expect(page.getByTestId('gold')).toContainText('200')

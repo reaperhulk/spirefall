@@ -108,7 +108,19 @@ export default function App() {
   const [boot] = useState(() => {
     const save = loadSave()
     const meta = save?.meta ?? createMeta()
-    const run = save?.run ?? createRun(meta, newSeed(meta.runs))
+    // Deep links: ?seed=<x> starts a fresh run on that seed (shareable
+    // challenges, bug repros); ?daily=1 jumps straight into today's shared
+    // seed (PWA shortcut). Meta always carries over; the param is stripped
+    // so a reload resumes normally.
+    let linkSeed: string | null = null
+    try {
+      const params = new URLSearchParams(window.location.search)
+      linkSeed = params.get('seed') ?? (params.get('daily') !== null ? dailySeed() : null)
+      if (linkSeed !== null) window.history.replaceState(null, '', window.location.pathname)
+    } catch {
+      linkSeed = null
+    }
+    const run = linkSeed !== null ? createRun(meta, linkSeed) : (save?.run ?? createRun(meta, newSeed(meta.runs)))
     return { meta, run }
   })
   const [meta, setMeta] = useState(boot.meta)
