@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { ENHANCE_COST_GROWTH_PCT, relicSkipGold, TOWERS } from '../../data/content'
+import { ENHANCE_COST_GROWTH_PCT, RELIC_IDS, relicSkipGold, TOWERS } from '../../data/content'
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
+import { drawRelicOffer } from '../combat'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
 import { previewNextWave, step } from '../step'
@@ -562,5 +563,78 @@ describe('probability layer', () => {
     expect(lucky.earned).toBeGreaterThan(plain.earned)
     expect(lucky.earned).toBeLessThanOrEqual(plain.earned * 2)
     expect(play(['fortune_idol'])).toEqual(lucky) // seeded: perfectly reproducible
+  })
+})
+
+describe('relic depth', () => {
+  it('rerolling costs gold, redraws once, and is refused twice', () => {
+    const state = {
+      ...freshRun('reroll'),
+      wave: 5,
+      gold: 500,
+      relicOffer: ['overcharge', 'heavy_powder', 'stoneskin'] as RunState['relicOffer'],
+    }
+    const first = step(state, [{ type: 'reroll_relic' }])
+    expect(first.state.gold).toBe(500 - relicSkipGold(5))
+    expect(first.state.relicOffer).toHaveLength(3)
+    expect(first.state.relicRerolled).toBe(true)
+    expect(first.events.some((e) => e.type === 'relic_offered')).toBe(true)
+    const second = step(first.state, [{ type: 'reroll_relic' }])
+    expect(second.events[0]).toMatchObject({ type: 'command_rejected', reason: 'offer already rerolled' })
+    const broke = step({ ...state, gold: 0 }, [{ type: 'reroll_relic' }])
+    expect(broke.events[0]).toMatchObject({ type: 'command_rejected', reason: 'not enough gold' })
+  })
+
+  it('quickdraw shortens cooldowns; longsight stretches range', () => {
+    const duel = (relics: RunState['relics'], enemyX: number) => {
+      const s = cloneRun(freshRun('relic-duel'))
+      s.phase = 'wave'
+      s.wave = 1
+      s.relics = relics
+      s.towers.push({
+        id: s.nextEntityId++,
+        type: 'arrow',
+        tier: 1,
+        enhance: 0,
+        cell: { cx: 5, cy: 5 },
+        cooldown: 0,
+        targeting: 'first',
+        kills: 0,
+        damageDealt: 0,
+        shots: 0,
+      })
+      s.enemies.push({
+        id: s.nextEntityId++,
+        type: 'brute',
+        pos: { x: enemyX, y: 5500 },
+        hp: 1000,
+        maxHp: 1000,
+        speed: 0,
+        slowFactor: 100,
+        slowTicks: 0,
+        bounty: 3,
+        damage: 3,
+        shield: 0,
+        healCooldown: 0,
+        broodCooldown: 0,
+        targetCell: null,
+      })
+      return step(s, []).state.towers[0]!
+    }
+    // In range for both: quickdraw reloads faster (15 → 13 ticks).
+    expect(duel([], 6500).cooldown).toBe(15)
+    expect(duel(['quickdraw'], 6500).cooldown).toBe(13)
+    // 3.0 cells out: beyond base arrow range (2.8), inside longsight (3.22).
+    expect(duel([], 8500).shots).toBe(0)
+    expect(duel(['longsight'], 8500).shots).toBe(1)
+  })
+
+  it('weighted offers only ever contain unowned relics, no duplicates', () => {
+    let s = cloneRun(freshRun('weighted'))
+    s.relics = ['colossus', 'glass_cannon'] // both legendaries owned
+    const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
+    const offer = drawRelicOffer(s, pool, 3)
+    expect(new Set(offer).size).toBe(3)
+    for (const id of offer) expect(s.relics).not.toContain(id)
   })
 })

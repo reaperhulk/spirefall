@@ -50,14 +50,20 @@ export const greedyBot: Bot = (state) => {
 }
 
 export const RELIC_PRIORITY: RelicId[] = [
+  'colossus',
   'spark_siphon',
   'glass_cannon',
   'piercing_arrows',
+  'quickdraw',
+  'longsight',
   'keen_sights',
   'executioners_seal',
   'overcharge',
+  'echo_chamber',
   'bounty_banner',
   'fortune_idol',
+  'deep_pockets',
+  'field_medicine',
   'stoneskin',
   'heavy_powder',
   'winters_grip',

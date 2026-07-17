@@ -179,34 +179,54 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
 // ---------------------------------------------------------------------------
 // Relics (run-scoped modifiers, offered every RELIC_WAVE_INTERVAL waves)
 
+export type RelicRarity = 'common' | 'rare' | 'legendary'
+
 export interface RelicDef {
   name: string
   description: string
+  rarity: RelicRarity
 }
 
 export const RELICS: Record<RelicId, RelicDef> = {
-  piercing_arrows: { name: 'Piercing Arrows', description: 'Arrow towers deal +40% damage.' },
-  heavy_powder: { name: 'Heavy Powder', description: 'Cannon splash radius +30%.' },
-  winters_grip: { name: "Winter's Grip", description: 'Slows are 15 points stronger.' },
-  golden_touch: { name: 'Golden Touch', description: '+2 gold per kill, but the Spire loses 10% max HP.' },
-  overcharge: { name: 'Overcharge', description: 'Tesla chains hit 2 more enemies.' },
-  spark_siphon: { name: 'Spark Siphon', description: '+25% Sparks from this run.' },
-  glass_cannon: { name: 'Glass Cannon', description: 'All towers deal +30% damage, but the Spire loses 20% max HP.' },
-  overclock: { name: 'Overclock', description: 'Ability cooldowns are 25% shorter.' },
-  bounty_banner: { name: 'Bounty Banner', description: '+1 gold per kill.' },
-  mint_condition: { name: 'Mint Condition', description: 'Mints yield +50% gold.' },
-  stoneskin: { name: 'Stoneskin', description: 'Heavy hitters (Brutes, bosses) deal 1 less damage to the Spire (min 1).' },
-  keen_sights: { name: 'Keen Sights', description: '+10% critical hit chance.' },
-  executioners_seal: { name: "Executioner's Seal", description: 'Critical hits deal +100% extra damage.' },
-  fortune_idol: { name: 'Fortune Idol', description: 'Kills have a 20% chance to drop double gold.' },
+  piercing_arrows: { name: 'Piercing Arrows', description: 'Arrow towers deal +40% damage.', rarity: 'rare' },
+  heavy_powder: { name: 'Heavy Powder', description: 'Cannon splash radius +30%.', rarity: 'rare' },
+  winters_grip: { name: "Winter's Grip", description: 'Slows are 15 points stronger.', rarity: 'common' },
+  golden_touch: { name: 'Golden Touch', description: '+2 gold per kill, but the Spire loses 10% max HP.', rarity: 'rare' },
+  overcharge: { name: 'Overcharge', description: 'Tesla chains hit 2 more enemies.', rarity: 'rare' },
+  spark_siphon: { name: 'Spark Siphon', description: '+25% Sparks from this run.', rarity: 'rare' },
+  glass_cannon: { name: 'Glass Cannon', description: 'All towers deal +30% damage, but the Spire loses 20% max HP.', rarity: 'legendary' },
+  overclock: { name: 'Overclock', description: 'Ability cooldowns are 25% shorter.', rarity: 'common' },
+  bounty_banner: { name: 'Bounty Banner', description: '+1 gold per kill.', rarity: 'common' },
+  mint_condition: { name: 'Mint Condition', description: 'Mints yield +50% gold.', rarity: 'common' },
+  stoneskin: { name: 'Stoneskin', description: 'Heavy hitters (Brutes, bosses) deal 1 less damage to the Spire (min 1).', rarity: 'rare' },
+  keen_sights: { name: 'Keen Sights', description: '+10% critical hit chance.', rarity: 'common' },
+  executioners_seal: { name: "Executioner's Seal", description: 'Critical hits deal +100% extra damage.', rarity: 'rare' },
+  fortune_idol: { name: 'Fortune Idol', description: 'Kills have a 20% chance to drop double gold.', rarity: 'common' },
+  quickdraw: { name: 'Quickdraw', description: 'All towers fire 10% faster.', rarity: 'common' },
+  longsight: { name: 'Longsight', description: 'All towers gain +15% range.', rarity: 'rare' },
+  field_medicine: { name: 'Field Medicine', description: 'The Spire knits +1 extra HP after every cleared wave.', rarity: 'common' },
+  deep_pockets: { name: 'Deep Pockets', description: '+25% gold from wave clears.', rarity: 'common' },
+  echo_chamber: { name: 'Echo Chamber', description: 'Tesla chains hop +1 target and 20% further.', rarity: 'rare' },
+  colossus: { name: 'Colossus', description: 'All towers deal +25% damage. No catch.', rarity: 'legendary' },
 }
 
 export const RELIC_IDS = Object.keys(RELICS) as RelicId[]
 export const RELIC_WAVE_INTERVAL = 5
 export const RELIC_OFFER_SIZE = 3
 
+// Rarity weights for offer draws. Legendaries are events, not table stakes.
+export const RELIC_RARITY_WEIGHTS: Record<RelicRarity, number> = { common: 60, rare: 32, legendary: 8 }
+
+// New relic mechanics.
+export const QUICKDRAW_COOLDOWN_PCT = 90 // quickdraw: cooldowns ×0.9
+export const LONGSIGHT_RANGE_PCT = 115 // longsight: range ×1.15
+export const FIELD_MEDICINE_KNIT_HP = 1
+export const DEEP_POCKETS_GOLD_PCT = 25
+export const COLOSSUS_DAMAGE_PCT = 25
+
 // Declining a relic offer is a real choice, not a trap: some relics carry
-// downsides, and passing pays wave-scaled gold instead.
+// downsides, and passing pays wave-scaled gold instead. Rerolling the offer
+// once costs the same gold the skip would have paid.
 export function relicSkipGold(wave: number): number {
   return 40 + wave * 8
 }

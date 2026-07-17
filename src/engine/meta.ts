@@ -178,6 +178,7 @@ export function createRun(meta: MetaState, seed: string): RunState {
     goldRushTicks: 0,
     relics: [],
     relicOffer: null,
+    relicRerolled: false,
     availableTowers,
     activeAffix: null,
     cataclysms: [],

@@ -681,7 +681,9 @@ export default function App() {
         <RelicModal
           options={state.relicOffer}
           skipGold={relicSkipGold(state.wave)}
+          canReroll={!state.relicRerolled && state.gold >= relicSkipGold(state.wave)}
           onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })}
+          onReroll={() => session.dispatch({ type: 'reroll_relic' })}
         />
       )}
       {summary && (

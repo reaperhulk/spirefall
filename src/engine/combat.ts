@@ -7,8 +7,13 @@ import {
   CRIT_RELIC_DAMAGE_PCT,
   ENEMIES,
   ENHANCE_DAMAGE_PCT,
+  COLOSSUS_DAMAGE_PCT,
   FORTUNE_IDOL_CHANCE_PCT,
   GLASS_CANNON_PCT,
+  LONGSIGHT_RANGE_PCT,
+  QUICKDRAW_COOLDOWN_PCT,
+  RELIC_RARITY_WEIGHTS,
+  RELICS,
   PIERCING_ARROWS_PCT,
   SNIPER_ELITE_BONUS_PCT,
   TESLA_CHAIN_RANGE,
@@ -17,7 +22,7 @@ import {
 } from '../data/content'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
-import type { AbilityId, CellPos, Enemy, GameEvent, RunState, Tower } from './types'
+import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower } from './types'
 import { scaledHp } from './waves'
 
 // All functions in this file mutate a draft RunState that step() has already
@@ -27,6 +32,7 @@ export function effectiveDamagePct(state: RunState, tower: Tower['type']): numbe
   let pct = 100 + state.mods.damagePct
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += PIERCING_ARROWS_PCT
   if (state.relics.includes('glass_cannon')) pct += GLASS_CANNON_PCT
+  if (state.relics.includes('colossus')) pct += COLOSSUS_DAMAGE_PCT
   // Stacked Dampening cataclysms can drive mods negative; towers never go
   // below a tenth of their base output.
   return Math.max(10, pct)
@@ -51,6 +57,7 @@ export function damageBreakdown(
   if (tower.type === 'arrow' && state.relics.includes('piercing_arrows'))
     parts.push({ source: 'Piercing Arrows (relic)', pct: PIERCING_ARROWS_PCT })
   if (state.relics.includes('glass_cannon')) parts.push({ source: 'Glass Cannon (relic)', pct: GLASS_CANNON_PCT })
+  if (state.relics.includes('colossus')) parts.push({ source: 'Colossus (relic)', pct: COLOSSUS_DAMAGE_PCT })
   if (tower.enhance > 0) parts.push({ source: `Enhance +${tower.enhance}`, pct: ENHANCE_DAMAGE_PCT * tower.enhance })
   const totalPct = 100 + parts.reduce((sum, p) => sum + p.pct, 0)
   return { base, parts, totalPct, effective: Math.floor((base * totalPct) / 100) }
@@ -237,7 +244,8 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const def = towerTier(tower.type, tower.tier)
     const hitsAir = TOWERS[tower.type].hitsAir
     const origin = cellCenter(tower.cell)
-    const rangeSq = def.range * def.range
+    const range = state.relics.includes('longsight') ? Math.floor((def.range * LONGSIGHT_RANGE_PCT) / 100) : def.range
+    const rangeSq = range * range
     const alive = state.enemies.filter((e) => e.hp > 0 && (hitsAir || !ENEMIES[e.type].flying))
     const inRange = alive.filter((e) => distSq(origin, e.pos) <= rangeSq)
     const target = selectTarget(tower, inRange, map, field)
@@ -302,7 +310,11 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       case 'tesla': {
         let chain = def.chain!
         if (state.relics.includes('overcharge')) chain += 2
-        const chainRangeSq = TESLA_CHAIN_RANGE * TESLA_CHAIN_RANGE
+        if (state.relics.includes('echo_chamber')) chain += 1
+        const chainRange = state.relics.includes('echo_chamber')
+          ? Math.floor((TESLA_CHAIN_RANGE * 120) / 100)
+          : TESLA_CHAIN_RANGE
+        const chainRangeSq = chainRange * chainRange
         let current = target
         hit(current)
         while (hitIds.length < chain) {
@@ -325,7 +337,9 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       }
     }
 
-    tower.cooldown = def.cooldown
+    tower.cooldown = state.relics.includes('quickdraw')
+      ? Math.max(3, Math.floor((def.cooldown * QUICKDRAW_COOLDOWN_PCT) / 100))
+      : def.cooldown
     tower.shots += 1
     events.push({
       type: 'tower_fired',
@@ -537,14 +551,33 @@ export function densestEnemyCell(state: RunState, radius: number): CellPos | nul
   return best ? cellOf(best.pos) : null
 }
 
-// Draw distinct relics from the relic stream for an offer.
+// Draw distinct relics from the relic stream for an offer, weighted by
+// rarity: roll a rarity bucket (among those still available), then uniform
+// within it. Legendaries are events, not table stakes.
 export function drawRelicOffer(state: RunState, pool: string[], size: number): string[] {
   const remaining = [...pool]
   const offer: string[] = []
+  const rarities = ['common', 'rare', 'legendary'] as const
   while (offer.length < size && remaining.length > 0) {
-    const pick = nextInt(state.rng.relics, 0, remaining.length - 1)
+    const present = rarities.filter((r) => remaining.some((id) => RELICS[id as RelicId].rarity === r))
+    const total = present.reduce((sum, r) => sum + RELIC_RARITY_WEIGHTS[r], 0)
+    const roll = nextInt(state.rng.relics, 1, total)
+    state.rng.relics = roll.rng
+    let v = roll.value
+    let rarity = present[0]!
+    for (const r of present) {
+      v -= RELIC_RARITY_WEIGHTS[r]
+      if (v <= 0) {
+        rarity = r
+        break
+      }
+    }
+    const bucket = remaining.filter((id) => RELICS[id as RelicId].rarity === rarity)
+    const pick = nextInt(state.rng.relics, 0, bucket.length - 1)
     state.rng.relics = pick.rng
-    offer.push(remaining.splice(pick.value, 1)[0]!)
+    const chosen = bucket[pick.value]!
+    remaining.splice(remaining.indexOf(chosen), 1)
+    offer.push(chosen)
   }
   return offer
 }

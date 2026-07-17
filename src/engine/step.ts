@@ -8,6 +8,8 @@ import {
   enhanceCost,
   hpGrowthPct,
   RELIC_IDS,
+  DEEP_POCKETS_GOLD_PCT,
+  FIELD_MEDICINE_KNIT_HP,
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
   relicSkipGold,
@@ -223,6 +225,19 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       return
     }
 
+    case 'reroll_relic': {
+      if (s.relicOffer === null) return reject(command, 'no relic offer pending', events)
+      if (s.relicRerolled) return reject(command, 'offer already rerolled', events)
+      const cost = relicSkipGold(s.wave)
+      if (s.gold < cost) return reject(command, 'not enough gold', events)
+      s.gold -= cost
+      const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
+      s.relicOffer = drawRelicOffer(s, pool, Math.min(RELIC_OFFER_SIZE, pool.length)) as RelicId[]
+      s.relicRerolled = true
+      events.push({ type: 'relic_offered', options: [...s.relicOffer] })
+      return
+    }
+
     case 'choose_relic': {
       if (s.relicOffer === null) return reject(command, 'no relic offer pending', events)
       if (command.relic === null) {
@@ -349,8 +364,9 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
 function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (s.pendingSpawns.length > 0 || s.enemies.length > 0) return
   s.wavesCleared = s.wave
+  const clearBonus = s.relics.includes('deep_pockets') ? DEEP_POCKETS_GOLD_PCT : 0
   const goldAwarded = Math.floor(
-    ((WAVE_CLEAR_GOLD_BASE + s.wave * WAVE_CLEAR_GOLD_PER_WAVE) * (100 + s.mods.goldPct)) / 100,
+    ((WAVE_CLEAR_GOLD_BASE + s.wave * WAVE_CLEAR_GOLD_PER_WAVE) * (100 + s.mods.goldPct + clearBonus)) / 100,
   )
   s.gold += goldAwarded
   events.push({ type: 'wave_cleared', wave: s.wave, goldAwarded })
@@ -358,8 +374,9 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   // The spire knits itself a little after every survived wave — early
   // scratches are forgivable; late-game floods far outpace it.
   if (s.spireHp < s.spireMaxHp) {
-    s.spireHp = Math.min(s.spireMaxHp, s.spireHp + WAVE_CLEAR_KNIT_HP)
-    events.push({ type: 'spire_repaired', amount: WAVE_CLEAR_KNIT_HP, cost: 0, spireHp: s.spireHp })
+    const knit = WAVE_CLEAR_KNIT_HP + (s.relics.includes('field_medicine') ? FIELD_MEDICINE_KNIT_HP : 0)
+    s.spireHp = Math.min(s.spireMaxHp, s.spireHp + knit)
+    events.push({ type: 'spire_repaired', amount: knit, cost: 0, spireHp: s.spireHp })
   }
 
   // Mints pay out on every cleared wave.
@@ -403,6 +420,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     if (pool.length > 0) {
       const offer = drawRelicOffer(s, pool, Math.min(RELIC_OFFER_SIZE, pool.length)) as RelicId[]
       s.relicOffer = offer
+      s.relicRerolled = false
       events.push({ type: 'relic_offered', options: [...offer] })
     }
   }

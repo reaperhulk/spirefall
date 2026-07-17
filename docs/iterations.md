@@ -17,7 +17,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 8. UX: settings panel (volume, reduced motion) + shortcuts help overlay
 - [x] 9. Mobile: PWA manifest + offline service worker + install icons
 - [x] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
-- [ ] 11. Relic depth: rarity tiers, more relics, reroll option
+- [x] 11. Relic depth: rarity tiers, more relics, reroll option
 - [ ] 12. New tower type (7th) with unlock node + hotkey 7
 - [ ] 13. Save export/import codes
 - [ ] 14. Achievements with spark rewards
@@ -30,6 +30,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+8. **Relic depth** — rarity tiers (common 60 / rare 32 / legendary 8 weighted
+   draws), six new relics incl. two new mechanical axes (Quickdraw attack
+   speed, Longsight range) plus Field Medicine, Deep Pockets, Echo Chamber,
+   Colossus. One paid reroll per offer (costs the skip gold). Rarity-styled
+   cards. Envelope held unchanged with bots drafting the new pool.
 
 7. **Ascension (M6)** — victories bank cycleVictories; Ascend burns the Spire
    Tree + sparks + unlocks for Embers (1 + 1/victory). Ember Tree (Kindled

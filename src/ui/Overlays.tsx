@@ -8,11 +8,15 @@ import type { MetaUpgradeId } from '../data/metaTree'
 export function RelicModal({
   options,
   skipGold,
+  canReroll,
   onChoose,
+  onReroll,
 }: {
   options: RelicId[]
   skipGold: number
+  canReroll: boolean
   onChoose: (relic: RelicId | null) => void
+  onReroll: () => void
 }) {
   return (
     <div className="modal-backdrop" data-testid="relic-modal">
@@ -20,15 +24,32 @@ export function RelicModal({
         <h2>The ruins offer a relic</h2>
         <div className="relic-cards">
           {options.map((id) => (
-            <button key={id} className="relic-card" onClick={() => onChoose(id)} data-testid={`relic-${id}`}>
+            <button
+              key={id}
+              className={`relic-card rarity-${RELICS[id].rarity}`}
+              onClick={() => onChoose(id)}
+              data-testid={`relic-${id}`}
+            >
               <strong>{RELICS[id].name}</strong>
+              <em className="relic-rarity">{RELICS[id].rarity}</em>
               <span>{RELICS[id].description}</span>
             </button>
           ))}
         </div>
-        <button className="ghost-btn" data-testid="relic-skip" onClick={() => onChoose(null)}>
-          Take nothing (+⛀ {skipGold})
-        </button>
+        <div className="relic-actions">
+          <button className="ghost-btn" data-testid="relic-skip" onClick={() => onChoose(null)}>
+            Take nothing (+⛀ {skipGold})
+          </button>
+          <button
+            className="ghost-btn"
+            data-testid="relic-reroll"
+            disabled={!canReroll}
+            title={canReroll ? 'Redraw all three offers — once per offer' : 'Already rerolled, or not enough gold'}
+            onClick={onReroll}
+          >
+            Reroll (−⛀ {skipGold})
+          </button>
+        </div>
       </div>
     </div>
   )

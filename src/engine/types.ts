@@ -34,6 +34,12 @@ export type RelicId =
   | 'keen_sights'
   | 'executioners_seal'
   | 'fortune_idol'
+  | 'quickdraw'
+  | 'longsight'
+  | 'field_medicine'
+  | 'deep_pockets'
+  | 'echo_chamber'
+  | 'colossus'
 
 export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 
@@ -124,6 +130,7 @@ export interface RunState {
   goldRushTicks: number
   relics: RelicId[]
   relicOffer: RelicId[] | null
+  relicRerolled: boolean // one reroll per offer
   availableTowers: TowerType[]
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
@@ -144,6 +151,7 @@ export type Command =
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
+  | { type: 'reroll_relic' }
 
 export type GameEvent =
   | { type: 'wave_started'; wave: number; spawnCount: number; affix: AffixId | null }
