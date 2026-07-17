@@ -749,6 +749,7 @@ export default function App() {
         <GameCanvas
           session={session}
           ui={renderUi}
+          armed={shopSelection !== null || abilitySelection !== null}
           onCellClick={handleCellClick}
           onHover={(c) => {
             hoverRef.current = c

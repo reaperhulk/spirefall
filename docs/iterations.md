@@ -38,6 +38,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+59. *(post-marathon, playtest)* **Hold-to-aim placement loupe** — on phones
+    the board is CSS-downscaled to ~46% (a cell ≈ 16 screen px), so the
+    finger hides the exact cell it's placing on. With a tower or ability
+    armed, touching the board now starts an aim instead of placing: a
+    magnified loupe floats ~104 screen px above the finger showing the
+    placement ghost and a crosshair on the target cell, drag to fine-tune,
+    release to place at the loupe's cell. The loupe flips below the finger
+    near the top edge, sizes itself in screen pixels (finger-sized at any
+    CSS scale), and pointercancel aborts cleanly. Touch-action locks to
+    none only while armed so normal page scrolling is untouched; the
+    click the browser fires after a tap-release is consumed exactly once
+    with a deadline (a bare flag would swallow the next genuine tap after
+    long drags, which fire no click). Quick taps still place instantly.
+    E2e: a drag places at the RELEASE cell, nothing places mid-hold, and
+    the armed canvas reports touch-action none. 27 e2e specs.
+
 58. *(post-marathon, playtest)* **The Codex** — an in-game reference with
     three tabs: Enemies (stats, traits, unlock waves, color swatches),
     Towers (full tier tables + niche notes), and Mechanics (armor math,

@@ -18,7 +18,7 @@ declare global {
         phase: string
         wave: number
         gold: number
-        towers: { id: number; tier: number }[]
+        towers: { id: number; tier: number; cell: { cx: number; cy: number } }[]
         enemies: unknown[]
         relicOffer: unknown[] | null
       }
@@ -333,6 +333,51 @@ test.describe('touch', () => {
     await tapCell(page, 10, 9)
     await expect(page.getByTestId('tower-panel')).not.toBeVisible()
     await expect(page.getByTestId('tower-tooltip')).not.toBeVisible()
+    expect(errors).toEqual([])
+  })
+
+  test('hold-to-aim: a touch drag shows the loupe and places at the RELEASE cell', async ({ page }) => {
+    const errors = await boot(page, 'e2e-wave')
+    await page.locator('.hint-close').tap()
+    await page.getByTestId('shop-arrow').tap()
+
+    // While armed, touch drags must aim — not scroll the page.
+    await expect(page.getByTestId('playfield')).toHaveCSS('touch-action', 'none')
+
+    const firePointer = async (type: string, cx: number, cy: number) => {
+      const p = await cellPoint(page, cx, cy)
+      await page.evaluate(
+        ([t, x, y]) => {
+          document.querySelector('[data-testid="playfield"]')!.dispatchEvent(
+            new PointerEvent(t as string, {
+              bubbles: true,
+              pointerId: 1,
+              pointerType: 'touch',
+              isPrimary: true,
+              clientX: x as number,
+              clientY: y as number,
+            }),
+          )
+        },
+        [type, p.x, p.y] as const,
+      )
+    }
+
+    // Finger down on one cell, drag to another: nothing places mid-hold.
+    await firePointer('pointerdown', 4, 5)
+    await firePointer('pointermove', 5, 7)
+    await page.waitForTimeout(150)
+    expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(0)
+
+    // Release: the tower lands on the cell under the loupe — the release
+    // cell, not the touch-down cell.
+    await firePointer('pointerup', 5, 7)
+    await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+    const cell = await page.evaluate(() => window.__harness.getState().towers[0]!.cell)
+    expect(cell).toEqual({ cx: 5, cy: 7 })
+
+    // Disarmed again after checking: quick taps (down+up in place) still
+    // place instantly — the existing touch spec covers that path.
     expect(errors).toEqual([])
   })
 })

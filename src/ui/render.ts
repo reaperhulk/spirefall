@@ -1,4 +1,5 @@
 import { ABILITIES, ENEMIES, towerTier } from '../data/content'
+import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, getMap, pathFrom } from '../engine/grid'
@@ -1578,4 +1579,98 @@ function drawPlacementGhost(
     ctx.fill()
     ctx.stroke()
   }
+}
+
+// ---------------------------------------------------------------------------
+// Touch placement reticle: on phones the board is CSS-downscaled far below
+// its logical size (a cell can be ~16 screen px), so the finger hides the
+// exact cell it's aiming at. While a touch drag is aiming a placement, a
+// magnified loupe of the area around the target cell floats above the
+// finger — see exactly where the ghost sits BEFORE letting go.
+
+export interface TouchAim {
+  x: number // logical canvas px
+  y: number
+  cell: CellPos
+  screenScale: number // on-screen px per logical px (CSS downscale factor)
+}
+
+let loupeCanvas: HTMLCanvasElement | null = null
+
+export function drawTouchReticle(
+  ctx: CanvasRenderingContext2D,
+  source: HTMLCanvasElement,
+  aim: TouchAim,
+  dpr: number,
+): void {
+  const scale = Math.max(0.05, aim.screenScale)
+  const mapW = MAP_WIDTH * CELL_PX
+  const mapH = MAP_HEIGHT * CELL_PX
+  // All sizes are chosen in SCREEN px, then converted to logical px so the
+  // loupe is finger-sized regardless of how far CSS shrank the canvas.
+  const r = 64 / scale // loupe radius
+  const zoom = Math.max(1.4, 46 / (CELL_PX * scale)) // target cell ≈ 46 screen px
+  const lift = 104 / scale // how far above the finger the loupe floats
+
+  // Loupe centre: above the finger, flipped below when clipped by the top.
+  let ly = aim.y - lift
+  if (ly - r < 2) ly = aim.y + lift
+  const lx = Math.min(mapW - r - 2, Math.max(r + 2, aim.x))
+  ly = Math.min(mapH - r - 2, Math.max(r + 2, ly))
+
+  // Copy the source region around the TARGET CELL centre (not the finger) —
+  // that is the thing being aimed. Clamped to the canvas so edge cells work.
+  const cellCx = (aim.cell.cx + 0.5) * CELL_PX
+  const cellCy = (aim.cell.cy + 0.5) * CELL_PX
+  const srcSize = (2 * r) / zoom
+  const srcX = Math.min(mapW - srcSize, Math.max(0, cellCx - srcSize / 2))
+  const srcY = Math.min(mapH - srcSize, Math.max(0, cellCy - srcSize / 2))
+
+  if (!loupeCanvas) loupeCanvas = document.createElement('canvas')
+  const off = loupeCanvas
+  const offPx = Math.max(1, Math.round(srcSize * dpr))
+  if (off.width !== offPx) {
+    off.width = offPx
+    off.height = offPx
+  }
+  const offCtx = off.getContext('2d')!
+  offCtx.clearRect(0, 0, off.width, off.height)
+  offCtx.drawImage(source, srcX * dpr, srcY * dpr, srcSize * dpr, srcSize * dpr, 0, 0, off.width, off.height)
+
+  ctx.save()
+  // Backplate shadow so the loupe reads as floating above the board.
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)'
+  ctx.shadowBlur = 18 / scale
+  ctx.fillStyle = '#10151f'
+  ctx.beginPath()
+  ctx.arc(lx, ly, r + 3 / scale, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.shadowBlur = 0
+
+  ctx.beginPath()
+  ctx.arc(lx, ly, r, 0, Math.PI * 2)
+  ctx.clip()
+  ctx.drawImage(off, lx - r, ly - r, 2 * r, 2 * r)
+
+  // Crosshair: outline the target cell inside the magnified view.
+  const cellPx = CELL_PX * zoom
+  const cx = lx + (cellCx - (srcX + srcSize / 2)) * zoom
+  const cy = ly + (cellCy - (srcY + srcSize / 2)) * zoom
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)'
+  ctx.lineWidth = 2 / scale
+  ctx.strokeRect(cx - cellPx / 2, cy - cellPx / 2, cellPx, cellPx)
+  ctx.restore()
+
+  // Ring + stem back to the finger so the offset reads as intentional.
+  ctx.strokeStyle = 'rgba(122, 162, 247, 0.95)'
+  ctx.lineWidth = 2.5 / scale
+  ctx.beginPath()
+  ctx.arc(lx, ly, r, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.globalAlpha = 0.5
+  ctx.beginPath()
+  ctx.moveTo(lx, ly + (ly < aim.y ? r : -r))
+  ctx.lineTo(aim.x, aim.y)
+  ctx.stroke()
+  ctx.globalAlpha = 1
 }
