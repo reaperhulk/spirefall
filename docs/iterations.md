@@ -15,7 +15,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 6. Graphics: real projectiles (cannon shells, sniper tracers), muzzle flash
 - [ ] 7. Graphics: terrain texture, path styling, spire/gate glow-up
 - [x] 8. UX: settings panel (volume, reduced motion) + shortcuts help overlay
-- [ ] 9. Mobile: PWA manifest + offline service worker + install icons
+- [x] 9. Mobile: PWA manifest + offline service worker + install icons
 - [ ] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
 - [ ] 11. Relic depth: rarity tiers, more relics, reroll option
 - [ ] 12. New tower type (7th) with unlock node + hotkey 7
@@ -30,6 +30,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+6. **PWA** — web app manifest (standalone, dark theme, 192/512 icons from the
+   logo), offline service worker (network-first navigations so new builds
+   land, cache-first for fingerprinted assets), registered in prod builds
+   only. E2e verifies manifest/icons/sw are served and coherent.
 
 5. **Settings & shortcuts** — ⚙/? opens a modal with an SFX volume slider,
    a reduced-motion toggle (kills screen shake + full-screen flashes), and

@@ -367,3 +367,19 @@ test('settings: volume and reduced motion persist across reloads', async ({ page
   await expect(page.getByTestId('reduced-motion')).toBeChecked()
   expect(errors).toEqual([])
 })
+
+test('PWA surface: manifest and service worker are served and coherent', async ({ page, request }) => {
+  await page.goto('/')
+  const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href')
+  expect(manifestHref).toBe('./manifest.webmanifest')
+  const manifest = await request.get('/manifest.webmanifest')
+  expect(manifest.ok()).toBe(true)
+  const data = await manifest.json()
+  expect(data.name).toBe('Spirefall')
+  for (const icon of data.icons) {
+    const res = await request.get(`/${icon.src.replace('./', '')}`)
+    expect(res.ok(), icon.src).toBe(true)
+  }
+  const sw = await request.get('/sw.js')
+  expect(sw.ok()).toBe(true)
+})
