@@ -454,7 +454,14 @@ export default function App() {
           </span>
         )}
         <div className="hud-spire" title={`Spire ${state.spireHp}/${state.spireMaxHp}`}>
-          <div className="hp-bar">
+          <div
+            className="hp-bar"
+            role="progressbar"
+            aria-label="Spire health"
+            aria-valuenow={state.spireHp}
+            aria-valuemin={0}
+            aria-valuemax={state.spireMaxHp}
+          >
             <div className="hp-fill" style={{ width: `${hpPct}%` }} />
           </div>
           <span data-testid="spire-hp">
@@ -487,16 +494,20 @@ export default function App() {
           <button
             className="ghost-btn"
             data-testid="mute"
+            aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+            aria-pressed={muted}
             title={`${muted ? 'Unmute' : 'Mute'} sound (M)`}
             onClick={() => setMuted(sfx.toggleMute())}
           >
             {muted ? '🔇' : '🔊'}
           </button>
-          <div className="speed-controls" title="Keys − and = step speed down/up">
+          <div className="speed-controls" role="group" aria-label="Game speed" title="Keys − and = step speed down/up">
             {SPEEDS.map((n) => (
               <button
                 key={n}
                 className={session.speed === n ? 'active' : ''}
+                aria-label={n === 0 ? 'Pause' : `Speed ${n}×`}
+                aria-pressed={session.speed === n}
                 onClick={() => {
                   session.setSpeed(n)
                 }}
@@ -508,6 +519,7 @@ export default function App() {
           <button
             className="ghost-btn"
             data-testid="daily-run"
+            aria-label="Play today's daily run"
             title={
               dailyBest
                 ? `Today's shared seed — your best: wave ${dailyBest.waves}`
@@ -527,6 +539,7 @@ export default function App() {
             className="ghost-btn"
             onClick={() => setShowSettings(true)}
             data-testid="open-settings"
+            aria-label="Settings and shortcuts"
             title="Settings & shortcuts (?)"
           >
             ⚙
@@ -558,6 +571,8 @@ export default function App() {
           <button
             className={`ghost-btn${autoStart ? ' auto-on' : ''}`}
             data-testid="auto-start"
+            aria-label="Auto-advance waves"
+            aria-pressed={autoStart}
             title={autoStart ? 'Auto-advance is ON — waves send themselves' : 'Auto-advance waves'}
             onClick={() => setUiSettings({ ...updateSettings({ autoStart: !autoStart }) })}
           >
@@ -827,7 +842,7 @@ export default function App() {
 
       {victoryPrompt && !summary && (
         <div className="modal-backdrop" data-testid="victory-prompt">
-          <div className="modal">
+          <div className="modal" role="dialog" aria-modal="true" aria-label="Victory">
             <h2>THE CYCLE BREAKS</h2>
             <p className="run-summary">Wave {VICTORY_WAVE} cleared — the Spire stands where every cycle before it fell.</p>
             <p className="run-flavor">

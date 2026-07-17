@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+35. **Accessibility pass** — every icon-only control gains an accessible
+    name (mute, speed group, daily, settings, auto-advance — with
+    aria-pressed state where it's a toggle), the spire bar is a real
+    progressbar, the canvas describes itself, and all five modals are
+    proper aria-modal dialogs.
+
 34. **Color assist** — a High-visibility colors setting swaps the enemy
     palette for an Okabe–Ito-derived colorblind-safe set (hues that separate
     under deuteranopia/protanopia, lightness steps for the rest). Live

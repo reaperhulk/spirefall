@@ -62,6 +62,8 @@ export function GameCanvas({ session, ui, onCellClick, onHover }: Props) {
       ref={canvasRef}
       className="playfield"
       data-testid="playfield"
+      role="img"
+      aria-label="Battlefield — pick a tower, then click a free cell beside the path to build"
       style={{ width: '100%', maxWidth: MAP_WIDTH * CELL_PX, aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}
       onClick={(e) => onCellClick(cellFromEvent(e))}
       onMouseMove={(e) => onHover(cellFromEvent(e))}

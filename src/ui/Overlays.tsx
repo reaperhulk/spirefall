@@ -24,7 +24,7 @@ export function RelicModal({
 }) {
   return (
     <div className="modal-backdrop" data-testid="relic-modal">
-      <div className="modal">
+      <div className="modal" role="dialog" aria-modal="true" aria-label="Relic offer">
         <h2>The ruins offer a relic</h2>
         <div className="relic-cards">
           {options.map((id) => (
@@ -222,7 +222,7 @@ export function RunOverOverlay({
   const [replayText, setReplayText] = useState<string | null>(null)
   return (
     <div className="modal-backdrop" data-testid="run-over">
-      <div className="modal run-over">
+      <div className="modal run-over" role="dialog" aria-modal="true" aria-label="Run over">
         <h2>{victory ? 'THE SPIRE STANDS' : 'THE SPIRE FALLS'}</h2>
         <p className="run-summary">
           {summary.wavesCleared} waves cleared · {summary.kills} kills ·{' '}
@@ -371,7 +371,14 @@ export function SettingsModal({
   const [importFailed, setImportFailed] = useState(false)
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} data-testid="settings-modal">
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        data-testid="settings-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Settings"
+      >
         <h2>Settings</h2>
         <label className="settings-row">
           Sound volume
@@ -522,7 +529,7 @@ export function SpireTreeModal({
 }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Spire Tree">
         <h2>The Spire Tree — ✦ {meta.sparks}</h2>
         <p className="run-flavor">Permanent upgrades. New purchases take effect on your next run.</p>
         <SpireTree meta={meta} onBuy={onBuy} />
