@@ -7,6 +7,7 @@ import {
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   relicSkipGold,
+  REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
   repairCostPerHp,
   SELL_REFUND_PCT,
@@ -387,6 +388,7 @@ export default function App() {
   // Repair is a gold trade, not a freebie — surface exactly what a click buys.
   const repairPerHp = repairCostPerHp(state.wave)
   const repairHp = Math.min(REPAIR_MAX_PER_CAST, state.spireMaxHp - state.spireHp, Math.floor(state.gold / repairPerHp))
+  const repairsExhausted = state.phase === 'wave' && state.repairsThisWave >= REPAIR_CASTS_PER_WAVE
 
   // Scouting report: deterministic preview of what start_wave will field.
   const preview = state.phase === 'build' && !summary ? previewNextWave(state) : null
@@ -471,11 +473,19 @@ export default function App() {
             <button
               className="ghost-btn"
               data-testid="repair-spire"
-              disabled={repairHp <= 0}
-              title={`Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs with each wave (R)`}
+              disabled={repairHp <= 0 || repairsExhausted}
+              title={
+                repairsExhausted
+                  ? `Repair crews are spent — ${REPAIR_CASTS_PER_WAVE} casts per wave under fire. They recover when the wave clears.`
+                  : `Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs each wave; max ${REPAIR_CASTS_PER_WAVE} casts while a wave is live (R)`
+              }
               onClick={() => session.dispatch({ type: 'repair_spire' })}
             >
-              {repairHp > 0 ? `Repair +${repairHp} (⛀ ${repairHp * repairPerHp})` : `Repair (⛀ ${repairPerHp}/HP)`}
+              {repairsExhausted
+                ? 'Repair crews spent'
+                : repairHp > 0
+                  ? `Repair +${repairHp} (⛀ ${repairHp * repairPerHp})`
+                  : `Repair (⛀ ${repairPerHp}/HP)`}
             </button>
           )}
         </div>

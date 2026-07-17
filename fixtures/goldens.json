@@ -5,7 +5,7 @@
     "kills": 0,
     "outcome": "defeat",
     "sparks": 0,
-    "stateHash": "770f6de0"
+    "stateHash": "1e583649"
   },
   "greedy-fresh": {
     "ticks": 2227,
@@ -13,7 +13,7 @@
     "kills": 122,
     "outcome": "defeat",
     "sparks": 70,
-    "stateHash": "dbe5b7cd"
+    "stateHash": "1a0c7282"
   },
   "balanced-fresh": {
     "ticks": 7991,
@@ -21,7 +21,7 @@
     "kills": 828,
     "outcome": "defeat",
     "sparks": 264,
-    "stateHash": "2e29b75d"
+    "stateHash": "2312f74e"
   },
   "balanced-rich": {
     "ticks": 7741,
@@ -29,6 +29,6 @@
     "kills": 774,
     "outcome": "defeat",
     "sparks": 259,
-    "stateHash": "b767e61f"
+    "stateHash": "fae387f7"
   }
 }

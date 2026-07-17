@@ -31,6 +31,17 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+36. **Deep fuzz → repair economy fix** — a 1600-run hunt found a real break:
+    all-offense accounts (Honed Arsenal first, zero spire HP) winning at 5k
+    sparks by converting kill gold into unlimited mid-wave repairs. Ablation
+    isolated the crutch (same build dies at wave 20 without mid-wave
+    repairs; Honed cost nerfs failed AND bent the intended curve). Fix:
+    repair crews cast once per live wave (build phase unlimited). The
+    breaking family now loses at 5k/8k on every seed while every anchor
+    holds exactly (60k 3/4 wins, 20k alpha victory, career-18 first win at
+    13, career-6 winless). Exploit genome pinned as a regression test;
+    goldens hash-only.
+
 35. **Accessibility pass** — every icon-only control gains an accessible
     name (mute, speed group, daily, settings, auto-advance — with
     aria-pressed state where it's a toggle), the spire bar is a real

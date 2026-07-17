@@ -335,6 +335,11 @@ export const WAVE_CLEAR_GOLD_PER_WAVE = 6
 export const STARTING_GOLD = 200
 export const STARTING_SPIRE_HP = 10
 export const REPAIR_MAX_PER_CAST = 3
+// Mid-wave repairs are an emergency patch, not an HP engine: the build fuzzer
+// found an all-offense account that tanked waves 20–24 on a 10-HP spire by
+// converting kill gold straight into repairs under fire. Between waves the
+// crews work freely; during a wave they manage this many casts.
+export const REPAIR_CASTS_PER_WAVE = 1
 export const WAVE_CLEAR_KNIT_HP = 1 // the spire knits itself after every cleared wave
 
 // Repair gets pricier as waves escalate — sustain is a tool, not an

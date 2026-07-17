@@ -1,3 +1,4 @@
+import { REPAIR_CASTS_PER_WAVE } from '../data/content'
 import { getMap, cellIndex, inBounds, sameCell } from './grid'
 import type { Rng } from './rng'
 import type { RunState } from './types'
@@ -125,6 +126,10 @@ export function assertInvariants(state: RunState): void {
   for (const hp of state.hpByWave) {
     check(Number.isInteger(hp) && hp >= 0, `hpByWave bad sample ${hp}`)
   }
+  check(
+    Number.isInteger(state.repairsThisWave) && state.repairsThisWave >= 0 && state.repairsThisWave <= REPAIR_CASTS_PER_WAVE,
+    `repairsThisWave out of range: ${state.repairsThisWave}`,
+  )
 
   check(new Set(state.relics).size === state.relics.length, 'duplicate relics')
   if (state.relicOffer !== null) {

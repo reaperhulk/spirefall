@@ -236,6 +236,40 @@ describe('gold sinks', () => {
     expect(broke.events[0]).toMatchObject({ type: 'command_rejected', reason: 'not enough gold' })
   })
 
+  it('mid-wave repairs are capped per wave; build-phase repairs are not', () => {
+    // Under fire: the second cast in the same wave is refused — gold must
+    // not tank a live wave (the build fuzzer won at 5k sparks this way).
+    // A far-future pending spawn keeps the wave live through the casts.
+    const underFire = {
+      ...freshRun(),
+      phase: 'wave' as const,
+      spireHp: 1,
+      spireMaxHp: 10,
+      gold: 10_000,
+      pendingSpawns: [{ type: 'runner' as const, tick: 9_999_999 }],
+    }
+    const first = step(underFire, [{ type: 'repair_spire' }])
+    expect(first.state.spireHp).toBe(4)
+    expect(first.state.repairsThisWave).toBe(1)
+    const second = step(first.state, [{ type: 'repair_spire' }])
+    expect(second.events[0]).toMatchObject({ type: 'command_rejected', reason: expect.stringContaining('repair crews') })
+    expect(second.state.spireHp).toBe(4)
+
+    // The next wave brings fresh crews.
+    const nextWave = step({ ...cloneRun(second.state), phase: 'build' as const }, [{ type: 'start_wave' }]).state
+    expect(nextWave.repairsThisWave).toBe(0)
+    const again = step(nextWave, [{ type: 'repair_spire' }])
+    expect(again.state.spireHp).toBe(7)
+
+    // Between waves the crews work freely — three casts in a row all land.
+    let calm = { ...freshRun(), spireHp: 1, spireMaxHp: 10, gold: 10_000 }
+    for (const expected of [4, 7, 10]) {
+      calm = step(calm, [{ type: 'repair_spire' }]).state
+      expect(calm.spireHp).toBe(expected)
+    }
+    expect(calm.repairsThisWave).toBe(0)
+  })
+
   it('towers record kills and damage dealt', () => {
     const state = { ...freshRun(), gold: 10_000 }
     let s = state

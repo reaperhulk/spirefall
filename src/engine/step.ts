@@ -13,6 +13,7 @@ import {
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
   relicSkipGold,
+  REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
   repairCostPerHp,
   SELL_REFUND_PCT,
@@ -121,6 +122,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.activeAffix = generated.affix
       s.pendingSpawns = generated.spawns.map((p) => ({ type: p.type, tick: s.tick + p.tick }))
       s.phase = 'wave'
+      s.repairsThisWave = 0
       events.push({ type: 'wave_started', wave, spawnCount: s.pendingSpawns.length, affix: generated.affix })
       return
     }
@@ -191,6 +193,11 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     }
 
     case 'repair_spire': {
+      // Under fire the crews manage only a couple of patches — gold cannot
+      // tank a wave. Between waves they work freely.
+      if (s.phase === 'wave' && s.repairsThisWave >= REPAIR_CASTS_PER_WAVE) {
+        return reject(command, 'repair crews exhausted until the wave clears', events)
+      }
       const missing = s.spireMaxHp - s.spireHp
       const perHp = repairCostPerHp(s.wave)
       const affordable = Math.floor(s.gold / perHp)
@@ -201,6 +208,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       const cost = amount * perHp
       s.gold -= cost
       s.spireHp += amount
+      if (s.phase === 'wave') s.repairsThisWave += 1
       events.push({ type: 'spire_repaired', amount, cost, spireHp: s.spireHp })
       return
     }

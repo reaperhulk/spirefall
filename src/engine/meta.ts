@@ -198,6 +198,7 @@ export function createRun(meta: MetaState, seed: string, mapId?: number): RunSta
     cataclysms: [],
     damageByTower: {},
     hpByWave: [],
+    repairsThisWave: 0,
     killsByEnemy: {},
     victoryClaimed: false,
     mods: {
