@@ -630,7 +630,7 @@ describe('relic depth', () => {
   })
 
   it('weighted offers only ever contain unowned relics, no duplicates', () => {
-    let s = cloneRun(freshRun('weighted'))
+    const s = cloneRun(freshRun('weighted'))
     s.relics = ['colossus', 'glass_cannon'] // both legendaries owned
     const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
     const offer = drawRelicOffer(s, pool, 3)
