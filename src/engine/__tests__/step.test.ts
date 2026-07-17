@@ -251,6 +251,8 @@ describe('gold sinks', () => {
     const towerDamage = s.towers.reduce((sum, t) => sum + t.damageDealt, 0)
     expect(towerKills).toBe(s.kills) // every kill is attributed to a tower
     expect(towerDamage).toBeGreaterThan(0)
+    // The health timeline sampled the clear: one entry, the current HP.
+    if (s.phase === 'build') expect(s.hpByWave).toEqual([s.spireHp])
   })
 })
 

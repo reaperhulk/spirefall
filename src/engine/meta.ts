@@ -197,6 +197,7 @@ export function createRun(meta: MetaState, seed: string, mapId?: number): RunSta
     activeAffix: null,
     cataclysms: [],
     damageByTower: {},
+    hpByWave: [],
     killsByEnemy: {},
     victoryClaimed: false,
     mods: {
@@ -230,6 +231,7 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     sparks: run.sparksEarned + bounty,
     damageByTower: { ...run.damageByTower },
     killsByEnemy: { ...run.killsByEnemy },
+    hpByWave: [...run.hpByWave],
     unlocked,
   }
   const won = run.phase === 'victory' ? 1 : 0

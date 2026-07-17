@@ -118,6 +118,13 @@ export function assertInvariants(state: RunState): void {
   for (const [tw, dmg] of Object.entries(state.damageByTower)) {
     check(Number.isInteger(dmg) && dmg >= 0, `damageByTower.${tw} bad total ${dmg}`)
   }
+  check(
+    state.hpByWave.length <= Math.max(0, state.wavesCleared - state.startWave),
+    `hpByWave has ${state.hpByWave.length} samples for ${state.wavesCleared - state.startWave} cleared waves`,
+  )
+  for (const hp of state.hpByWave) {
+    check(Number.isInteger(hp) && hp >= 0, `hpByWave bad sample ${hp}`)
+  }
 
   check(new Set(state.relics).size === state.relics.length, 'duplicate relics')
   if (state.relicOffer !== null) {

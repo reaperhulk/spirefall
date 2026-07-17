@@ -244,6 +244,7 @@ export function RunOverOverlay({
             ))}
           </div>
         )}
+        {summary.hpByWave.length >= 2 && <HpSparkline hp={summary.hpByWave} />}
         <div className="run-analytics" data-testid="run-analytics">
           <ShareBars
             title="Damage by tower"
@@ -301,6 +302,30 @@ export function RunOverOverlay({
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// The run's health timeline: one sample per cleared wave. Dips show exactly
+// which waves drew blood; the knit heal shows as slow recovery.
+function HpSparkline({ hp }: { hp: number[] }) {
+  const w = 240
+  const h = 44
+  const max = Math.max(...hp, 1)
+  const x = (i: number) => (i / (hp.length - 1)) * (w - 4) + 2
+  const y = (v: number) => h - 3 - (v / max) * (h - 8)
+  const line = hp.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
+  const last = hp[hp.length - 1]!
+  return (
+    <div className="hp-spark" data-testid="hp-sparkline" title="Spire HP after each cleared wave">
+      <h4>Spire HP by wave</h4>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label="Spire HP over the run">
+        <path d={`${line} L${x(hp.length - 1).toFixed(1)},${h} L${x(0).toFixed(1)},${h} Z`} fill="rgba(158, 206, 106, 0.14)" />
+        <path d={line} fill="none" stroke={last <= max / 3 ? '#f7768e' : '#9ece6a'} strokeWidth="2" />
+      </svg>
+      <span className="hp-spark-ends">
+        {hp[0]} → {last} HP
+      </span>
     </div>
   )
 }

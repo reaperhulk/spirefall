@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+32. **HP timeline** — the engine samples spire HP at every wave clear
+    (`hpByWave`, invariant-checked, save-migrated), and the run-over screen
+    draws it as a sparkline: dips show exactly which waves drew blood, red
+    line when the run ended below a third. Goldens re-pinned — hash-only
+    diff, ticks/waves/kills/sparks all byte-identical.
+
 31. **Map themes** — each battlefield now wears its own terrain palette
     (Greenfield moss, Channels cold slate, Bulwark grey masonry, Serpent
     desert sand, Crossroads ashen violet): background, checker, path, grid,

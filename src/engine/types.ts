@@ -143,6 +143,7 @@ export interface RunState {
   cataclysms: CataclysmId[] // permanent endless modifiers, in strike order
   damageByTower: Partial<Record<TowerType, number>> // run-lifetime, survives sales
   killsByEnemy: Partial<Record<EnemyType, number>> // run-lifetime tally
+  hpByWave: number[] // spire HP sampled at each wave clear, in clear order
   victoryClaimed: boolean // wave VICTORY_WAVE cleared; endless continues after
   sparksEarned: number // set once, at run end
 }
@@ -193,6 +194,7 @@ export interface RunSummary {
   sparks: number
   damageByTower: Partial<Record<TowerType, number>>
   killsByEnemy: Partial<Record<EnemyType, number>>
+  hpByWave: number[]
   unlocked: { id: string; name: string; sparks: number }[] // achievements earned by THIS run
 }
 

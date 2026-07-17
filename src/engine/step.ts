@@ -413,6 +413,11 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     events.push({ type: 'spire_repaired', amount: knit, cost: 0, spireHp: s.spireHp })
   }
 
+  // The run's health timeline: HP entering the next build phase, one sample
+  // per cleared wave. The run-over screen draws it to show where blood was
+  // spilled.
+  s.hpByWave.push(s.spireHp)
+
   // Mints pay out on every cleared wave.
   const mintBonus = s.relics.includes('mint_condition') ? 50 : 0
   for (const t of s.towers) {

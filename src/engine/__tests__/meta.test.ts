@@ -148,6 +148,7 @@ describe('settleRun', () => {
       sparks: 85 + 25, // +25: the First Blood achievement bounty
       damageByTower: { arrow: 900 },
       killsByEnemy: { runner: 40 },
+      hpByWave: [],
       unlocked: [{ id: 'first_blood', name: 'First Blood', sparks: 25 }],
     })
     expect(meta.sparks).toBe(110)
