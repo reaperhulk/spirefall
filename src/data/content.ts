@@ -207,6 +207,9 @@ export function relicSkipGold(wave: number): number {
 // come from the run's combat RNG stream — deterministic per seed, never
 // Math.random.
 
+export const PIERCING_ARROWS_PCT = 40 // relic: arrow damage bonus
+export const GLASS_CANNON_PCT = 30 // relic: all-tower damage bonus
+
 export const CRIT_BASE_DAMAGE_PCT = 200 // a crit deals this % of normal damage
 export const CRIT_RELIC_CHANCE_PCT = 10 // keen_sights
 export const CRIT_RELIC_DAMAGE_PCT = 100 // executioners_seal: added to the multiplier

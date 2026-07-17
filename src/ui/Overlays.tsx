@@ -1,5 +1,5 @@
 import { RELICS } from '../data/content'
-import { META_TREE } from '../data/metaTree'
+import { META_TREE, metaNodeEffect } from '../data/metaTree'
 import { metaLevel, metaUpgradeCost } from '../engine/meta'
 import type { MetaState, RelicId, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
@@ -41,11 +41,24 @@ export function SpireTree({ meta, onBuy }: { meta: MetaState; onBuy: (id: MetaUp
         const cost = metaUpgradeCost(meta, node.id)
         const maxed = cost === null
         const affordable = cost !== null && meta.sparks >= cost
+        const now = metaNodeEffect(node.id, level)
+        const next = maxed ? null : metaNodeEffect(node.id, level + 1)
         return (
           <div key={node.id} className={`tree-node${maxed ? ' maxed' : ''}`}>
             <div className="tree-node-info">
               <strong>{node.name}</strong>
               <span>{node.description}</span>
+              {now && (
+                <span className="tree-effect" data-testid={`effect-${node.id}`}>
+                  Now: {now}
+                  {next && (
+                    <>
+                      {' '}
+                      → <em>next: {next}</em>
+                    </>
+                  )}
+                </span>
+              )}
               <span className="tree-level">
                 Level {level}/{node.maxLevel}
               </span>

@@ -5,6 +5,7 @@ import {
   META_TOWER_DAMAGE_PCT_PER_LEVEL,
   META_TREE,
   metaNode,
+  metaNodeEffect,
 } from '../../data/metaTree'
 import { STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
 import { buyMetaUpgrade, createMeta, createRun, metaUpgradeCost, settleRun } from '../meta'
@@ -86,6 +87,15 @@ describe('createRun applies meta', () => {
     // Sparks only pay for waves cleared THIS run — a skip-then-abandon pays 0.
     expect(computeSparks({ ...run, wavesCleared: 2, kills: 0 })).toBe(0)
     expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(10 * 15)
+  })
+
+  it('metaNodeEffect reports the cumulative value at any level', () => {
+    expect(metaNodeEffect('spire_hp', 3)).toBe('+6 max HP')
+    expect(metaNodeEffect('tower_damage', 5)).toBe('+40% damage')
+    expect(metaNodeEffect('crit_chance', 4)).toBe('8% crit chance')
+    expect(metaNodeEffect('starting_gold', 2)).toBe('+60 starting gold')
+    expect(metaNodeEffect('wave_skip', 2)).toBe('start at wave 5')
+    expect(metaNodeEffect('unlock_tesla', 1)).toBeNull() // binary unlocks have no running total
   })
 
   it('the same meta and seed always create the identical run', () => {

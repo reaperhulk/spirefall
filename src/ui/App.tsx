@@ -14,7 +14,7 @@ import {
   towerTier,
   VICTORY_WAVE,
 } from '../data/content'
-import { effectiveCritChancePct, effectiveCritDamagePct, effectiveDamagePct } from '../engine/combat'
+import { damageBreakdown, effectiveCritChancePct, effectiveCritDamagePct } from '../engine/combat'
 import { buyMetaUpgrade, createMeta, createRun, settleRun } from '../engine/meta'
 import { previewNextWave } from '../engine/step'
 import { sameCell } from '../engine/grid'
@@ -33,6 +33,7 @@ function newSeed(runs: number): string {
 }
 
 const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint']
+const SPEEDS = [0, 1, 2, 3, 5, 10]
 
 // One-line combat role, shown in tooltips and the tower panel.
 function towerRole(type: TowerType): string {
@@ -66,12 +67,16 @@ export default function App() {
 
   const metaRef = useRef(meta)
   const sessionRef = useRef(session)
+  const selectedTowerIdRef = useRef(selectedTowerId)
   useEffect(() => {
     metaRef.current = meta
   }, [meta])
   useEffect(() => {
     sessionRef.current = session
   }, [session])
+  useEffect(() => {
+    selectedTowerIdRef.current = selectedTowerId
+  }, [selectedTowerId])
 
   useSyncExternalStore(session.subscribe, session.getVersion)
   const state = session.state
@@ -164,6 +169,10 @@ export default function App() {
   // Keyboard shortcuts.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Never hijack typing/selects (e.g. the targeting dropdown).
+      const t = e.target
+      if (t instanceof HTMLSelectElement || t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
       if (e.key === ' ') {
         e.preventDefault()
         if (summary) beginNextRun()
@@ -175,6 +184,37 @@ export default function App() {
         setAbilitySelection(null)
         setSelectedTowerId(null)
         setShowTree(false)
+        return
+      }
+      const key = e.key.toLowerCase()
+      if (key === 'u' || key === 'x') {
+        // Upgrade / sell the selected tower.
+        const id = selectedTowerIdRef.current
+        if (id !== null) {
+          if (key === 'u') sessionRef.current.dispatch({ type: 'upgrade_tower', id })
+          else {
+            sessionRef.current.dispatch({ type: 'sell_tower', id })
+            setSelectedTowerId(null)
+          }
+        }
+        return
+      }
+      if (key === 'r') {
+        sessionRef.current.dispatch({ type: 'repair_spire' })
+        return
+      }
+      if (key === 't') {
+        setShowTree((v) => !v)
+        return
+      }
+      if (key === 'm') {
+        setMuted(sfx.toggleMute())
+        return
+      }
+      if (e.key === '-' || e.key === '=' || e.key === '+') {
+        const idx = Math.max(0, SPEEDS.indexOf(sessionRef.current.speed))
+        const next = e.key === '-' ? Math.max(0, idx - 1) : Math.min(SPEEDS.length - 1, idx + 1)
+        sessionRef.current.setSpeed(SPEEDS[next]!)
         return
       }
       const towerIdx = ['1', '2', '3', '4', '5', '6'].indexOf(e.key)
@@ -201,8 +241,8 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-     
-  }, [summary])
+
+  }, [summary, sfx])
 
   const renderUi: RenderUiState = {
     get hoverCell() {
@@ -251,7 +291,7 @@ export default function App() {
               className="ghost-btn"
               data-testid="repair-spire"
               disabled={repairHp <= 0}
-              title={`Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs with each wave`}
+              title={`Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs with each wave (R)`}
               onClick={() => session.dispatch({ type: 'repair_spire' })}
             >
               {repairHp > 0 ? `Repair +${repairHp} (⛀ ${repairHp * repairPerHp})` : `Repair (⛀ ${repairPerHp}/HP)`}
@@ -268,13 +308,13 @@ export default function App() {
           <button
             className="ghost-btn"
             data-testid="mute"
-            title={muted ? 'Unmute sound' : 'Mute sound'}
+            title={`${muted ? 'Unmute' : 'Mute'} sound (M)`}
             onClick={() => setMuted(sfx.toggleMute())}
           >
             {muted ? '🔇' : '🔊'}
           </button>
-          <div className="speed-controls">
-            {[0, 1, 2, 3, 5, 10].map((n) => (
+          <div className="speed-controls" title="Keys − and = step speed down/up">
+            {SPEEDS.map((n) => (
               <button
                 key={n}
                 className={session.speed === n ? 'active' : ''}
@@ -286,7 +326,7 @@ export default function App() {
               </button>
             ))}
           </div>
-          <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree">
+          <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree" title="Spire Tree (T)">
             Spire Tree
           </button>
           {!summary && (
@@ -308,6 +348,7 @@ export default function App() {
               className="primary-btn"
               onClick={() => session.dispatch({ type: 'start_wave' })}
               data-testid="start-wave"
+              title="Start the next wave (Space)"
             >
               Start wave {state.wave + 1}
             </button>
@@ -361,15 +402,16 @@ export default function App() {
             {hoveredTower.type === 'mint' ? (
               <span>{towerTier('mint', hoveredTower.tier).mintYield} gold / cleared wave</span>
             ) : (
-              <span>
-                {Math.floor(
-                  (towerTier(hoveredTower.type, hoveredTower.tier).damage *
-                    (effectiveDamagePct(state, hoveredTower.type) + ENHANCE_DAMAGE_PCT * hoveredTower.enhance)) /
-                    100,
-                )}{' '}
-                dmg · {(30 / towerTier(hoveredTower.type, hoveredTower.tier).cooldown).toFixed(1)}/s ·{' '}
-                {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
-              </span>
+              (() => {
+                const b = damageBreakdown(state, hoveredTower)
+                return (
+                  <span>
+                    {b.effective} dmg{b.parts.length > 0 && ` (${b.base} base +${b.totalPct - 100}%)`} ·{' '}
+                    {(30 / towerTier(hoveredTower.type, hoveredTower.tier).cooldown).toFixed(1)}/s ·{' '}
+                    {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
+                  </span>
+                )
+              })()
             )}
             {hoveredTower.type !== 'mint' && (
               <span>
@@ -394,15 +436,27 @@ export default function App() {
             {selectedTower.type === 'mint' ? (
               <p>{towerTier('mint', selectedTower.tier).mintYield} gold per cleared wave</p>
             ) : (
-              <p>
-                DMG{' '}
-                {Math.floor(
-                  (towerTier(selectedTower.type, selectedTower.tier).damage *
-                    (effectiveDamagePct(state, selectedTower.type) + ENHANCE_DAMAGE_PCT * selectedTower.enhance)) /
-                    100,
-                )}{' '}
-                · {(30 / towerTier(selectedTower.type, selectedTower.tier).cooldown).toFixed(1)} shots/s
-              </p>
+              (() => {
+                const b = damageBreakdown(state, selectedTower)
+                return (
+                  <>
+                    <p>
+                      DMG {b.effective}
+                      {b.parts.length > 0 && ` (base ${b.base})`} ·{' '}
+                      {(30 / towerTier(selectedTower.type, selectedTower.tier).cooldown).toFixed(1)} shots/s
+                    </p>
+                    {b.parts.length > 0 && (
+                      <ul className="dmg-breakdown" data-testid="dmg-breakdown">
+                        {b.parts.map((p) => (
+                          <li key={p.source}>
+                            +{p.pct}% {p.source}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )
+              })()
             )}
             <p data-testid="tower-stats">
               {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
@@ -439,7 +493,8 @@ export default function App() {
                 disabled={state.gold < towerTier(selectedTower.type, (selectedTower.tier + 1) as 2 | 3).cost}
                 onClick={() => session.dispatch({ type: 'upgrade_tower', id: selectedTower.id })}
               >
-                Upgrade (⛀ {towerTier(selectedTower.type, (selectedTower.tier + 1) as 2 | 3).cost})
+                Upgrade (⛀ {towerTier(selectedTower.type, (selectedTower.tier + 1) as 2 | 3).cost}){' '}
+                <kbd className="key-hint">U</kbd>
               </button>
             ) : (
               <button
@@ -449,7 +504,7 @@ export default function App() {
                 disabled={state.gold < enhanceCost(selectedTower.type, selectedTower.enhance)}
                 onClick={() => session.dispatch({ type: 'upgrade_tower', id: selectedTower.id })}
               >
-                Enhance (⛀ {enhanceCost(selectedTower.type, selectedTower.enhance)})
+                Enhance (⛀ {enhanceCost(selectedTower.type, selectedTower.enhance)}) <kbd className="key-hint">U</kbd>
               </button>
             )}
             <button
@@ -470,7 +525,7 @@ export default function App() {
                 (towerInvested(selectedTower.type, selectedTower.tier) * (selectedTower.shots === 0 ? 100 : SELL_REFUND_PCT)) /
                   100,
               )}
-              {selectedTower.shots === 0 && ' · full refund'})
+              {selectedTower.shots === 0 && ' · full refund'}) <kbd className="key-hint">X</kbd>
             </button>
           </aside>
         )}
@@ -501,6 +556,7 @@ export default function App() {
                     ✈
                   </span>
                 )}
+                {unlocked && <kbd className="key-hint">{i + 1}</kbd>}
                 <span className="cost">{unlocked ? `⛀ ${cost}` : '🔒'}</span>
               </button>
             )
@@ -526,6 +582,7 @@ export default function App() {
                 }}
               >
                 {ABILITIES[ability].name}
+                <kbd className="key-hint">{['Q', 'W', 'E'][i]}</kbd>
                 {cd > 0 && <span className="cooldown">{Math.ceil(cd / 30)}s</span>}
               </button>
             )

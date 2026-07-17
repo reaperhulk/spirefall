@@ -114,3 +114,27 @@ export function metaNode(id: MetaUpgradeId): MetaNodeDef {
   if (!node) throw new Error(`unknown meta upgrade: ${id}`)
   return node
 }
+
+// The cumulative effect of a node AT a given level, for "now → after next
+// level" displays. Returns null for binary unlocks, where a running total
+// adds nothing over the description.
+export function metaNodeEffect(id: MetaUpgradeId, level: number): string | null {
+  switch (id) {
+    case 'starting_gold':
+      return `+${level * META_STARTING_GOLD_PER_LEVEL} starting gold`
+    case 'spire_hp':
+      return `+${level * META_SPIRE_HP_PER_LEVEL} max HP`
+    case 'tower_damage':
+      return `+${level * META_TOWER_DAMAGE_PCT_PER_LEVEL}% damage`
+    case 'crit_chance':
+      return `${level * META_CRIT_CHANCE_PCT_PER_LEVEL}% crit chance`
+    case 'gold_income':
+      return `+${level * META_GOLD_INCOME_PCT_PER_LEVEL}% gold`
+    case 'spark_gain':
+      return `+${level * META_SPARK_GAIN_PCT_PER_LEVEL}% sparks`
+    case 'wave_skip':
+      return `start at wave ${1 + level * META_WAVE_SKIP_PER_LEVEL}`
+    default:
+      return null
+  }
+}

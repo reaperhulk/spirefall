@@ -252,6 +252,25 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   expect(errors).toEqual([])
 })
 
+test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refund', async ({ page }) => {
+  const errors = await boot(page, 'e2e-keys')
+  await page.keyboard.press('1') // arm the arrow tower
+  await clickCell(page, 7, 5)
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+  await expect(page.getByTestId('gold')).toContainText('150')
+
+  await page.keyboard.press('Escape') // disarm, then select the tower
+  await clickCell(page, 7, 5)
+  await expect(page.getByTestId('tower-panel')).toBeVisible()
+  await page.keyboard.press('u')
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.getState())).towers[0]!.tier).toBe(2)
+
+  await page.keyboard.press('x') // unfired: sell refunds every coin
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(0)
+  await expect(page.getByTestId('gold')).toContainText('200')
+  expect(errors).toEqual([])
+})
+
 test('saves survive a reload mid-run', async ({ page }) => {
   const errors = await boot(page, 'e2e-save')
   await page.getByTestId('shop-cannon').click()

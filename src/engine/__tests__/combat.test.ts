@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { applyHit, selectTarget } from '../combat'
+import { applyHit, damageBreakdown, effectiveDamagePct, selectTarget } from '../combat'
 import { blockedGrid, cellCenter, distanceField, getMap } from '../grid'
 import { createMeta, createRun } from '../meta'
-import type { Enemy, Tower } from '../types'
+import { ENHANCE_DAMAGE_PCT, towerTier } from '../../data/content'
+import type { Enemy, RunState, Tower } from '../types'
 
 function enemy(overrides: Partial<Enemy> & { id: number }): Enemy {
   return {
@@ -89,5 +90,40 @@ describe('targeting', () => {
 
   it('returns null with no candidates', () => {
     expect(selectTarget(tower(), [], map, field)).toBeNull()
+  })
+})
+
+describe('damageBreakdown', () => {
+  it('itemization always reconciles with the damage math the towers use', () => {
+    const base = createRun(createMeta(), 'breakdown')
+    const configs: Partial<RunState>[] = [
+      {},
+      { mods: { ...base.mods, damagePct: 24 } },
+      { relics: ['glass_cannon'] },
+      { relics: ['piercing_arrows', 'glass_cannon'], mods: { ...base.mods, damagePct: 16 } },
+    ]
+    const towers = [
+      tower({ type: 'arrow' }),
+      tower({ type: 'cannon', tier: 2 }),
+      tower({ type: 'sniper', tier: 3, enhance: 3 }),
+    ]
+    for (const over of configs) {
+      const state = { ...base, ...over }
+      for (const t of towers) {
+        const b = damageBreakdown(state, t)
+        expect(b.totalPct).toBe(effectiveDamagePct(state, t.type) + ENHANCE_DAMAGE_PCT * t.enhance)
+        expect(b.effective).toBe(Math.floor((b.base * b.totalPct) / 100))
+        expect(b.base).toBe(towerTier(t.type, t.tier).damage)
+        // Parts sum to exactly the bonus over 100% — nothing hidden.
+        expect(100 + b.parts.reduce((sum, p) => sum + p.pct, 0)).toBe(b.totalPct)
+      }
+    }
+  })
+
+  it('a fresh tower has no multipliers: effective equals base', () => {
+    const state = createRun(createMeta(), 'plain')
+    const b = damageBreakdown(state, tower({ type: 'frost' }))
+    expect(b.parts).toEqual([])
+    expect(b.effective).toBe(b.base)
   })
 })

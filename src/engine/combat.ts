@@ -8,6 +8,8 @@ import {
   ENEMIES,
   ENHANCE_DAMAGE_PCT,
   FORTUNE_IDOL_CHANCE_PCT,
+  GLASS_CANNON_PCT,
+  PIERCING_ARROWS_PCT,
   SNIPER_ELITE_BONUS_PCT,
   TESLA_CHAIN_RANGE,
   TOWERS,
@@ -23,9 +25,32 @@ import { scaledHp } from './waves'
 
 export function effectiveDamagePct(state: RunState, tower: Tower['type']): number {
   let pct = 100 + state.mods.damagePct
-  if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += 40
-  if (state.relics.includes('glass_cannon')) pct += 30
+  if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += PIERCING_ARROWS_PCT
+  if (state.relics.includes('glass_cannon')) pct += GLASS_CANNON_PCT
   return pct
+}
+
+export interface DamagePart {
+  source: string
+  pct: number
+}
+
+// Itemized version of the damage math the towers actually use, for UI
+// display: base tier damage plus every multiplier and where it comes from.
+// A test pins this to effectiveDamagePct so the two can never drift.
+export function damageBreakdown(
+  state: RunState,
+  tower: Tower,
+): { base: number; parts: DamagePart[]; totalPct: number; effective: number } {
+  const base = towerTier(tower.type, tower.tier).damage
+  const parts: DamagePart[] = []
+  if (state.mods.damagePct > 0) parts.push({ source: 'Honed Arsenal (Spire Tree)', pct: state.mods.damagePct })
+  if (tower.type === 'arrow' && state.relics.includes('piercing_arrows'))
+    parts.push({ source: 'Piercing Arrows (relic)', pct: PIERCING_ARROWS_PCT })
+  if (state.relics.includes('glass_cannon')) parts.push({ source: 'Glass Cannon (relic)', pct: GLASS_CANNON_PCT })
+  if (tower.enhance > 0) parts.push({ source: `Enhance +${tower.enhance}`, pct: ENHANCE_DAMAGE_PCT * tower.enhance })
+  const totalPct = 100 + parts.reduce((sum, p) => sum + p.pct, 0)
+  return { base, parts, totalPct, effective: Math.floor((base * totalPct) / 100) }
 }
 
 // The probability layer: crit chance comes from the meta tree and relics,
