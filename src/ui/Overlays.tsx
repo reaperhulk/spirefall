@@ -349,18 +349,22 @@ export function SettingsModal({
   volume,
   reducedMotion,
   haptics,
+  colorAssist,
   onVolume,
   onReducedMotion,
   onHaptics,
+  onColorAssist,
   onClose,
 }: {
   meta: MetaState
   volume: number
   reducedMotion: boolean
   haptics: boolean
+  colorAssist: boolean
   onVolume: (v: number) => void
   onReducedMotion: (v: boolean) => void
   onHaptics: (v: boolean) => void
+  onColorAssist: (v: boolean) => void
   onClose: () => void
 }) {
   const [transferCode, setTransferCode] = useState('')
@@ -395,6 +399,16 @@ export function SettingsModal({
           Vibration
           <input type="checkbox" checked={haptics} data-testid="haptics" onChange={(e) => onHaptics(e.target.checked)} />
           <span className="settings-note">buzz on spire hits & run endings (touch devices)</span>
+        </label>
+        <label className="settings-row">
+          High-visibility colors
+          <input
+            type="checkbox"
+            checked={colorAssist}
+            data-testid="color-assist"
+            onChange={(e) => onColorAssist(e.target.checked)}
+          />
+          <span className="settings-note">colorblind-safe enemy palette</span>
         </label>
         <h3>Records</h3>
         <div className="records-row" data-testid="records">

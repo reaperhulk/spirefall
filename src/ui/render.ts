@@ -30,6 +30,33 @@ export const ENEMY_COLORS: Record<string, string> = {
   boss3: '#ffc777',
 }
 
+// High-visibility alternates, derived from the Okabe–Ito colorblind-safe
+// palette: hues separate under deuteranopia/protanopia and lightness steps
+// disambiguate the rest. Body shapes already differ per type; color assist
+// makes the palette pull in the same direction instead of against it.
+export const ENEMY_COLORS_ASSIST: Record<string, string> = {
+  runner: '#e69f00', // orange
+  swarmling: '#f0e442', // yellow
+  brute: '#d55e00', // vermillion
+  shieldbearer: '#ffffff', // white
+  flier: '#56b4e9', // sky blue
+  healer: '#009e73', // bluish green
+  splitter: '#cc79a7', // reddish purple
+  splitling: '#e7b3d0', // lighter step of splitter
+  wraith: '#999999', // grey
+  carrier: '#aa4499', // deep purple
+  boss: '#ee3377', // magenta
+  boss2: '#0077bb', // strong blue
+  boss3: '#eecc66', // pale gold
+}
+
+// Live palette lookup: reads the settings singleton each call, so toggling
+// color assist recolors the very next frame.
+export function enemyColor(type: string): string {
+  const table = settings.colorAssist ? ENEMY_COLORS_ASSIST : ENEMY_COLORS
+  return table[type] ?? ENEMY_COLORS[type] ?? '#ffd76e'
+}
+
 const COLORS = {
   bg: '#0b0e14',
   gridLine: '#151b28',
@@ -47,7 +74,6 @@ const COLORS = {
     mint: '#e5c07b',
     beacon: '#ff9e64',
   } as Record<TowerType, string>,
-  enemies: ENEMY_COLORS,
   hpBack: '#30354a',
   hpFill: '#9ece6a',
   ghostOk: 'rgba(158, 206, 106, 0.35)',
@@ -576,7 +602,7 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
     const x = px(pos.x)
     const y = px(pos.y)
     const r = ENEMY_RADIUS[e.type] ?? 8
-    const color = COLORS.enemies[e.type] ?? '#ffffff'
+    const color = enemyColor(e.type)
     // Walk phase scales with the creature's own speed so slows visibly
     // drag the gait too.
     const gait = e.slowTicks > 0 ? e.slowFactor / 100 : 1
@@ -687,7 +713,7 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.fillStyle = color
         ellipse(ctx, 0, 0, r * (1.05 + 0.06 * Math.sin(phase)), r * (0.95 - 0.06 * Math.sin(phase)))
         ctx.fill()
-        ctx.fillStyle = COLORS.enemies['splitling']!
+        ctx.fillStyle = enemyColor('splitling')
         circle(ctx, -r * 0.35, jiggle, r * 0.32)
         ctx.fill()
         circle(ctx, r * 0.35, -jiggle, r * 0.32)
@@ -723,7 +749,7 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.fillStyle = color
         ellipse(ctx, 0, 0, r * 1.15, r * 0.9)
         ctx.fill()
-        ctx.fillStyle = COLORS.enemies['swarmling']!
+        ctx.fillStyle = enemyColor('swarmling')
         for (const [ox, oy] of [
           [-r * 0.45, -r * 0.3],
           [-r * 0.1, r * 0.35],

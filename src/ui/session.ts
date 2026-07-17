@@ -1,6 +1,6 @@
 import { ENEMIES } from '../data/content'
 import { cellCenter, getMap } from '../engine/grid'
-import { ENEMY_COLORS } from './render'
+import { enemyColor } from './render'
 import { step, TICKS_PER_SECOND } from '../engine/step'
 import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 
@@ -188,7 +188,7 @@ export class GameSession {
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
           if (this.speed <= 3) {
-            this.effects.push({ kind: 'burst', at: e.at, color: ENEMY_COLORS[e.enemy] ?? '#ffd76e', t0: now, dur: 380 })
+            this.effects.push({ kind: 'burst', at: e.at, color: enemyColor(e.enemy), t0: now, dur: 380 })
             this.effects.push({
               kind: 'float',
               at: e.at,
@@ -217,7 +217,7 @@ export class GameSession {
               kind: 'float',
               at: { x: 12_000, y: 4_000 },
               text: `${ENEMIES[e.enemy].name.toUpperCase()} RISES`,
-              color: ENEMY_COLORS[e.enemy] ?? '#ff007c',
+              color: enemyColor(e.enemy),
               t0: now,
               dur: 1500,
             })

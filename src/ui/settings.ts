@@ -7,11 +7,12 @@ export interface Settings {
   reducedMotion: boolean // no screen shake, no full-screen flashes
   autoStart: boolean // build phase auto-sends the next wave after a beat
   haptics: boolean // vibration feedback on devices that support it
+  colorAssist: boolean // colorblind-safe enemy palette (Okabe–Ito derived)
 }
 
 const KEY = 'spirefall-settings'
 
-const DEFAULTS: Settings = { volume: 100, reducedMotion: false, autoStart: false, haptics: true }
+const DEFAULTS: Settings = { volume: 100, reducedMotion: false, autoStart: false, haptics: true, colorAssist: false }
 
 function load(): Settings {
   try {
@@ -23,6 +24,7 @@ function load(): Settings {
       reducedMotion: parsed.reducedMotion === true,
       autoStart: parsed.autoStart === true,
       haptics: parsed.haptics !== false, // default on — only an explicit off sticks
+      colorAssist: parsed.colorAssist === true,
     }
   } catch {
     return { ...DEFAULTS }

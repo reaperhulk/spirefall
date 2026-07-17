@@ -370,6 +370,7 @@ test('settings: volume and reduced motion persist across reloads', async ({ page
   await page.getByTestId('volume-slider').fill('40')
   await page.getByTestId('reduced-motion').check()
   await page.getByTestId('haptics').uncheck() // defaults on; the off choice must stick
+  await page.getByTestId('color-assist').check()
   await page.keyboard.press('Escape')
   await expect(page.getByTestId('settings-modal')).not.toBeVisible()
 
@@ -380,6 +381,7 @@ test('settings: volume and reduced motion persist across reloads', async ({ page
   await expect(page.getByTestId('volume-slider')).toHaveValue('40')
   await expect(page.getByTestId('reduced-motion')).toBeChecked()
   await expect(page.getByTestId('haptics')).not.toBeChecked()
+  await expect(page.getByTestId('color-assist')).toBeChecked()
   expect(errors).toEqual([])
 })
 

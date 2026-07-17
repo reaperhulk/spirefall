@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+34. **Color assist** — a High-visibility colors setting swaps the enemy
+    palette for an Okabe–Ito-derived colorblind-safe set (hues that separate
+    under deuteranopia/protanopia, lightness steps for the rest). Live
+    lookup, so toggling recolors the next frame; kill bursts and boss floats
+    follow. Persisted and e2e-covered.
+
 33. **Mobile feel** — haptic feedback (spire hits buzz short, defeats long,
     victories celebrate, cataclysms rumble; throttled, feature-checked,
     settable — default on, e2e-persisted), plus notch/home-bar safety:

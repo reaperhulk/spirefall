@@ -888,9 +888,11 @@ export default function App() {
           volume={uiSettings.volume}
           reducedMotion={uiSettings.reducedMotion}
           haptics={uiSettings.haptics}
+          colorAssist={uiSettings.colorAssist}
           onVolume={(v) => setUiSettings({ ...updateSettings({ volume: v }) })}
           onReducedMotion={(v) => setUiSettings({ ...updateSettings({ reducedMotion: v }) })}
           onHaptics={(v) => setUiSettings({ ...updateSettings({ haptics: v }) })}
+          onColorAssist={(v) => setUiSettings({ ...updateSettings({ colorAssist: v }) })}
           onClose={() => setShowSettings(false)}
         />
       )}
