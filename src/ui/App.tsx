@@ -18,7 +18,7 @@ import {
 import { damageBreakdown, effectiveCritChancePct, effectiveCritDamagePct } from '../engine/combat'
 import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
 import type { EmberUpgradeId } from '../data/emberTree'
-import { previewNextWave } from '../engine/step'
+import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { sameCell } from '../engine/grid'
 import { MAPS } from '../data/maps'
 import type { MetaUpgradeId } from '../data/metaTree'
@@ -363,6 +363,7 @@ export default function App() {
 
   // Scouting report: deterministic preview of what start_wave will field.
   const preview = state.phase === 'build' && !summary ? previewNextWave(state) : null
+  const cataclysmIn = summary ? null : wavesUntilCataclysm(state)
 
   // First-run onboarding: three contextual hints, gone forever once a run
   // ends (or the player dismisses them).
@@ -399,6 +400,15 @@ export default function App() {
         {state.phase === 'wave' && state.activeAffix && (
           <span className="affix-badge" data-testid="affix" title={AFFIXES[state.activeAffix].description}>
             {AFFIXES[state.activeAffix].name}
+          </span>
+        )}
+        {cataclysmIn !== null && (
+          <span
+            className={`cataclysm-countdown${cataclysmIn === 1 ? ' imminent' : ''}`}
+            data-testid="cataclysm-countdown"
+            title="Every 5th endless wave ends in a Cataclysm: a permanent, stacking modifier for the rest of the run."
+          >
+            {cataclysmIn === 1 ? '⚠ Cataclysm this wave' : `⚠ Cataclysm in ${cataclysmIn} waves`}
           </span>
         )}
         {state.cataclysms.length > 0 && (

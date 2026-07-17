@@ -321,6 +321,22 @@ export function previewNextWave(s: RunState): WavePreview | null {
   }
 }
 
+// Wave-clears remaining until the next Cataclysm strikes: 1 means it lands
+// when the wave you're facing (or about to send) clears. Pure schedule
+// arithmetic mirroring checkWaveEnd's strike condition, so the HUD countdown
+// can never disagree with the engine. Null outside endless — no victory yet,
+// no Cataclysms coming.
+export function wavesUntilCataclysm(s: RunState): number | null {
+  if (!s.victoryClaimed) return null
+  // The wave whose clear is next: mid-wave it's this one, in build it's the
+  // one about to be sent.
+  const facing = s.phase === 'build' ? s.wave + 1 : s.wave
+  const since = facing - VICTORY_WAVE
+  if (since < 0) return null
+  const rem = since % CATACLYSM_WAVE_INTERVAL
+  return rem === 0 ? 1 : CATACLYSM_WAVE_INTERVAL - rem + 1
+}
+
 // Scale current HP proportionally with a max-HP reduction: losing max HP must
 // never make the spire relatively healthier on the bar.
 function reduceSpireMax(s: RunState, keepPct: number): void {

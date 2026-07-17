@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+27. **Endless clarity + rewards** — HUD chip counts down to the next
+    Cataclysm ("in N waves", pulsing red when this wave lands it), driven by
+    a pure engine helper that mirrors the strike schedule exactly. Two new
+    endless achievements pay out at waves 30 (Beyond the Break, 250) and 40
+    (Eye of the Storm, 400), giving the post-game its own goal ladder.
+
 26. **Targeting depth** — two new tower targeting modes: *Weakest* (finish
     low-HP stragglers — pairs with splash chip damage) and *Elite Hunter*
     (prioritize elites/bosses over the horde, falling back to first-past when

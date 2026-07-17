@@ -559,6 +559,41 @@ button:disabled {
   letter-spacing: 0.04em;
 }
 
+/* Cataclysm countdown: endless-only strike warning. */
+.cataclysm-countdown {
+  border: 1px solid #6a5480;
+  color: #a58cc4;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.cataclysm-countdown.imminent {
+  border-color: #f7768e;
+  color: #f7768e;
+  background: #33141c;
+  animation: pulse-imminent 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-imminent {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cataclysm-countdown.imminent {
+    animation: none;
+  }
+}
+
 /* Run-over analytics: share bars for damage/kill attribution. */
 .run-analytics {
   display: flex;

@@ -70,6 +70,20 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     earned: (run) => run.cataclysms.length >= 2,
   },
   {
+    id: 'wave_30',
+    name: 'Beyond the Break',
+    description: 'Clear wave 30 in a single endless run.',
+    sparks: 250,
+    earned: (run) => run.wavesCleared >= 30,
+  },
+  {
+    id: 'wave_40',
+    name: 'Eye of the Storm',
+    description: 'Clear wave 40 in a single endless run.',
+    sparks: 400,
+    earned: (run) => run.wavesCleared >= 40,
+  },
+  {
     id: 'ascendant',
     name: 'Ascendant',
     description: 'Ascend for the first time.',

@@ -7,7 +7,7 @@ import { drawRelicOffer } from '../combat'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
 import { cellCenter, getMap } from '../grid'
-import { previewNextWave, step } from '../step'
+import { previewNextWave, step, wavesUntilCataclysm } from '../step'
 import type { RunState } from '../types'
 
 function freshRun(seed = 'step-test'): RunState {
@@ -420,6 +420,22 @@ describe('cataclysms', () => {
     const calm = previewNextWave(cloneRun({ ...lean, cataclysms: [] }))!
     const swarmed = previewNextWave(cloneRun({ ...lean, cataclysms: ['swarm', 'swarm'] }))!
     expect(swarmed.total).toBeGreaterThan(calm.total)
+  })
+
+  it('wavesUntilCataclysm mirrors the strike schedule', () => {
+    const s = cloneRun(freshRun('cataclysm-countdown'))
+    // No victory yet → no countdown.
+    expect(wavesUntilCataclysm(s)).toBeNull()
+    // Mid-wave on a strike wave: this clear lands it.
+    const striking = { ...s, victoryClaimed: true, phase: 'wave' as const, wave: 29 }
+    expect(wavesUntilCataclysm(striking)).toBe(1)
+    // Building right after a strike: the full interval lies ahead (waves
+    // 25–29 must clear before the next one).
+    const justStruck = { ...s, victoryClaimed: true, phase: 'build' as const, wave: 24 }
+    expect(wavesUntilCataclysm(justStruck)).toBe(5)
+    // Mid-cycle, mid-wave: wave 27 means 27, 28, 29 remain.
+    const midCycle = { ...s, victoryClaimed: true, phase: 'wave' as const, wave: 27 }
+    expect(wavesUntilCataclysm(midCycle)).toBe(3)
   })
 })
 
