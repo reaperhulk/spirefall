@@ -48,6 +48,7 @@ export class Sfx {
   private lastPlayed: Partial<Record<SoundKind, number>> = {}
   private recentCount = 0
   private recentWindow = 0
+  private reviveGeneration = 0
   muted: boolean
 
   constructor() {
@@ -57,11 +58,11 @@ export class Sfx {
     // The listeners stay attached for the whole session so every gesture is
     // a chance to create OR revive the context; a one-shot unlock would
     // leave a later-suspended context dead until reload.
-    const revive = () => this.ensureRunning()
+    const revive = () => this.ensureRunning(true)
     window.addEventListener('pointerdown', revive)
     window.addEventListener('keydown', revive)
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') this.ensureRunning()
+      if (document.visibilityState === 'visible') this.ensureRunning(false)
     })
   }
 
@@ -108,19 +109,55 @@ export class Sfx {
     }
   }
 
-  private ensureRunning(): void {
+  private ensureRunning(fromGesture: boolean): void {
     if (this.ctx && this.ctx.state === 'closed') this.ctx = null
     if (!this.ctx) {
       try {
         this.ctx = new AudioContext()
+        this.prime(this.ctx)
       } catch {
         this.ctx = null
         return
       }
     }
-    // 'suspended' (and Safari's 'interrupted') contexts revive on resume().
-    if (this.ctx.state !== 'running') {
-      void this.ctx.resume().catch(() => {})
+    const ctx = this.ctx
+    if (ctx.state === 'running') return
+    // 'suspended' (and Safari's 'interrupted') contexts usually revive on
+    // resume() — but after app switches, mobile browsers sometimes leave a
+    // zombie that never resumes (or resumes mute). A resume issued from a
+    // REAL user gesture must take; if it hasn't shortly after, scrap the
+    // context and build a fresh one, which the same gesture authorizes.
+    void ctx
+      .resume()
+      .then(() => this.prime(ctx))
+      .catch(() => {})
+    if (fromGesture) {
+      const gen = ++this.reviveGeneration
+      setTimeout(() => {
+        if (gen !== this.reviveGeneration) return // a newer attempt owns recovery
+        if (this.ctx !== ctx || ctx.state === 'running') return
+        void ctx.close().catch(() => {})
+        try {
+          this.ctx = new AudioContext()
+          this.prime(this.ctx)
+        } catch {
+          this.ctx = null
+        }
+      }, 250)
+    }
+  }
+
+  // Play a silent one-sample buffer: re-primes the output path. Without
+  // this, iOS can report a 'running' context that stays mute after an
+  // interruption (phone call, app switch, route change).
+  private prime(ctx: AudioContext): void {
+    try {
+      const src = ctx.createBufferSource()
+      src.buffer = ctx.createBuffer(1, 1, 22050)
+      src.connect(ctx.destination)
+      src.start(0)
+    } catch {
+      // priming is best-effort
     }
   }
 
@@ -128,7 +165,7 @@ export class Sfx {
     if (this.muted || !this.ctx) return
     if (this.ctx.state !== 'running') {
       // Kick off an async revival; this sound is lost but the next one plays.
-      this.ensureRunning()
+      this.ensureRunning(false)
       return
     }
     const now = performance.now()
