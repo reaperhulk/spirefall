@@ -383,3 +383,35 @@ test('PWA surface: manifest and service worker are served and coherent', async (
   const sw = await request.get('/sw.js')
   expect(sw.ok()).toBe(true)
 })
+
+test('save transfer: export a code, wipe, import restores progress', async ({ page }) => {
+  const errors = await boot(page, 'e2e-transfer')
+  await page.getByTestId('shop-arrow').click()
+  const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
+  await page.mouse.click(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+
+  await page.getByTestId('open-settings').click()
+  await page.getByTestId('export-save').click()
+  const code = await page.getByTestId('transfer-code').inputValue()
+  expect(code.length).toBeGreaterThan(50)
+
+  // Nuke everything, then import the code back.
+  await page.evaluate(() => localStorage.clear())
+  await page.reload()
+  await page.waitForSelector('[data-testid="playfield"]')
+  expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(0)
+  page.on('dialog', (d) => d.accept())
+  await page.getByTestId('open-settings').click()
+  await page.getByTestId('transfer-code').fill(code)
+  await page.getByTestId('import-save').click()
+  await page.waitForSelector('[data-testid="playfield"]')
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+
+  // Garbage codes are rejected without nuking anything.
+  await page.getByTestId('open-settings').click()
+  await page.getByTestId('transfer-code').fill('not-a-save')
+  await page.getByTestId('import-save').click()
+  await expect(page.getByTestId('import-failed')).toBeVisible()
+  expect(errors).toEqual([])
+})

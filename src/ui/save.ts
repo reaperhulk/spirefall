@@ -38,6 +38,35 @@ export function clearSave(): void {
   }
 }
 
+// --- transfer codes ---------------------------------------------------------
+// Base64 of the exact save JSON: portable across devices, and imports run
+// through the same migrate() path as a normal load so old codes stay valid.
+
+export function exportSave(): string | null {
+  try {
+    const raw = localStorage.getItem(KEY)
+    if (!raw) return null
+    // Unicode-safe btoa.
+    return btoa(String.fromCharCode(...new TextEncoder().encode(raw)))
+  } catch {
+    return null
+  }
+}
+
+export function importSave(code: string): boolean {
+  try {
+    const bytes = Uint8Array.from(atob(code.trim()), (c) => c.charCodeAt(0))
+    const raw = new TextDecoder().decode(bytes)
+    const parsed = JSON.parse(raw) as { version?: number }
+    const data = migrate(parsed)
+    if (!data) return false
+    localStorage.setItem(KEY, JSON.stringify(data))
+    return true
+  } catch {
+    return false
+  }
+}
+
 function migrate(parsed: { version?: number }): SaveData | null {
   switch (parsed.version) {
     case 1: {

@@ -101,7 +101,14 @@ export default function App() {
         } else if (e.type === 'victory_achieved') {
           setVictoryPrompt(true)
           persistSave({ version: 1, meta: metaRef.current, run: s })
-        } else if (e.type === 'wave_started' || e.type === 'wave_cleared' || e.type === 'relic_chosen') {
+        } else if (
+          e.type === 'wave_started' ||
+          e.type === 'wave_cleared' ||
+          e.type === 'relic_chosen' ||
+          e.type === 'tower_placed' ||
+          e.type === 'tower_sold' ||
+          e.type === 'tower_upgraded'
+        ) {
           persistSave({ version: 1, meta: metaRef.current, run: s })
         }
       }

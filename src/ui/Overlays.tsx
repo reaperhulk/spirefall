@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { RELICS } from '../data/content'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
 import { canAscend, emberGainOnAscend, emberLevel, emberUpgradeCost, metaLevel, metaUpgradeCost } from '../engine/meta'
 import type { MetaState, RelicId, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
+import { exportSave, importSave } from './save'
 
 export function RelicModal({
   options,
@@ -272,6 +274,8 @@ export function SettingsModal({
   onReducedMotion: (v: boolean) => void
   onClose: () => void
 }) {
+  const [transferCode, setTransferCode] = useState('')
+  const [importFailed, setImportFailed] = useState(false)
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()} data-testid="settings-modal">
@@ -298,6 +302,48 @@ export function SettingsModal({
           />
           <span className="settings-note">no screen shake or full-screen flashes</span>
         </label>
+        <h3>Save transfer</h3>
+        <div className="transfer-row">
+          <button
+            className="ghost-btn"
+            data-testid="export-save"
+            onClick={() => {
+              const code = exportSave()
+              if (!code) return
+              setTransferCode(code)
+              void navigator.clipboard?.writeText(code).catch(() => {})
+            }}
+          >
+            Export code
+          </button>
+          <button
+            className="ghost-btn"
+            data-testid="import-save"
+            onClick={() => {
+              if (!transferCode.trim()) return
+              if (!window.confirm('Import this code? Your current progress will be replaced.')) return
+              if (importSave(transferCode)) window.location.reload()
+              else setImportFailed(true)
+            }}
+          >
+            Import code
+          </button>
+        </div>
+        <textarea
+          className="transfer-code"
+          data-testid="transfer-code"
+          placeholder="Export fills this with a copyable code; paste a code here to import."
+          value={transferCode}
+          onChange={(e) => {
+            setTransferCode(e.target.value)
+            setImportFailed(false)
+          }}
+        />
+        {importFailed && (
+          <p className="transfer-error" data-testid="import-failed">
+            That code didn't parse as a Spirefall save.
+          </p>
+        )}
         <h3>Keyboard shortcuts</h3>
         <div className="shortcuts-grid">
           {SHORTCUTS.map(([keys, what]) => (

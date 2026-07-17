@@ -19,7 +19,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
 - [x] 11. Relic depth: rarity tiers, more relics, reroll option
 - [ ] 12. New tower type (7th) with unlock node + hotkey 7
-- [ ] 13. Save export/import codes
+- [x] 13. Save export/import codes
 - [ ] 14. Achievements with spark rewards
 - [ ] 15. Wave preview enrichment: threat estimate, elite marks
 - [ ] 16. First-run tutorial hints
@@ -30,6 +30,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+12. **Save transfer codes** — Settings gains Export (base64 of the save JSON,
+    auto-copied) and Import (validated through the normal migrate() path,
+    garbage rejected without damage). Fixed a real persistence gap found by
+    the e2e: saves now also write on tower place/sell/upgrade, so closing the
+    tab mid-build no longer loses placements.
 
 11. **Wraith** — wave-12+ ghost cycling 2s corporeal / 1.5s phased. Towers
     cannot target it while phased (it keeps marching); Meteor and Frost Nova
