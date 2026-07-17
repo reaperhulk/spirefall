@@ -1,12 +1,14 @@
 import type { MapDef } from '../data/maps'
 import {
   ABILITIES,
+  ARROW_AIR_BONUS_PCT,
   CRIT_BASE_DAMAGE_PCT,
   CRIT_RELIC_CHANCE_PCT,
   CRIT_RELIC_DAMAGE_PCT,
   ENEMIES,
   ENHANCE_DAMAGE_PCT,
   FORTUNE_IDOL_CHANCE_PCT,
+  SNIPER_ELITE_BONUS_PCT,
   TESLA_CHAIN_RANGE,
   TOWERS,
   towerTier,
@@ -42,11 +44,18 @@ export function effectiveCritDamagePct(state: RunState): number {
   return pct
 }
 
-export function applyHit(enemy: Enemy, damage: number): number {
-  if (damage <= enemy.shield) return 0 // shieldbearers ignore weak hits entirely
+export function applyHit(enemy: Enemy, damage: number, pierceShield = false): number {
+  if (!pierceShield && damage <= enemy.shield) return 0 // shieldbearers ignore weak hits entirely
   const dealt = Math.min(enemy.hp, damage)
   enemy.hp -= dealt
   return dealt
+}
+
+// Target-dependent damage bonus: the single-target towers' niche.
+function bonusPctVs(tower: Tower['type'], enemy: Enemy): number {
+  if (tower === 'arrow' && ENEMIES[enemy.type].flying) return ARROW_AIR_BONUS_PCT
+  if (tower === 'sniper' && ENEMIES[enemy.type].elite) return SNIPER_ELITE_BONUS_PCT
+  return 0
 }
 
 function applySlow(enemy: Enemy, slowFactor: number, slowTicks: number, state: RunState): void {
@@ -217,9 +226,13 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
 
     // Every hit is attributed to the tower: damage always, kill on the blow
     // that empties the enemy's hp — so per-tower stats answer "what is this
-    // tower actually doing?"
+    // tower actually doing?" Snipers pierce shields outright; per-target
+    // bonuses (arrow vs air, sniper vs elites) apply on top of crits.
+    const pierceShield = tower.type === 'sniper'
     const hit = (enemy: Enemy): void => {
-      const dealt = applyHit(enemy, damage)
+      const bonus = bonusPctVs(tower.type, enemy)
+      const dmg = bonus > 0 ? Math.floor((damage * (100 + bonus)) / 100) : damage
+      const dealt = applyHit(enemy, dmg, pierceShield)
       tower.damageDealt += dealt
       if (dealt > 0 && enemy.hp === 0) tower.kills += 1
     }

@@ -362,6 +362,60 @@ describe('wave preview', () => {
   })
 })
 
+describe('single-target niches', () => {
+  // One tower, one tanky enemy in range, one tick: the first shot isolates
+  // per-target bonuses with no targeting or hp-cap noise.
+  const duel = (tower: 'arrow' | 'sniper', enemyType: RunState['enemies'][number]['type'], shield = 0) => {
+    const s = cloneRun(freshRun('niche-duel'))
+    s.phase = 'wave'
+    s.wave = 1
+    s.towers.push({
+      id: s.nextEntityId++,
+      type: tower,
+      tier: 1,
+      enhance: 0,
+      cell: { cx: 5, cy: 5 },
+      cooldown: 0,
+      targeting: 'first',
+      kills: 0,
+      damageDealt: 0,
+      shots: 0,
+    })
+    s.enemies.push({
+      id: s.nextEntityId++,
+      type: enemyType,
+      pos: { x: 6500, y: 5500 },
+      hp: 1000,
+      maxHp: 1000,
+      speed: 0,
+      slowFactor: 100,
+      slowTicks: 0,
+      bounty: 1,
+      damage: 1,
+      shield,
+      healCooldown: 0,
+      targetCell: null,
+    })
+    return step(s, []).state.towers[0]!.damageDealt
+  }
+
+  it('arrows deal double damage to fliers', () => {
+    expect(duel('arrow', 'runner')).toBe(7)
+    expect(duel('arrow', 'flier')).toBe(14)
+  })
+
+  it('snipers deal double damage to elites', () => {
+    expect(duel('sniper', 'runner')).toBe(60)
+    expect(duel('sniper', 'brute')).toBe(120)
+    expect(duel('sniper', 'boss')).toBe(120)
+  })
+
+  it('snipers pierce shields that block everything else', () => {
+    expect(duel('arrow', 'shieldbearer', 999)).toBe(0) // fully blocked
+    expect(duel('sniper', 'shieldbearer', 999)).toBe(120) // pierced, and elite
+  })
+})
+
 describe('probability layer', () => {
   it('crit chance 100 doubles every shot; executioners_seal makes it triple', () => {
     // One arrow (7 dmg), one tanky brute in range: the first tick's shot

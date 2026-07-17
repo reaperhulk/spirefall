@@ -33,6 +33,14 @@ function newSeed(runs: number): string {
 }
 
 const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint']
+
+// One-line combat role, shown in tooltips and the tower panel.
+function towerRole(type: TowerType): string {
+  if (type === 'arrow') return 'hits ground & air ✈ · 2× vs fliers'
+  if (type === 'sniper') return 'hits ground & air ✈ · 2× vs elites, pierces shields'
+  if (type === 'tesla') return 'hits ground & air ✈'
+  return 'ground only — cannot hit fliers'
+}
 const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush']
 const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'nearest']
 
@@ -365,7 +373,7 @@ export default function App() {
             )}
             {hoveredTower.type !== 'mint' && (
               <span>
-                {TOWERS[hoveredTower.type].hitsAir ? 'hits ground & air ✈' : 'ground only — cannot hit fliers'}
+                {towerRole(hoveredTower.type)}
                 {critChance > 0 && ` · ${critChance}% crit ×${(effectiveCritDamagePct(state) / 100).toFixed(1)}`}
               </span>
             )}
@@ -401,7 +409,7 @@ export default function App() {
             </p>
             {selectedTower.type !== 'mint' && (
               <p className="tower-air-note">
-                {TOWERS[selectedTower.type].hitsAir ? 'Hits ground & air ✈' : 'Ground only — cannot hit fliers'}
+                {towerRole(selectedTower.type)}
                 {critChance > 0 && ` · ${critChance}% crit`}
               </p>
             )}

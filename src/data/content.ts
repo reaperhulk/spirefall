@@ -17,6 +17,7 @@ export interface EnemyDef {
   damage: number // damage to the Spire on arrival
   shield: number // hits dealing <= this are fully blocked
   unlockWave: number
+  elite?: boolean // heavy units: snipers deal bonus damage to these
   flying?: boolean // ignores the maze; only air-capable towers can hit it
   heal?: { everyTicks: number; amount: number; radius: number } // healer pulse (amount scales with hp curve)
   splitInto?: { type: EnemyType; count: number } // spawned at death position
@@ -29,13 +30,13 @@ export interface EnemyDef {
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
   runner: { name: 'Runner', hp: 14, speed: 120, cost: 5, pack: 5, spacing: 7, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
   swarmling: { name: 'Swarmling', hp: 5, speed: 155, cost: 2, pack: 10, spacing: 4, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
-  brute: { name: 'Brute', hp: 70, speed: 58, cost: 13, pack: 2, spacing: 16, bounty: 3, damage: 3, shield: 0, unlockWave: 4 },
+  brute: { name: 'Brute', hp: 70, speed: 58, cost: 13, pack: 2, spacing: 16, bounty: 3, damage: 3, shield: 0, unlockWave: 4, elite: true },
   flier: { name: 'Gale Imp', hp: 20, speed: 95, cost: 7, pack: 4, spacing: 10, bounty: 2, damage: 2, shield: 0, unlockWave: 6, flying: true },
-  shieldbearer: { name: 'Shieldbearer', hp: 50, speed: 72, cost: 15, pack: 2, spacing: 14, bounty: 4, damage: 2, shield: 4, unlockWave: 8 },
-  healer: { name: 'Mendwitch', hp: 60, speed: 66, cost: 17, pack: 1, spacing: 18, bounty: 4, damage: 1, shield: 0, unlockWave: 11, heal: { everyTicks: 60, amount: 4, radius: 1800 } },
-  splitter: { name: 'Amalgam', hp: 45, speed: 82, cost: 13, pack: 2, spacing: 14, bounty: 2, damage: 1, shield: 0, unlockWave: 13, splitInto: { type: 'splitling', count: 2 } },
+  shieldbearer: { name: 'Shieldbearer', hp: 50, speed: 72, cost: 15, pack: 2, spacing: 14, bounty: 4, damage: 2, shield: 4, unlockWave: 8, elite: true },
+  healer: { name: 'Mendwitch', hp: 60, speed: 66, cost: 17, pack: 1, spacing: 18, bounty: 4, damage: 1, shield: 0, unlockWave: 11, elite: true, heal: { everyTicks: 60, amount: 4, radius: 1800 } },
+  splitter: { name: 'Amalgam', hp: 45, speed: 82, cost: 13, pack: 2, spacing: 14, bounty: 2, damage: 1, shield: 0, unlockWave: 13, elite: true, splitInto: { type: 'splitling', count: 2 } },
   splitling: { name: 'Shard', hp: 13, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
-  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, unlockWave: 10 },
+  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, unlockWave: 10, elite: true },
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +119,12 @@ export const TOWERS: Record<TowerType, TowerDef> = {
 
 export const SELL_REFUND_PCT = 70
 export const TESLA_CHAIN_RANGE = 1400 // millicells between chain hops
+
+// Horde-era single-target niches: AoE towers mow the flood, so the
+// single-target towers answer what AoE can't. Arrows shred the sky;
+// snipers execute elites and punch straight through shields.
+export const ARROW_AIR_BONUS_PCT = 100 // arrows deal +100% to fliers
+export const SNIPER_ELITE_BONUS_PCT = 100 // snipers deal +100% to elites
 
 // Past tier 3, towers can be enhanced indefinitely: +ENHANCE_DAMAGE_PCT damage
 // per level, each level costing ENHANCE_COST_GROWTH_PCT of the last. This is

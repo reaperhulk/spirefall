@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Spirefall mark: the golden Spire holding fast as the horde closes in. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e5c07b" stop-opacity="0.5"/>
+      <stop offset="55%" stop-color="#e5c07b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#e5c07b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#0b0e14"/>
+  <g stroke="#151b28" stroke-width="2">
+    <path d="M0 128 H512 M0 256 H512 M0 384 H512 M128 0 V512 M256 0 V512 M384 0 V512"/>
+  </g>
+  <circle cx="300" cy="256" r="220" fill="url(#glow)"/>
+  <!-- the gate the horde pours from -->
+  <circle cx="70" cy="256" r="24" fill="#8856ff"/>
+  <!-- the horde, closing in -->
+  <g fill="#f7768e">
+    <circle cx="124" cy="220" r="11"/>
+    <circle cx="148" cy="260" r="10"/>
+    <circle cx="122" cy="296" r="8"/>
+    <circle cx="168" cy="230" r="7"/>
+    <circle cx="172" cy="284" r="6"/>
+  </g>
+  <!-- the Spire -->
+  <path d="M300 84 L424 256 L300 428 L176 256 Z" fill="#e5c07b"/>
+  <path d="M300 134 L388 256 L300 378 L212 256 Z" fill="#0b0e14"/>
+  <path d="M300 176 L358 256 L300 336 L242 256 Z" fill="#7dcfff"/>
+</svg>
