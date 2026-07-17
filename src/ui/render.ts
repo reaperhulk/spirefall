@@ -116,6 +116,8 @@ const MAP_THEMES: Record<string, MapTheme> = {
   'The Serpent': { bg: '#14100a', checker: '#1a150d', path: '#211a11', gridLine: '#2a2115', rock: '#453824', rockEdge: '#5e4d31', mote: '#e0c080' },
   // Ashen wastes: scorched violet dusk, rising embers.
   Crossroads: { bg: '#100b14', checker: '#150e1b', path: '#1b1223', gridLine: '#23172e', rock: '#3a2c4a', rockEdge: '#503e66', mote: '#c586e0' },
+  // Forge iron: rust and heat, sparks off the anvil.
+  'The Gauntlet': { bg: '#140c08', checker: '#1a100b', path: '#22150e', gridLine: '#2b1a12', rock: '#4a2f22', rockEdge: '#6b4230', mote: '#ff9d5c' },
 }
 
 function mapTheme(map: MapDef): MapTheme {

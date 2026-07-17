@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+46. **The Gauntlet** — a sixth map: a forced serpentine where the horde
+    marches every switchback and each corridor is a kill box, dressed in
+    forge-iron rust with spark motes. Picker-only via the new
+    RANDOM_MAP_POOL boundary, so every existing seed→map roll (goldens,
+    envelope, dailies) is provably untouched — unit-pinned.
+
 45. **Per-map records** — every battlefield keeps its own best wave
     (settle-time, never regresses, zero-progress runs leave no entry;
     save-migrated). Shown inline in the Battlefield picker ("The Serpent —

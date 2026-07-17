@@ -111,6 +111,28 @@ const ART: { name: string; rows: string[] }[] = [
       '........................',
     ],
   },
+  {
+    // Picker-only (see RANDOM_MAP_POOL): a forced serpentine — the horde
+    // marches the full switchback and every corridor is a kill box, but the
+    // gaps are wide enough that mazing them still matters.
+    name: 'The Gauntlet',
+    rows: [
+      'S.......................',
+      '........................',
+      '....####################',
+      '........................',
+      '........................',
+      '####################....',
+      '........................',
+      '........................',
+      '....####################',
+      '........................',
+      '........................',
+      '####################....',
+      '........................',
+      '.......................T',
+    ],
+  },
 ]
 
 function parse(id: number, name: string, rows: string[]): MapDef {
@@ -133,3 +155,8 @@ function parse(id: number, name: string, rows: string[]): MapDef {
 }
 
 export const MAPS: MapDef[] = ART.map((a, i) => parse(i, a.name, a.rows))
+
+// The seed's map roll draws from the first N maps only. Maps past the pool
+// are picker-only: adding one never shifts existing seed→map assignments,
+// so goldens, the balance envelope, and shared daily seeds stay stable.
+export const RANDOM_MAP_POOL = 5

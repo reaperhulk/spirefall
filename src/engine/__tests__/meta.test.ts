@@ -8,6 +8,7 @@ import {
   metaNodeEffect,
 } from '../../data/metaTree'
 import { ABILITIES, STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
+import { MAPS, RANDOM_MAP_POOL } from '../../data/maps'
 import {
   ascend,
   buyEmberUpgrade,
@@ -140,6 +141,15 @@ describe('createRun applies meta', () => {
     const chosen = createRun(meta, 'map-choice', 2)
     expect(chosen.rng).toEqual(rolled.rng)
     expect({ ...chosen, mapId: 0 }).toEqual({ ...rolled, mapId: 0 })
+  })
+
+  it('picker-only maps never come up on the seed roll but remain choosable', () => {
+    const meta = createMeta()
+    expect(MAPS.length).toBeGreaterThan(RANDOM_MAP_POOL)
+    for (let i = 0; i < 40; i++) {
+      expect(createRun(meta, `pool-${i}`).mapId).toBeLessThan(RANDOM_MAP_POOL)
+    }
+    expect(createRun(meta, 'pool-x', MAPS.length - 1).mapId).toBe(MAPS.length - 1)
   })
 })
 

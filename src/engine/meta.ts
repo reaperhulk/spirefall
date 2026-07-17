@@ -9,7 +9,7 @@ import {
   WAVE_CLEAR_GOLD_BASE,
   WAVE_CLEAR_GOLD_PER_WAVE,
 } from '../data/content'
-import { MAPS } from '../data/maps'
+import { MAPS, RANDOM_MAP_POOL } from '../data/maps'
 import {
   META_CRIT_CHANCE_PCT_PER_LEVEL,
   META_GOLD_INCOME_PCT_PER_LEVEL,
@@ -140,7 +140,7 @@ export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: Meta
 // trials are opt-in handicaps: their effects apply here (spire, gold) or at
 // spawn time (enemy stats), and computeSparks pays their bonus.
 export function createRun(meta: MetaState, seed: string, mapId?: number, trials?: TrialId[]): RunState {
-  const mapRoll = nextInt(deriveStream(seed, 'map'), 0, MAPS.length - 1)
+  const mapRoll = nextInt(deriveStream(seed, 'map'), 0, RANDOM_MAP_POOL - 1)
   const chosenMap = mapId !== undefined && Number.isInteger(mapId) && mapId >= 0 && mapId < MAPS.length ? mapId : mapRoll.value
   const chosenTrials = [...new Set((trials ?? []).filter((t) => Object.prototype.hasOwnProperty.call(TRIALS, t)))]
 
