@@ -126,7 +126,7 @@ export const TOWERS: Record<TowerType, TowerDef> = {
     tiers: [
       { cost: 100, damage: 0, range: 0, cooldown: 0, mintYield: 12 },
       { cost: 130, damage: 0, range: 0, cooldown: 0, mintYield: 28 },
-      { cost: 280, damage: 0, range: 0, cooldown: 0, mintYield: 62 },
+      { cost: 280, damage: 0, range: 0, cooldown: 0, mintYield: 52 },
     ],
   },
 }

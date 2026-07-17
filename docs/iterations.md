@@ -25,11 +25,17 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 16. First-run tutorial hints
 - [x] 17. Lifetime stats screen
 - [x] 18. Boss variety: distinct boss per boss wave
-- [ ] 19. Deep fuzz run + rebalance pass
+- [x] 19. Deep fuzz run + rebalance pass (216-run hunt → mint economy trim)
 - [ ] 20. Death/hit particles, boss entrance, juice pass
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+16. **Fuzz + rebalance** — 216-run evolutionary hunt against the post-relic/
+    wraith/carrier/boss game: no breaking builds (8k floor holds at 21 waves),
+    but a mint-8 economy comp won repeatedly at 14k (30% under the intended
+    threshold). Mint t3 yield 62→52 killed every warning on re-hunt; envelope
+    and careers unaffected.
 
 17. **First-run hints** — three contextual banners for brand-new accounts
     (build → send → economy), retired forever after the first run ends or on
