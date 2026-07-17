@@ -238,6 +238,44 @@ export const RELICS: Record<RelicId, RelicDef> = {
   echo_chamber: { name: 'Echo Chamber', description: 'Tesla chains hop +1 target and 20% further.', rarity: 'rare' },
   colossus: { name: 'Colossus', description: 'All towers deal +25% damage. No catch.', rarity: 'legendary' },
   last_stand: { name: 'Last Stand', description: 'All towers deal +30% damage while the Spire is at half HP or less.', rarity: 'rare' },
+  // ------ Transformative tier: these change HOW a tower plays, not just its
+  // numbers. One per tower archetype; rare/legendary so a run sees one or
+  // two and builds an identity around them.
+  ricochet_strings: {
+    name: 'Ricochet Strings',
+    description: 'Arrow shots bounce to a second enemy within 1.4 cells for 50% damage.',
+    rarity: 'rare',
+  },
+  cinder_shells: {
+    name: 'Cinder Shells',
+    description: 'Cannon hits ignite: 60% of the damage dealt burns over 2s, ignoring armor.',
+    rarity: 'legendary',
+  },
+  shatterheart: {
+    name: 'Shatterheart',
+    description: 'Enemies that die while slowed detonate for 30% of their max HP within 1.2 cells.',
+    rarity: 'legendary',
+  },
+  storm_coils: {
+    name: 'Storm Coils',
+    description: 'Tesla hits build Overcharge: +15% tesla damage per hit on that enemy, up to +75%.',
+    rarity: 'rare',
+  },
+  deadeye_sigil: {
+    name: 'Deadeye Sigil',
+    description: 'Sniper hits execute non-boss enemies below 15% HP.',
+    rarity: 'legendary',
+  },
+  golden_ledger: {
+    name: 'Golden Ledger',
+    description: 'Wave clear pays +10% of your banked gold as interest (max ⛀60).',
+    rarity: 'rare',
+  },
+  prism_lens: {
+    name: 'Prism Lens',
+    description: 'Beacon auras also grant +10% crit chance to towers in range.',
+    rarity: 'rare',
+  },
   shatter: { name: 'Shatter', description: 'Slowed enemies take +20% damage.', rarity: 'rare' },
   soul_harvest: { name: 'Soul Harvest', description: 'Every 100th kill knits the Spire +1 HP.', rarity: 'legendary' },
 }
@@ -279,6 +317,20 @@ export const GLASS_CANNON_PCT = 30 // relic: all-tower damage bonus
 export const LAST_STAND_PCT = 30 // relic: damage while the spire is at half HP or less
 export const SHATTER_BONUS_PCT = 20 // relic: bonus vs slowed enemies
 export const SOUL_HARVEST_EVERY_KILLS = 100 // relic: kills per +1 HP knit
+
+// Transformative relic numbers.
+export const RICOCHET_PCT = 50 // second arrow hit deals this % of the shot
+export const RICOCHET_RANGE = 1400 // millicells from the primary target
+export const CINDER_BURN_PCT = 60 // % of dealt cannon damage burned over the DoT
+export const CINDER_BURN_TICKS = 60 // 2s burn duration
+export const SHATTERHEART_PCT = 30 // % of the dead enemy's max HP dealt
+export const SHATTERHEART_RADIUS = 1200 // millicells around the corpse
+export const STORM_COILS_PCT_PER_STACK = 15
+export const STORM_COILS_MAX_STACKS = 5
+export const DEADEYE_EXECUTE_PCT = 15 // execute threshold, % of max HP
+export const GOLDEN_LEDGER_PCT = 10 // % of banked gold paid on wave clear
+export const GOLDEN_LEDGER_CAP = 60 // interest ceiling per wave
+export const PRISM_LENS_CRIT_PCT = 10 // crit chance inside a beacon aura
 
 export const CRIT_BASE_DAMAGE_PCT = 200 // a crit deals this % of normal damage
 export const CRIT_RELIC_CHANCE_PCT = 10 // keen_sights

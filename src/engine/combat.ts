@@ -2,6 +2,16 @@ import type { MapDef } from '../data/maps'
 import {
   ABILITIES,
   ARROW_AIR_BONUS_PCT,
+  CINDER_BURN_PCT,
+  CINDER_BURN_TICKS,
+  DEADEYE_EXECUTE_PCT,
+  PRISM_LENS_CRIT_PCT,
+  RICOCHET_PCT,
+  RICOCHET_RANGE,
+  SHATTERHEART_PCT,
+  SHATTERHEART_RADIUS,
+  STORM_COILS_MAX_STACKS,
+  STORM_COILS_PCT_PER_STACK,
   CRIT_BASE_DAMAGE_PCT,
   CRIT_RELIC_CHANCE_PCT,
   CRIT_RELIC_DAMAGE_PCT,
@@ -79,6 +89,15 @@ export function damageBreakdown(
 export function effectiveCritChancePct(state: RunState): number {
   let pct = state.mods.critChancePct
   if (state.relics.includes('keen_sights')) pct += CRIT_RELIC_CHANCE_PCT
+  return Math.min(100, pct)
+}
+
+// Per-tower crit chance: the global pool (meta + Keen Sights) plus Prism
+// Lens for towers standing in a beacon aura. towersFire rolls with THIS, so
+// a lens build turns beacon placement into a crit decision.
+export function towerCritChancePct(state: RunState, tower: Tower): number {
+  let pct = effectiveCritChancePct(state)
+  if (state.relics.includes('prism_lens') && beaconAuraPct(state, tower) > 0) pct += PRISM_LENS_CRIT_PCT
   return Math.min(100, pct)
 }
 
@@ -303,7 +322,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // One crit roll per shot: a critical cannon shell crits its whole splash,
     // a critical tesla arc crits the whole chain.
     let crit = false
-    const critChance = effectiveCritChancePct(state)
+    const critChance = towerCritChancePct(state, tower)
     if (critChance > 0) {
       const roll = nextInt(state.rng.combat, 1, 100)
       state.rng.combat = roll.rng
@@ -320,21 +339,74 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // never slips a light shot through — piercing or heavy hits only.
     const pierceShield = tower.type === 'sniper'
     const shatter = state.relics.includes('shatter')
-    const hit = (enemy: Enemy): void => {
-      const bonus = bonusPctVs(tower.type, enemy) + (shatter && enemy.slowTicks > 0 ? SHATTER_BONUS_PCT : 0)
-      const preCrit = bonus > 0 ? Math.floor((baseDamage * (100 + bonus)) / 100) : baseDamage
+    const stormCoils = tower.type === 'tesla' && state.relics.includes('storm_coils')
+    const cinder = tower.type === 'cannon' && state.relics.includes('cinder_shells')
+    // scalePct: secondary hits (Ricochet Strings) land at a fraction of the
+    // shot's weight — shields judge the SCALED pre-crit damage, so a weak
+    // bounce can bounce off a shield the primary punched through.
+    const hit = (enemy: Enemy, scalePct = 100): void => {
+      let bonus = bonusPctVs(tower.type, enemy) + (shatter && enemy.slowTicks > 0 ? SHATTER_BONUS_PCT : 0)
+      if (stormCoils) bonus += STORM_COILS_PCT_PER_STACK * enemy.overcharge
+      let preCrit = bonus > 0 ? Math.floor((baseDamage * (100 + bonus)) / 100) : baseDamage
+      if (scalePct !== 100) preCrit = Math.floor((preCrit * scalePct) / 100)
+      if (stormCoils) enemy.overcharge = Math.min(STORM_COILS_MAX_STACKS, enemy.overcharge + 1)
       if (!pierceShield && preCrit <= enemy.shield) return // fully blocked
       const dmg = crit ? Math.floor((preCrit * critPct) / 100) : preCrit
       const dealt = applyHit(enemy, dmg, pierceShield)
       tower.damageDealt += dealt
       if (dealt > 0) state.damageByTower[tower.type] = (state.damageByTower[tower.type] ?? 0) + dealt
       if (dealt > 0 && enemy.hp === 0) tower.kills += 1
+      // Cinder Shells: part of the blow keeps burning. Refresh keeps the
+      // hotter of the two burns — stacking would trivialize bosses.
+      if (cinder && dealt > 0 && enemy.hp > 0) {
+        const perTick = Math.max(1, Math.floor((dealt * CINDER_BURN_PCT) / 100 / CINDER_BURN_TICKS))
+        if (perTick >= enemy.burnPerTick) {
+          enemy.burnPerTick = perTick
+          enemy.burnTicks = CINDER_BURN_TICKS
+        }
+      }
     }
 
     switch (tower.type) {
-      case 'arrow':
+      case 'arrow': {
+        hit(target)
+        // Ricochet Strings: the shot bounces to the nearest other enemy in
+        // reach of the impact (nearest, ties to the older spawn — the same
+        // deterministic rule tesla chains use).
+        if (state.relics.includes('ricochet_strings')) {
+          const rangeSq2 = RICOCHET_RANGE * RICOCHET_RANGE
+          let next: Enemy | null = null
+          let nextDist = 0
+          for (const e of alive) {
+            if (e.hp <= 0 || e.id === target.id) continue
+            const d = distSq(target.pos, e.pos)
+            if (d <= rangeSq2 && (next === null || d < nextDist || (d === nextDist && e.id < next.id))) {
+              next = e
+              nextDist = d
+            }
+          }
+          if (next !== null) {
+            hit(next, RICOCHET_PCT)
+            hitIds.push(next.id)
+          }
+        }
+        break
+      }
       case 'sniper': {
         hit(target)
+        // Deadeye Sigil: a wounded regular is a dead regular. Bosses shrug.
+        if (
+          state.relics.includes('deadeye_sigil') &&
+          target.hp > 0 &&
+          !target.type.startsWith('boss') &&
+          target.hp * 100 <= target.maxHp * DEADEYE_EXECUTE_PCT
+        ) {
+          const executed = target.hp
+          target.hp = 0
+          tower.damageDealt += executed
+          state.damageByTower[tower.type] = (state.damageByTower[tower.type] ?? 0) + executed
+          tower.kills += 1
+        }
         break
       }
       case 'cannon': {
@@ -469,6 +541,15 @@ export function effectiveTowerRange(state: RunState, type: TowerType, tier: 1 | 
 
 export function tickStatuses(state: RunState): void {
   for (const e of state.enemies) {
+    // Cinder Shells: the burn is elemental — armor and shields don't help.
+    // Deaths are collected by the next collectDead pass.
+    if (e.burnTicks > 0 && e.hp > 0) {
+      e.burnTicks -= 1
+      const dealt = Math.min(e.hp, e.burnPerTick)
+      e.hp -= dealt
+      if (dealt > 0) state.damageByTower.cannon = (state.damageByTower.cannon ?? 0) + dealt
+      if (e.burnTicks === 0) e.burnPerTick = 0
+    }
     if (e.slowTicks > 0) {
       e.slowTicks -= 1
       if (e.slowTicks === 0) e.slowFactor = 100
@@ -532,6 +613,9 @@ export function carrierBroods(state: RunState, events: GameEvent[]): void {
         broodCooldown: 0,
         phased: false,
         phaseCooldown: 0,
+        burnTicks: 0,
+        burnPerTick: 0,
+        overcharge: 0,
         targetCell: null,
       })
       events.push({ type: 'enemy_spawned', id, enemy: brood.type })
@@ -594,6 +678,22 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     state.kills += 1
     state.killsByEnemy[e.type] = (state.killsByEnemy[e.type] ?? 0) + 1
     events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty, lucky })
+    // Shatterheart: a slowed death detonates. Elemental — ignores shields
+    // and armor. Enemies already emptied this pass don't re-die; victims
+    // dropped to zero here are collected on the next pass (no cascades
+    // within a single tick — bounded and deterministic).
+    if (state.relics.includes('shatterheart') && e.slowTicks > 0) {
+      const radiusSq = SHATTERHEART_RADIUS * SHATTERHEART_RADIUS
+      const burst = Math.max(1, Math.floor((e.maxHp * SHATTERHEART_PCT) / 100))
+      for (const other of state.enemies) {
+        if (other.id === e.id || other.hp <= 0) continue
+        if (distSq(e.pos, other.pos) <= radiusSq) {
+          const dealt = Math.min(other.hp, burst)
+          other.hp -= dealt
+          state.damageByTower.frost = (state.damageByTower.frost ?? 0) + dealt
+        }
+      }
+    }
     // Soul Harvest: the horde's own mass mends the walls, one drop at a time.
     if (
       state.relics.includes('soul_harvest') &&
@@ -629,6 +729,9 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
           broodCooldown: 0,
           phased: false,
           phaseCooldown: 0,
+          burnTicks: 0,
+          burnPerTick: 0,
+          overcharge: 0,
           targetCell: null,
         })
         events.push({ type: 'enemy_spawned', id, enemy: split.type })

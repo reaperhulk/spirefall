@@ -103,6 +103,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
           e.broodCooldown ??= 0
           e.phased ??= false
           e.phaseCooldown ??= 0
+          e.burnTicks ??= 0
+          e.burnPerTick ??= 0
+          e.overcharge ??= 0
         }
         data.run.activeAffix ??= null
         data.run.victoryClaimed ??= false

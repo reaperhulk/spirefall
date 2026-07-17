@@ -38,6 +38,25 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+66. *(post-marathon, review)* **Transformative relic tier** — seven relics
+    that change HOW a tower plays, not its numbers: Ricochet Strings
+    (arrows bounce at 50%), Cinder Shells (cannon hits burn 60% over 2s,
+    armor-proof), Shatterheart (slowed deaths detonate 30% max HP),
+    Storm Coils (tesla ramps +15%/hit to +75%), Deadeye Sigil (snipers
+    execute non-bosses under 15%), Golden Ledger (wave-clear interest,
+    capped — the Bounty Banner lesson), Prism Lens (beacon auras grant
+    crit). Rare/legendary, so a run sees one or two and builds an identity
+    around them — the answer to "every run plays the same". Reference bot
+    now leans its comp toward owned transformative relics (that's the
+    intended play pattern). Balance: pool dilution (23 → 30) stretched
+    the reference career's first win ~15 → ~20 runs and made FRESH runs
+    stronger (alpha 9 → 12 — comp-matched mechanics beat early spark
+    upgrades), so the envelope was re-derived: career horizon 22, strict
+    fresh<mid monotonicity, new deep>fresh+8 ladder bound. Fuzz pinned
+    genomes stay contained. 7 new engine tests pin each mechanic's exact
+    arithmetic; goldens regenerated (draw-shift magnitude: one bot −1
+    wave, one +28 sparks). 148 unit tests, 28 e2e specs.
+
 65. *(post-marathon, playtest)* **The Crucible + ascension discoverability**
     — answering "why play again after winning?". Each victory in a cycle
     now hardens the next run (+10% enemy HP per victory, applied as a

@@ -22,6 +22,9 @@ function enemy(overrides: Partial<Enemy> & { id: number }): Enemy {
       broodCooldown: 0,
     phased: false,
     phaseCooldown: 0,
+    burnTicks: 0,
+    burnPerTick: 0,
+    overcharge: 0,
     targetCell: null,
     ...overrides,
   }

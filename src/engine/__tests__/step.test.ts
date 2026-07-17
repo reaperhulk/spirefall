@@ -389,7 +389,7 @@ describe('relics', () => {
       s.relics = ['shatter']
       s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
       s.towers.push({ id: s.nextEntityId++, type: 'arrow', cell: { cx: 6, cy: 4 }, tier: 1, cooldown: 0, kills: 0, damageDealt: 0, targeting: 'first', enhance: 0, shots: 0 })
-      s.enemies.push({ id: s.nextEntityId++, type: 'brute', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1000, maxHp: 1000, speed: 0, slowFactor: slowTicks > 0 ? 60 : 100, slowTicks, bounty: 3, damage: 3, shield: 0, armor: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
+      s.enemies.push({ id: s.nextEntityId++, type: 'brute', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1000, maxHp: 1000, speed: 0, slowFactor: slowTicks > 0 ? 60 : 100, slowTicks, bounty: 3, damage: 3, shield: 0, armor: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, burnTicks: 0, burnPerTick: 0, overcharge: 0, targetCell: null })
       return step(s, []).state.towers[0]!.damageDealt
     }
     const plain = duel(0)
@@ -404,7 +404,7 @@ describe('relics', () => {
     s.phase = 'wave'
     s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
     s.towers.push({ id: s.nextEntityId++, type: 'sniper', cell: { cx: 6, cy: 4 }, tier: 3, cooldown: 0, kills: 0, damageDealt: 0, targeting: 'first', enhance: 0, shots: 0 })
-    s.enemies.push({ id: s.nextEntityId++, type: 'runner', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1, maxHp: 1, speed: 0, slowFactor: 100, slowTicks: 0, bounty: 1, damage: 1, shield: 0, armor: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
+    s.enemies.push({ id: s.nextEntityId++, type: 'runner', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1, maxHp: 1, speed: 0, slowFactor: 100, slowTicks: 0, bounty: 1, damage: 1, shield: 0, armor: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, burnTicks: 0, burnPerTick: 0, overcharge: 0, targetCell: null })
     const after = step(s, []).state
     expect(after.kills).toBe(100)
     expect(after.spireHp).toBe(6)
@@ -592,6 +592,9 @@ describe('armor', () => {
       broodCooldown: 0,
       phased: false,
       phaseCooldown: 0,
+      burnTicks: 0,
+      burnPerTick: 0,
+      overcharge: 0,
       targetCell: null,
     })
     const a = armored(5)
@@ -662,6 +665,9 @@ describe('single-target niches', () => {
       broodCooldown: 0,
       phased: false,
       phaseCooldown: 0,
+      burnTicks: 0,
+      burnPerTick: 0,
+      overcharge: 0,
       targetCell: null,
     })
     return step(s, []).state.towers[0]!.damageDealt
@@ -723,6 +729,9 @@ describe('probability layer', () => {
       broodCooldown: 0,
       phased: false,
       phaseCooldown: 0,
+      burnTicks: 0,
+      burnPerTick: 0,
+      overcharge: 0,
         targetCell: null,
       })
       const { state, events } = step(s, [])
@@ -830,6 +839,9 @@ describe('relic depth', () => {
         broodCooldown: 0,
         phased: false,
         phaseCooldown: 0,
+        burnTicks: 0,
+        burnPerTick: 0,
+        overcharge: 0,
         targetCell: null,
       })
       return step(s, []).state.towers[0]!
@@ -933,6 +945,9 @@ describe('bulwark', () => {
       broodCooldown: 0,
       phased: false,
       phaseCooldown: 0,
+      burnTicks: 0,
+      burnPerTick: 0,
+      overcharge: 0,
       targetCell: null,
     })
     const shielded = step(s, [{ type: 'cast_ability', ability: 'bulwark', cell: map.spire }]).state

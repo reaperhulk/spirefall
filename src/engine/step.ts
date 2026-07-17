@@ -16,6 +16,8 @@ import {
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
   CRUCIBLE_HP_PCT_PER_RANK,
+  GOLDEN_LEDGER_CAP,
+  GOLDEN_LEDGER_PCT,
   CRUCIBLE_SPARK_PCT_PER_RANK,
   TRIAL_IRON_HP_PCT,
   TRIAL_SWIFT_SPEED_PCT,
@@ -422,6 +424,9 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       shield,
       armor,
       healCooldown: def.heal ? def.heal.everyTicks : 0,
+      burnTicks: 0,
+      burnPerTick: 0,
+      overcharge: 0,
       broodCooldown: def.brood ? def.brood.everyTicks : 0,
       phased: false,
       phaseCooldown: def.phasing ? def.phasing.visibleTicks : 0,
@@ -463,6 +468,17 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     s.gold += amount
     t.shots += 1 // a payout counts as "acting" — the mint no longer sells at 100%
     events.push({ type: 'mint_income', id: t.id, amount })
+  }
+
+  // Golden Ledger: interest on whatever survived the wave unspent — paid
+  // AFTER mints so hoarding compounds. The cap keeps banked fortunes from
+  // compounding into a runaway economy (the Bounty Banner lesson).
+  if (s.relics.includes('golden_ledger')) {
+    const interest = Math.min(GOLDEN_LEDGER_CAP, Math.floor((s.gold * GOLDEN_LEDGER_PCT) / 100))
+    if (interest > 0) {
+      s.gold += interest
+      events.push({ type: 'gold_interest', amount: interest, gold: s.gold })
+    }
   }
 
   // Clearing the victory wave completes the cycle — but the run continues

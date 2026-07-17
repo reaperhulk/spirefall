@@ -51,8 +51,14 @@ export const greedyBot: Bot = (state) => {
 
 export const RELIC_PRIORITY: RelicId[] = [
   'colossus',
+  // Transformative picks are COMP-DEPENDENT: the reference comp leans
+  // cannon/sniper, so Cinder Shells and Deadeye slot right below the
+  // universal +25%; the rest sit where their tower density justifies.
+  'cinder_shells',
+  'deadeye_sigil',
   'spark_siphon',
   'glass_cannon',
+  'ricochet_strings',
   'last_stand',
   'shatter',
   'piercing_arrows',
@@ -60,6 +66,7 @@ export const RELIC_PRIORITY: RelicId[] = [
   'longsight',
   'keen_sights',
   'executioners_seal',
+  'storm_coils',
   'overcharge',
   'echo_chamber',
   'bounty_banner',
@@ -71,6 +78,9 @@ export const RELIC_PRIORITY: RelicId[] = [
   'winters_grip',
   'overclock',
   'mint_condition',
+  'shatterheart',
+  'golden_ledger',
+  'prism_lens',
   'soul_harvest',
   'golden_touch',
 ]
@@ -83,11 +93,28 @@ const EARLY_RATIO: Record<TowerType, number> = { arrow: 5, cannon: 2, frost: 1, 
 const LATE_RATIO: Record<TowerType, number> = { arrow: 4, cannon: 4, frost: 1, tesla: 2, sniper: 3, mint: 1, beacon: 1 }
 const HEAVY_META_WAVE = 9 // armor starts to bite; the build plan pivots
 
+// Transformative relics reward building AROUND them — that's their point.
+// When the bot owns one, its comp leans toward that relic's tower.
+const RELIC_LEAN: Partial<Record<RelicId, TowerType>> = {
+  cinder_shells: 'cannon',
+  deadeye_sigil: 'sniper',
+  ricochet_strings: 'arrow',
+  storm_coils: 'tesla',
+  shatterheart: 'frost',
+}
+
 function pickBuildType(state: RunState): TowerType {
   // Early game is all about cheap single-target DPS.
   if (state.wave < 3) return 'arrow'
   // After that, build toward the ratio: pick the available type most below quota.
-  const ratio = state.wave < HEAVY_META_WAVE ? EARLY_RATIO : LATE_RATIO
+  const base = state.wave < HEAVY_META_WAVE ? EARLY_RATIO : LATE_RATIO
+  let ratio = base
+  for (const [relic, type] of Object.entries(RELIC_LEAN) as [RelicId, TowerType][]) {
+    if (state.relics.includes(relic)) {
+      if (ratio === base) ratio = { ...base }
+      ratio[type] += 2
+    }
+  }
   const counts: Record<TowerType, number> = { arrow: 0, cannon: 0, frost: 0, tesla: 0, sniper: 0, mint: 0, beacon: 0 }
   for (const t of state.towers) counts[t.type] += 1
   let best: TowerType = 'arrow'

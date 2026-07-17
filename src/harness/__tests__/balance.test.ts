@@ -71,10 +71,14 @@ describe('balance envelope', () => {
     const fresh = play('alpha', 'balanced')
     const mid = play('alpha', 'balanced', richMeta(3000))
     const deep = play('alpha', 'balanced', richMeta(20_000))
-    // Margin re-derived with armor in the roster: the cannon-lean reference
-    // lifted fresh runs (9 waves on alpha), compressing the fresh→mid gap.
-    expect(mid.wavesCleared).toBeGreaterThan(fresh.wavesCleared + 2)
+    // Margins re-derived for the transformative relic tier: the new relics
+    // are strongest at ZERO meta (fresh alpha 9 → 12 — a comp-matched
+    // Cinder/Deadeye draw is a bigger lever than early spark upgrades), so
+    // the fresh→mid gap compressed to strict monotonicity while the
+    // end-to-end ladder stays wide (12 → 13 → 24 at re-derivation).
+    expect(mid.wavesCleared).toBeGreaterThan(fresh.wavesCleared)
     expect(deep.wavesCleared).toBeGreaterThanOrEqual(mid.wavesCleared)
+    expect(deep.wavesCleared).toBeGreaterThan(fresh.wavesCleared + 8)
   }, 240_000)
 
   it('the grind pays off: a deep Spire Tree can actually win', () => {
@@ -116,7 +120,11 @@ describe('balance envelope', () => {
   }, 300_000)
 
   it('a longer career eventually breaks the cycle — after a real grind', () => {
-    const { history } = playProgression(18, 'career', BOTS.balanced, DEFAULT_BUY_PRIORITY)
+    // 22 runs, not 18: the transformative tier diluted the relic pool (30
+    // relics, several comp-dependent), which stretched the reference bot's
+    // first win from run ~15 to run ~20. Humans adapt comps around drawn
+    // relics harder than the bot's lean does — this is the reference floor.
+    const { history } = playProgression(22, 'career', BOTS.balanced, DEFAULT_BUY_PRIORITY)
     expect(history.some((h) => h.outcome === 'victory')).toBe(true)
     // The first win takes real investment: no earlier than run 8.
     const firstWin = history.findIndex((h) => h.outcome === 'victory') + 1

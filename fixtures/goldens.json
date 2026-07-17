@@ -5,7 +5,7 @@
     "kills": 0,
     "outcome": "defeat",
     "sparks": 0,
-    "stateHash": "d9b9f0cf"
+    "stateHash": "be08666b"
   },
   "greedy-fresh": {
     "ticks": 2227,
@@ -13,15 +13,15 @@
     "kills": 122,
     "outcome": "defeat",
     "sparks": 70,
-    "stateHash": "a7977024"
+    "stateHash": "e7cd9164"
   },
   "balanced-fresh": {
-    "ticks": 6831,
-    "wavesCleared": 12,
-    "kills": 685,
+    "ticks": 5779,
+    "wavesCleared": 11,
+    "kills": 568,
     "outcome": "defeat",
-    "sparks": 237,
-    "stateHash": "e760af38"
+    "sparks": 265,
+    "stateHash": "8e14aee5"
   },
   "balanced-rich": {
     "ticks": 7999,
@@ -29,6 +29,6 @@
     "kills": 755,
     "outcome": "defeat",
     "sparks": 257,
-    "stateHash": "65703d96"
+    "stateHash": "53100538"
   }
 }

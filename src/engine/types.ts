@@ -46,6 +46,13 @@ export type RelicId =
   | 'last_stand'
   | 'shatter'
   | 'soul_harvest'
+  | 'ricochet_strings'
+  | 'cinder_shells'
+  | 'shatterheart'
+  | 'storm_coils'
+  | 'deadeye_sigil'
+  | 'golden_ledger'
+  | 'prism_lens'
 
 export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 
@@ -101,6 +108,9 @@ export interface Enemy {
   broodCooldown: number // carriers: ticks until the next brood hatches
   phased: boolean // wraiths: untargetable by towers while phased
   phaseCooldown: number // ticks until the wraith flips corporeal/phased
+  burnTicks: number // Cinder Shells: ticks of burn remaining
+  burnPerTick: number // Cinder Shells: hp lost per burning tick (ignores armor)
+  overcharge: number // Storm Coils: stacked tesla hits on this enemy
   targetCell: CellPos | null // next waypoint; null = needs (re)pathing (unused by fliers)
 }
 
@@ -191,6 +201,7 @@ export type GameEvent =
   | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[]; crit: boolean }
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }
   | { type: 'wave_cleared'; wave: number; goldAwarded: number }
+  | { type: 'gold_interest'; amount: number; gold: number }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

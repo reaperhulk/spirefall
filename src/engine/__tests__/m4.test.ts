@@ -35,6 +35,9 @@ function makeEnemy(state: RunState, overrides: Partial<Enemy> & { type: Enemy['t
     broodCooldown: def.brood ? def.brood.everyTicks : 0,
     phased: false,
     phaseCooldown: def.phasing ? def.phasing.visibleTicks : 0,
+    burnTicks: 0,
+    burnPerTick: 0,
+    overcharge: 0,
     targetCell: null,
     ...overrides,
   }
