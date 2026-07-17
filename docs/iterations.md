@@ -20,7 +20,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 11. Relic depth: rarity tiers, more relics, reroll option
 - [ ] 12. New tower type (7th) with unlock node + hotkey 7
 - [x] 13. Save export/import codes
-- [ ] 14. Achievements with spark rewards
+- [x] 14. Achievements with spark rewards
 - [x] 15. Wave preview enrichment: threat estimate, elite marks
 - [x] 16. First-run tutorial hints
 - [x] 17. Lifetime stats screen
@@ -30,6 +30,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+18. **Achievements** — nine one-shot goals (waves 10/15/20, first victory,
+    horde slayer, collector, stormrider, ascendant…) evaluated as pure
+    predicates at settle; first run to earn one banks its spark bounty.
+    Run-over shows medal chips; Records shows the full grid with locks.
 
 16. **Fuzz + rebalance** — 216-run evolutionary hunt against the post-relic/
     wraith/carrier/boss game: no breaking builds (8k floor holds at 21 waves),

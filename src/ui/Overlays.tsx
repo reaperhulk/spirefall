@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ACHIEVEMENTS } from '../data/achievements'
 import { RELICS } from '../data/content'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
@@ -225,6 +226,16 @@ export function RunOverOverlay({
             </span>
           )}
         </p>
+        {summary.unlocked.length > 0 && (
+          <div className="unlocks" data-testid="unlocks">
+            {summary.unlocked.map((a) => (
+              <span key={a.id} className="unlock-chip">
+                🏅 {a.name}
+                {a.sparks > 0 && ` +✦${a.sparks}`}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="run-analytics" data-testid="run-analytics">
           <ShareBars
             title="Damage by tower"
@@ -317,6 +328,20 @@ export function SettingsModal({
           <span>Victories <strong>{meta.victories}</strong></span>
           <span>Kills <strong>{meta.lifetimeKills.toLocaleString()}</strong></span>
           <span>Ascensions <strong>{meta.ascensions}</strong></span>
+          <span>
+            Achievements <strong>{meta.achievements.length}/{ACHIEVEMENTS.length}</strong>
+          </span>
+        </div>
+        <div className="achievement-grid">
+          {ACHIEVEMENTS.map((a) => (
+            <span
+              key={a.id}
+              className={`unlock-chip${meta.achievements.includes(a.id) ? '' : ' locked'}`}
+              title={`${a.description}${a.sparks > 0 ? ` (+✦${a.sparks})` : ''}`}
+            >
+              {meta.achievements.includes(a.id) ? '🏅' : '🔒'} {a.name}
+            </span>
+          ))}
         </div>
         {meta.history.length > 0 && (
           <table className="history-table">

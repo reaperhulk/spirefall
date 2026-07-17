@@ -81,6 +81,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
       data.meta.bestWave ??= 0
       data.meta.lifetimeKills ??= 0
       data.meta.history ??= []
+      data.meta.achievements ??= []
       // Discard finished runs; they only exist mid-play.
       if (data.run && (data.run.phase === 'defeat' || data.run.phase === 'victory')) {
         return { ...data, run: null }

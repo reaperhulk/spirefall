@@ -19,6 +19,7 @@ import {
   metaNode,
   type MetaUpgradeId,
 } from '../data/metaTree'
+import { ACHIEVEMENTS } from '../data/achievements'
 import {
   EMBER_DAMAGE_PCT_PER_LEVEL,
   EMBER_LEGACY_SPARKS_PER_LEVEL,
@@ -44,6 +45,7 @@ export function createMeta(): MetaState {
     emberUpgrades: {},
     bestWave: 0,
     lifetimeKills: 0,
+    achievements: [],
     history: [],
   }
 }
@@ -210,13 +212,19 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
   if (run.phase !== 'defeat' && run.phase !== 'victory') {
     throw new Error(`settleRun: run is not over (phase=${run.phase})`)
   }
+  // Achievements: first run to satisfy a predicate earns its spark bounty.
+  const unlocked = ACHIEVEMENTS.filter((a) => !meta.achievements.includes(a.id) && a.earned(run, meta)).map(
+    (a) => ({ id: a.id, name: a.name, sparks: a.sparks }),
+  )
+  const bounty = unlocked.reduce((sum, a) => sum + a.sparks, 0)
   const summary: RunSummary = {
     outcome: run.phase,
     wavesCleared: run.wavesCleared,
     kills: run.kills,
-    sparks: run.sparksEarned,
+    sparks: run.sparksEarned + bounty,
     damageByTower: { ...run.damageByTower },
     killsByEnemy: { ...run.killsByEnemy },
+    unlocked,
   }
   const won = run.phase === 'victory' ? 1 : 0
   return {
@@ -228,6 +236,7 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
       victories: meta.victories + won,
       cycleVictories: meta.cycleVictories + won,
       bestWave: Math.max(meta.bestWave, summary.wavesCleared),
+      achievements: [...meta.achievements, ...unlocked.map((a) => a.id)],
       lifetimeKills: meta.lifetimeKills + summary.kills,
       history: [
         { outcome: summary.outcome, wavesCleared: summary.wavesCleared, kills: summary.kills, sparks: summary.sparks },

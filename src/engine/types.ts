@@ -192,6 +192,7 @@ export interface RunSummary {
   sparks: number
   damageByTower: Partial<Record<TowerType, number>>
   killsByEnemy: Partial<Record<EnemyType, number>>
+  unlocked: { id: string; name: string; sparks: number }[] // achievements earned by THIS run
 }
 
 // Permanent progression. Lives outside runs; same purity rules.
@@ -208,5 +209,6 @@ export interface MetaState {
   emberUpgrades: Record<string, number> // EmberUpgradeId -> level (permanent)
   bestWave: number // furthest wave ever cleared
   lifetimeKills: number
+  achievements: string[] // earned achievement ids, in earn order
   history: { outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }[] // recent runs, newest first
 }

@@ -806,3 +806,31 @@ button:disabled {
   height: 24px;
   font-size: 11px;
 }
+
+/* Achievements. */
+.unlocks {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.achievement-grid {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.unlock-chip {
+  background: #241f14;
+  border: 1px solid #8a6a2a;
+  color: #e5c07b;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.unlock-chip.locked {
+  background: #10141f;
+  border-color: #2c3448;
+  color: #565f89;
+}

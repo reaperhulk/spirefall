@@ -132,13 +132,19 @@ describe('settleRun', () => {
       outcome: 'defeat',
       wavesCleared: 7,
       kills: 40,
-      sparks: 85,
+      sparks: 85 + 25, // +25: the First Blood achievement bounty
       damageByTower: { arrow: 900 },
       killsByEnemy: { runner: 40 },
+      unlocked: [{ id: 'first_blood', name: 'First Blood', sparks: 25 }],
     })
-    expect(meta.sparks).toBe(85)
-    expect(meta.totalSparks).toBe(85)
+    expect(meta.sparks).toBe(110)
+    expect(meta.totalSparks).toBe(110)
     expect(meta.runs).toBe(1)
+    expect(meta.achievements).toEqual(['first_blood'])
+    // Second settle of a similar run earns nothing new.
+    const again = settleRun(meta, { ...ended, seed: 'again' })
+    expect(again.summary.unlocked).toEqual([])
+    expect(again.summary.sparks).toBe(85)
   })
 
   it('refuses to settle a live run', () => {
