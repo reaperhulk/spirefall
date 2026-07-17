@@ -517,25 +517,29 @@ export default function App() {
           <span data-testid="spire-hp">
             {state.spireHp}/{state.spireMaxHp}
           </span>
-          {state.spireHp < state.spireMaxHp && (
-            <button
-              className="ghost-btn"
-              data-testid="repair-spire"
-              disabled={repairHp <= 0 || repairsExhausted}
-              title={
-                repairsExhausted
-                  ? `Repair crews are spent — ${REPAIR_CASTS_PER_WAVE} casts per wave under fire. They recover when the wave clears.`
-                  : `Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs each wave; max ${REPAIR_CASTS_PER_WAVE} casts while a wave is live (R)`
-              }
-              onClick={() => session.dispatch({ type: 'repair_spire' })}
-            >
-              {repairsExhausted
+          {/* Always mounted: an appearing/vanishing button re-wraps the
+              header and shoves the playfield (visible on tablet portrait). */}
+          <button
+            className="ghost-btn btn-repair"
+            data-testid="repair-spire"
+            disabled={repairHp <= 0 || repairsExhausted}
+            title={
+              state.spireHp >= state.spireMaxHp
+                ? 'The Spire is at full health'
+                : repairsExhausted
+                  ? `Repair crews are spent — ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''} per wave under fire. They recover when the wave clears.`
+                  : `Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs each wave; max ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''} while a wave is live (R)`
+            }
+            onClick={() => session.dispatch({ type: 'repair_spire' })}
+          >
+            {state.spireHp >= state.spireMaxHp
+              ? 'Repair'
+              : repairsExhausted
                 ? 'Repair crews spent'
                 : repairHp > 0
                   ? `Repair +${repairHp} (⛀ ${repairHp * repairPerHp})`
                   : `Repair (⛀ ${repairPerHp}/HP)`}
-            </button>
-          )}
+          </button>
         </div>
         <div className="hud-right">
           <span className="hud-gold" data-testid="gold">
@@ -613,7 +617,7 @@ export default function App() {
           </button>
           {!summary && (
             <button
-              className="ghost-btn danger"
+              className="ghost-btn danger btn-abandon"
               data-testid="abandon-run"
               title="End this run now — you keep the Sparks earned so far"
               onClick={() => {
@@ -625,16 +629,21 @@ export default function App() {
               {state.victoryClaimed ? 'End run' : 'Give up'}
             </button>
           )}
-          {state.phase === 'build' && (
-            <button
-              className="primary-btn"
-              onClick={() => session.dispatch({ type: 'start_wave' })}
-              data-testid="start-wave"
-              title="Start the next wave (Space)"
-            >
-              Start wave {state.wave + 1}
-            </button>
-          )}
+          {/* Always mounted, disabled mid-wave: unmounting re-wraps the
+              header row and the playfield jumps every single wave. */}
+          <button
+            className="primary-btn btn-wave"
+            onClick={() => session.dispatch({ type: 'start_wave' })}
+            data-testid="start-wave"
+            disabled={state.phase !== 'build'}
+            title={
+              state.phase === 'build'
+                ? 'Start the next wave (Space)'
+                : 'The wave is live — the next one starts once it clears'
+            }
+          >
+            Start wave {state.wave + 1}
+          </button>
           <button
             className={`ghost-btn${autoStart ? ' auto-on' : ''}`}
             data-testid="auto-start"
@@ -656,29 +665,40 @@ export default function App() {
           </button>
         </div>
       )}
-      {preview && (
+      {/* The strip stays mounted through the wave (as a live status line) —
+          unmounting it moves the playfield up and back every single wave. */}
+      {!summary && (state.phase === 'build' || state.phase === 'wave') && (
         <div className="wave-preview" data-testid="wave-preview">
-          <span className="preview-label">Next wave:</span>
-          <span className="preview-threat" title="Total effective enemy HP this wave will field">
-            ≈{preview.totalHp.toLocaleString()} HP
-          </span>
-          {preview.elites > 0 && (
-            <span className="preview-elites" title="Elite units — snipers deal bonus damage to these">
-              ⚔ {preview.elites} elite{preview.elites > 1 ? 's' : ''}
-            </span>
-          )}
-          {(Object.entries(preview.counts) as [keyof typeof ENEMIES, number][])
-            .sort(([ta, a], [tb, b]) => (ta === 'boss' ? -1 : tb === 'boss' ? 1 : b - a || ta.localeCompare(tb)))
-            .map(([type, n]) => (
-              <span key={type} className={`preview-unit${type === 'boss' ? ' boss' : ''}`}>
-                {n}× {ENEMIES[type].name}
-                {ENEMIES[type].flying && <span className="air-mark" title="Flying — only Arrow, Tesla, and Sniper can hit it">✈</span>}
+          {preview ? (
+            <>
+              <span className="preview-label">Next wave:</span>
+              <span className="preview-threat" title="Total effective enemy HP this wave will field">
+                ≈{preview.totalHp.toLocaleString()} HP
               </span>
-            ))}
-          {preview.affix && (
-            <span className="affix-badge" title={AFFIXES[preview.affix].description}>
-              {AFFIXES[preview.affix].name}
-            </span>
+              {preview.elites > 0 && (
+                <span className="preview-elites" title="Elite units — snipers deal bonus damage to these">
+                  ⚔ {preview.elites} elite{preview.elites > 1 ? 's' : ''}
+                </span>
+              )}
+              {(Object.entries(preview.counts) as [keyof typeof ENEMIES, number][])
+                .sort(([ta, a], [tb, b]) => (ta === 'boss' ? -1 : tb === 'boss' ? 1 : b - a || ta.localeCompare(tb)))
+                .map(([type, n]) => (
+                  <span key={type} className={`preview-unit${type === 'boss' ? ' boss' : ''}`}>
+                    {n}× {ENEMIES[type].name}
+                    {ENEMIES[type].flying && <span className="air-mark" title="Flying — only Arrow, Tesla, and Sniper can hit it">✈</span>}
+                  </span>
+                ))}
+              {preview.affix && (
+                <span className="affix-badge" title={AFFIXES[preview.affix].description}>
+                  {AFFIXES[preview.affix].name}
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="preview-label">Wave {state.wave}:</span>
+              <span className="preview-threat">{state.enemies.length + state.pendingSpawns.length} remaining</span>
+            </>
           )}
         </div>
       )}

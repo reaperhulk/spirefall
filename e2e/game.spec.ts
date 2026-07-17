@@ -337,6 +337,34 @@ test.describe('touch', () => {
   })
 })
 
+test.describe('tablet portrait', () => {
+  test.use({ viewport: { width: 768, height: 1024 } })
+
+  test('the playfield never shifts across phase transitions', async ({ page }) => {
+    // iPad-portrait regression: the start-wave button used to unmount during
+    // waves and the scouting strip vanished, re-wrapping the header — the
+    // playfield jumped every wave. Both are now constant-presence.
+    const errors = await boot(page, 'e2e-tablet')
+    await page.locator('.hint-close').click() // the one-time hint banner is a legitimate shift; remove it
+    await page.getByTestId('shop-arrow').click()
+    await clickCell(page, 4, 5)
+    await clickCell(page, 4, 7)
+    await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(2)
+
+    const before = (await page.locator('[data-testid="playfield"]').boundingBox())!
+    await page.getByTestId('start-wave').click()
+    await expect(page.getByTestId('start-wave')).toBeDisabled() // still mounted, just disabled
+    const during = (await page.locator('[data-testid="playfield"]').boundingBox())!
+    expect(during.y).toBe(before.y)
+
+    await page.evaluate(() => window.__harness.fastForward(120)) // clear wave 1
+    await expect(page.getByTestId('start-wave')).toBeEnabled()
+    const after = (await page.locator('[data-testid="playfield"]').boundingBox())!
+    expect(after.y).toBe(before.y)
+    expect(errors).toEqual([])
+  })
+})
+
 test.describe('mobile viewport', () => {
   test.use({ viewport: { width: 375, height: 667 }, hasTouch: true })
 

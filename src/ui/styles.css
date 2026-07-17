@@ -103,6 +103,28 @@ button:disabled {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  /* The control strip owns full rows: its wrap pattern depends only on its
+     own (constant) contents, so the header height never changes with phase
+     or label text — a re-wrapped header shoves the playfield around. */
+  flex-basis: 100%;
+}
+
+/* Variable-label controls hold reserved widths so text changes (wave
+   numbers, Give up vs End run, repair prices) never re-wrap the header. */
+.btn-wave {
+  min-width: 126px;
+  white-space: nowrap;
+}
+
+.btn-abandon {
+  min-width: 78px;
+  white-space: nowrap;
+}
+
+.btn-repair {
+  min-width: 150px;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .hud-gold {
@@ -441,16 +463,25 @@ button:disabled {
   }
 }
 
-/* Scouting report: what the next wave will field. */
+/* Scouting report: what the next wave will field (live status mid-wave).
+   Single line, fixed height, horizontal scroll for overflow — a strip that
+   grows or shrinks moves the playfield. */
 .wave-preview {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  min-height: 30px;
   width: 100%;
   padding: 4px 16px;
   font-size: 13px;
   color: #a9b1d6;
+}
+
+.wave-preview > * {
+  flex-shrink: 0;
 }
 
 .preview-label {
