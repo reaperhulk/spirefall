@@ -339,6 +339,7 @@ export function RunOverOverlay({
               {MAPS.map((m, i) => (
                 <option key={m.name} value={String(i)}>
                   {m.name}
+                  {(meta.bestWaveByMap[String(i)] ?? 0) > 0 && ` — best ${meta.bestWaveByMap[String(i)]}`}
                 </option>
               ))}
             </select>
@@ -491,6 +492,17 @@ export function SettingsModal({
             Achievements <strong>{meta.achievements.length}/{ACHIEVEMENTS.length}</strong>
           </span>
         </div>
+        {Object.keys(meta.bestWaveByMap).length > 0 && (
+          <div className="records-row" data-testid="map-records">
+            {MAPS.map((m, i) =>
+              (meta.bestWaveByMap[String(i)] ?? 0) > 0 ? (
+                <span key={m.name}>
+                  {m.name} <strong>{meta.bestWaveByMap[String(i)]}</strong>
+                </span>
+              ) : null,
+            )}
+          </div>
+        )}
         <div className="achievement-grid">
           {ACHIEVEMENTS.map((a) => (
             <span

@@ -79,6 +79,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
       data.meta.ascensions ??= 0
       data.meta.emberUpgrades ??= {}
       data.meta.bestWave ??= 0
+      data.meta.bestWaveByMap ??= {}
       data.meta.lifetimeKills ??= 0
       data.meta.history ??= []
       data.meta.achievements ??= []

@@ -48,6 +48,7 @@ export function createMeta(): MetaState {
     upgrades: {},
     emberUpgrades: {},
     bestWave: 0,
+    bestWaveByMap: {},
     lifetimeKills: 0,
     achievements: [],
     history: [],
@@ -259,6 +260,10 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
       victories: meta.victories + won,
       cycleVictories: meta.cycleVictories + won,
       bestWave: Math.max(meta.bestWave, summary.wavesCleared),
+      bestWaveByMap:
+        summary.wavesCleared > (meta.bestWaveByMap[String(run.mapId)] ?? 0)
+          ? { ...meta.bestWaveByMap, [String(run.mapId)]: summary.wavesCleared }
+          : meta.bestWaveByMap,
       achievements: [...meta.achievements, ...unlocked.map((a) => a.id)],
       lifetimeKills: meta.lifetimeKills + summary.kills,
       history: [

@@ -221,6 +221,7 @@ export interface MetaState {
   upgrades: Record<string, number> // MetaUpgradeId -> level (wiped on ascension)
   emberUpgrades: Record<string, number> // EmberUpgradeId -> level (permanent)
   bestWave: number // furthest wave ever cleared
+  bestWaveByMap: Record<string, number> // mapId (as string key) -> furthest wave cleared there
   lifetimeKills: number
   achievements: string[] // earned achievement ids, in earn order
   history: { outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }[] // recent runs, newest first

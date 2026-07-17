@@ -283,4 +283,20 @@ describe('records', () => {
     expect(meta.history).toHaveLength(HISTORY_LIMIT)
     expect(meta.history[0]!.wavesCleared).toBe(14) // newest first
   })
+
+  it('per-map bests track each battlefield separately and never regress', () => {
+    let meta = createMeta()
+    const settle = (mapId: number, wavesCleared: number) => {
+      const run = { ...createRun(meta, 'map-rec', mapId), phase: 'defeat' as const, wavesCleared, kills: 0, sparksEarned: 0 }
+      meta = settleRun(meta, run).meta
+    }
+    settle(2, 9)
+    settle(4, 12)
+    settle(2, 6) // worse run on map 2 — the record stands
+    expect(meta.bestWaveByMap).toEqual({ '2': 9, '4': 12 })
+    expect(meta.bestWave).toBe(12)
+    // Zero-progress runs leave no record entry.
+    settle(1, 0)
+    expect(meta.bestWaveByMap['1']).toBeUndefined()
+  })
 })

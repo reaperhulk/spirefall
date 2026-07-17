@@ -31,6 +31,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+45. **Per-map records** — every battlefield keeps its own best wave
+    (settle-time, never regresses, zero-progress runs leave no entry;
+    save-migrated). Shown inline in the Battlefield picker ("The Serpent —
+    best 17") and as a row in Records.
+
 44. **Docs + post-relic fuzz audit** — README rewritten for the game as it
     stands (7 towers, 23 relics, Trials, Cataclysms, meta stack, daily,
     deep links, fuzzer story). A fresh 216-run fuzz hunt against the new
