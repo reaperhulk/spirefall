@@ -510,6 +510,11 @@ button:disabled {
   color: #7dcfff;
 }
 
+.armor-mark {
+  margin-left: 4px;
+  color: #a8b0c8;
+}
+
 .tower-air-note {
   font-size: 12px;
   color: #a9b1d6;

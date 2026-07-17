@@ -75,18 +75,25 @@ export const RELIC_PRIORITY: RelicId[] = [
   'golden_touch',
 ]
 
-const BUILD_RATIO: Record<TowerType, number> = { arrow: 5, cannon: 2, frost: 1, tesla: 3, sniper: 2, mint: 1, beacon: 1 }
+// The reference comp is phase-aware: the opening horde is cheap chip fodder
+// (arrows shred it, cannons are slow overkill), but armor scales on the hp
+// curve, so from the midgame the competent answer leans on cannons and
+// snipers — heavy hits barely feel flat reduction, rapid fire bleeds it.
+const EARLY_RATIO: Record<TowerType, number> = { arrow: 5, cannon: 2, frost: 1, tesla: 3, sniper: 2, mint: 1, beacon: 1 }
+const LATE_RATIO: Record<TowerType, number> = { arrow: 4, cannon: 4, frost: 1, tesla: 2, sniper: 3, mint: 1, beacon: 1 }
+const HEAVY_META_WAVE = 9 // armor starts to bite; the build plan pivots
 
 function pickBuildType(state: RunState): TowerType {
   // Early game is all about cheap single-target DPS.
   if (state.wave < 3) return 'arrow'
   // After that, build toward the ratio: pick the available type most below quota.
+  const ratio = state.wave < HEAVY_META_WAVE ? EARLY_RATIO : LATE_RATIO
   const counts: Record<TowerType, number> = { arrow: 0, cannon: 0, frost: 0, tesla: 0, sniper: 0, mint: 0, beacon: 0 }
   for (const t of state.towers) counts[t.type] += 1
   let best: TowerType = 'arrow'
   let bestScore = -Infinity
   for (const type of state.availableTowers) {
-    const score = BUILD_RATIO[type] - counts[type] * (10 / BUILD_RATIO[type])
+    const score = ratio[type] - counts[type] * (10 / ratio[type])
     if (score > bestScore) {
       best = type
       bestScore = score

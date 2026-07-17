@@ -30,6 +30,7 @@ function makeEnemy(state: RunState, overrides: Partial<Enemy> & { type: Enemy['t
     bounty: def.bounty,
     damage: def.damage,
     shield: def.shield,
+    armor: 0,
     healCooldown: def.heal ? def.heal.everyTicks : 0,
     broodCooldown: def.brood ? def.brood.everyTicks : 0,
     phased: false,

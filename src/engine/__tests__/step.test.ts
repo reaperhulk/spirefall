@@ -3,7 +3,7 @@ import { ENHANCE_COST_GROWTH_PCT, RELIC_IDS, RELIC_PITY_WAVE, RELICS, relicSkipG
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
-import { damageBreakdown, drawRelicOffer, effectiveDamagePct } from '../combat'
+import { applyHit, damageBreakdown, drawRelicOffer, effectiveDamagePct } from '../combat'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
 import { cellCenter, getMap } from '../grid'
@@ -320,8 +320,9 @@ describe('relics', () => {
   it('an offer appears after wave 5 and choosing applies it', () => {
     // Drive a competent bot until the first relic offer shows up, then choose
     // manually. The loop condition is checked before the bot acts, so the bot
-    // never gets to pick the relic itself.
-    let s = freshRun('relic-run')
+    // never gets to pick the relic itself. A tall spire keeps the test about
+    // offer mechanics, not whether a fresh bot survives to wave 5 on this seed.
+    let s = { ...freshRun('relic-run'), spireHp: 100, spireMaxHp: 100 }
     while (s.relicOffer === null && s.phase !== 'defeat' && s.tick < 200_000) {
       s = step(s, balancedBot(s)).state
     }
@@ -365,7 +366,7 @@ describe('relics', () => {
       s.relics = ['shatter']
       s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
       s.towers.push({ id: s.nextEntityId++, type: 'arrow', cell: { cx: 6, cy: 4 }, tier: 1, cooldown: 0, kills: 0, damageDealt: 0, targeting: 'first', enhance: 0, shots: 0 })
-      s.enemies.push({ id: s.nextEntityId++, type: 'brute', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1000, maxHp: 1000, speed: 0, slowFactor: slowTicks > 0 ? 60 : 100, slowTicks, bounty: 3, damage: 3, shield: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
+      s.enemies.push({ id: s.nextEntityId++, type: 'brute', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1000, maxHp: 1000, speed: 0, slowFactor: slowTicks > 0 ? 60 : 100, slowTicks, bounty: 3, damage: 3, shield: 0, armor: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
       return step(s, []).state.towers[0]!.damageDealt
     }
     const plain = duel(0)
@@ -380,7 +381,7 @@ describe('relics', () => {
     s.phase = 'wave'
     s.pendingSpawns = [{ type: 'runner', tick: 9_999_999 }]
     s.towers.push({ id: s.nextEntityId++, type: 'sniper', cell: { cx: 6, cy: 4 }, tier: 3, cooldown: 0, kills: 0, damageDealt: 0, targeting: 'first', enhance: 0, shots: 0 })
-    s.enemies.push({ id: s.nextEntityId++, type: 'runner', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1, maxHp: 1, speed: 0, slowFactor: 100, slowTicks: 0, bounty: 1, damage: 1, shield: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
+    s.enemies.push({ id: s.nextEntityId++, type: 'runner', pos: cellCenter({ cx: 6, cy: 5 }), hp: 1, maxHp: 1, speed: 0, slowFactor: 100, slowTicks: 0, bounty: 1, damage: 1, shield: 0, armor: 0, healCooldown: 0, broodCooldown: 0, phased: false, phaseCooldown: 0, targetCell: null })
     const after = step(s, []).state
     expect(after.kills).toBe(100)
     expect(after.spireHp).toBe(6)
@@ -549,6 +550,59 @@ describe('cataclysms', () => {
   })
 })
 
+describe('armor', () => {
+  it('applyHit: flat reduction, min 1 lands, shields still judge first', () => {
+    const armored = (armor: number, shield = 0) => ({
+      id: 1,
+      type: 'brute' as const,
+      pos: { x: 0, y: 0 },
+      hp: 100,
+      maxHp: 100,
+      speed: 0,
+      slowFactor: 100,
+      slowTicks: 0,
+      bounty: 3,
+      damage: 3,
+      shield,
+      armor,
+      healCooldown: 0,
+      broodCooldown: 0,
+      phased: false,
+      phaseCooldown: 0,
+      targetCell: null,
+    })
+    const a = armored(5)
+    expect(applyHit(a, 8)).toBe(3) // 8 − 5
+    expect(applyHit(a, 4)).toBe(1) // armor can never fully stop a landing hit
+    const shielded = armored(5, 10)
+    expect(applyHit(shielded, 9)).toBe(0) // the shield judges the raw hit first
+    expect(applyHit(shielded, 20)).toBe(15) // through the shield, armor still taxes
+  })
+
+  it('grows out of the hp curve: zero at spawn parity, ramping from the midgame', () => {
+    const spawnBrute = (hpScalePct: number) => {
+      let s = cloneRun(freshRun('armor-onset'))
+      s.phase = 'build'
+      s.wave = 5
+      s.wavesCleared = 5
+      s.waveBudget = 400
+      s.hpScalePct = hpScalePct
+      s.spireHp = 1000
+      s.spireMaxHp = 1000
+      s = step(s, [{ type: 'start_wave' }]).state
+      s = stepUntil(s, (st) => st.enemies.some((e) => e.type === 'brute'), 3000)
+      return s.enemies.find((e) => e.type === 'brute')
+    }
+    // At curve baseline armored types spawn bare — the fresh opening is
+    // untouched. Deeper in, armor has emerged.
+    const early = spawnBrute(100)
+    if (early) expect(early.armor).toBe(0)
+    const late = spawnBrute(500)
+    expect(late).toBeDefined()
+    expect(late!.armor).toBe(4) // floor(1 × (500 − 100) / 100)
+  })
+})
+
 describe('single-target niches', () => {
   // One tower, one tanky enemy in range, one tick: the first shot isolates
   // per-target bonuses with no targeting or hp-cap noise.
@@ -580,6 +634,7 @@ describe('single-target niches', () => {
       bounty: 1,
       damage: 1,
       shield,
+      armor: 0,
       healCooldown: 0,
       broodCooldown: 0,
       phased: false,
@@ -640,6 +695,7 @@ describe('probability layer', () => {
         bounty: 6,
         damage: 5,
         shield: 0,
+    armor: 0,
         healCooldown: 0,
       broodCooldown: 0,
       phased: false,
@@ -746,6 +802,7 @@ describe('relic depth', () => {
         bounty: 3,
         damage: 3,
         shield: 0,
+    armor: 0,
         healCooldown: 0,
         broodCooldown: 0,
         phased: false,
@@ -848,6 +905,7 @@ describe('bulwark', () => {
       bounty: 40,
       damage: 8,
       shield: 0,
+    armor: 0,
       healCooldown: 0,
       broodCooldown: 0,
       phased: false,

@@ -686,6 +686,11 @@ export default function App() {
                   <span key={type} className={`preview-unit${type === 'boss' ? ' boss' : ''}`}>
                     {n}× {ENEMIES[type].name}
                     {ENEMIES[type].flying && <span className="air-mark" title="Flying — only Arrow, Tesla, and Sniper can hit it">✈</span>}
+                    {(ENEMIES[type].armor ?? 0) > 0 && (
+                      <span className="armor-mark" title="Armored — every hit loses flat damage. Rapid fire suffers; heavy shells barely notice.">
+                        ▣
+                      </span>
+                    )}
                   </span>
                 ))}
               {preview.affix && (

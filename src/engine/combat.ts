@@ -90,7 +90,10 @@ export function effectiveCritDamagePct(state: RunState): number {
 
 export function applyHit(enemy: Enemy, damage: number, pierceShield = false): number {
   if (!pierceShield && damage <= enemy.shield) return 0 // shieldbearers ignore weak hits entirely
-  const dealt = Math.min(enemy.hp, damage)
+  // Armor: flat reduction per hit, min 1 always lands. Chip damage bleeds a
+  // large fraction to it; heavy shells barely notice — the midgame
+  // composition pressure that shields (a late threshold) never provided.
+  const dealt = Math.min(enemy.hp, Math.max(1, damage - enemy.armor))
   enemy.hp -= dealt
   return dealt
 }
@@ -496,6 +499,7 @@ export function carrierBroods(state: RunState, events: GameEvent[]): void {
         bounty: 0, // hatchlings pay nothing — stalling a carrier is never profit
         damage: def.damage,
         shield: def.shield,
+        armor: 0, // hatchlings and shards are trash — no defense stats
         healCooldown: 0,
         broodCooldown: 0,
         phased: false,
@@ -592,6 +596,7 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
           bounty: def.bounty,
           damage: def.damage,
           shield: def.shield,
+          armor: 0, // shards carry no defense stats
           healCooldown: 0,
           broodCooldown: 0,
           phased: false,

@@ -38,6 +38,21 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+51. *(post-marathon, playtest)* **Armor** — playtest: "arrows still make it
+    to wave 20 with very little trouble." Measurement agreed: arrow-only
+    tracked the balanced comp wave-for-wave to ~21 and only then hit the
+    shield cliff. New second defense stat: armor, flat per-hit reduction
+    (min 1 lands) on brutes/healers/splitters/carriers/bosses, growing out
+    of the HP curve's excess over baseline — zero in the opening (first
+    tuning killed fresh runs at wave 5; the onset formula fixed it), ~1 by
+    wave 8, a third of every arrow by the late teens while cannons/snipers
+    barely notice. The balanced reference became phase-aware (chip-lean
+    opening, cannon/sniper lean from wave 9) and keeps its ~20k win;
+    arrows now fall behind from midgame and never win. ▣ marks in the
+    scouting report and on enemies. Goldens re-pinned (balanced-fresh
+    14→12); envelope re-derived (fresh→mid margin +5→+2); both fuzz pins
+    green.
+
 50. **The closer: deep fuzz → two relic exploits killed** — the final
     full-depth hunt (1600 runs, 4 seeds) found a mint-heavy economy comp
     winning at 5k/8k on beta/gamma. Ablation isolated TWO enablers: Bounty

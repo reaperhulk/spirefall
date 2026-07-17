@@ -96,6 +96,7 @@ export interface Enemy {
   bounty: number
   damage: number // dealt to the Spire on arrival
   shield: number // hits dealing <= this are fully blocked
+  armor: number // flat damage reduction per hit (min 1 always lands)
   healCooldown: number // healers: ticks until next healing pulse
   broodCooldown: number // carriers: ticks until the next brood hatches
   phased: boolean // wraiths: untargetable by towers while phased

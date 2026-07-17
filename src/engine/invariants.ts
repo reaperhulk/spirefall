@@ -70,6 +70,7 @@ export function assertInvariants(state: RunState): void {
     )
     check(e.slowFactor >= 1 && e.slowFactor <= 100, `enemy ${e.id} slowFactor ${e.slowFactor}`)
     check(e.slowTicks >= 0, `enemy ${e.id} negative slowTicks`)
+    check(Number.isInteger(e.armor) && e.armor >= 0, `enemy ${e.id} bad armor ${e.armor}`)
     check(Number.isInteger(e.healCooldown) && e.healCooldown >= 0, `enemy ${e.id} bad healCooldown`)
     check(Number.isInteger(e.broodCooldown) && e.broodCooldown >= 0, `enemy ${e.id} bad broodCooldown`)
     check(Number.isInteger(e.phaseCooldown) && e.phaseCooldown >= 0, `enemy ${e.id} bad phaseCooldown`)

@@ -98,6 +98,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
           t.shots ??= t.damageDealt > 0 || t.kills > 0 ? 1 : 0
         }
         for (const e of data.run.enemies) {
+          e.armor ??= 0
           e.healCooldown ??= 0
           e.broodCooldown ??= 0
           e.phased ??= false

@@ -104,10 +104,22 @@ intentionally moves):
 | Arrow-only spam, +20k sparks | dies at the shield wall (~wave 22) on every map — composition is mandatory |
 | Career (bot) | first victory around run ~13, repeating wins after, then endless |
 
-Shieldbearer shields scale on the same curve as enemy HP, so cheap rapid-fire
-chip damage stops working on them in the late game — piercing snipers or heavy
-shells are required. This is the anti-mono-tower check, pinned by the
-`arrowOnly` bot in the envelope.
+Two defense stats keep composition honest, binding at different times:
+
+- **Shields** (shieldbearers, carriers) are a threshold: hits at or below the
+  shield bounce entirely. They scale at half the HP curve's rate and wall out
+  rapid fire in the late game — piercing snipers or heavy shells required.
+- **Armor** (brutes, healers, splitters, carriers, bosses) is attrition: flat
+  damage reduction on every hit (min 1 lands), growing out of the HP curve's
+  excess over baseline. Zero in the opening, ~1 point by wave 8, and by the
+  late teens it eats a third of every arrow while cannon shells and sniper
+  rounds barely notice. Armor is why chip-heavy comps bend from the MIDGAME
+  on instead of cruising to a wave-22 cliff.
+
+Together they are the anti-mono-tower check, pinned by the `arrowOnly` bot in
+the envelope: arrows track the reference until the midgame, then fall behind
+and never win, while the (phase-aware, cannon-leaning) mixed comp still takes
+the ~20k victory.
 
 The Spire has **10 HP** and enemies keep their damage identity: swarmlings chip
 for 1, runners 2, fliers 3, shieldbearers 4, brutes 5, bosses 8 — a boss leak

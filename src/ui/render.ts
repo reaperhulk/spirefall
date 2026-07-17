@@ -871,13 +871,16 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.globalAlpha = 1
       }
     }
-    // Shielded enemies wear their block threshold — if your shots deal less,
-    // they bounce.
-    if (e.shield > 0) {
+    // Defense stats are worn openly: ⛨N = shield (hits ≤ N bounce),
+    // ▣N = armor (every hit loses N, min 1 lands).
+    if (e.shield > 0 || e.armor > 0) {
       ctx.font = 'bold 8px ui-monospace, monospace'
       ctx.textAlign = 'center'
-      ctx.fillStyle = '#c0caf5'
-      ctx.fillText(`⛨${e.shield}`, x, y + r + 9)
+      const parts: string[] = []
+      if (e.shield > 0) parts.push(`⛨${e.shield}`)
+      if (e.armor > 0) parts.push(`▣${e.armor}`)
+      ctx.fillStyle = e.shield > 0 ? '#c0caf5' : '#a8b0c8'
+      ctx.fillText(parts.join(' '), x, y + r + 9)
       ctx.textAlign = 'left'
     }
     // HP bar

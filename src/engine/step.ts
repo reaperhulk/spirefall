@@ -388,6 +388,12 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       def.shield > 0
         ? Math.max(def.shield, Math.floor((def.shield * shieldScalePct * ironclad) / 10_000))
         : 0
+    // Armor grows out of the hp curve's EXCESS over baseline: zero at spawn
+    // parity (the fresh-account opening is untouched — wave 5 was already a
+    // knife's edge), ~1 point by wave 8, a third of every arrow by the late
+    // teens while heavy shells barely notice. Gradual midgame composition
+    // pressure, never an early-game cliff; min 1 damage always lands.
+    const armor = def.armor ? Math.floor((def.armor * Math.max(0, s.hpScalePct - 100)) / 100) : 0
     const id = s.nextEntityId
     s.nextEntityId += 1
     s.enemies.push({
@@ -402,6 +408,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       bounty: def.bounty,
       damage: def.damage,
       shield,
+      armor,
       healCooldown: def.heal ? def.heal.everyTicks : 0,
       broodCooldown: def.brood ? def.brood.everyTicks : 0,
       phased: false,

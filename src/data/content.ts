@@ -16,6 +16,12 @@ export interface EnemyDef {
   bounty: number // base gold per kill
   damage: number // damage to the Spire on arrival
   shield: number // hits dealing <= this are fully blocked
+  // Flat damage reduction per hit (min 1 always lands), scaled on the FULL
+  // hp curve. Shields are a threshold check (weak hits bounce entirely,
+  // binding late); armor is attrition — it taxes rapid-fire chip
+  // proportionally far more than heavy shells, so armored enemies bend
+  // compositions gradually from the midgame instead of at a wave-22 cliff.
+  armor?: number
   unlockWave: number
   weight?: number // wave-composition pick weight (default 1) — keeps the
   // comp-check enemies frequent no matter how many types unlock
@@ -36,17 +42,17 @@ export interface EnemyDef {
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
   runner: { name: 'Runner', hp: 14, speed: 120, cost: 5, pack: 5, spacing: 7, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
   swarmling: { name: 'Swarmling', hp: 5, speed: 155, cost: 2, pack: 10, spacing: 4, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
-  brute: { name: 'Brute', hp: 70, speed: 58, cost: 13, pack: 2, spacing: 16, bounty: 3, damage: 3, shield: 0, unlockWave: 4, elite: true },
+  brute: { name: 'Brute', hp: 70, speed: 58, cost: 13, pack: 2, spacing: 16, bounty: 3, damage: 3, shield: 0, armor: 1, unlockWave: 4, elite: true },
   flier: { name: 'Gale Imp', hp: 20, speed: 95, cost: 7, pack: 4, spacing: 10, bounty: 2, damage: 2, shield: 0, unlockWave: 6, flying: true },
   shieldbearer: { name: 'Shieldbearer', hp: 50, speed: 72, cost: 15, pack: 2, spacing: 14, bounty: 4, damage: 2, shield: 4, unlockWave: 8, elite: true },
-  healer: { name: 'Mendwitch', hp: 60, speed: 66, cost: 17, pack: 1, spacing: 18, bounty: 4, damage: 1, shield: 0, unlockWave: 11, elite: true, heal: { everyTicks: 60, amount: 4, radius: 1800 } },
-  splitter: { name: 'Amalgam', hp: 45, speed: 82, cost: 13, pack: 2, spacing: 14, bounty: 2, damage: 1, shield: 0, unlockWave: 13, elite: true, splitInto: { type: 'splitling', count: 2 } },
+  healer: { name: 'Mendwitch', hp: 60, speed: 66, cost: 17, pack: 1, spacing: 18, bounty: 4, damage: 1, shield: 0, armor: 1, unlockWave: 11, elite: true, heal: { everyTicks: 60, amount: 4, radius: 1800 } },
+  splitter: { name: 'Amalgam', hp: 45, speed: 82, cost: 13, pack: 2, spacing: 14, bounty: 2, damage: 1, shield: 0, armor: 1, unlockWave: 13, elite: true, splitInto: { type: 'splitling', count: 2 } },
   splitling: { name: 'Shard', hp: 13, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
   wraith: { name: 'Wraith', hp: 35, speed: 88, cost: 11, pack: 2, spacing: 12, bounty: 2, damage: 2, shield: 0, unlockWave: 12, phasing: { visibleTicks: 60, hiddenTicks: 45 } },
-  carrier: { name: 'Broodmother', hp: 80, speed: 40, cost: 30, pack: 1, spacing: 26, bounty: 8, damage: 4, shield: 3, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 140 } },
-  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, unlockWave: 10, elite: true },
-  boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 } },
-  boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, unlockWave: 30, elite: true, flying: true },
+  carrier: { name: 'Broodmother', hp: 80, speed: 40, cost: 30, pack: 1, spacing: 26, bounty: 8, damage: 4, shield: 3, armor: 1, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 140 } },
+  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, armor: 1, unlockWave: 10, elite: true },
+  boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, armor: 1, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 } },
+  boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, armor: 1, unlockWave: 30, elite: true, flying: true },
 }
 
 // Boss waves rotate through the roster: 10 → Spirebreaker (tank),
