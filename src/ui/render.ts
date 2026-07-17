@@ -92,6 +92,7 @@ interface MapTheme {
   gridLine: string
   rock: string
   rockEdge: string
+  mote: string // ambient drifting particles: fireflies, spray, dust, embers
 }
 
 const DEFAULT_THEME: MapTheme = {
@@ -101,19 +102,20 @@ const DEFAULT_THEME: MapTheme = {
   gridLine: COLORS.gridLine,
   rock: COLORS.rock,
   rockEdge: COLORS.rockEdge,
+  mote: '#9aa5ce',
 }
 
 const MAP_THEMES: Record<string, MapTheme> = {
-  // Verdant lowlands: mossy greens.
-  Greenfield: { bg: '#0a1210', checker: '#0d1713', path: '#101c15', gridLine: '#14231c', rock: '#2b3d33', rockEdge: '#3c5245' },
-  // Flooded cuts: cold blue slate.
-  'The Channels': { bg: '#091018', checker: '#0c141f', path: '#0f1a29', gridLine: '#132133', rock: '#28374d', rockEdge: '#365071' },
-  // Fortress stone: neutral grey masonry.
-  'The Bulwark': { bg: '#0f0f12', checker: '#131318', path: '#17171e', gridLine: '#1d1d26', rock: '#34343f', rockEdge: '#4a4a59' },
-  // Sun-scoured desert: warm sand.
-  'The Serpent': { bg: '#14100a', checker: '#1a150d', path: '#211a11', gridLine: '#2a2115', rock: '#453824', rockEdge: '#5e4d31' },
-  // Ashen wastes: scorched violet dusk.
-  Crossroads: { bg: '#100b14', checker: '#150e1b', path: '#1b1223', gridLine: '#23172e', rock: '#3a2c4a', rockEdge: '#503e66' },
+  // Verdant lowlands: mossy greens, drifting fireflies.
+  Greenfield: { bg: '#0a1210', checker: '#0d1713', path: '#101c15', gridLine: '#14231c', rock: '#2b3d33', rockEdge: '#3c5245', mote: '#b8e08a' },
+  // Flooded cuts: cold blue slate, hanging spray.
+  'The Channels': { bg: '#091018', checker: '#0c141f', path: '#0f1a29', gridLine: '#132133', rock: '#28374d', rockEdge: '#365071', mote: '#8fd0ff' },
+  // Fortress stone: neutral grey masonry, settling dust.
+  'The Bulwark': { bg: '#0f0f12', checker: '#131318', path: '#17171e', gridLine: '#1d1d26', rock: '#34343f', rockEdge: '#4a4a59', mote: '#9a9aa8' },
+  // Sun-scoured desert: warm sand on the wind.
+  'The Serpent': { bg: '#14100a', checker: '#1a150d', path: '#211a11', gridLine: '#2a2115', rock: '#453824', rockEdge: '#5e4d31', mote: '#e0c080' },
+  // Ashen wastes: scorched violet dusk, rising embers.
+  Crossroads: { bg: '#100b14', checker: '#150e1b', path: '#1b1223', gridLine: '#23172e', rock: '#3a2c4a', rockEdge: '#503e66', mote: '#c586e0' },
 }
 
 function mapTheme(map: MapDef): MapTheme {
@@ -157,6 +159,7 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   drawTerrain(ctx, map, theme)
   drawPathHighlight(ctx, state, map, animTime(session), theme)
   drawGrid(ctx, map, theme)
+  drawAmbient(ctx, map, animTime(session), theme)
   drawRocks(ctx, map, theme)
   drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
@@ -226,6 +229,30 @@ function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: 
   }
   ctx.globalAlpha = 1
   ctx.lineWidth = 1
+}
+
+// Ambient motes: a handful of drifting particles that give each battlefield
+// air. Pure function of the animation clock and particle index — no state,
+// no RNG, freezes on pause, and sits under towers so it never fights combat
+// legibility. Skipped entirely under reduced motion.
+function drawAmbient(ctx: CanvasRenderingContext2D, map: MapDef, t: number, theme: MapTheme): void {
+  if (settings.reducedMotion) return
+  const w = map.width * CELL_PX
+  const h = map.height * CELL_PX
+  ctx.fillStyle = theme.mote
+  for (let i = 0; i < 26; i++) {
+    // Deterministic per-particle constants from cheap integer hashes.
+    const ox = ((i * 73) % 97) / 97
+    const oy = ((i * 53) % 89) / 89
+    const drift = 0.12 + ((i * 37) % 13) / 60
+    const x = (ox * w + t * drift + Math.sin(t * 0.015 + i * 1.7) * 8 + w) % w
+    const y = (oy * h + Math.sin(t * 0.011 + i * 2.3) * 10 - t * 0.03 * (i % 3) + 4 * h) % h
+    const a = 0.1 + 0.08 * Math.sin(t * 0.03 + i * 2.1)
+    ctx.globalAlpha = Math.max(0.03, a)
+    circle(ctx, x, y, 1 + (i % 3) * 0.7)
+    ctx.fill()
+  }
+  ctx.globalAlpha = 1
 }
 
 function drawRocks(ctx: CanvasRenderingContext2D, map: MapDef, theme: MapTheme): void {

@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+39. **Ambient atmosphere** — each battlefield breathes: 26 drifting motes
+    in the map's own accent (Greenfield fireflies, Channels spray, Bulwark
+    dust, Serpent windblown sand, Crossroads embers). Pure function of the
+    animation clock — no state, no RNG, freezes on pause, drawn under
+    towers, skipped under reduced motion.
+
 38. **Test health + Tempered** — root-caused the flaky placement e2e: after
     one tower, gold reads '150' and `toContainText('50')` matched it early,
     racing the remaining clicks (commands apply on the session's next
