@@ -240,6 +240,11 @@ export const RELIC_OFFER_SIZE = 3
 // Rarity weights for offer draws. Legendaries are events, not table stakes.
 export const RELIC_RARITY_WEIGHTS: Record<RelicRarity, number> = { common: 60, rare: 32, legendary: 8 }
 
+// Pity floor: from this wave on, an offer never rolls all commons while the
+// pool still holds something better. Deep runs are decided by relics — an
+// all-common wave-20 offer is a feels-bad blank, not variance worth keeping.
+export const RELIC_PITY_WAVE = 15
+
 // New relic mechanics.
 export const QUICKDRAW_COOLDOWN_PCT = 90 // quickdraw: cooldowns ×0.9
 export const LONGSIGHT_RANGE_PCT = 115 // longsight: range ×1.15

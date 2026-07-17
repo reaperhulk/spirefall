@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ENHANCE_COST_GROWTH_PCT, RELIC_IDS, relicSkipGold, TOWERS } from '../../data/content'
+import { ENHANCE_COST_GROWTH_PCT, RELIC_IDS, RELIC_PITY_WAVE, RELICS, relicSkipGold, TOWERS } from '../../data/content'
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
@@ -8,7 +8,7 @@ import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
 import { cellCenter, getMap } from '../grid'
 import { previewNextWave, step, wavesUntilCataclysm } from '../step'
-import type { RunState } from '../types'
+import type { RelicId, RunState } from '../types'
 
 function freshRun(seed = 'step-test'): RunState {
   return createRun(createMeta(), seed)
@@ -659,6 +659,31 @@ describe('relic depth', () => {
     const offer = drawRelicOffer(s, pool, 3)
     expect(new Set(offer).size).toBe(3)
     for (const id of offer) expect(s.relics).not.toContain(id)
+  })
+
+  it('pity floor: past wave 15 an offer never rolls all commons', () => {
+    // Early draws CAN roll all-common (that's the variance pity removes);
+    // find such a seed deterministically, then prove the same stream at
+    // wave 15 upgrades a slot.
+    let pitiedSeed: string | null = null
+    for (let i = 0; i < 50 && pitiedSeed === null; i++) {
+      const s = cloneRun(freshRun(`pity-${i}`))
+      const offer = drawRelicOffer(s, [...RELIC_IDS], 3) as RelicId[]
+      if (offer.every((id) => RELICS[id].rarity === 'common')) pitiedSeed = `pity-${i}`
+    }
+    expect(pitiedSeed).not.toBeNull()
+    const deep = cloneRun(freshRun(pitiedSeed!))
+    deep.wave = RELIC_PITY_WAVE
+    const offer = drawRelicOffer(deep, [...RELIC_IDS], 3) as RelicId[]
+    expect(offer.some((id) => RELICS[id].rarity !== 'common')).toBe(true)
+    // And the guarantee holds across many deep-run seeds.
+    for (let i = 0; i < 40; i++) {
+      const s = cloneRun(freshRun(`pity-deep-${i}`))
+      s.wave = RELIC_PITY_WAVE + (i % 10)
+      const o = drawRelicOffer(s, [...RELIC_IDS], 3) as RelicId[]
+      expect(o.some((id) => RELICS[id].rarity !== 'common')).toBe(true)
+      expect(new Set(o).size).toBe(3)
+    }
   })
 })
 

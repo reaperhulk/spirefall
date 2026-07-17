@@ -31,6 +31,12 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+28. **Relic pity** — from wave 15 on, an offer never rolls all commons while
+    the pool still holds better: the last slot upgrades to a random rare+.
+    Pity draws from the relics stream only when it fires, so pinned goldens
+    were untouched. Deterministic seed-sweep test proves both the trigger
+    and the guarantee.
+
 27. **Endless clarity + rewards** — HUD chip counts down to the next
     Cataclysm ("in N waves", pulsing red when this wave lands it), driven by
     a pure engine helper that mirrors the strike schedule exactly. Two new

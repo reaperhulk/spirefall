@@ -12,6 +12,7 @@ import {
   GLASS_CANNON_PCT,
   LONGSIGHT_RANGE_PCT,
   QUICKDRAW_COOLDOWN_PCT,
+  RELIC_PITY_WAVE,
   RELIC_RARITY_WEIGHTS,
   RELICS,
   PIERCING_ARROWS_PCT,
@@ -633,6 +634,18 @@ export function drawRelicOffer(state: RunState, pool: string[], size: number): s
     const chosen = bucket[pick.value]!
     remaining.splice(remaining.indexOf(chosen), 1)
     offer.push(chosen)
+  }
+  // Pity floor: past RELIC_PITY_WAVE an all-common offer upgrades its last
+  // slot to a random rare-or-better still in the pool. Deep runs are decided
+  // by relics; a blank offer at wave 20 is variance nobody enjoys.
+  if (state.wave >= RELIC_PITY_WAVE && offer.length > 0) {
+    const allCommon = offer.every((id) => RELICS[id as RelicId].rarity === 'common')
+    const upgrades = remaining.filter((id) => RELICS[id as RelicId].rarity !== 'common')
+    if (allCommon && upgrades.length > 0) {
+      const pick = nextInt(state.rng.relics, 0, upgrades.length - 1)
+      state.rng.relics = pick.rng
+      offer[offer.length - 1] = upgrades[pick.value]!
+    }
   }
   return offer
 }
