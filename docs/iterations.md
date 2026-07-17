@@ -38,6 +38,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+57. *(post-marathon, playtest)* **Sound 2.0** — every tower has its own
+    voice now (arrow pluck, cannon kick-drum boom, frost shimmer, tesla
+    crackle, sniper crack + whistle tail) instead of one shared blip, built
+    from layered oscillators plus a shared white-noise buffer through
+    resonant bandpass filters — still zero assets. Abilities got stingers
+    (meteor whistle-down + impact, frost nova glassy bloom, gold rush coin
+    arpeggio, bulwark gong) and cataclysm strikes a three-layer rumble. The
+    whole mix routes through a DynamicsCompressor master bus so 10× speed
+    ducks instead of clipping, combat percussion gets ±4% random pitch so
+    rapid fire doesn't machine-gun one sample, and heavy sounds (cannon,
+    sniper, boss, gong) repeat on slower per-kind cooldowns. Zombie-context
+    revival, priming, mute, and volume scaling all preserved.
+
 56. *(post-marathon, playtest)* **Wave preview fits phones** — the scouting
     report was one nowrap line that scrolled sideways on a 375px screen, so
     late-wave chips (elites, affix, threat) hung off the right edge. On
