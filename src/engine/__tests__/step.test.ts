@@ -404,15 +404,15 @@ describe('single-target niches', () => {
     expect(duel('arrow', 'flier')).toBe(14)
   })
 
-  it('snipers deal double damage to elites', () => {
+  it('snipers deal +50% damage to elites', () => {
     expect(duel('sniper', 'runner')).toBe(60)
-    expect(duel('sniper', 'brute')).toBe(120)
-    expect(duel('sniper', 'boss')).toBe(120)
+    expect(duel('sniper', 'brute')).toBe(90)
+    expect(duel('sniper', 'boss')).toBe(90)
   })
 
   it('snipers pierce shields that block everything else', () => {
     expect(duel('arrow', 'shieldbearer', 999)).toBe(0) // fully blocked
-    expect(duel('sniper', 'shieldbearer', 999)).toBe(120) // pierced, and elite
+    expect(duel('sniper', 'shieldbearer', 999)).toBe(90) // pierced, and elite
   })
 })
 

@@ -10,7 +10,10 @@ Read PLAN.md before making architectural changes — it is the design contract.
 - `src/data/` — Content as plain data: maps (string art), towers, enemies,
   abilities, relics, the meta tree, pacing constants.
 - `src/harness/` — Headless tooling: strategy bots, autoplay/careers, scenarios,
-  state hashing. `src/harness/__tests__/` holds the balance envelope + perf budget.
+  state hashing, and the build fuzzer (`policy.ts` + `fuzz.ts`: seeded
+  evolutionary search for curve-breaking strategies). `src/harness/__tests__/`
+  holds the balance envelope, perf budget, and the CI fuzz sweep;
+  `npm run fuzz:builds` runs the deep search.
 - `src/ui/` — React shell + canvas renderer. `session.ts` bridges real time to
   fixed ticks; commands are the only write path into the engine.
 - `e2e/` — Playwright suite driving the real UI (buttons, canvas clicks) plus the

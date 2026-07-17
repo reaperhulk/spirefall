@@ -124,7 +124,10 @@ export const TESLA_CHAIN_RANGE = 1400 // millicells between chain hops
 // single-target towers answer what AoE can't. Arrows shred the sky;
 // snipers execute elites and punch straight through shields.
 export const ARROW_AIR_BONUS_PCT = 100 // arrows deal +100% to fliers
-export const SNIPER_ELITE_BONUS_PCT = 100 // snipers deal +100% to elites
+// +50%, not +100%: elites dominate late-wave budgets, so a 2× elite bonus
+// made sniper-stacking flatly dominant (the build fuzzer proved it — victory
+// at 8k sparks). Half keeps the executioner niche without the cheese.
+export const SNIPER_ELITE_BONUS_PCT = 50
 
 // Past tier 3, towers can be enhanced indefinitely: +ENHANCE_DAMAGE_PCT damage
 // per level, each level costing ENHANCE_COST_GROWTH_PCT of the last. This is

@@ -272,6 +272,17 @@ last (given spending)*. Results also emit JSON so CI can diff balance drift betw
 main and a PR, like the reference repo's `--compare` mode — but gating PRs, not
 just observed manually.
 
+**The build fuzzer** (`src/harness/policy.ts` + `fuzz.ts`) goes further: whole
+strategies are plain-data `PolicyGenome`s (tower ratios, upgrade/repair/enhance
+thresholds, relic and meta spending priorities), and a seeded evolutionary
+search evaluates populations of them against the curve contract. The oracle
+flags *breaking* builds (any victory at ≤10k sparks — the curve says ~20k) and
+*warnings* (cheap wins, +7 waves over the balanced reference, endless running
+past wave 34). Every finding carries its genome JSON + map seed, so a break is
+a one-liner to reproduce and pin as a named bot (that is exactly how mono-arrow
+cheese became `arrowOnlyBot`). A small deterministic sweep gates CI; deep
+hunts run via `npm run fuzz:builds` (knobs: FUZZ_POP/GENS/BUDGETS/SEEDS/SEED).
+
 ### 5.7 UI smoke tests (Playwright)
 
 The UI layer gets a thin E2E: boot the game, drive a scripted 3-wave run through

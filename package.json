@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "goldens:update": "UPDATE_GOLDENS=1 vitest --run src/engine/__tests__/goldens.test.ts",
+    "fuzz:builds": "FUZZ_POP=20 FUZZ_GENS=5 FUZZ_BUDGETS=0,5000,8000,14000 FUZZ_SEEDS=alpha,beta,gamma,delta vitest --run src/harness/__tests__/fuzz.test.ts",
     "test:e2e": "playwright test",
     "check": "npm run lint && npm run typecheck && npm run test:unit && npm run build"
   },

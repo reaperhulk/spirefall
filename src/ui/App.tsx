@@ -38,7 +38,7 @@ const SPEEDS = [0, 1, 2, 3, 5, 10]
 // One-line combat role, shown in tooltips and the tower panel.
 function towerRole(type: TowerType): string {
   if (type === 'arrow') return 'hits ground & air ✈ · 2× vs fliers'
-  if (type === 'sniper') return 'hits ground & air ✈ · 2× vs elites, pierces shields'
+  if (type === 'sniper') return 'hits ground & air ✈ · 1.5× vs elites, pierces shields'
   if (type === 'tesla') return 'hits ground & air ✈'
   return 'ground only — cannot hit fliers'
 }

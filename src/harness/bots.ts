@@ -49,7 +49,7 @@ export const greedyBot: Bot = (state) => {
   return [{ type: 'start_wave' }]
 }
 
-const RELIC_PRIORITY: RelicId[] = [
+export const RELIC_PRIORITY: RelicId[] = [
   'spark_siphon',
   'glass_cannon',
   'piercing_arrows',
@@ -86,11 +86,39 @@ function pickBuildType(state: RunState): TowerType {
   return best
 }
 
+// Tunable thresholds for the shared bot machinery. The named bots use the
+// defaults; the build fuzzer (src/harness/fuzz.ts) searches over them.
+export interface BuildKnobs {
+  upgradeAtTowers: number // start tier-upgrading once this many towers exist
+  targetBase: number // desired tower count = base + perWave·wave, capped
+  targetPerWave: number
+  targetMax: number
+  repairDeficit: number // build-phase repair when missing ≥ this much HP...
+  repairMinGold: number // ...and holding at least this much gold
+  enhanceStrategy: 'cheapest' | TowerType // which tier-3 tower to enhance
+  relicPriority: RelicId[]
+}
+
+export const DEFAULT_KNOBS: BuildKnobs = {
+  upgradeAtTowers: 6,
+  targetBase: 4,
+  targetPerWave: 1,
+  targetMax: 24,
+  repairDeficit: 2,
+  repairMinGold: 150,
+  enhanceStrategy: 'cheapest',
+  relicPriority: RELIC_PRIORITY,
+}
+
 // Build-phase economy shared by the competent bots: relic pick, tier
 // upgrades, expansion via pickType, repairs, then enhancements.
-function buildActions(state: RunState, pickType: (s: RunState) => TowerType): Command[] {
+export function buildActions(
+  state: RunState,
+  pickType: (s: RunState) => TowerType,
+  knobs: BuildKnobs = DEFAULT_KNOBS,
+): Command[] {
   if (state.relicOffer !== null) {
-    const pick = RELIC_PRIORITY.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
+    const pick = knobs.relicPriority.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
     return [{ type: 'choose_relic', relic: pick }]
   }
 
@@ -103,11 +131,11 @@ function buildActions(state: RunState, pickType: (s: RunState) => TowerType): Co
       upgrade = { id: t.id, cost, tier: t.tier }
     }
   }
-  if (upgrade !== null && upgrade.tier === 1 && state.towers.length >= 6) {
+  if (upgrade !== null && upgrade.tier === 1 && state.towers.length >= knobs.upgradeAtTowers) {
     return [{ type: 'upgrade_tower', id: upgrade.id }]
   }
 
-  const targetTowers = Math.min(4 + state.wave, 24)
+  const targetTowers = Math.min(knobs.targetBase + state.wave * knobs.targetPerWave, knobs.targetMax)
   if (state.towers.length < targetTowers) {
     const type = pickType(state)
     const cost = towerTier(type, 1).cost
@@ -119,12 +147,15 @@ function buildActions(state: RunState, pickType: (s: RunState) => TowerType): Co
   if (upgrade !== null) return [{ type: 'upgrade_tower', id: upgrade.id }]
 
   // Patch the spire up between waves before banking gold.
-  if (state.spireHp <= state.spireMaxHp - 2 && state.gold >= 150) return [{ type: 'repair_spire' }]
+  if (state.spireHp <= state.spireMaxHp - knobs.repairDeficit && state.gold >= knobs.repairMinGold) {
+    return [{ type: 'repair_spire' }]
+  }
 
-  // Everything built and maxed: sink gold into the cheapest enhancement.
+  // Everything built and maxed: sink gold into an enhancement.
   let enhance: { id: number; cost: number } | null = null
   for (const t of state.towers) {
     if (t.tier !== 3) continue
+    if (knobs.enhanceStrategy !== 'cheapest' && t.type !== knobs.enhanceStrategy) continue
     const cost = enhanceCost(t.type, t.enhance)
     if (state.gold >= cost && (enhance === null || cost < enhance.cost)) enhance = { id: t.id, cost }
   }
@@ -134,11 +165,16 @@ function buildActions(state: RunState, pickType: (s: RunState) => TowerType): Co
 }
 
 // Wave-phase triage and ability usage shared by the competent bots.
-function waveActions(state: RunState): Command[] {
+export function waveActions(state: RunState, waveRepairPct = 50): Command[] {
   const map = getMap(state.mapId)
   // Emergency repairs mid-assault — but not in the early game, where gold
   // is better spent on towers than triage.
-  if (state.wave >= 10 && state.spireHp < state.spireMaxHp / 2 && state.gold >= 100) {
+  if (
+    waveRepairPct > 0 &&
+    state.wave >= 10 &&
+    state.spireHp < (state.spireMaxHp * waveRepairPct) / 100 &&
+    state.gold >= 100
+  ) {
     return [{ type: 'repair_spire' }]
   }
   const alive = state.enemies.length
