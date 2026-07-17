@@ -564,6 +564,18 @@ button:disabled {
   letter-spacing: 0.04em;
 }
 
+/* Trial badges: opt-in handicaps, worn like a dueling scar. */
+.trial-badge {
+  background: #33241a;
+  border: 1px solid #e0af68;
+  color: #e0af68;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 /* Cataclysm countdown: endless-only strike warning. */
 .cataclysm-countdown {
   border: 1px solid #6a5480;

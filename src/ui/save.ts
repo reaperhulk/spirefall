@@ -112,6 +112,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.killsByEnemy ??= {}
         data.run.hpByWave ??= []
         data.run.repairsThisWave ??= 0
+        data.run.trials ??= []
         data.run.mods.critChancePct ??= 0
       }
       return data

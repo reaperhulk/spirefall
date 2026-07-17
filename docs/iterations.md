@@ -31,6 +31,13 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+37. **Trials** — opt-in run handicaps that pay bonus sparks: Glass Spire
+    (half HP, +40%✦), Swift Horde (+15% speed, +25%✦), Iron Horde (+25% HP,
+    +35%✦), Famine (−25% gold, +30%✦). Chosen next to the battlefield picker
+    (persisted; dailies ignore both), worn as a HUD badge, previewed
+    honestly in the scouting report, credited on the run-over screen.
+    Goldens hash-only.
+
 36. **Deep fuzz → repair economy fix** — a 1600-run hunt found a real break:
     all-offense accounts (Honed Arsenal first, zero spire HP) winning at 5k
     sparks by converting kill gold into unlimited mid-wave repairs. Ablation

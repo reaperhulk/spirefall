@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
-import { RELICS } from '../data/content'
+import { RELICS, TRIAL_IDS, TRIALS } from '../data/content'
 import { MAPS } from '../data/maps'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
@@ -203,6 +203,8 @@ export function RunOverOverlay({
   replay,
   mapPref,
   onMapPref,
+  trialPref,
+  onTrialPref,
   onBuy,
   onBuyEmber,
   onAscend,
@@ -213,6 +215,8 @@ export function RunOverOverlay({
   replay: () => string
   mapPref: string
   onMapPref: (v: string) => void
+  trialPref: string
+  onTrialPref: (v: string) => void
   onBuy: (id: MetaUpgradeId) => void
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
@@ -234,6 +238,11 @@ export function RunOverOverlay({
             </span>
           )}
         </p>
+        {summary.trials.length > 0 && (
+          <p className="run-summary" data-testid="summary-trials">
+            {summary.trials.map((t) => `⚔ ${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}% ✦)`).join(' · ')}
+          </p>
+        )}
         {summary.unlocked.length > 0 && (
           <div className="unlocks" data-testid="unlocks">
             {summary.unlocked.map((a) => (
@@ -293,6 +302,22 @@ export function RunOverOverlay({
               {MAPS.map((m, i) => (
                 <option key={m.name} value={String(i)}>
                   {m.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="map-pick">
+            Trial
+            <select
+              data-testid="trial-select"
+              value={trialPref}
+              onChange={(e) => onTrialPref(e.target.value)}
+              title="Opt-in handicaps that pay bonus sparks. Daily runs ignore trials."
+            >
+              <option value="none">None</option>
+              {TRIAL_IDS.map((t) => (
+                <option key={t} value={t}>
+                  {TRIALS[t].name} (+{TRIALS[t].sparkBonusPct}% ✦) — {TRIALS[t].description}
                 </option>
               ))}
             </select>

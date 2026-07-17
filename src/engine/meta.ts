@@ -3,6 +3,8 @@ import {
   hpGrowthPct,
   STARTING_GOLD,
   STARTING_SPIRE_HP,
+  TRIAL_FAMINE_GOLD_PCT,
+  TRIALS,
   WAVE_BUDGET_GROWTH_PCT,
   WAVE_CLEAR_GOLD_BASE,
   WAVE_CLEAR_GOLD_PER_WAVE,
@@ -29,7 +31,7 @@ import {
   type EmberUpgradeId,
 } from '../data/emberTree'
 import { deriveStream, nextInt } from './rng'
-import type { AbilityId, MetaState, RunState, RunSummary, TowerType } from './types'
+import type { AbilityId, MetaState, RunState, RunSummary, TowerType, TrialId } from './types'
 
 export function createMeta(): MetaState {
   return {
@@ -132,9 +134,12 @@ export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: Meta
 // Snapshot the meta tree into a fresh run. The run never reads meta again.
 // mapId, when valid, overrides the seed's map roll — player map choice. The
 // roll still always happens, so a chosen map never shifts the other streams.
-export function createRun(meta: MetaState, seed: string, mapId?: number): RunState {
+// trials are opt-in handicaps: their effects apply here (spire, gold) or at
+// spawn time (enemy stats), and computeSparks pays their bonus.
+export function createRun(meta: MetaState, seed: string, mapId?: number, trials?: TrialId[]): RunState {
   const mapRoll = nextInt(deriveStream(seed, 'map'), 0, MAPS.length - 1)
   const chosenMap = mapId !== undefined && Number.isInteger(mapId) && mapId >= 0 && mapId < MAPS.length ? mapId : mapRoll.value
+  const chosenTrials = [...new Set((trials ?? []).filter((t) => Object.prototype.hasOwnProperty.call(TRIALS, t)))]
 
   const availableTowers: TowerType[] = ['arrow', 'cannon', 'frost', 'sniper']
   if (metaLevel(meta, 'unlock_tesla') > 0) availableTowers.push('tesla')
@@ -145,10 +150,11 @@ export function createRun(meta: MetaState, seed: string, mapId?: number): RunSta
   if (metaLevel(meta, 'unlock_gold_rush') > 0) abilities['gold_rush' satisfies AbilityId] = 0
   if (metaLevel(meta, 'unlock_bulwark') > 0) abilities['bulwark' satisfies AbilityId] = 0
 
-  const spireHp =
+  let spireHp =
     STARTING_SPIRE_HP +
     metaLevel(meta, 'spire_hp') * META_SPIRE_HP_PER_LEVEL +
     emberLevel(meta, 'eternal_core') * EMBER_SPIRE_HP_PER_LEVEL
+  if (chosenTrials.includes('glass_spire')) spireHp = Math.max(1, Math.floor(spireHp / 2))
 
   // Ashen Road: start further in, with the gold those waves would roughly
   // have paid (clear income plus ~a quarter of each wave's budget in
@@ -196,6 +202,7 @@ export function createRun(meta: MetaState, seed: string, mapId?: number): RunSta
     availableTowers,
     activeAffix: null,
     cataclysms: [],
+    trials: chosenTrials,
     damageByTower: {},
     hpByWave: [],
     repairsThisWave: 0,
@@ -205,7 +212,9 @@ export function createRun(meta: MetaState, seed: string, mapId?: number): RunSta
       damagePct:
         metaLevel(meta, 'tower_damage') * META_TOWER_DAMAGE_PCT_PER_LEVEL +
         emberLevel(meta, 'kindled_arsenal') * EMBER_DAMAGE_PCT_PER_LEVEL,
-      goldPct: metaLevel(meta, 'gold_income') * META_GOLD_INCOME_PCT_PER_LEVEL,
+      goldPct:
+        metaLevel(meta, 'gold_income') * META_GOLD_INCOME_PCT_PER_LEVEL +
+        (chosenTrials.includes('famine') ? TRIAL_FAMINE_GOLD_PCT : 0),
       sparkPct:
         metaLevel(meta, 'spark_gain') * META_SPARK_GAIN_PCT_PER_LEVEL +
         emberLevel(meta, 'ember_memory') * EMBER_SPARK_PCT_PER_LEVEL,
@@ -233,6 +242,7 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     damageByTower: { ...run.damageByTower },
     killsByEnemy: { ...run.killsByEnemy },
     hpByWave: [...run.hpByWave],
+    trials: [...run.trials],
     unlocked,
   }
   const won = run.phase === 'victory' ? 1 : 0

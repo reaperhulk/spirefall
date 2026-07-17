@@ -7,7 +7,7 @@ import { drawRelicOffer } from '../combat'
 import { assertInvariants } from '../invariants'
 import { createMeta, createRun } from '../meta'
 import { cellCenter, getMap } from '../grid'
-import { previewNextWave, step, wavesUntilCataclysm } from '../step'
+import { computeSparks, previewNextWave, step, wavesUntilCataclysm } from '../step'
 import type { RelicId, RunState } from '../types'
 
 function freshRun(seed = 'step-test'): RunState {
@@ -456,6 +456,39 @@ describe('cataclysms', () => {
     const calm = previewNextWave(cloneRun({ ...lean, cataclysms: [] }))!
     const swarmed = previewNextWave(cloneRun({ ...lean, cataclysms: ['swarm', 'swarm'] }))!
     expect(swarmed.total).toBeGreaterThan(calm.total)
+  })
+
+  it('trials bend spawns exactly as previewed, and pay their spark bonus', () => {
+    const base = {
+      ...cloneRun(freshRun('trial-fx')),
+      wave: 8,
+      wavesCleared: 8,
+      waveBudget: 2000,
+      hpScalePct: 500,
+      spireHp: 100,
+      spireMaxHp: 100,
+    }
+    const spawnFirst = (trials: RunState['trials']) => {
+      let s = cloneRun({ ...base, trials })
+      s = step(s, [{ type: 'start_wave' }]).state
+      s = stepUntil(s, (st) => st.enemies.length > 0, 200)
+      return s.enemies[0]!
+    }
+    const plain = spawnFirst([])
+    const iron = spawnFirst(['iron_horde'])
+    const swift = spawnFirst(['swift_horde'])
+    expect(iron.maxHp).toBe(Math.floor((plain.maxHp * 125) / 100))
+    expect(swift.speed).toBe(Math.floor((plain.speed * 115) / 100))
+    // The scouting report includes the trial — preview never lies.
+    const calm = previewNextWave(cloneRun({ ...base, trials: [] }))!
+    const ironPreview = previewNextWave(cloneRun({ ...base, trials: ['iron_horde'] }))!
+    expect(ironPreview.totalHp).toBeGreaterThan(calm.totalHp)
+    // And hardship pays: same progress, bigger spark payout.
+    const progressed = { ...cloneRun(freshRun('trial-sparks')), wavesCleared: 10, kills: 120 }
+    const plainSparks = computeSparks(progressed)
+    const trialSparks = computeSparks({ ...progressed, trials: ['glass_spire'] })
+    expect(trialSparks).toBe(Math.floor(((10 * 15 + 10) * 140) / 100))
+    expect(trialSparks).toBeGreaterThan(plainSparks)
   })
 
   it('wavesUntilCataclysm mirrors the strike schedule', () => {

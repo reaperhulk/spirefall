@@ -16,6 +16,7 @@ export function cloneRun(s: RunState): RunState {
     abilities: { ...s.abilities },
     relics: [...s.relics],
     cataclysms: [...s.cataclysms],
+    trials: [...s.trials],
     damageByTower: { ...s.damageByTower },
     hpByWave: [...s.hpByWave],
     repairsThisWave: s.repairsThisWave,

@@ -109,6 +109,11 @@ export function assertInvariants(state: RunState): void {
     'cataclysms can only strike after the victory wave',
   )
 
+  for (const t of state.trials) {
+    check(['glass_spire', 'swift_horde', 'iron_horde', 'famine'].includes(t), `unknown trial ${String(t)}`)
+  }
+  check(new Set(state.trials).size === state.trials.length, 'duplicate trials')
+
   // The analytics tallies reconcile exactly with the kill counter.
   let tally = 0
   for (const [enemy, n] of Object.entries(state.killsByEnemy)) {

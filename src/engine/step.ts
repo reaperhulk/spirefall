@@ -15,6 +15,9 @@ import {
   relicSkipGold,
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
+  TRIAL_IRON_HP_PCT,
+  TRIAL_SWIFT_SPEED_PCT,
+  TRIALS,
   repairCostPerHp,
   SELL_REFUND_PCT,
   TOWERS,
@@ -308,13 +311,14 @@ export function previewNextWave(s: RunState): WavePreview | null {
   // Mirror spawnDue's HP math exactly so the threat estimate can never lie.
   const nextHpScale = wave === 1 ? 100 : Math.floor((s.hpScalePct * hpGrowthPct(wave)) / 100)
   const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
+  const iron = s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100
   let totalHp = 0
   let elites = 0
   for (const spawn of generated.spawns) {
     counts[spawn.type] = (counts[spawn.type] ?? 0) + 1
     totalHp += Math.max(
       1,
-      Math.floor((scaledHp(spawn.type, nextHpScale) * affixHpPct(generated.affix) * juggernaut) / 10_000),
+      Math.floor((Math.floor((scaledHp(spawn.type, nextHpScale) * affixHpPct(generated.affix) * juggernaut) / 10_000) * iron) / 100),
     )
     if (ENEMIES[spawn.type].elite) elites += 1
   }
@@ -362,13 +366,15 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
   const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
   const surge = 100 + 20 * cataclysmCount(s, 'surge')
   const ironclad = 100 + 50 * cataclysmCount(s, 'ironclad')
+  const iron = s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100
+  const swift = s.trials.includes('swift_horde') ? TRIAL_SWIFT_SPEED_PCT : 100
   for (const spawn of due) {
     const def = ENEMIES[spawn.type]
     const hp = Math.max(
       1,
-      Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix) * juggernaut) / 10_000),
+      Math.floor((Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix) * juggernaut) / 10_000) * iron) / 100),
     )
-    const speed = Math.floor((def.speed * affixSpeedPct(s.activeAffix) * surge) / 10_000)
+    const speed = Math.floor((Math.floor((def.speed * affixSpeedPct(s.activeAffix) * surge) / 10_000) * swift) / 100)
     // Shields grow at HALF the HP curve's rate. A static shield is trivia
     // once damage multipliers stack; full-rate scaling walls out even heavy
     // shells at a sharp cliff. Half-rate keeps the composition check honest:
@@ -483,6 +489,7 @@ export function computeSparks(s: RunState): number {
   const base = cleared * 15 + Math.floor(s.kills / 12) + (s.victoryClaimed ? 500 : 0)
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
+  for (const t of s.trials) pct += TRIALS[t].sparkBonusPct // opt-in hardship pays
   return Math.floor((base * pct) / 100)
 }
 

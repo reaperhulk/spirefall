@@ -14,6 +14,7 @@ import {
   TOWERS,
   towerInvested,
   towerTier,
+  TRIALS,
   VICTORY_WAVE,
 } from '../data/content'
 import { damageBreakdown, effectiveCritChancePct, effectiveCritDamagePct } from '../engine/combat'
@@ -23,7 +24,7 @@ import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { sameCell } from '../engine/grid'
 import { MAPS } from '../data/maps'
 import type { MetaUpgradeId } from '../data/metaTree'
-import type { AbilityId, CataclysmId, CellPos, RunSummary, Targeting, TowerType } from '../engine/types'
+import type { AbilityId, CataclysmId, CellPos, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
 import { Sfx } from './audio'
 import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
@@ -78,6 +79,20 @@ const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'weakest',
 // map. Daily runs ignore this — everyone shares the daily's rolled map.
 const MAP_PREF_KEY = 'spirefall-map'
 
+// Trial preference: 'none' or a TrialId. Daily runs ignore trials too — the
+// shared seed means a shared ruleset.
+const TRIAL_PREF_KEY = 'spirefall-trial'
+
+function loadTrialPref(): string {
+  try {
+    const raw = localStorage.getItem(TRIAL_PREF_KEY)
+    if (raw !== null && (raw === 'none' || Object.prototype.hasOwnProperty.call(TRIALS, raw))) return raw
+  } catch {
+    // fall through
+  }
+  return 'none'
+}
+
 function loadMapPref(): string {
   try {
     const raw = localStorage.getItem(MAP_PREF_KEY)
@@ -114,6 +129,11 @@ export default function App() {
   useEffect(() => {
     mapPrefRef.current = mapPref
   }, [mapPref])
+  const [trialPref, setTrialPref] = useState<string>(() => loadTrialPref())
+  const trialPrefRef = useRef(trialPref)
+  useEffect(() => {
+    trialPrefRef.current = trialPref
+  }, [trialPref])
   const [hintsDismissed, setHintsDismissed] = useState(() => {
     try {
       return localStorage.getItem('spirefall-hints-done') === '1'
@@ -190,7 +210,8 @@ export default function App() {
     const isDaily = seed === dailySeed()
     const pref = mapPrefRef.current
     const mapOverride = !isDaily && pref !== 'random' ? Number(pref) : undefined
-    const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), mapOverride)
+    const trials = !isDaily && trialPrefRef.current !== 'none' ? [trialPrefRef.current as TrialId] : []
+    const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), mapOverride, trials)
     const next = new GameSession(run)
     // Update the ref synchronously: the dev harness (window.__harness) reads
     // sessionRef and may be driven immediately after newRun() returns —
@@ -438,6 +459,15 @@ export default function App() {
             title="Every 5th endless wave ends in a Cataclysm: a permanent, stacking modifier for the rest of the run."
           >
             {cataclysmIn === 1 ? '⚠ Cataclysm this wave' : `⚠ Cataclysm in ${cataclysmIn} waves`}
+          </span>
+        )}
+        {state.trials.length > 0 && (
+          <span className="cataclysm-badges" data-testid="trials">
+            {state.trials.map((t) => (
+              <span key={t} className="trial-badge" title={`${TRIALS[t].description} +${TRIALS[t].sparkBonusPct}% sparks.`}>
+                ⚔ {TRIALS[t].name}
+              </span>
+            ))}
           </span>
         )}
         {state.cataclysms.length > 0 && (
@@ -901,6 +931,16 @@ export default function App() {
             mapPrefRef.current = v
             try {
               localStorage.setItem(MAP_PREF_KEY, v)
+            } catch {
+              // unsaved preference is fine
+            }
+          }}
+          trialPref={trialPref}
+          onTrialPref={(v) => {
+            setTrialPref(v)
+            trialPrefRef.current = v
+            try {
+              localStorage.setItem(TRIAL_PREF_KEY, v)
             } catch {
               // unsaved preference is fine
             }

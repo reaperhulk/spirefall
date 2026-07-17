@@ -48,6 +48,9 @@ export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 
 export type CataclysmId = 'surge' | 'juggernaut' | 'swarm' | 'dampening' | 'crumbling' | 'ironclad'
 
+// Trials: opt-in run handicaps chosen at run start, paying bonus sparks.
+export type TrialId = 'glass_spire' | 'swift_horde' | 'iron_horde' | 'famine'
+
 export interface CellPos {
   cx: number
   cy: number
@@ -141,6 +144,7 @@ export interface RunState {
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
   cataclysms: CataclysmId[] // permanent endless modifiers, in strike order
+  trials: TrialId[] // opt-in handicaps chosen at run start; pay bonus sparks
   damageByTower: Partial<Record<TowerType, number>> // run-lifetime, survives sales
   killsByEnemy: Partial<Record<EnemyType, number>> // run-lifetime tally
   hpByWave: number[] // spire HP sampled at each wave clear, in clear order
@@ -196,6 +200,7 @@ export interface RunSummary {
   damageByTower: Partial<Record<TowerType, number>>
   killsByEnemy: Partial<Record<EnemyType, number>>
   hpByWave: number[]
+  trials: TrialId[]
   unlocked: { id: string; name: string; sparks: number }[] // achievements earned by THIS run
 }
 

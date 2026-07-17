@@ -114,6 +114,20 @@ describe('createRun applies meta', () => {
     expect(createRun(meta, 'same')).toEqual(createRun(meta, 'same'))
   })
 
+  it('trials apply their handicaps at run creation', () => {
+    const meta = createMeta()
+    const plain = createRun(meta, 'trial-run')
+    const glass = createRun(meta, 'trial-run', undefined, ['glass_spire'])
+    expect(glass.spireMaxHp).toBe(Math.max(1, Math.floor(plain.spireMaxHp / 2)))
+    expect(glass.trials).toEqual(['glass_spire'])
+    const famine = createRun(meta, 'trial-run', undefined, ['famine'])
+    expect(famine.mods.goldPct).toBe(plain.mods.goldPct - 25)
+    // Bogus and duplicate entries are dropped; RNG streams are untouched.
+    const messy = createRun(meta, 'trial-run', undefined, ['famine', 'famine', 'bogus' as never])
+    expect(messy.trials).toEqual(['famine'])
+    expect(messy.rng).toEqual(plain.rng)
+  })
+
   it('an explicit map choice overrides the roll without touching anything else', () => {
     const meta = createMeta()
     const rolled = createRun(meta, 'map-choice')
@@ -149,6 +163,7 @@ describe('settleRun', () => {
       damageByTower: { arrow: 900 },
       killsByEnemy: { runner: 40 },
       hpByWave: [],
+      trials: [],
       unlocked: [{ id: 'first_blood', name: 'First Blood', sparks: 25 }],
     })
     expect(meta.sparks).toBe(110)

@@ -1,4 +1,4 @@
-import type { AbilityId, AffixId, CataclysmId, EnemyType, RelicId, TowerType } from '../engine/types'
+import type { AbilityId, AffixId, CataclysmId, EnemyType, RelicId, TowerType, TrialId } from '../engine/types'
 
 // All gameplay numbers live here as plain data. Distances are in millicells
 // (1 cell = 1000), durations in ticks (30 ticks = 1 second).
@@ -290,6 +290,28 @@ export const AFFIXES: Record<AffixId, AffixDef> = {
 export const AFFIX_IDS = Object.keys(AFFIXES) as AffixId[]
 export const AFFIX_FIRST_WAVE = 6
 export const AFFIX_CHANCE_PCT = 35
+
+// ---------------------------------------------------------------------------
+// Trials: opt-in handicaps chosen at run start. Harder runs pay more sparks —
+// a strong account's reason to turn the difficulty up instead of coasting.
+
+export interface TrialDef {
+  name: string
+  description: string
+  sparkBonusPct: number
+}
+
+export const TRIALS: Record<TrialId, TrialDef> = {
+  glass_spire: { name: 'Glass Spire', description: 'Spire max HP is halved.', sparkBonusPct: 40 },
+  swift_horde: { name: 'Swift Horde', description: 'Enemies move 15% faster.', sparkBonusPct: 25 },
+  iron_horde: { name: 'Iron Horde', description: 'Enemies field 25% more HP.', sparkBonusPct: 35 },
+  famine: { name: 'Famine', description: 'All gold income is cut by 25%.', sparkBonusPct: 30 },
+}
+
+export const TRIAL_IDS = Object.keys(TRIALS) as TrialId[]
+export const TRIAL_IRON_HP_PCT = 125
+export const TRIAL_SWIFT_SPEED_PCT = 115
+export const TRIAL_FAMINE_GOLD_PCT = -25
 
 // ---------------------------------------------------------------------------
 // Cataclysms: permanent, stacking run modifiers struck every 5th cleared wave
