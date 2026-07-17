@@ -187,5 +187,10 @@ export interface MetaState {
   sparks: number
   totalSparks: number
   runs: number
-  upgrades: Record<string, number> // MetaUpgradeId -> level
+  victories: number // lifetime victories
+  cycleVictories: number // victories since the last ascension — fuels ember gain
+  embers: number // ascension currency
+  ascensions: number
+  upgrades: Record<string, number> // MetaUpgradeId -> level (wiped on ascension)
+  emberUpgrades: Record<string, number> // EmberUpgradeId -> level (permanent)
 }

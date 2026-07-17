@@ -652,3 +652,36 @@ button:disabled {
   min-width: 52px;
   text-align: center;
 }
+
+/* Ascension. */
+.hud-embers {
+  color: #ff9e64;
+  font-weight: 600;
+}
+
+.ascension {
+  border-top: 1px solid #33251a;
+  padding-top: 10px;
+}
+
+.ascension h3 {
+  color: #ff9e64;
+}
+
+.ember-count {
+  color: #ff9e64;
+}
+
+.ascension-count {
+  color: #8a93ad;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.ember-node {
+  border-color: #33251a;
+}
+
+.ember-buy {
+  color: #ff9e64;
+}

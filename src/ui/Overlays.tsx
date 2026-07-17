@@ -1,6 +1,7 @@
 import { RELICS } from '../data/content'
+import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
-import { metaLevel, metaUpgradeCost } from '../engine/meta'
+import { canAscend, emberGainOnAscend, emberLevel, emberUpgradeCost, metaLevel, metaUpgradeCost } from '../engine/meta'
 import type { MetaState, RelicId, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
 
@@ -29,6 +30,69 @@ export function RelicModal({
           Take nothing (+⛀ {skipGold})
         </button>
       </div>
+    </div>
+  )
+}
+
+// The ascension panel: visible once the player has ever won (or already
+// ascended). Ascending burns the Spire Tree for Embers; the Ember Tree
+// persists forever.
+function AscensionPanel({
+  meta,
+  onBuyEmber,
+  onAscend,
+}: {
+  meta: MetaState
+  onBuyEmber: (id: EmberUpgradeId) => void
+  onAscend: () => void
+}) {
+  const visible = meta.victories > 0 || meta.ascensions > 0 || meta.embers > 0
+  if (!visible) return null
+  return (
+    <div className="ascension" data-testid="ascension">
+      <h3>
+        Ascension — <span className="ember-count">❖ {meta.embers} embers</span>
+        {meta.ascensions > 0 && <span className="ascension-count"> · cycle {meta.ascensions + 1}</span>}
+      </h3>
+      <div className="spire-tree">
+        {EMBER_TREE.map((node) => {
+          const level = emberLevel(meta, node.id)
+          const cost = emberUpgradeCost(meta, node.id)
+          const maxed = cost === null
+          return (
+            <div key={node.id} className={`tree-node ember-node${maxed ? ' maxed' : ''}`}>
+              <div className="tree-node-info">
+                <strong>{node.name}</strong>
+                <span>{node.description}</span>
+                <span className="tree-level">
+                  Level {level}/{node.maxLevel}
+                </span>
+              </div>
+              <button
+                className="buy-btn ember-buy"
+                disabled={maxed || meta.embers < (cost ?? 0)}
+                onClick={() => onBuyEmber(node.id)}
+                data-testid={`buy-ember-${node.id}`}
+              >
+                {maxed ? 'MAX' : `❖ ${cost}`}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+      <button
+        className="ghost-btn danger"
+        data-testid="ascend"
+        disabled={!canAscend(meta)}
+        title={
+          canAscend(meta)
+            ? 'Reset the Spire Tree and banked Sparks for Embers'
+            : 'Win a run this cycle to unlock Ascension'
+        }
+        onClick={onAscend}
+      >
+        Ascend (+❖ {emberGainOnAscend(meta)}) — burns the Spire Tree
+      </button>
     </div>
   )
 }
@@ -112,11 +176,15 @@ export function RunOverOverlay({
   summary,
   meta,
   onBuy,
+  onBuyEmber,
+  onAscend,
   onNextRun,
 }: {
   summary: RunSummary
   meta: MetaState
   onBuy: (id: MetaUpgradeId) => void
+  onBuyEmber: (id: EmberUpgradeId) => void
+  onAscend: () => void
   onNextRun: () => void
 }) {
   const victory = summary.outcome === 'victory'
@@ -147,6 +215,7 @@ export function RunOverOverlay({
         </p>
         <h3>The Spire Tree — ✦ {meta.sparks} available</h3>
         <SpireTree meta={meta} onBuy={onBuy} />
+        <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
         <button className="primary-btn" onClick={onNextRun} data-testid="next-run">
           Begin next run
         </button>
@@ -228,11 +297,15 @@ export function SettingsModal({
 export function SpireTreeModal({
   meta,
   onBuy,
+  onBuyEmber,
+  onAscend,
   onClose,
   onHardReset,
 }: {
   meta: MetaState
   onBuy: (id: MetaUpgradeId) => void
+  onBuyEmber: (id: EmberUpgradeId) => void
+  onAscend: () => void
   onClose: () => void
   onHardReset: () => void
 }) {
@@ -242,6 +315,7 @@ export function SpireTreeModal({
         <h2>The Spire Tree — ✦ {meta.sparks}</h2>
         <p className="run-flavor">Permanent upgrades. New purchases take effect on your next run.</p>
         <SpireTree meta={meta} onBuy={onBuy} />
+        <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
         <button className="ghost-btn" onClick={onClose}>
           Close
         </button>

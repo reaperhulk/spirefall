@@ -16,7 +16,8 @@ import {
   VICTORY_WAVE,
 } from '../data/content'
 import { damageBreakdown, effectiveCritChancePct, effectiveCritDamagePct } from '../engine/combat'
-import { buyMetaUpgrade, createMeta, createRun, settleRun } from '../engine/meta'
+import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
+import type { EmberUpgradeId } from '../data/emberTree'
 import { previewNextWave } from '../engine/step'
 import { sameCell } from '../engine/grid'
 import type { MetaUpgradeId } from '../data/metaTree'
@@ -132,6 +133,25 @@ export default function App() {
     metaRef.current = result.meta
     setMeta(result.meta)
     persistSave({ version: 1, meta: result.meta, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+  }
+
+  const buyEmber = (id: EmberUpgradeId) => {
+    const result = buyEmberUpgrade(metaRef.current, id)
+    if (!result.ok) return
+    metaRef.current = result.meta
+    setMeta(result.meta)
+    persistSave({ version: 1, meta: result.meta, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+  }
+
+  const doAscend = () => {
+    if (!canAscend(metaRef.current)) return
+    const gain = emberGainOnAscend(metaRef.current)
+    if (!window.confirm(`Ascend for ❖ ${gain}? The Spire Tree, unlocks, and banked Sparks burn. Ember upgrades are forever.`))
+      return
+    const next = ascend(metaRef.current)
+    metaRef.current = next
+    setMeta(next)
+    persistSave({ version: 1, meta: next, run: sessionRef.current.terminal ? null : sessionRef.current.state })
   }
 
   // Dev/test harness on window.__game / window.__harness.
@@ -333,6 +353,11 @@ export default function App() {
           <span className="hud-sparks" data-testid="meta-sparks">
             ✦ {meta.sparks}
           </span>
+          {(meta.embers > 0 || meta.ascensions > 0) && (
+            <span className="hud-embers" data-testid="meta-embers" title={`Embers · ascension cycle ${meta.ascensions + 1}`}>
+              ❖ {meta.embers}
+            </span>
+          )}
           <button
             className="ghost-btn"
             data-testid="mute"
@@ -659,7 +684,16 @@ export default function App() {
           onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })}
         />
       )}
-      {summary && <RunOverOverlay summary={summary} meta={meta} onBuy={buyMeta} onNextRun={() => beginNextRun()} />}
+      {summary && (
+        <RunOverOverlay
+          summary={summary}
+          meta={meta}
+          onBuy={buyMeta}
+          onBuyEmber={buyEmber}
+          onAscend={doAscend}
+          onNextRun={() => beginNextRun()}
+        />
+      )}
       {showSettings && (
         <SettingsModal
           volume={uiSettings.volume}
@@ -673,6 +707,8 @@ export default function App() {
         <SpireTreeModal
           meta={meta}
           onBuy={buyMeta}
+          onBuyEmber={buyEmber}
+          onAscend={doAscend}
           onClose={() => setShowTree(false)}
           onHardReset={() => {
             clearSave()

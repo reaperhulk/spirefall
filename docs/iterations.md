@@ -16,7 +16,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [ ] 7. Graphics: terrain texture, path styling, spire/gate glow-up
 - [x] 8. UX: settings panel (volume, reduced motion) + shortcuts help overlay
 - [x] 9. Mobile: PWA manifest + offline service worker + install icons
-- [ ] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
+- [x] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
 - [ ] 11. Relic depth: rarity tiers, more relics, reroll option
 - [ ] 12. New tower type (7th) with unlock node + hotkey 7
 - [ ] 13. Save export/import codes
@@ -30,6 +30,13 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+7. **Ascension (M6)** — victories bank cycleVictories; Ascend burns the Spire
+   Tree + sparks + unlocks for Embers (1 + 1/victory). Ember Tree (Kindled
+   Arsenal +10% dmg, Eternal Core +2 HP, Ember Memory +25% sparks, Ashen
+   Legacy 300 sparks/cycle) persists forever and compounds with the spark
+   tree. HUD ember counter, ascension panel in tree modal + run-over, save
+   backfill, full unit coverage.
 
 6. **PWA** — web app manifest (standalone, dark theme, 192/512 icons from the
    logo), offline service worker (network-first navigations so new builds

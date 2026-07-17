@@ -74,9 +74,10 @@ choose loadout → BUILD phase (place towers, no timer)
   max HP, unlock tower types / ability slots / relic rarities, gold income %, tower
   damage %, crit chance %, Spark gain % (the compounding incremental node),
   starting-wave skip.
-- **Ascension (later milestone):** once runs are consistently won, an Antimatter-
-  Dimensions-style second prestige layer resets the Spire Tree for a higher-order
-  currency. Designed now (the meta state is versioned and nested), built at M6.
+- **Ascension (shipped):** after any victory, the Spire Tree (and banked Sparks,
+  and unlocks) can be burned for **Embers** — 1 + 1 per victory that cycle. The
+  Ember Tree (damage, Spire HP, Spark gain, a banked-Spark head start) survives
+  every ascension and compounds with the rebuilt Spire Tree.
 
 ### 2.3 The difficulty curve (the contract we test)
 

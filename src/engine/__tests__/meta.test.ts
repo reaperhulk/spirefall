@@ -8,7 +8,17 @@ import {
   metaNodeEffect,
 } from '../../data/metaTree'
 import { STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
-import { buyMetaUpgrade, createMeta, createRun, metaUpgradeCost, settleRun } from '../meta'
+import {
+  ascend,
+  buyEmberUpgrade,
+  buyMetaUpgrade,
+  canAscend,
+  createMeta,
+  createRun,
+  emberGainOnAscend,
+  metaUpgradeCost,
+  settleRun,
+} from '../meta'
 import { computeSparks } from '../step'
 
 describe('meta tree', () => {
@@ -150,5 +160,52 @@ describe('computeSparks', () => {
 
     const siphoned = computeSparks({ ...base, relics: ['spark_siphon'] })
     expect(siphoned).toBe(Math.floor((defeat * 125) / 100))
+  })
+})
+
+describe('ascension', () => {
+  const winner = (meta = createMeta()) => {
+    const run = createRun(meta, 'asc')
+    const won = { ...run, phase: 'victory' as const, victoryClaimed: true, wavesCleared: 24, kills: 500, sparksEarned: 900 }
+    return settleRun(meta, won).meta
+  }
+
+  it('victories are counted at settle, lifetime and per-cycle', () => {
+    const meta = winner()
+    expect(meta.victories).toBe(1)
+    expect(meta.cycleVictories).toBe(1)
+    expect(canAscend(meta)).toBe(true)
+    expect(canAscend(createMeta())).toBe(false)
+  })
+
+  it('ascending burns the Spire Tree for embers and keeps the Ember Tree', () => {
+    let meta = winner({ ...createMeta(), sparks: 5000 })
+    meta = buyMetaUpgrade(meta, 'unlock_tesla').meta
+    meta = buyMetaUpgrade(meta, 'tower_damage').meta
+    expect(emberGainOnAscend(meta)).toBe(2) // 1 base + 1 victory this cycle
+    const after = ascend(meta)
+    expect(after.embers).toBe(2)
+    expect(after.ascensions).toBe(1)
+    expect(after.upgrades).toEqual({}) // spark tree burned
+    expect(after.sparks).toBe(0) // no Ashen Legacy yet
+    expect(after.cycleVictories).toBe(0)
+    expect(after.victories).toBe(1) // lifetime record survives
+    // Without a fresh victory, a second ascension is refused.
+    expect(ascend(after)).toBe(after)
+  })
+
+  it('ember upgrades persist and apply to runs on top of the spark tree', () => {
+    let meta = { ...winner(), embers: 10 }
+    meta = buyEmberUpgrade(meta, 'kindled_arsenal').meta
+    meta = buyEmberUpgrade(meta, 'eternal_core').meta
+    meta = buyEmberUpgrade(meta, 'ashen_legacy').meta
+    const run = createRun(meta, 'ember-run')
+    expect(run.mods.damagePct).toBe(10)
+    expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP + 2)
+    const after = ascend(meta)
+    expect(after.emberUpgrades).toEqual(meta.emberUpgrades) // forever
+    expect(after.sparks).toBe(300) // Ashen Legacy head start
+    // Broke accounts cannot buy.
+    expect(buyEmberUpgrade({ ...meta, embers: 0 }, 'ember_memory').ok).toBe(false)
   })
 })
