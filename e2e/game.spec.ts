@@ -10,7 +10,14 @@ const CELL = 34
 declare global {
   interface Window {
     __harness: {
-      getState: () => { phase: string; wave: number; gold: number; towers: { id: number }[]; enemies: unknown[] }
+      getState: () => {
+        phase: string
+        wave: number
+        gold: number
+        towers: { id: number; tier: number }[]
+        enemies: unknown[]
+        relicOffer: unknown[] | null
+      }
       snapshot: () => {
         tick: number
         phase: string
@@ -127,30 +134,48 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
 
 test('relic offers appear in the UI and apply on click', async ({ page }) => {
   const errors = await boot(page, 'e2e-relic')
-  // A solid defense so wave 5 is reached: build a killbox, then loop waves.
-  await page.getByTestId('shop-arrow').click()
-  for (const [cx, cy] of [
-    [3, 5],
-    [4, 5],
-    [5, 5],
-    [3, 7],
-    [4, 7],
-  ] as const) {
-    await clickCell(page, cx, cy)
-  }
-  await page.keyboard.press('Escape')
+  // Actually play: each build phase, buy/upgrade arrows, then send the wave —
+  // waves are lethal enough now that a static two-tower setup dies before the
+  // wave-5 relic offer.
   await page.evaluate(() => {
-    for (let wave = 0; wave < 5; wave++) {
+    // Freeze the real-time clock: every tick below comes from fastForward, so
+    // the whole scripted playthrough is deterministic regardless of rAF timing.
+    window.__harness.setSpeed(0)
+    const spots = [
+      [4, 5],
+      [4, 7],
+      [5, 5],
+      [5, 7],
+      [6, 5],
+      [6, 7],
+    ]
+    const act = (): boolean => {
       const s = window.__harness.getState()
-      if (s.phase !== 'build') break
+      const upgrade = s.towers.find((t) => t.tier < 3)
+      if (s.towers.length >= 4 && upgrade && s.gold >= 140) {
+        window.__harness.dispatch({ type: 'upgrade_tower', id: upgrade.id })
+        return true
+      }
+      if (s.towers.length < spots.length && s.gold >= 50) {
+        const [cx, cy] = spots[s.towers.length]!
+        window.__harness.dispatch({ type: 'place_tower', tower: 'arrow', cell: { cx, cy } })
+        return true
+      }
+      return false
+    }
+    for (let guard = 0; guard < 10; guard++) {
+      const s = window.__harness.getState()
+      if (s.phase !== 'build' || s.relicOffer !== null) break
+      while (act()) window.__harness.fastForward(1)
       window.__harness.dispatch({ type: 'start_wave' })
-      window.__harness.fastForward(300)
+      window.__harness.fastForward(600)
     }
   })
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build') // survived through wave 5
   await expect(page.getByTestId('relic-modal')).toBeVisible()
   await page.locator('.relic-card').first().click()
+  await page.evaluate(() => window.__harness.fastForward(1)) // clock is frozen; process the choice
   await expect(page.getByTestId('relic-modal')).not.toBeVisible()
   const after = await page.evaluate(() => window.__harness.snapshot())
   expect(after.relics.length).toBe(1)

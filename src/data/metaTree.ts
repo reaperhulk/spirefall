@@ -2,7 +2,7 @@
 // Effects are applied by createRun (src/engine/meta.ts).
 //
 // The tree is deliberately DEEP: in-run difficulty grows geometrically, so
-// bridging the gap between the fresh wall (~wave 15) and victory (wave 45)
+// bridging the gap between the fresh wall (~wave 10) and victory (wave 26)
 // takes many runs of compounding investment. This is the rogue-lite engine.
 
 export type MetaUpgradeId =

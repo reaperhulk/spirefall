@@ -42,6 +42,10 @@ export class GameSession {
   version = 0
 
   private onEvents: ((events: GameEvent[], state: RunState) => void) | null = null
+  // Events raised before a handler attaches (e.g. the harness drives a brand
+  // new session before React's effect wires it up) are buffered and flushed
+  // on attach — run_ended must never fall into that gap.
+  private pendingEvents: Array<{ events: GameEvent[]; state: RunState }> = []
   private queue: Command[] = []
   private accumulator = 0
   private listeners = new Set<() => void>()
@@ -62,6 +66,11 @@ export class GameSession {
 
   setOnEvents(handler: ((events: GameEvent[], state: RunState) => void) | null): void {
     this.onEvents = handler
+    if (handler && this.pendingEvents.length > 0) {
+      const pending = this.pendingEvents
+      this.pendingEvents = []
+      for (const p of pending) handler(p.events, p.state)
+    }
   }
 
   setSpeed(n: number): void {
@@ -115,6 +124,7 @@ export class GameSession {
     if (result.events.length > 0) {
       this.collectEffects(result.events)
       if (this.onEvents) this.onEvents(result.events, this.state)
+      else this.pendingEvents.push({ events: result.events, state: this.state })
     }
   }
 

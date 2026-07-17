@@ -90,6 +90,10 @@ export default function App() {
   const beginNextRun = (seed?: string) => {
     const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs))
     const next = new GameSession(run)
+    // Update the ref synchronously: the dev harness (window.__harness) reads
+    // sessionRef and may be driven immediately after newRun() returns —
+    // waiting for React's post-commit effect would race it onto the old session.
+    sessionRef.current = next
     setSession(next)
     setSummary(null)
     setVictoryPrompt(false)

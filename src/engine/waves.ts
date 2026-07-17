@@ -9,8 +9,8 @@ import {
 import { nextInt, type Rng } from './rng'
 import type { AffixId, EnemyType, PendingSpawn } from './types'
 
-const GROUP_GAP_TICKS = 25
-const FIRST_SPAWN_DELAY = 30
+const GROUP_GAP_TICKS = 12
+const FIRST_SPAWN_DELAY = 15
 
 const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shieldbearer', 'healer', 'splitter']
 
@@ -54,7 +54,7 @@ export function generateWave(rng: Rng, wave: number, budget: number): GeneratedW
   if (wave % BOSS_WAVE_INTERVAL === 0) {
     spawns.push({ type: 'boss', tick: t })
     units += 1
-    t += 60
+    t += 40
     remaining = Math.floor(remaining / 2) // escort gets half the budget
   }
 

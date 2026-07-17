@@ -13,7 +13,7 @@ describe('performance budget', () => {
     const { state } = autoplay(createRun(createMeta(), 'perf'), balancedBot, 400_000)
     const elapsed = performance.now() - t0
     expect(state.phase).toBe('defeat') // sanity: a real, full run was measured
-    expect(state.tick).toBeGreaterThan(5_000)
+    expect(state.tick).toBeGreaterThan(2_000) // fresh runs are deliberately short now
     expect(elapsed / state.tick).toBeLessThan(0.5)
   }, 120_000)
 })

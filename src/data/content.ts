@@ -23,15 +23,15 @@ export interface EnemyDef {
 }
 
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
-  runner: { name: 'Runner', hp: 26, speed: 100, cost: 10, pack: 3, spacing: 14, bounty: 2, damage: 3, shield: 0, unlockWave: 1 },
-  swarmling: { name: 'Swarmling', hp: 9, speed: 130, cost: 4, pack: 6, spacing: 6, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
-  brute: { name: 'Brute', hp: 130, speed: 48, cost: 26, pack: 1, spacing: 40, bounty: 6, damage: 8, shield: 0, unlockWave: 4 },
-  flier: { name: 'Gale Imp', hp: 38, speed: 80, cost: 14, pack: 2, spacing: 20, bounty: 3, damage: 4, shield: 0, unlockWave: 6, flying: true },
-  shieldbearer: { name: 'Shieldbearer', hp: 95, speed: 60, cost: 30, pack: 1, spacing: 36, bounty: 7, damage: 6, shield: 7, unlockWave: 8 },
-  healer: { name: 'Mendwitch', hp: 110, speed: 55, cost: 34, pack: 1, spacing: 40, bounty: 8, damage: 2, shield: 0, unlockWave: 11, heal: { everyTicks: 60, amount: 6, radius: 1800 } },
-  splitter: { name: 'Amalgam', hp: 80, speed: 68, cost: 26, pack: 1, spacing: 34, bounty: 4, damage: 3, shield: 0, unlockWave: 13, splitInto: { type: 'splitling', count: 2 } },
-  splitling: { name: 'Shard', hp: 24, speed: 95, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 2, shield: 0, unlockWave: 99 },
-  boss: { name: 'Spirebreaker', hp: 550, speed: 38, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 30, shield: 0, unlockWave: 10 },
+  runner: { name: 'Runner', hp: 26, speed: 120, cost: 10, pack: 3, spacing: 10, bounty: 2, damage: 3, shield: 0, unlockWave: 1 },
+  swarmling: { name: 'Swarmling', hp: 9, speed: 155, cost: 4, pack: 6, spacing: 5, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
+  brute: { name: 'Brute', hp: 130, speed: 58, cost: 26, pack: 1, spacing: 28, bounty: 6, damage: 8, shield: 0, unlockWave: 4 },
+  flier: { name: 'Gale Imp', hp: 38, speed: 95, cost: 14, pack: 2, spacing: 14, bounty: 3, damage: 4, shield: 0, unlockWave: 6, flying: true },
+  shieldbearer: { name: 'Shieldbearer', hp: 95, speed: 72, cost: 30, pack: 1, spacing: 26, bounty: 7, damage: 6, shield: 7, unlockWave: 8 },
+  healer: { name: 'Mendwitch', hp: 110, speed: 66, cost: 34, pack: 1, spacing: 30, bounty: 8, damage: 2, shield: 0, unlockWave: 11, heal: { everyTicks: 60, amount: 6, radius: 1800 } },
+  splitter: { name: 'Amalgam', hp: 80, speed: 82, cost: 26, pack: 1, spacing: 24, bounty: 4, damage: 3, shield: 0, unlockWave: 13, splitInto: { type: 'splitling', count: 2 } },
+  splitling: { name: 'Shard', hp: 24, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 2, shield: 0, unlockWave: 99 },
+  boss: { name: 'Spirebreaker', hp: 550, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 30, shield: 0, unlockWave: 10 },
 }
 
 // ---------------------------------------------------------------------------
@@ -204,21 +204,21 @@ export const AFFIX_CHANCE_PCT = 35
 // ---------------------------------------------------------------------------
 // Run pacing
 
-export const BASE_WAVE_BUDGET = 80
+export const BASE_WAVE_BUDGET = 95
 export const WAVE_BUDGET_GROWTH_PCT = 118 // ×1.18 per wave
 // Two-phase HP ramp: gentle early so fresh skill can express itself, steep
 // after the break so the wall is real and meta progression is the only way
 // through it.
-export const HP_GROWTH_EARLY_PCT = 110
+export const HP_GROWTH_EARLY_PCT = 112
 export const HP_GROWTH_LATE_PCT = 120
-export const HP_GROWTH_BREAK_WAVE = 10
+export const HP_GROWTH_BREAK_WAVE = 8
 
 export function hpGrowthPct(wave: number): number {
   return wave <= HP_GROWTH_BREAK_WAVE ? HP_GROWTH_EARLY_PCT : HP_GROWTH_LATE_PCT
 }
 export const MAX_UNITS_PER_WAVE = 200
 export const BOSS_WAVE_INTERVAL = 10
-export const VICTORY_WAVE = 32
+export const VICTORY_WAVE = 26
 export const WAVE_CLEAR_GOLD_BASE = 20
 export const WAVE_CLEAR_GOLD_PER_WAVE = 6
 export const STARTING_GOLD = 100

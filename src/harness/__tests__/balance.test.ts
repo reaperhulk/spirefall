@@ -44,15 +44,15 @@ describe('balance envelope', () => {
     }
   }, 120_000)
 
-  it('a competent fresh player clears the early game, walls in the teens, and cannot win run 1', () => {
+  it('a fresh run is short and dangerous: competent play dies waves 5-14 within ~6 minutes', () => {
     for (const seed of SEEDS) {
       const state = play(seed, 'balanced')
       expect(state.phase, seed).toBe('defeat')
-      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(12)
-      expect(state.wavesCleared, seed).toBeLessThanOrEqual(24) // most of the game is still ahead
+      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(5)
+      expect(state.wavesCleared, seed).toBeLessThanOrEqual(14) // most of the game is still ahead
       expect(state.wavesCleared, seed).toBeLessThan(VICTORY_WAVE)
-      // A fresh run is a quick loop: under ~18 minutes of sim time at 1x.
-      expect(state.tick, seed).toBeLessThan(18 * 60 * 30)
+      // The first-run loop is tight: under 6 minutes of sim time at 1x.
+      expect(state.tick, seed).toBeLessThan(6 * 60 * 30)
     }
   }, 240_000)
 
@@ -91,17 +91,17 @@ describe('balance envelope', () => {
     const bestLate = Math.max(...history.slice(3).map((h) => h.wavesCleared))
     expect(bestLate).toBeGreaterThanOrEqual(first + 5) // visible progression...
     expect(history.every((h) => h.outcome === 'defeat')).toBe(true) // ...but no early victory
-    expect(meta.totalSparks).toBeGreaterThan(2000)
+    expect(meta.totalSparks).toBeGreaterThan(800)
     expect(meta.runs).toBe(6)
     // Every single run ended — the loop always closes.
     for (const h of history) expect(h.sparks).toBeGreaterThan(0)
   }, 300_000)
 
-  it('a longer career eventually breaks the cycle', () => {
-    const { history } = playProgression(12, 'career', BOTS.balanced, DEFAULT_BUY_PRIORITY)
+  it('a longer career eventually breaks the cycle — after a real grind', () => {
+    const { history } = playProgression(18, 'career', BOTS.balanced, DEFAULT_BUY_PRIORITY)
     expect(history.some((h) => h.outcome === 'victory')).toBe(true)
-    // The first win takes real investment: no earlier than run 5.
+    // The first win takes real investment: no earlier than run 8.
     const firstWin = history.findIndex((h) => h.outcome === 'victory') + 1
-    expect(firstWin).toBeGreaterThanOrEqual(5)
+    expect(firstWin).toBeGreaterThanOrEqual(8)
   }, 600_000)
 })
