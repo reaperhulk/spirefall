@@ -73,14 +73,18 @@ function enemyTraits(type: EnemyType, def: EnemyDef): string[] {
   return traits
 }
 
-function tierSpecial(type: TowerType, tierIdx: number): string {
-  const t = TOWERS[type].tiers[tierIdx]!
-  if (t.splashRadius) return `splash ${cells(t.splashRadius)} cells`
-  if (t.slowFactor) return `slows to ${t.slowFactor}% for ${secs(t.slowTicks ?? 0)}`
-  if (t.chain) return `chains to ${t.chain}`
-  if (t.mintYield) return `⛀ ${t.mintYield} per wave`
-  if (t.auraPct) return `+${t.auraPct}% damage aura`
-  return '—'
+// The per-tier specials, compressed to one tier-progression line under the
+// table (T1 → T2 → T3). As a table column this was the widest cell by far —
+// prose belongs under the numbers, not beside them.
+function specialProgression(type: TowerType): string | null {
+  const [a, b, c] = TOWERS[type].tiers
+  if (a.splashRadius) return `Splash ${cells(a.splashRadius)} → ${cells(b.splashRadius!)} → ${cells(c.splashRadius!)} cells around the target`
+  if (a.slowFactor)
+    return `Slows to ${a.slowFactor}/${b.slowFactor}/${c.slowFactor}% speed for ${secs(a.slowTicks!)}/${secs(b.slowTicks!)}/${secs(c.slowTicks!)}`
+  if (a.chain) return `Chains to ${a.chain} → ${b.chain} → ${c.chain} enemies per shot`
+  if (a.mintYield) return `Pays ⛀ ${a.mintYield} → ${b.mintYield} → ${c.mintYield} every cleared wave`
+  if (a.auraPct) return `Aura: +${a.auraPct}% → +${b.auraPct}% → +${c.auraPct}% damage to towers in range`
+  return null
 }
 
 const TOWER_NOTES: Partial<Record<TowerType, string>> = {
@@ -259,6 +263,10 @@ export function CodexModal({
                   Numbers include this run's modifiers — Spire Tree, relics, cataclysms. Base values in parentheses.
                 </p>
               )}
+              <p className="codex-note codex-note-muted">
+                DPS is per single target — splash and chain multiply it across every enemy hit; armor taxes fast
+                firers hardest.
+              </p>
               {(Object.keys(TOWERS) as TowerType[]).map((type) => {
                 const def = TOWERS[type]
                 const dmgPct = effectiveDamagePct(state, type)
@@ -275,9 +283,8 @@ export function CodexModal({
                           <th>Tier</th>
                           <th>Cost</th>
                           <th>Dmg</th>
+                          <th>DPS</th>
                           <th>Range</th>
-                          <th>Rate</th>
-                          <th>Special</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -286,19 +293,20 @@ export function CodexModal({
                           const dmg = Math.floor((t.damage * dmgPct) / 100)
                           const range = effectiveTowerRange(state, type, tier)
                           const cd = effectiveTowerCooldown(state, type, tier)
+                          const fires = t.damage > 0 && t.cooldown > 0
                           return (
                             <tr key={i}>
                               <td>{tier}</td>
                               <td>⛀ {t.cost}</td>
                               <td>{t.damage ? withBase(dmg, t.damage) : '—'}</td>
+                              <td>{fires ? withBase(Math.round((dmg * 30) / cd), Math.round((t.damage * 30) / t.cooldown)) : '—'}</td>
                               <td>{t.range ? withBase(cells(range), cells(t.range)) : '—'}</td>
-                              <td>{t.cooldown ? withBase(`${(30 / cd).toFixed(1)}/s`, `${(30 / t.cooldown).toFixed(1)}/s`) : '—'}</td>
-                              <td>{tierSpecial(type, i)}</td>
                             </tr>
                           )
                         })}
                       </tbody>
                     </table>
+                    {specialProgression(type) && <p className="codex-trait">{specialProgression(type)}</p>}
                     {TOWER_NOTES[type] && <p className="codex-trait">{TOWER_NOTES[type]}</p>}
                   </div>
                 )

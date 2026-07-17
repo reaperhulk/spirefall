@@ -38,6 +38,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+61. *(post-marathon, playtest)* **DPS column, narrower table** — the codex
+    tower tables gain a DPS column (per-target, from the same effective
+    damage/cooldown helpers, base in parens when modified) while getting
+    NARROWER: the Rate column is gone (hit × rate = DPS, and per-hit damage
+    is the number armor/shields judge), and the Special column — the widest
+    cell by far — is compressed to one tier-progression line under each
+    table ("Splash 0.9 → 1.1 → 1.2 cells"). A muted note flags the
+    per-target caveat (splash/chain multiply it; armor taxes fast firers).
+    Net result at 375px: six of seven tables fit with ZERO internal
+    scroll even with modifier parentheticals (previously all scrolled).
+    E2e adds a DPS fidelity check: 3 Honed Arsenal levels flip arrow tier
+    3 to 117 (96).
+
 60. *(post-marathon, playtest)* **Codex shows YOUR numbers** — the tower
     tables and ability reference now quote effective values through the
     same engine helpers combat uses (`effectiveDamagePct`,

@@ -747,6 +747,9 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
   await expect(page.getByTestId('codex-modifier-note')).toBeVisible()
   await expect(page.getByTestId('codex-tower-sniper')).toContainText('322')
   await expect(page.getByTestId('codex-tower-sniper')).toContainText('(260)')
+  // DPS column: arrow tier 3 = floor(32 × 1.24) × 3 shots/s = 117 (base 96).
+  await expect(page.getByTestId('codex-tower-arrow')).toContainText('117')
+  await expect(page.getByTestId('codex-tower-arrow')).toContainText('(96)')
   await page.keyboard.press('Escape')
   expect(errors).toEqual([])
 })

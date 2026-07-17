@@ -706,6 +706,10 @@ button:disabled {
   font-size: 12px;
 }
 
+.codex-note-muted {
+  color: #565f89;
+}
+
 .codex-base {
   color: #565f89;
   font-size: 11px;
