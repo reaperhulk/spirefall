@@ -31,6 +31,9 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+24. **Daily run** — 📅 button starts today's shared seed (UTC-dated, Date
+    strictly UI-side); best-of-today tracked locally and shown on the button.
+
 23. **Bulwark** — 4th ability (Aegis Sigil unlock, 250 sparks): 5s of total
     spire invulnerability on a 40s cooldown, hotkey F. Golden shell renders
     while active; bots cast it under pressure; arrivals absorbed to 0.

@@ -36,6 +36,28 @@ function newSeed(runs: number): string {
   return `run-${runs + 1}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+// The daily: one seed the whole world shares, rotating at UTC midnight.
+// (Date lives strictly in the UI — the engine only ever sees the seed.)
+function dailySeed(): string {
+  return `daily-${new Date().toISOString().slice(0, 10)}`
+}
+
+interface DailyBest {
+  date: string
+  waves: number
+}
+
+function loadDailyBest(): DailyBest | null {
+  try {
+    const raw = localStorage.getItem('spirefall-daily')
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as DailyBest
+    return parsed.date === new Date().toISOString().slice(0, 10) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
 const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon']
 const SPEEDS = [0, 1, 2, 3, 5, 10]
 
@@ -69,6 +91,7 @@ export default function App() {
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
+  const [dailyBest, setDailyBest] = useState<DailyBest | null>(() => loadDailyBest())
   const [hintsDismissed, setHintsDismissed] = useState(() => {
     try {
       return localStorage.getItem('spirefall-hints-done') === '1'
@@ -101,6 +124,18 @@ export default function App() {
       sfx.handleEvents(events)
       for (const e of events) {
         if (e.type === 'run_ended') {
+          if (s.seed === dailySeed()) {
+            const best = { date: new Date().toISOString().slice(0, 10), waves: s.wavesCleared }
+            const prior = loadDailyBest()
+            if (!prior || best.waves > prior.waves) {
+              try {
+                localStorage.setItem('spirefall-daily', JSON.stringify(best))
+              } catch {
+                // unsaved is fine
+              }
+              setDailyBest(best)
+            }
+          }
           const settled = settleRun(metaRef.current, s)
           metaRef.current = settled.meta
           setMeta(settled.meta)
@@ -433,6 +468,21 @@ export default function App() {
               </button>
             ))}
           </div>
+          <button
+            className="ghost-btn"
+            data-testid="daily-run"
+            title={
+              dailyBest
+                ? `Today's shared seed — your best: wave ${dailyBest.waves}`
+                : "Play today's shared seed — same map and waves for everyone"
+            }
+            onClick={() => {
+              if (window.confirm('Start the Daily run? Your current run will be abandoned (progress-only sparks apply).'))
+                beginNextRun(dailySeed())
+            }}
+          >
+            📅{dailyBest ? ` ${dailyBest.waves}` : ''}
+          </button>
           <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree" title="Spire Tree (T)">
             Spire Tree
           </button>

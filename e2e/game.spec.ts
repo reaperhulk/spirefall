@@ -35,6 +35,7 @@ declare global {
       newRun: (seed?: string) => void
       setSpeed: (n: number) => void
       getSpeed: () => number
+      getReplay: () => { seed: string; log: unknown[] }
       reset: () => void
     }
   }
@@ -445,5 +446,28 @@ test('auto-advance sends the next wave by itself', async ({ page }) => {
   await page.evaluate(() => window.__harness.fastForward(120)) // clear wave 1
   // Without touching anything, wave 2 should start on its own.
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).wave, { timeout: 8000 }).toBe(2)
+  expect(errors).toEqual([])
+})
+
+test('daily run: shared date seed, best-of-today recorded', async ({ page }) => {
+  const errors = await boot(page, 'e2e-daily')
+  page.on('dialog', (d) => d.accept())
+  await page.getByTestId('daily-run').click()
+  const today = new Date().toISOString().slice(0, 10)
+  await expect.poll(async () => await page.evaluate(() => window.__harness.getReplay().seed)).toBe(`daily-${today}`)
+
+  // Die undefended; the daily best (0 waves is still a record) is stored.
+  await page.evaluate(() => {
+    const send = () => {
+      const s = window.__harness.getState()
+      if (s.phase === 'build') window.__harness.dispatch({ type: 'start_wave' })
+      window.__harness.fastForward(300)
+      if (window.__harness.snapshot().phase !== 'defeat') send()
+    }
+    send()
+  })
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  const stored = await page.evaluate(() => localStorage.getItem('spirefall-daily'))
+  expect(JSON.parse(stored!).date).toBe(today)
   expect(errors).toEqual([])
 })
