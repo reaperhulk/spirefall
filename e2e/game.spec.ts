@@ -135,7 +135,7 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
 })
 
 test('relic offers appear in the UI and apply on click', async ({ page }) => {
-  const errors = await boot(page, 'e2e-relic')
+  const errors = await boot(page, 'e2e-relic-a')
   // Actually play: each build phase, buy/upgrade arrows, then send the wave —
   // waves are lethal enough now that a static two-tower setup dies before the
   // wave-5 relic offer.
@@ -153,9 +153,19 @@ test('relic offers appear in the UI and apply on click', async ({ page }) => {
     ]
     const act = (): boolean => {
       const s = window.__harness.getState()
-      const upgrade = s.towers.find((t) => t.tier < 3)
-      if (s.towers.length >= 4 && upgrade && s.gold >= 140) {
-        window.__harness.dispatch({ type: 'upgrade_tower', id: upgrade.id })
+      if (s.towers.length < 4 && s.gold >= 50) {
+        const [cx, cy] = spots[s.towers.length]!
+        window.__harness.dispatch({ type: 'place_tower', tower: 'arrow', cell: { cx, cy } })
+        return true
+      }
+      const tierOne = s.towers.find((t) => t.tier === 1)
+      if (tierOne && s.gold >= 60) {
+        window.__harness.dispatch({ type: 'upgrade_tower', id: tierOne.id })
+        return true
+      }
+      const tierTwo = s.towers.find((t) => t.tier === 2)
+      if (tierTwo && s.gold >= 140) {
+        window.__harness.dispatch({ type: 'upgrade_tower', id: tierTwo.id })
         return true
       }
       if (s.towers.length < spots.length && s.gold >= 50) {

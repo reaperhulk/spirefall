@@ -29,13 +29,13 @@ npm run dev     # then open http://localhost:5173
   (only Arrows, Teslas, and Snipers can hit air).
 - **Choose**: every 5 waves the ruins offer a relic — run-scoped power with
   trade-offs.
-- **Fall**: the Spire has just 10 HP — about ten leaks end a run (bosses hit for
-  3), though it knits +1 back each cleared wave. A good first run is a tense few
-  minutes and dies around wave 10–16; the ramp turns brutal after wave 8. Spend
-  Sparks in the deep Spire Tree (damage, HP, income, wave-skipping) and reach
-  further next run — expect the climb to wave 26 to take ten or more runs. Break
-  the cycle there, then keep pushing into the endless if you dare; the victory is
-  banked either way.
+- **Fall**: the Spire has just 10 HP and every enemy hits differently — swarmlings
+  chip for 1, brutes crush for 5, a boss leak (8) all but ends an unupgraded run.
+  It knits +1 back each cleared wave, but early on everything kills you easily:
+  first runs die in a couple of minutes. Reinforced Core in the Spire Tree is what
+  makes leaks survivable — then damage, income, and wave-skipping carry you toward
+  wave 24. Expect the climb to take ten or more runs; break the cycle, then push
+  into the endless if you dare. The victory is banked either way.
 
 Progress saves to localStorage automatically, mid-run included.
 

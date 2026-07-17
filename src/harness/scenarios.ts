@@ -9,9 +9,11 @@ import { BOTS, type BotName } from './bots'
 // outcomes — that's the point.
 
 export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
+  // With per-type spire damage, surviving leaks is the first problem to buy
+  // your way out of — Reinforced Core leads.
+  'spire_hp',
   'unlock_tesla',
   'tower_damage',
-  'spire_hp',
   'starting_gold',
   'unlock_mint',
   'gold_income',
