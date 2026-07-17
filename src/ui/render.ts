@@ -80,10 +80,11 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   ctx.fillStyle = COLORS.bg
   ctx.fillRect(0, 0, w, h)
 
-  drawPathHighlight(ctx, state, map)
+  drawTerrain(ctx, map)
+  drawPathHighlight(ctx, state, map, animTime(session))
   drawGrid(ctx, map)
   drawRocks(ctx, map)
-  drawGates(ctx, map, state)
+  drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
   drawEnemies(ctx, session)
   drawEffects(ctx, session)
@@ -111,50 +112,140 @@ function drawGrid(ctx: CanvasRenderingContext2D, map: MapDef): void {
   ctx.stroke()
 }
 
-function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef): void {
+// Subtle checkered ground so buildable terrain doesn't read as void.
+function drawTerrain(ctx: CanvasRenderingContext2D, map: MapDef): void {
+  ctx.fillStyle = '#0d1119'
+  for (let cy = 0; cy < map.height; cy++) {
+    for (let cx = 0; cx < map.width; cx++) {
+      if ((cx + cy) % 2 === 0) ctx.fillRect(cx * CELL_PX, cy * CELL_PX, CELL_PX, CELL_PX)
+    }
+  }
+}
+
+function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef, t0: number): void {
   const field = distanceField(map, blockedGrid(map, state.towers))
   const path = [map.spawn, ...pathFrom(map, field, map.spawn)]
   ctx.fillStyle = COLORS.path
   for (const c of path) ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
+
+  // Drifting chevrons make the flow direction legible at a glance.
+  ctx.strokeStyle = '#2a3248'
+  ctx.lineWidth = 1.5
+  for (let i = 0; i + 1 < path.length; i++) {
+    const a = path[i]!
+    const b = path[i + 1]!
+    const pulse = 0.35 + 0.3 * Math.sin(t0 * 0.12 - i * 0.9)
+    if (pulse <= 0.12) continue
+    const mx = ((a.cx + b.cx) / 2 + 0.5) * CELL_PX
+    const my = ((a.cy + b.cy) / 2 + 0.5) * CELL_PX
+    const ang = Math.atan2(b.cy - a.cy, b.cx - a.cx)
+    ctx.save()
+    ctx.translate(mx, my)
+    ctx.rotate(ang)
+    ctx.globalAlpha = pulse
+    ctx.beginPath()
+    ctx.moveTo(-3, -5)
+    ctx.lineTo(3, 0)
+    ctx.lineTo(-3, 5)
+    ctx.stroke()
+    ctx.restore()
+  }
+  ctx.globalAlpha = 1
+  ctx.lineWidth = 1
 }
 
 function drawRocks(ctx: CanvasRenderingContext2D, map: MapDef): void {
   for (let cy = 0; cy < map.height; cy++) {
     for (let cx = 0; cx < map.width; cx++) {
       if (!map.rocks[cy * map.width + cx]) continue
+      // Deterministic per-cell variation: same rock, same face, every frame.
+      const jitter = (cx * 7 + cy * 13) % 4
+      const x = cx * CELL_PX + 2
+      const y = cy * CELL_PX + 2
+      const s = CELL_PX - 4
       ctx.fillStyle = COLORS.rock
-      ctx.fillRect(cx * CELL_PX + 2, cy * CELL_PX + 2, CELL_PX - 4, CELL_PX - 4)
-      ctx.strokeStyle = COLORS.rockEdge
-      ctx.strokeRect(cx * CELL_PX + 2.5, cy * CELL_PX + 2.5, CELL_PX - 5, CELL_PX - 5)
+      ctx.beginPath()
+      ctx.moveTo(x + 4 + jitter, y)
+      ctx.lineTo(x + s - 2, y + 2)
+      ctx.lineTo(x + s, y + s - 4 + (jitter % 2))
+      ctx.lineTo(x + s - 6, y + s)
+      ctx.lineTo(x + 2, y + s - 2)
+      ctx.lineTo(x, y + 6 - (jitter % 3))
+      ctx.closePath()
+      ctx.fill()
+      // A lit facet on the upper-left gives it mass.
+      ctx.fillStyle = COLORS.rockEdge
+      ctx.beginPath()
+      ctx.moveTo(x + 4 + jitter, y)
+      ctx.lineTo(x + s - 2, y + 2)
+      ctx.lineTo(x + s * 0.55, y + s * 0.45)
+      ctx.lineTo(x + 3, y + 8)
+      ctx.closePath()
+      ctx.globalAlpha = 0.5
+      ctx.fill()
+      ctx.globalAlpha = 1
     }
   }
 }
 
-function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState): void {
+function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, t0: number): void {
+  // The spawn gate: a swirling portal, arcs counter-rotating around a core.
   const spawn = cellCenter(map.spawn)
+  const sx = px(spawn.x)
+  const sy = px(spawn.y)
   ctx.fillStyle = COLORS.spawn
-  ctx.beginPath()
-  ctx.arc(px(spawn.x), px(spawn.y), CELL_PX * 0.36, 0, Math.PI * 2)
+  circle(ctx, sx, sy, CELL_PX * 0.28)
   ctx.fill()
+  ctx.strokeStyle = COLORS.spawn
+  ctx.lineWidth = 2
+  for (const [dir, r, span] of [
+    [1, 0.4, 1.8],
+    [-1, 0.5, 1.2],
+  ] as const) {
+    const a = t0 * 0.04 * dir
+    ctx.globalAlpha = 0.7
+    ctx.beginPath()
+    ctx.arc(sx, sy, CELL_PX * r, a, a + span)
+    ctx.stroke()
+  }
+  ctx.globalAlpha = 1
+  ctx.lineWidth = 1
 
-  // The Spire: a diamond whose glow fades with its HP.
+  // The Spire: a crystal whose glow breathes and fades with its HP, with a
+  // guardian mote orbiting while it still stands strong.
   const spire = cellCenter(map.spire)
   const cx = px(spire.x)
   const cy = px(spire.y)
   const r = CELL_PX * 0.46
   const hpFrac = state.spireMaxHp > 0 ? state.spireHp / state.spireMaxHp : 0
+  const breathe = 1 + 0.05 * Math.sin(t0 * 0.07)
   ctx.save()
   ctx.shadowColor = COLORS.spire
-  ctx.shadowBlur = 6 + 14 * hpFrac
+  ctx.shadowBlur = (6 + 14 * hpFrac) * breathe
   ctx.fillStyle = COLORS.spire
   ctx.beginPath()
-  ctx.moveTo(cx, cy - r)
+  ctx.moveTo(cx, cy - r * breathe)
   ctx.lineTo(cx + r * 0.7, cy)
-  ctx.lineTo(cx, cy + r)
+  ctx.lineTo(cx, cy + r * breathe)
   ctx.lineTo(cx - r * 0.7, cy)
   ctx.closePath()
   ctx.fill()
   ctx.restore()
+  // Inner facet.
+  ctx.fillStyle = '#8a6a2a'
+  ctx.beginPath()
+  ctx.moveTo(cx, cy - r * 0.5)
+  ctx.lineTo(cx + r * 0.32, cy)
+  ctx.lineTo(cx, cy + r * 0.5)
+  ctx.lineTo(cx - r * 0.32, cy)
+  ctx.closePath()
+  ctx.fill()
+  if (hpFrac > 0.3) {
+    const a = t0 * 0.06
+    ctx.fillStyle = '#7dcfff'
+    circle(ctx, cx + Math.cos(a) * r * 1.1, cy + Math.sin(a) * r * 0.7, 2)
+    ctx.fill()
+  }
 }
 
 // Each tower type has its own silhouette; attacking turrets rotate to face

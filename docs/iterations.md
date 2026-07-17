@@ -13,7 +13,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 4. Endless mutators: stacking wave modifiers past the victory wave (Cataclysms)
 - [x] 5. Run summary analytics: damage by tower type, kills by enemy type
 - [x] 6. Graphics: real projectiles (cannon shells, sniper tracers), muzzle flash
-- [ ] 7. Graphics: terrain texture, path styling, spire/gate glow-up
+- [x] 7. Graphics: terrain texture, path styling, spire/gate glow-up
 - [x] 8. UX: settings panel (volume, reduced motion) + shortcuts help overlay
 - [x] 9. Mobile: PWA manifest + offline service worker + install icons
 - [x] 10. Ascension: prestige layer resetting the Spire Tree for Embers (M6)
@@ -30,6 +30,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+9. **Board glow-up** — checkered ground tint, faceted rocks with deterministic
+   per-cell variation and lit facets, path chevrons drifting toward the spire,
+   swirling counter-rotating spawn portal, breathing crystal spire with inner
+   facet and an orbiting guardian mote while healthy. Render-only.
 
 8. **Relic depth** — rarity tiers (common 60 / rare 32 / legendary 8 weighted
    draws), six new relics incl. two new mechanical axes (Quickdraw attack
