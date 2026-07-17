@@ -38,6 +38,21 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+53. *(post-marathon)* **Graphics 2.0** — the renderer's biggest jump since
+    pixels landed, all Canvas 2D, all render-only. Stage 1: an additive glow
+    engine (cached radial sprites, 'lighter' compositing) turns every
+    luminous thing into a light source — portal, spire (its pool shrinks as
+    it dies), tesla/frost/beacon idles, shells, tracers, bolts, flashes,
+    bursts, meteor, nova, motes — plus a once-per-map baked terrain layer
+    (speckle grain, per-theme props, rock shadows, top-light, vignette) and
+    a brushed rounded road instead of checkerboard path cells. Stage 2:
+    battle scars (a fading decal layer stamped by every kill), ground
+    shadows + 220ms overshoot pop-in for spawns, color-tiered HP bars,
+    tower recoil, tier studs/bright edges + enhance glow, shell smoke
+    trails, and mood atmosphere (drifting fog banks, red edge-tension as
+    the spire bleeds, violet cataclysm eras). Reduced motion gates the
+    drift/pop/recoil. Screenshot-verified per stage; 140 unit + 19 e2e.
+
 52. *(post-marathon, playtest)* **Cooldowns made real** — root cause of
     "cooldown reductions feel ignorable": abilities can't be CAST in the
     build phase, but their cooldowns RECOVERED there, so any unhurried

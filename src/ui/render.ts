@@ -172,6 +172,61 @@ function glow(ctx: CanvasRenderingContext2D, x: number, y: number, radius: numbe
   ctx.restore()
 }
 
+// --- battle scars -----------------------------------------------------------
+// A persistent decal canvas the same size as the field: every kill stamps a
+// small scorch + color fleck, and the whole layer slowly fades, so heavy
+// fighting visibly scars the ground where it happened. Keyed by map+seed —
+// a new run starts on clean earth.
+
+const DECALS = { key: '', canvas: null as HTMLCanvasElement | null, lastFade: 0 }
+
+export function stampDecal(mapId: number, seed: string, at: Vec, color: string): void {
+  const map = getMap(mapId)
+  const key = `${mapId}:${seed}`
+  if (!DECALS.canvas || DECALS.key !== key) {
+    DECALS.canvas = document.createElement('canvas')
+    DECALS.canvas.width = map.width * CELL_PX
+    DECALS.canvas.height = map.height * CELL_PX
+    DECALS.key = key
+    DECALS.lastFade = performance.now()
+  }
+  const g = DECALS.canvas.getContext('2d')!
+  const x = px(at.x)
+  const y = px(at.y)
+  const n = hash01(Math.round(at.x), Math.round(at.y), 3)
+  g.save()
+  g.translate(x, y)
+  g.rotate(n * Math.PI * 2)
+  g.globalAlpha = 0.16
+  g.fillStyle = '#000000'
+  ellipse(g, 0, 0, 5 + n * 4, 3.5 + n * 2)
+  g.fill()
+  g.globalAlpha = 0.1
+  g.fillStyle = color
+  for (let i = 0; i < 3; i++) {
+    const a = n * 7 + i * 2.1
+    circle(g, Math.cos(a) * (3 + i * 2), Math.sin(a) * (2 + i * 1.4), 1.3)
+    g.fill()
+  }
+  g.restore()
+}
+
+function drawDecals(ctx: CanvasRenderingContext2D, map: MapDef, seed: string): void {
+  if (!DECALS.canvas || DECALS.key !== `${map.id}:${seed}`) return
+  // The battlefield forgets slowly: every ~1.5s the layer loses a little.
+  const now = performance.now()
+  if (now - DECALS.lastFade > 1500) {
+    DECALS.lastFade = now
+    const g = DECALS.canvas.getContext('2d')!
+    g.save()
+    g.globalCompositeOperation = 'destination-out'
+    g.globalAlpha = 0.06
+    g.fillRect(0, 0, DECALS.canvas.width, DECALS.canvas.height)
+    g.restore()
+  }
+  ctx.drawImage(DECALS.canvas, 0, 0)
+}
+
 // --- terrain layer ----------------------------------------------------------
 // The whole static battlefield — ground noise, checker, grid, props, rocks
 // with shadows, vignette — is rendered ONCE per map to an offscreen canvas
@@ -403,6 +458,16 @@ function px(v: number): number {
 // still (walled in, spawn tick). Render-only cache, cleared when it grows.
 const headings = new Map<number, number>()
 
+// First time the renderer saw each enemy id, for the spawn pop-in. Wall
+// clock is fine: it's a one-shot 220ms flourish, not sim state.
+const firstSeen = new Map<number, number>()
+
+function easeOutBack(t: number): number {
+  const c1 = 1.70158
+  const c3 = c1 + 1
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+}
+
 export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: RenderUiState): void {
   const state = session.state
   const map = getMap(state.mapId)
@@ -412,13 +477,50 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   const theme = mapTheme(map)
   ctx.drawImage(terrainLayer(map, theme), 0, 0, w, h)
   drawPathHighlight(ctx, state, map, animTime(session), theme)
+  drawDecals(ctx, map, state.seed)
   drawAmbient(ctx, map, animTime(session), theme)
   drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
   drawEnemies(ctx, session)
   drawEffects(ctx, session)
+  drawAtmosphere(ctx, session, map, theme)
   drawPlacementGhost(ctx, session, ui, map)
   drawBossBar(ctx, state, map)
+}
+
+// The room's mood tracks the game's state: slow fog banks drift over the
+// field, the world reddens at the edges as the Spire bleeds, and each
+// endless Cataclysm era tints the light violet. All overlays are subtle and
+// the drifting fog respects reduced motion.
+function drawAtmosphere(ctx: CanvasRenderingContext2D, session: GameSession, map: MapDef, theme: MapTheme): void {
+  const state = session.state
+  const w = map.width * CELL_PX
+  const h = map.height * CELL_PX
+  const t = animTime(session)
+
+  if (!settings.reducedMotion) {
+    for (let i = 0; i < 4; i++) {
+      const x = (((i * 251) % 97) / 97) * w + Math.sin(t * 0.004 + i * 1.9) * w * 0.18
+      const y = (((i * 173) % 89) / 89) * h + Math.cos(t * 0.003 + i * 2.7) * h * 0.14
+      glow(ctx, ((x % w) + w) % w, ((y % h) + h) % h, 130 + (i % 2) * 60, theme.mote, 0.05)
+    }
+  }
+
+  const hpFrac = state.spireMaxHp > 0 ? state.spireHp / state.spireMaxHp : 0
+  if (hpFrac < 0.4) {
+    const urgency = 1 - hpFrac / 0.4
+    const pulse = settings.reducedMotion ? 1 : 0.85 + 0.15 * Math.sin(t * 0.1)
+    const grad = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.6)
+    grad.addColorStop(0, 'rgba(219, 75, 75, 0)')
+    grad.addColorStop(1, `rgba(219, 75, 75, ${(0.16 * urgency * pulse).toFixed(3)})`)
+    ctx.fillStyle = grad
+    ctx.fillRect(0, 0, w, h)
+  }
+
+  if (state.cataclysms.length > 0) {
+    ctx.fillStyle = `rgba(136, 86, 255, ${Math.min(0.09, state.cataclysms.length * 0.03)})`
+    ctx.fillRect(0, 0, w, h)
+  }
 }
 
 // While a boss walks, it owns a marquee health bar across the top of the
@@ -601,6 +703,7 @@ function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, 
 function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: RenderUiState): void {
   const state = session.state
   const t0 = animTime(session)
+  const wallNowTowers = performance.now()
   for (const t of state.towers) {
     const gx = t.cell.cx * CELL_PX
     const gy = t.cell.cy * CELL_PX
@@ -611,18 +714,42 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
     // Tiers read as size: the whole tower grows a little per tier.
     const s = 0.95 + t.tier * 0.1
 
-    // Shared base plate, edged in the tower's color so types read at a glance.
+    // Shared base plate, edged in the tower's color so types read at a
+    // glance — tier 3 earns a bright edge, enhancements make it burn.
     ctx.fillStyle = '#141a28'
     roundRect(ctx, gx + 4.5, gy + 4.5, CELL_PX - 9, CELL_PX - 9, 5)
     ctx.fill()
     ctx.save()
-    ctx.globalAlpha = 0.55
+    ctx.globalAlpha = t.tier >= 3 ? 0.95 : 0.55
     ctx.strokeStyle = color
+    ctx.lineWidth = t.tier >= 3 ? 1.5 : 1
     ctx.stroke()
     ctx.restore()
+    if (t.enhance > 0) {
+      glow(ctx, cx, cy, CELL_PX * 0.55, color, Math.min(0.5, 0.12 + t.enhance * 0.07))
+    }
+    // Tier ≥ 2 wears corner studs on the plate.
+    if (t.tier >= 2) {
+      ctx.fillStyle = color
+      for (const [ox, oy] of [
+        [7, 7],
+        [CELL_PX - 9, 7],
+        [7, CELL_PX - 9],
+        [CELL_PX - 9, CELL_PX - 9],
+      ] as const) {
+        ctx.fillRect(gx + ox, gy + oy, 2, 2)
+      }
+    }
+
+    // Recoil: attackers kick back along their aim for a blink after firing.
+    const firedAge = wallNowTowers - (session.firedAt.get(t.id) ?? -1e9)
+    const recoil =
+      !settings.reducedMotion && firedAge < 130 && (t.type === 'arrow' || t.type === 'cannon' || t.type === 'sniper')
+        ? 3 * (1 - firedAge / 130)
+        : 0
 
     ctx.save()
-    ctx.translate(cx, cy)
+    ctx.translate(cx - Math.cos(aim) * recoil, cy - Math.sin(aim) * recoil)
     ctx.scale(s, s)
     switch (t.type) {
       case 'arrow': {
@@ -854,6 +981,8 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
   const prevById = new Map<number, Enemy>()
   for (const p of session.prev.enemies) prevById.set(p.id, p)
   if (headings.size > 600) headings.clear()
+  if (firstSeen.size > 600) firstSeen.clear()
+  const wallNow = performance.now()
 
   for (const e of session.state.enemies) {
     const prev = prevById.get(e.id)
@@ -875,8 +1004,22 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
     const gait = e.slowTicks > 0 ? e.slowFactor / 100 : 1
     const phase = t0 * 0.22 * gait * (e.speed / 100) + e.id * 1.7
 
+    // Spawn pop-in: new arrivals scale up with a little overshoot.
+    if (!firstSeen.has(e.id)) firstSeen.set(e.id, wallNow)
+    const popAge = (wallNow - firstSeen.get(e.id)!) / 220
+    const pop = popAge < 1 && !settings.reducedMotion ? 0.4 + 0.6 * easeOutBack(popAge) : 1
+
+    // Ground shadow anchors every walker to the field (fliers draw their own,
+    // smaller and offset; phased wraiths cast none — nothing there to cast it).
+    if (e.type !== 'flier' && !(e.type === 'wraith' && e.phased)) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.32)'
+      ellipse(ctx, x, y + r * 0.55, r * 0.95 * pop, r * 0.32 * pop)
+      ctx.fill()
+    }
+
     ctx.save()
     ctx.translate(x, y)
+    ctx.scale(pop, pop)
     switch (e.type) {
       case 'runner':
         drawLegs(ctx, heading, r, phase, color)
@@ -1095,13 +1238,16 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
       ctx.fillText(parts.join(' '), x, y + r + 9)
       ctx.textAlign = 'left'
     }
-    // HP bar
+    // HP bar: color tells the story at a glance — green, amber, then red.
     if (e.hp < e.maxHp) {
       const bw = r * 2
+      const frac = e.hp / e.maxHp
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'
+      ctx.fillRect(x - r - 0.5, y - r - 6.5, bw + 1, 4)
       ctx.fillStyle = COLORS.hpBack
       ctx.fillRect(x - r, y - r - 6, bw, 3)
-      ctx.fillStyle = COLORS.hpFill
-      ctx.fillRect(x - r, y - r - 6, (bw * e.hp) / e.maxHp, 3)
+      ctx.fillStyle = frac > 0.5 ? COLORS.hpFill : frac > 0.25 ? '#e0af68' : '#db4b4b'
+      ctx.fillRect(x - r, y - r - 6, bw * frac, 3)
     }
   }
 }
@@ -1163,10 +1309,21 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         break
       }
       case 'shell': {
-        // A cannonball lobbed along a shallow arc, spinning as it flies.
+        // A cannonball lobbed along a shallow arc, trailing smoke.
         if (!fx.from || !fx.to) break
         const x = px(fx.from.x + (fx.to.x - fx.from.x) * age)
         const y = px(fx.from.y + (fx.to.y - fx.from.y) * age) - Math.sin(age * Math.PI) * 10
+        for (let i = 1; i <= 3; i++) {
+          const ta = age - i * 0.09
+          if (ta <= 0) continue
+          const sx2 = px(fx.from.x + (fx.to.x - fx.from.x) * ta)
+          const sy2 = px(fx.from.y + (fx.to.y - fx.from.y) * ta) - Math.sin(ta * Math.PI) * 10
+          ctx.fillStyle = '#9a938a'
+          ctx.globalAlpha = 0.22 * (1 - i / 3.5) * fade
+          circle(ctx, sx2, sy2, 2.5 + i * 1.1)
+          ctx.fill()
+        }
+        ctx.globalAlpha = 1
         glow(ctx, x, y, fx.crit ? 12 : 8, COLORS.towers.cannon, 0.55)
         ctx.fillStyle = fx.crit ? '#ffffff' : '#2c2418'
         circle(ctx, x, y, fx.crit ? 4.5 : 3.5)

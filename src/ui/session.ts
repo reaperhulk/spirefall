@@ -1,6 +1,6 @@
 import { ENEMIES } from '../data/content'
 import { cellCenter, getMap } from '../engine/grid'
-import { enemyColor } from './render'
+import { enemyColor, stampDecal } from './render'
 import { step, TICKS_PER_SECOND } from '../engine/step'
 import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 
@@ -63,6 +63,8 @@ export class GameSession {
   aim: Record<number, number> = {}
   // Render-only: enemy id → time it was last struck, for hit flashes.
   hits: Map<number, number> = new Map()
+  // Render-only: tower id → time it last fired, for recoil animation.
+  firedAt: Map<number, number> = new Map()
 
   private onEvents: ((events: GameEvent[], state: RunState) => void) | null = null
   // Events raised before a handler attaches (e.g. the harness drives a brand
@@ -157,6 +159,8 @@ export class GameSession {
       switch (e.type) {
         case 'tower_fired': {
           this.aim[e.id] = Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x)
+          this.firedAt.set(e.id, now)
+          if (this.firedAt.size > 400) this.firedAt.clear()
           for (const id of e.targets) this.hits.set(id, now)
           if (this.hits.size > 600) this.hits.clear()
           const color = e.crit ? '#ffffff' : (TOWER_BEAM_COLORS[e.tower] ?? '#ffffff')
@@ -187,6 +191,7 @@ export class GameSession {
         }
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
+          stampDecal(this.state.mapId, this.state.seed, e.at, enemyColor(e.enemy))
           if (this.speed <= 3) {
             this.effects.push({ kind: 'burst', at: e.at, color: enemyColor(e.enemy), t0: now, dur: 380 })
             this.effects.push({
