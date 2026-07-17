@@ -146,6 +146,9 @@ export default function App() {
   }, [])
 
   const handleCellClick = (cell: CellPos) => {
+    // Touch taps arrive with a synthetic hover that no mouseleave ever
+    // clears — reset it on every tap so tooltips can't stick on mobile.
+    setHoveredTowerId(null)
     if (abilitySelection) {
       session.dispatch({ type: 'cast_ability', ability: abilitySelection, cell })
       setAbilitySelection(null)
@@ -386,7 +389,7 @@ export default function App() {
             setHoveredTowerId((cur) => (tower ? tower.id : null) === cur ? cur : (tower ? tower.id : null))
           }}
         />
-        {hoveredTower && !shopSelection && (
+        {hoveredTower && !shopSelection && hoveredTower.id !== selectedTowerId && (
           <div
             className="tower-tooltip"
             data-testid="tower-tooltip"
@@ -429,6 +432,14 @@ export default function App() {
         )}
         {selectedTower && (
           <aside className="tower-panel" data-testid="tower-panel">
+            <button
+              className="panel-close"
+              data-testid="close-tower-panel"
+              aria-label="Close tower details"
+              onClick={() => setSelectedTowerId(null)}
+            >
+              ✕
+            </button>
             <h3>
               {TOWERS[selectedTower.type].name} · Tier {selectedTower.tier}
               {selectedTower.enhance > 0 && ` +${selectedTower.enhance}`}

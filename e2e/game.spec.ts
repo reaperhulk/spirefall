@@ -252,6 +252,36 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   expect(errors).toEqual([])
 })
 
+test.describe('touch', () => {
+  test.use({ hasTouch: true })
+
+  test('tower popups dismiss on touch: ✕ closes the panel, tooltips never stick', async ({ page }) => {
+    const errors = await boot(page, 'e2e-touch')
+    await page.getByTestId('shop-arrow').tap()
+    const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
+    await page.touchscreen.tap(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+    await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+
+    // Disarm, then tap the tower: the panel opens and no hover tooltip sticks.
+    await page.getByTestId('shop-arrow').tap()
+    await page.touchscreen.tap(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+    await expect(page.getByTestId('tower-panel')).toBeVisible()
+    await expect(page.getByTestId('tower-tooltip')).not.toBeVisible()
+
+    // The ✕ button dismisses it...
+    await page.getByTestId('close-tower-panel').tap()
+    await expect(page.getByTestId('tower-panel')).not.toBeVisible()
+
+    // ...and so does tapping empty ground, with no tooltip left behind.
+    await page.touchscreen.tap(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+    await expect(page.getByTestId('tower-panel')).toBeVisible()
+    await page.touchscreen.tap(box.x + 10 * CELL + CELL / 2, box.y + 9 * CELL + CELL / 2)
+    await expect(page.getByTestId('tower-panel')).not.toBeVisible()
+    await expect(page.getByTestId('tower-tooltip')).not.toBeVisible()
+    expect(errors).toEqual([])
+  })
+})
+
 test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refund', async ({ page }) => {
   const errors = await boot(page, 'e2e-keys')
   await page.keyboard.press('1') // arm the arrow tower
