@@ -890,6 +890,12 @@ button.preview-unit:hover {
   right: 6px;
   width: 28px;
   height: 28px;
+  /* The button base style's 6px/12px padding shoved the ✕ off-centre in a
+     fixed 28px square — kill it and let flex centre the glyph. */
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #3a4258;
   border-radius: 6px;
   background: #10141f;
