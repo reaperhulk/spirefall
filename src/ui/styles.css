@@ -784,3 +784,25 @@ button:disabled {
   color: #e5c07b;
   font-weight: 700;
 }
+
+/* First-run hints. */
+.hint-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 14px;
+  background: #16202c;
+  border: 1px solid #2a3d52;
+  border-radius: 8px;
+  color: #9ec7e8;
+  font-size: 13px;
+}
+
+.hint-close {
+  position: static;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  font-size: 11px;
+}

@@ -22,7 +22,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - [x] 13. Save export/import codes
 - [ ] 14. Achievements with spark rewards
 - [x] 15. Wave preview enrichment: threat estimate, elite marks
-- [ ] 16. First-run tutorial hints
+- [x] 16. First-run tutorial hints
 - [x] 17. Lifetime stats screen
 - [x] 18. Boss variety: distinct boss per boss wave
 - [ ] 19. Deep fuzz run + rebalance pass
@@ -30,6 +30,10 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+17. **First-run hints** — three contextual banners for brand-new accounts
+    (build → send → economy), retired forever after the first run ends or on
+    dismiss (persisted). E2e drives the whole arc.
 
 15. **Boss roster** — waves 10/20/30 rotate Spirebreaker (tank), Gravemind
     (splits into Amalgams on death → cascading shards), Stormcaller (FLYING

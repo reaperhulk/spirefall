@@ -68,6 +68,13 @@ export default function App() {
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
+  const [hintsDismissed, setHintsDismissed] = useState(() => {
+    try {
+      return localStorage.getItem('spirefall-hints-done') === '1'
+    } catch {
+      return true
+    }
+  })
   const [sfx] = useState(() => new Sfx())
   const [muted, setMuted] = useState(() => sfx.muted)
 
@@ -306,6 +313,27 @@ export default function App() {
   // Scouting report: deterministic preview of what start_wave will field.
   const preview = state.phase === 'build' && !summary ? previewNextWave(state) : null
 
+  // First-run onboarding: three contextual hints, gone forever once a run
+  // ends (or the player dismisses them).
+  let hint: string | null = null
+  if (!hintsDismissed && meta.runs === 0 && !summary) {
+    if (state.wave === 0 && state.towers.length < 2) {
+      hint = 'Pick a tower below (or press 1) and click beside the glowing path to build. Two towers is a start.'
+    } else if (state.wave === 0 && state.phase === 'build') {
+      hint = 'Send the wave when ready (Space). Enemies march the lit path — leaks hit the Spire, and it only has 10 HP.'
+    } else if (state.wave === 1 && state.phase === 'build') {
+      hint = 'Kills pay gold; every wave is stronger than the last. The scouting report above shows exactly what is coming.'
+    }
+  }
+  const dismissHints = () => {
+    setHintsDismissed(true)
+    try {
+      localStorage.setItem('spirefall-hints-done', '1')
+    } catch {
+      // fine unsaved
+    }
+  }
+
   return (
     <div className="app">
       <header className="hud">
@@ -427,6 +455,14 @@ export default function App() {
         </div>
       </header>
 
+      {hint && (
+        <div className="hint-banner" data-testid="hint">
+          <span>{hint}</span>
+          <button className="panel-close hint-close" aria-label="Dismiss hints" onClick={dismissHints}>
+            ✕
+          </button>
+        </div>
+      )}
       {preview && (
         <div className="wave-preview" data-testid="wave-preview">
           <span className="preview-label">Next wave:</span>

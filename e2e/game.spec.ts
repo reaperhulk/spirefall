@@ -415,3 +415,20 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
   await expect(page.getByTestId('import-failed')).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('first-run hints guide placement, then retire forever', async ({ page }) => {
+  const errors = await boot(page, 'e2e-hints')
+  await expect(page.getByTestId('hint')).toContainText('Pick a tower')
+  await page.getByTestId('shop-arrow').click()
+  const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
+  await page.mouse.click(box.x + 7 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+  await page.mouse.click(box.x + 8 * CELL + CELL / 2, box.y + 5 * CELL + CELL / 2)
+  await expect(page.getByTestId('hint')).toContainText('Send the wave')
+  // Dismiss kills hints permanently, across reloads.
+  await page.locator('.hint-close').click()
+  await expect(page.getByTestId('hint')).not.toBeVisible()
+  await page.reload()
+  await page.waitForSelector('[data-testid="playfield"]')
+  await expect(page.getByTestId('hint')).not.toBeVisible()
+  expect(errors).toEqual([])
+})
