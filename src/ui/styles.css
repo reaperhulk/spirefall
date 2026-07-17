@@ -181,6 +181,8 @@ button:disabled {
   flex-direction: column;
   gap: 8px;
   width: 190px;
+  /* Above the shop and tooltips, below modal backdrops (10). */
+  z-index: 8;
 }
 
 .tower-tooltip {
@@ -416,9 +418,18 @@ button:disabled {
     gap: 8px;
   }
 
+  /* The board is too small to host a floating panel — it would spill into
+     the shop below with murky stacking. Become a bottom sheet instead:
+     fixed, full-width, and explicitly above the shop. */
   .tower-panel {
-    width: 160px;
+    position: fixed;
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
     font-size: 12px;
+    box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.55);
   }
 }
 

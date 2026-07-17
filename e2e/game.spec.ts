@@ -282,6 +282,34 @@ test.describe('touch', () => {
   })
 })
 
+test.describe('mobile viewport', () => {
+  test.use({ viewport: { width: 375, height: 667 }, hasTouch: true })
+
+  test('tower panel is a bottom sheet: buttons stay tappable over the shop', async ({ page }) => {
+    const errors = await boot(page, 'e2e-mobile')
+    await page.getByTestId('shop-arrow').tap()
+    const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
+    const cell = box.width / 24 // canvas scales down; derive the cell size
+    await page.touchscreen.tap(box.x + 7.5 * cell, box.y + 5.5 * cell)
+    await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+    await page.getByTestId('shop-arrow').tap() // disarm
+    await page.touchscreen.tap(box.x + 7.5 * cell, box.y + 5.5 * cell)
+    await expect(page.getByTestId('tower-panel')).toBeVisible()
+
+    // Playwright refuses to tap covered controls — these prove the panel
+    // wins the stacking fight with the shop cards beneath it.
+    await page.getByTestId('upgrade-tower').tap()
+    await expect.poll(async () => (await page.evaluate(() => window.__harness.getState())).towers[0]!.tier).toBe(2)
+    await page.getByTestId('close-tower-panel').tap()
+    await expect(page.getByTestId('tower-panel')).not.toBeVisible()
+
+    // With the sheet gone, the shop is interactive again.
+    await page.getByTestId('shop-cannon').tap()
+    await expect(page.getByTestId('shop-cannon')).toHaveClass(/selected/)
+    expect(errors).toEqual([])
+  })
+})
+
 test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refund', async ({ page }) => {
   const errors = await boot(page, 'e2e-keys')
   await page.keyboard.press('1') // arm the arrow tower
