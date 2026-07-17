@@ -455,6 +455,8 @@ describe('single-target niches', () => {
       shield,
       healCooldown: 0,
       broodCooldown: 0,
+      phased: false,
+      phaseCooldown: 0,
       targetCell: null,
     })
     return step(s, []).state.towers[0]!.damageDealt
@@ -513,6 +515,8 @@ describe('probability layer', () => {
         shield: 0,
         healCooldown: 0,
       broodCooldown: 0,
+      phased: false,
+      phaseCooldown: 0,
         targetCell: null,
       })
       const { state, events } = step(s, [])
@@ -617,6 +621,8 @@ describe('relic depth', () => {
         shield: 0,
         healCooldown: 0,
         broodCooldown: 0,
+        phased: false,
+        phaseCooldown: 0,
         targetCell: null,
       })
       return step(s, []).state.towers[0]!

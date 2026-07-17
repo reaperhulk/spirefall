@@ -71,6 +71,7 @@ export function assertInvariants(state: RunState): void {
     check(e.slowTicks >= 0, `enemy ${e.id} negative slowTicks`)
     check(Number.isInteger(e.healCooldown) && e.healCooldown >= 0, `enemy ${e.id} bad healCooldown`)
     check(Number.isInteger(e.broodCooldown) && e.broodCooldown >= 0, `enemy ${e.id} bad broodCooldown`)
+    check(Number.isInteger(e.phaseCooldown) && e.phaseCooldown >= 0, `enemy ${e.id} bad phaseCooldown`)
   }
 
   // Enemy ids strictly increase with array position (stable iteration order).

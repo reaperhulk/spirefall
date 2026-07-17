@@ -355,6 +355,8 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       shield,
       healCooldown: def.heal ? def.heal.everyTicks : 0,
       broodCooldown: def.brood ? def.brood.everyTicks : 0,
+      phased: false,
+      phaseCooldown: def.phasing ? def.phasing.visibleTicks : 0,
       targetCell: null,
     })
     events.push({ type: 'enemy_spawned', id, enemy: spawn.type })

@@ -16,6 +16,7 @@ export type EnemyType =
   | 'healer'
   | 'splitter'
   | 'splitling'
+  | 'wraith'
   | 'carrier'
   | 'boss'
 export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush'
@@ -89,6 +90,8 @@ export interface Enemy {
   shield: number // hits dealing <= this are fully blocked
   healCooldown: number // healers: ticks until next healing pulse
   broodCooldown: number // carriers: ticks until the next brood hatches
+  phased: boolean // wraiths: untargetable by towers while phased
+  phaseCooldown: number // ticks until the wraith flips corporeal/phased
   targetCell: CellPos | null // next waypoint; null = needs (re)pathing (unused by fliers)
 }
 

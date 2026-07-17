@@ -246,7 +246,8 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const origin = cellCenter(tower.cell)
     const range = state.relics.includes('longsight') ? Math.floor((def.range * LONGSIGHT_RANGE_PCT) / 100) : def.range
     const rangeSq = range * range
-    const alive = state.enemies.filter((e) => e.hp > 0 && (hitsAir || !ENEMIES[e.type].flying))
+    // Phased wraiths are untargetable by towers (abilities still hit them).
+    const alive = state.enemies.filter((e) => e.hp > 0 && !e.phased && (hitsAir || !ENEMIES[e.type].flying))
     const inRange = alive.filter((e) => distSq(origin, e.pos) <= rangeSq)
     const target = selectTarget(tower, inRange, map, field)
     if (target === null) continue
@@ -399,6 +400,15 @@ export function tickStatuses(state: RunState): void {
       e.slowTicks -= 1
       if (e.slowTicks === 0) e.slowFactor = 100
     }
+    // Wraiths flicker: corporeal for visibleTicks, phased for hiddenTicks.
+    const phasing = ENEMIES[e.type].phasing
+    if (phasing) {
+      e.phaseCooldown -= 1
+      if (e.phaseCooldown <= 0) {
+        e.phased = !e.phased
+        e.phaseCooldown = e.phased ? phasing.hiddenTicks : phasing.visibleTicks
+      }
+    }
   }
   for (const key of Object.keys(state.abilities)) {
     const cd = state.abilities[key]!
@@ -438,6 +448,8 @@ export function carrierBroods(state: RunState, events: GameEvent[]): void {
         shield: def.shield,
         healCooldown: 0,
         broodCooldown: 0,
+        phased: false,
+        phaseCooldown: 0,
         targetCell: null,
       })
       events.push({ type: 'enemy_spawned', id, enemy: brood.type })
@@ -520,6 +532,8 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
           shield: def.shield,
           healCooldown: 0,
           broodCooldown: 0,
+          phased: false,
+          phaseCooldown: 0,
           targetCell: null,
         })
         events.push({ type: 'enemy_spawned', id, enemy: split.type })

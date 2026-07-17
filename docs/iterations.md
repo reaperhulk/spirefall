@@ -8,7 +8,7 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 ## Backlog (revised every cycle)
 
 - [x] 1. Carrier enemy: late-game spawner that births swarmlings while alive
-- [ ] 2. Wraith enemy: phases untargetable — punishes pure-DPS, rewards timing
+- [x] 2. Wraith enemy: phases untargetable — punishes pure-DPS, rewards timing
 - [x] 3. Two new maps (Serpent, Crossroads) + map name in HUD; recalibrate seeds
 - [x] 4. Endless mutators: stacking wave modifiers past the victory wave (Cataclysms)
 - [x] 5. Run summary analytics: damage by tower type, kills by enemy type
@@ -30,6 +30,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 - (re-planned continuously; larger themes split across cycles)
 
 ## Log
+
+11. **Wraith** — wave-12+ ghost cycling 2s corporeal / 1.5s phased. Towers
+    cannot target it while phased (it keeps marching); Meteor and Frost Nova
+    ignore the veil, giving abilities a unique job. Ghost rendering with
+    wispy tail, 30% alpha while phased. Envelope + goldens recalibrated.
 
 10. **Maps** — The Serpent (four alternating vertical walls force a long
     winding gauntlet) and Crossroads (central block + pylons split the horde

@@ -12,7 +12,7 @@ import type { AffixId, EnemyType, PendingSpawn } from './types'
 const GROUP_GAP_TICKS = 8
 const FIRST_SPAWN_DELAY = 15
 
-const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shieldbearer', 'healer', 'splitter', 'carrier']
+const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shieldbearer', 'healer', 'splitter', 'wraith', 'carrier']
 
 // Early waves are capped in unit count so seed variance can't triple the
 // pressure on a fresh two-tower defense; the cap fades out by mid-game.

@@ -66,6 +66,8 @@ function migrate(parsed: { version?: number }): SaveData | null {
         for (const e of data.run.enemies) {
           e.healCooldown ??= 0
           e.broodCooldown ??= 0
+          e.phased ??= false
+          e.phaseCooldown ??= 0
         }
         data.run.activeAffix ??= null
         data.run.victoryClaimed ??= false

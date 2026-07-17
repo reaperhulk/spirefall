@@ -39,6 +39,7 @@ const COLORS = {
     healer: '#9ece6a',
     splitter: '#d19a66',
     splitling: '#f0a45d',
+    wraith: '#9aa5ce',
     carrier: '#d16d9e',
     boss: '#ff007c',
   } as Record<string, string>,
@@ -59,6 +60,7 @@ const ENEMY_RADIUS: Record<string, number> = {
   healer: 10,
   splitter: 9,
   splitling: 5,
+  wraith: 8,
   carrier: 13,
   boss: 16,
 }
@@ -613,6 +615,27 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.fill()
         circle(ctx, r * 0.35, -jiggle, r * 0.32)
         ctx.fill()
+        break
+      }
+      case 'wraith': {
+        // A ghost: wispy body with a trailing tail, translucent while phased.
+        const wisp = Math.sin(phase * 1.4)
+        ctx.globalAlpha = e.phased ? 0.3 : 0.9
+        ctx.rotate(heading)
+        ctx.fillStyle = color
+        ellipse(ctx, 0, 0, r * 1.1, r * 0.7)
+        ctx.fill()
+        ctx.beginPath() // tail
+        ctx.moveTo(-r * 0.6, 0)
+        ctx.quadraticCurveTo(-r * 1.6, wisp * r * 0.6, -r * 2.1, wisp * r * 0.2)
+        ctx.strokeStyle = color
+        ctx.lineWidth = 2
+        ctx.stroke()
+        ctx.lineWidth = 1
+        ctx.fillStyle = '#0b0e14'
+        circle(ctx, r * 0.5, 0, 1.5)
+        ctx.fill()
+        ctx.globalAlpha = 1
         break
       }
       case 'carrier': {

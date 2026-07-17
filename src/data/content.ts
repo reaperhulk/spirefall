@@ -24,6 +24,7 @@ export interface EnemyDef {
   // left alive must never become a gold farm.
   brood?: { type: EnemyType; count: number; everyTicks: number }
   flying?: boolean // ignores the maze; only air-capable towers can hit it
+  phasing?: { visibleTicks: number; hiddenTicks: number } // wraiths flicker out of reach
   heal?: { everyTicks: number; amount: number; radius: number } // healer pulse (amount scales with hp curve)
   splitInto?: { type: EnemyType; count: number } // spawned at death position
 }
@@ -41,6 +42,7 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   healer: { name: 'Mendwitch', hp: 60, speed: 66, cost: 17, pack: 1, spacing: 18, bounty: 4, damage: 1, shield: 0, unlockWave: 11, elite: true, heal: { everyTicks: 60, amount: 4, radius: 1800 } },
   splitter: { name: 'Amalgam', hp: 45, speed: 82, cost: 13, pack: 2, spacing: 14, bounty: 2, damage: 1, shield: 0, unlockWave: 13, elite: true, splitInto: { type: 'splitling', count: 2 } },
   splitling: { name: 'Shard', hp: 13, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
+  wraith: { name: 'Wraith', hp: 35, speed: 88, cost: 11, pack: 2, spacing: 12, bounty: 2, damage: 2, shield: 0, unlockWave: 12, phasing: { visibleTicks: 60, hiddenTicks: 45 } },
   carrier: { name: 'Broodmother', hp: 80, speed: 40, cost: 30, pack: 1, spacing: 26, bounty: 8, damage: 4, shield: 3, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 140 } },
   boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, unlockWave: 10, elite: true },
 }

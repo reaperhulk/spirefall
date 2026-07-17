@@ -32,6 +32,8 @@ function makeEnemy(state: RunState, overrides: Partial<Enemy> & { type: Enemy['t
     shield: def.shield,
     healCooldown: def.heal ? def.heal.everyTicks : 0,
     broodCooldown: def.brood ? def.brood.everyTicks : 0,
+    phased: false,
+    phaseCooldown: def.phasing ? def.phasing.visibleTicks : 0,
     targetCell: null,
     ...overrides,
   }
@@ -278,5 +280,46 @@ describe('wave affixes', () => {
     const frenzied = { ...base, activeAffix: 'frenzied' as const, phase: 'wave' as const, wave: 1 }
     const fastEnemy = step(spawnAt(frenzied), []).state.enemies[0]!
     expect(fastEnemy.speed).toBeGreaterThan(normalEnemy.speed)
+  })
+})
+
+describe('wraiths', () => {
+  it('phase in and out; towers cannot touch them while phased, abilities can', () => {
+    const phasing = ENEMIES.wraith.phasing!
+    let s = { ...freshRun(), gold: 10_000 }
+    const spot = buildCandidates(s)[0]!
+    s = step(s, [{ type: 'place_tower', tower: 'sniper', cell: spot }]).state
+    s = makeEnemy(s, {
+      type: 'wraith',
+      pos: cellCenter({ cx: spot.cx + 2, cy: spot.cy }),
+      hp: 1000,
+      maxHp: 1000,
+      speed: 0,
+      phased: true,
+      phaseCooldown: 5,
+    })
+    // Phased: five ticks pass, the sniper (cooldown 0, in range) never fires.
+    for (let i = 0; i < 4; i++) s = step(s, []).state
+    expect(s.towers[0]!.shots).toBe(0)
+    // The flip back to corporeal: now it gets shot.
+    for (let i = 0; i < 3; i++) s = step(s, []).state
+    const wraith = s.enemies.find((e) => e.type === 'wraith')!
+    expect(wraith.phased).toBe(false)
+    expect(s.towers[0]!.shots).toBeGreaterThan(0)
+    // And the cycle keeps flipping on the defined cadence.
+    expect(wraith.phaseCooldown).toBeLessThanOrEqual(phasing.visibleTicks)
+
+    // Meteor ignores the veil entirely.
+    let m = makeEnemy({ ...freshRun(), gold: 10_000 }, {
+      type: 'wraith',
+      pos: cellCenter({ cx: 10, cy: 6 }),
+      hp: 1000,
+      maxHp: 1000,
+      speed: 0,
+      phased: true,
+      phaseCooldown: 500,
+    })
+    m = step(m, [{ type: 'cast_ability', ability: 'meteor', cell: { cx: 10, cy: 6 } }]).state
+    expect(m.enemies[0]!.hp).toBeLessThan(1000)
   })
 })
