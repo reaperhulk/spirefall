@@ -5,7 +5,8 @@ import { MAPS } from '../data/maps'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
 import { canAscend, emberGainOnAscend, emberLevel, emberUpgradeCost, metaLevel, metaUpgradeCost } from '../engine/meta'
-import type { MetaState, RelicId, RunSummary } from '../engine/types'
+import { computeSparks } from '../engine/step'
+import type { MetaState, RelicId, RunState, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
 import { exportSave, importSave } from './save'
 
@@ -174,6 +175,7 @@ const TOWER_BAR_COLORS: Record<string, string> = {
   tesla: '#bb9af7',
   sniper: '#73daca',
   mint: '#e5c07b',
+  beacon: '#ff9e64',
 }
 
 // Compact share bars: who did the work this run, and what died.
@@ -193,6 +195,41 @@ function ShareBars({ title, entries, color }: { title: string; entries: [string,
           <span className="share-value">{value.toLocaleString()}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+// Live mid-run analytics: the run-over screen's numbers, available while the
+// run still breathes. Read-only view over the live state — no dispatch.
+export function RunStatsModal({ state, onClose }: { state: RunState; onClose: () => void }) {
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Run stats" data-testid="run-stats">
+        <h2>This run so far</h2>
+        <p className="run-summary">
+          {Math.max(0, state.wavesCleared - state.startWave)} waves cleared · {state.kills} kills ·{' '}
+          <strong data-testid="stats-sparks">✦ {computeSparks(state)}</strong> sparks banked if it ended now
+        </p>
+        {state.trials.length > 0 && (
+          <p className="run-summary">{state.trials.map((t) => `⚔ ${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}% ✦)`).join(' · ')}</p>
+        )}
+        {state.hpByWave.length >= 2 && <HpSparkline hp={state.hpByWave} />}
+        <div className="run-analytics">
+          <ShareBars
+            title="Damage by tower"
+            entries={Object.entries(state.damageByTower) as [string, number][]}
+            color={(k) => TOWER_BAR_COLORS[k] ?? '#8a93ad'}
+          />
+          <ShareBars
+            title="Kills by enemy"
+            entries={Object.entries(state.killsByEnemy) as [string, number][]}
+            color={() => '#f7768e'}
+          />
+        </div>
+        <button className="ghost-btn" onClick={onClose} data-testid="close-stats">
+          Close
+        </button>
+      </div>
     </div>
   )
 }
@@ -363,6 +400,7 @@ const SHORTCUTS: [string, string][] = [
   ['X', 'Sell the selected tower'],
   ['R', 'Repair the Spire'],
   ['T', 'Toggle the Spire Tree'],
+  ['S', 'This run’s stats so far'],
   ['M', 'Mute / unmute'],
   ['− / =', 'Slower / faster game speed'],
   ['?', 'Settings & shortcuts'],

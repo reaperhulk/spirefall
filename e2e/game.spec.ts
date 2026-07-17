@@ -123,6 +123,14 @@ test('a defended wave plays out: enemies die, bounties arrive, build phase retur
   expect(snap.wave).toBe(1)
   expect(snap.kills).toBeGreaterThan(5) // a horde died out there
   expect(snap.spireHp).toBeGreaterThanOrEqual(8) // a defended spire stays near-intact
+
+  // Mid-run stats: the S key opens live analytics with a sparks estimate.
+  await page.keyboard.press('s')
+  await expect(page.getByTestId('run-stats')).toBeVisible()
+  const statsSparks = await page.getByTestId('stats-sparks').textContent()
+  expect(Number(statsSparks!.replace(/\D/g, ''))).toBeGreaterThan(0)
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('run-stats')).not.toBeVisible()
   expect(errors).toEqual([])
 })
 

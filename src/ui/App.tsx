@@ -29,7 +29,7 @@ import { Sfx } from './audio'
 import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
-import { RelicModal, RunOverOverlay, SettingsModal, SpireTreeModal } from './Overlays'
+import { RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
 import { clearSave, loadSave, persistSave } from './save'
@@ -117,6 +117,7 @@ export default function App() {
   const [victoryPrompt, setVictoryPrompt] = useState(false)
   const [showTree, setShowTree] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showStats, setShowStats] = useState(false)
   const [uiSettings, setUiSettings] = useState(() => ({ ...settings }))
   const [shopSelection, setShopSelection] = useState<TowerType | null>(null)
   const [abilitySelection, setAbilitySelection] = useState<AbilityId | null>(null)
@@ -317,6 +318,7 @@ export default function App() {
         setSelectedTowerId(null)
         setShowTree(false)
         setShowSettings(false)
+        setShowStats(false)
         return
       }
       // Never hijack typing/selects (e.g. the targeting dropdown).
@@ -352,6 +354,10 @@ export default function App() {
       }
       if (key === 't') {
         setShowTree((v) => !v)
+        return
+      }
+      if (key === 's') {
+        setShowStats((v) => !v)
         return
       }
       if (key === 'm') {
@@ -571,6 +577,15 @@ export default function App() {
             }}
           >
             📅{dailyBest ? ` ${dailyBest.waves}` : ''}
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => setShowStats(true)}
+            data-testid="open-stats"
+            aria-label="Run stats"
+            title="This run's stats so far (S)"
+          >
+            📊
           </button>
           <button className="ghost-btn" onClick={() => setShowTree(true)} data-testid="open-tree" title="Spire Tree (T)">
             Spire Tree
@@ -961,6 +976,7 @@ export default function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+      {showStats && !summary && <RunStatsModal state={state} onClose={() => setShowStats(false)} />}
       {showTree && !summary && (
         <SpireTreeModal
           meta={meta}

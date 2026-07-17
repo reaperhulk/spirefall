@@ -31,6 +31,11 @@ across gameplay depth, game length/post-game, graphics, UX, and mobile parity.
 
 ## Log
 
+41. **Live run stats** — 📊 button / S key opens the run-over analytics
+    mid-run: waves + kills, sparks banked if the run ended now, active
+    trials, the HP timeline so far, and damage/kill share bars. Read-only
+    view over live state; Escape closes; e2e-covered.
+
 40. **Ember depth** — the ascension layer grows from 4 to 6 nodes: Molten
     Vaults (+15% gold/level ×3) and Swift Sigils (ability cooldowns −10%
     /level ×2, new mods.abilityCdPct honored at cast time, floor 1s).
