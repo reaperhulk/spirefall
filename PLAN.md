@@ -78,17 +78,20 @@ intentionally moves):
 
 | Player | Measured outcome |
 |---|---|
-| Fresh account, does nothing during waves | dies waves 2–4, ~50 sim-seconds |
-| Fresh account, greedy arrow spam | dies waves 4–5 |
-| Fresh account, competent bot | dies waves 6–12 in **2–4 minutes** — short, dangerous, most of the game ahead |
-| +1000 sparks | reaches ~15–19; +3000 reaches ~21–23 — every run visibly further |
-| Career (bot) | monotonic climb 8→25 over 13 runs; first victory (wave 26) at run ~14, then endless |
+| Fresh account, does nothing during waves | dies at wave 1 in ~15 sim-seconds |
+| Fresh account, greedy arrow spam | dies waves 5–8 |
+| Fresh account, competent bot | dies waves 10–16 in **3–6 minutes** — every leak matters, most of the game ahead |
+| +1000 sparks | reaches ~17–19; +3000 reaches ~21–23 — every run visibly further |
+| Career (bot) | climbs 13→25 over 11 runs; first victory (wave 26) at run ~12, then endless |
 
-The ramp is two-phase: enemy HP ×1.12/wave through wave 8, ×1.20/wave after —
-threatening from wave 1, and impassable past the break without permanent power.
-Spawn pacing is compressed and enemies fast, so early runs are minutes, not tens
-of minutes. The deep Spire Tree (25-level damage, 12-level HP/income, wave-skip
-with catch-up gold) is the only way through, priced to span 10+ runs of Sparks.
+The Spire has **10 HP**: roughly ten leaks end a run (bosses hit for 3), so death
+arrives decisively instead of grinding down a 100-point sponge. It knits +1 HP
+after each cleared wave — early scratches are forgivable, late floods are not —
+and paid repairs cost 40+3×wave gold per point, capped at 3 per cast. The ramp is
+two-phase: enemy HP ×1.12/wave through wave 8, ×1.20/wave after, with waves 1–4
+fielding reduced budgets so opening RNG can't take half your life. The deep Spire
+Tree (25-level damage, 12-level HP/income, wave-skip with catch-up gold) is the
+only way through, priced to span 10+ runs of Sparks.
 
 Wave budget grows ~1.18ᴺ throughout; a defense's DPS is roughly linear in gold,
 so past the wave-8 break every run *stalls hard* — the geometric/linear gap is

@@ -28,11 +28,10 @@ describe('balance envelope', () => {
     for (const seed of SEEDS) {
       const state = play(seed, 'afk')
       expect(state.phase).toBe('defeat')
-      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(2)
-      expect(state.wavesCleared, seed).toBeLessThanOrEqual(5)
+      expect(state.wavesCleared, seed).toBeLessThanOrEqual(2) // 10 HP forgives nothing
       expect(state.sparksEarned, seed).toBeGreaterThan(0)
-      // Dying while afk is quick in real time too: under 90 sim-seconds.
-      expect(state.tick, seed).toBeLessThan(90 * 30)
+      // Dying while afk is near-instant in real time: under 45 sim-seconds.
+      expect(state.tick, seed).toBeLessThan(45 * 30)
     }
   }, 60_000)
 
@@ -44,15 +43,15 @@ describe('balance envelope', () => {
     }
   }, 120_000)
 
-  it('a fresh run is short and dangerous: competent play dies waves 5-14 within ~6 minutes', () => {
+  it('a fresh run is short and dangerous: competent play dies waves 8-18 within ~7 minutes', () => {
     for (const seed of SEEDS) {
       const state = play(seed, 'balanced')
       expect(state.phase, seed).toBe('defeat')
-      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(5)
-      expect(state.wavesCleared, seed).toBeLessThanOrEqual(14) // most of the game is still ahead
+      expect(state.wavesCleared, seed).toBeGreaterThanOrEqual(8)
+      expect(state.wavesCleared, seed).toBeLessThanOrEqual(18) // most of the game is still ahead
       expect(state.wavesCleared, seed).toBeLessThan(VICTORY_WAVE)
-      // The first-run loop is tight: under 6 minutes of sim time at 1x.
-      expect(state.tick, seed).toBeLessThan(6 * 60 * 30)
+      // The first-run loop is tight: under 7 minutes of sim time at 1x.
+      expect(state.tick, seed).toBeLessThan(7 * 60 * 30)
     }
   }, 240_000)
 

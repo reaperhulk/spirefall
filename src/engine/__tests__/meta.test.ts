@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { META_SPIRE_HP_PER_LEVEL, META_TOWER_DAMAGE_PCT_PER_LEVEL, META_TREE, metaNode } from '../../data/metaTree'
+import { STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
 import { buyMetaUpgrade, createMeta, createRun, metaUpgradeCost, settleRun } from '../meta'
 import { computeSparks } from '../step'
 
@@ -42,8 +43,8 @@ describe('meta tree', () => {
 describe('createRun applies meta', () => {
   it('fresh meta yields base stats and locked content', () => {
     const run = createRun(createMeta(), 'meta-fresh')
-    expect(run.gold).toBe(100)
-    expect(run.spireMaxHp).toBe(100)
+    expect(run.gold).toBe(STARTING_GOLD)
+    expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP)
     expect(run.availableTowers).not.toContain('tesla')
     expect(Object.keys(run.abilities)).not.toContain('gold_rush')
     expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0 })
@@ -57,8 +58,8 @@ describe('createRun applies meta', () => {
     meta = buyMetaUpgrade(meta, 'unlock_tesla').meta
     meta = buyMetaUpgrade(meta, 'unlock_gold_rush').meta
     const run = createRun(meta, 'meta-rich')
-    expect(run.gold).toBe(130)
-    expect(run.spireMaxHp).toBe(100 + META_SPIRE_HP_PER_LEVEL)
+    expect(run.gold).toBe(STARTING_GOLD + 30)
+    expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP + META_SPIRE_HP_PER_LEVEL)
     expect(run.mods.damagePct).toBe(META_TOWER_DAMAGE_PCT_PER_LEVEL)
     expect(run.availableTowers).toContain('tesla')
     expect(Object.keys(run.abilities)).toContain('gold_rush')
@@ -72,10 +73,10 @@ describe('createRun applies meta', () => {
     expect(run.wave).toBe(2)
     expect(run.wavesCleared).toBe(2)
     expect(run.waveBudget).toBeGreaterThan(0) // budget curve advanced to match
-    expect(run.gold).toBeGreaterThan(100) // catch-up gold for the skipped waves
+    expect(run.gold).toBeGreaterThan(STARTING_GOLD) // catch-up gold for the skipped waves
     // Sparks only pay for waves cleared THIS run.
-    expect(computeSparks({ ...run, wavesCleared: 2, kills: 0 })).toBe(5)
-    expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(10 * 10 + 5)
+    expect(computeSparks({ ...run, wavesCleared: 2, kills: 0 })).toBe(10)
+    expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(10 * 15 + 10)
   })
 
   it('the same meta and seed always create the identical run', () => {
@@ -107,7 +108,7 @@ describe('computeSparks', () => {
     const base = { ...run, wavesCleared: 10, kills: 40 }
     const defeat = computeSparks(base)
     const victory = computeSparks({ ...base, victoryClaimed: true })
-    expect(defeat).toBe(10 * 10 + Math.floor(40 / 6) + 5)
+    expect(defeat).toBe(10 * 15 + Math.floor(40 / 6) + 10)
     expect(victory).toBe(defeat + 500)
 
     const boosted = computeSparks({ ...base, mods: { ...base.mods, sparkPct: 24 } })

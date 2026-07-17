@@ -35,7 +35,7 @@ export const META_TREE: MetaNodeDef[] = [
   {
     id: 'spire_hp',
     name: 'Reinforced Core',
-    description: '+20 Spire max HP per level.',
+    description: '+2 Spire max HP per level.',
     maxLevel: 12,
     costs: [25, 38, 57, 85, 130, 190, 290, 430, 650, 970, 1460, 2190],
   },
@@ -94,7 +94,7 @@ export const META_TREE: MetaNodeDef[] = [
 ]
 
 export const META_STARTING_GOLD_PER_LEVEL = 30
-export const META_SPIRE_HP_PER_LEVEL = 20
+export const META_SPIRE_HP_PER_LEVEL = 2
 export const META_TOWER_DAMAGE_PCT_PER_LEVEL = 8
 export const META_GOLD_INCOME_PCT_PER_LEVEL = 8
 export const META_SPARK_GAIN_PCT_PER_LEVEL = 10

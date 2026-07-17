@@ -17,6 +17,7 @@ import {
   WAVE_BUDGET_GROWTH_PCT,
   WAVE_CLEAR_GOLD_BASE,
   WAVE_CLEAR_GOLD_PER_WAVE,
+  WAVE_CLEAR_KNIT_HP,
 } from '../data/content'
 import { castAbility, collectDead, drawRelicOffer, enemyAuras, moveEnemies, tickStatuses, towersFire } from './combat'
 import { cloneRun } from './clone'
@@ -88,7 +89,10 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.wave = wave
       s.waveBudget = wave === 1 ? BASE_WAVE_BUDGET : Math.floor((s.waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
       s.hpScalePct = wave === 1 ? 100 : Math.floor((s.hpScalePct * hpGrowthPct(wave)) / 100)
-      const generated = generateWave(s.rng.waves, wave, s.waveBudget)
+      // The first waves field reduced strength: at 10 spire HP a fresh
+      // defense must not be forced to leak half its life to opening RNG.
+      const budgetPct = wave === 1 ? 50 : wave === 2 ? 65 : wave === 3 ? 80 : wave === 4 ? 90 : 100
+      const generated = generateWave(s.rng.waves, wave, Math.floor((s.waveBudget * budgetPct) / 100))
       s.rng.waves = generated.rng
       s.activeAffix = generated.affix
       s.pendingSpawns = generated.spawns.map((p) => ({ type: p.type, tick: s.tick + p.tick }))
@@ -259,6 +263,13 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   s.gold += goldAwarded
   events.push({ type: 'wave_cleared', wave: s.wave, goldAwarded })
 
+  // The spire knits itself a little after every survived wave — early
+  // scratches are forgivable; late-game floods far outpace it.
+  if (s.spireHp < s.spireMaxHp) {
+    s.spireHp = Math.min(s.spireMaxHp, s.spireHp + WAVE_CLEAR_KNIT_HP)
+    events.push({ type: 'spire_repaired', amount: WAVE_CLEAR_KNIT_HP, cost: 0, spireHp: s.spireHp })
+  }
+
   // Mints pay out on every cleared wave.
   const mintBonus = s.relics.includes('mint_condition') ? 50 : 0
   for (const t of s.towers) {
@@ -291,7 +302,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
 export function computeSparks(s: RunState): number {
   // Only waves cleared THIS run pay — skipped starting waves don't.
   const cleared = Math.max(0, s.wavesCleared - s.startWave)
-  const base = cleared * 10 + Math.floor(s.kills / 6) + 5 + (s.victoryClaimed ? 500 : 0)
+  const base = cleared * 15 + Math.floor(s.kills / 6) + 10 + (s.victoryClaimed ? 500 : 0)
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
   return Math.floor((base * pct) / 100)

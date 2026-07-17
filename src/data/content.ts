@@ -23,15 +23,15 @@ export interface EnemyDef {
 }
 
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
-  runner: { name: 'Runner', hp: 26, speed: 120, cost: 10, pack: 3, spacing: 10, bounty: 2, damage: 3, shield: 0, unlockWave: 1 },
+  runner: { name: 'Runner', hp: 26, speed: 120, cost: 10, pack: 3, spacing: 10, bounty: 2, damage: 1, shield: 0, unlockWave: 1 },
   swarmling: { name: 'Swarmling', hp: 9, speed: 155, cost: 4, pack: 6, spacing: 5, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
-  brute: { name: 'Brute', hp: 130, speed: 58, cost: 26, pack: 1, spacing: 28, bounty: 6, damage: 8, shield: 0, unlockWave: 4 },
-  flier: { name: 'Gale Imp', hp: 38, speed: 95, cost: 14, pack: 2, spacing: 14, bounty: 3, damage: 4, shield: 0, unlockWave: 6, flying: true },
-  shieldbearer: { name: 'Shieldbearer', hp: 95, speed: 72, cost: 30, pack: 1, spacing: 26, bounty: 7, damage: 6, shield: 7, unlockWave: 8 },
-  healer: { name: 'Mendwitch', hp: 110, speed: 66, cost: 34, pack: 1, spacing: 30, bounty: 8, damage: 2, shield: 0, unlockWave: 11, heal: { everyTicks: 60, amount: 6, radius: 1800 } },
-  splitter: { name: 'Amalgam', hp: 80, speed: 82, cost: 26, pack: 1, spacing: 24, bounty: 4, damage: 3, shield: 0, unlockWave: 13, splitInto: { type: 'splitling', count: 2 } },
-  splitling: { name: 'Shard', hp: 24, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 2, shield: 0, unlockWave: 99 },
-  boss: { name: 'Spirebreaker', hp: 550, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 30, shield: 0, unlockWave: 10 },
+  brute: { name: 'Brute', hp: 130, speed: 58, cost: 26, pack: 1, spacing: 28, bounty: 6, damage: 1, shield: 0, unlockWave: 4 },
+  flier: { name: 'Gale Imp', hp: 38, speed: 95, cost: 14, pack: 2, spacing: 14, bounty: 3, damage: 1, shield: 0, unlockWave: 6, flying: true },
+  shieldbearer: { name: 'Shieldbearer', hp: 95, speed: 72, cost: 30, pack: 1, spacing: 26, bounty: 7, damage: 1, shield: 7, unlockWave: 8 },
+  healer: { name: 'Mendwitch', hp: 110, speed: 66, cost: 34, pack: 1, spacing: 30, bounty: 8, damage: 1, shield: 0, unlockWave: 11, heal: { everyTicks: 60, amount: 6, radius: 1800 } },
+  splitter: { name: 'Amalgam', hp: 80, speed: 82, cost: 26, pack: 1, spacing: 24, bounty: 4, damage: 1, shield: 0, unlockWave: 13, splitInto: { type: 'splitling', count: 2 } },
+  splitling: { name: 'Shard', hp: 24, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
+  boss: { name: 'Spirebreaker', hp: 550, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 3, shield: 0, unlockWave: 10 },
 }
 
 // ---------------------------------------------------------------------------
@@ -175,7 +175,7 @@ export const RELICS: Record<RelicId, RelicDef> = {
   overclock: { name: 'Overclock', description: 'Ability cooldowns are 25% shorter.' },
   bounty_banner: { name: 'Bounty Banner', description: '+1 gold per kill.' },
   mint_condition: { name: 'Mint Condition', description: 'Mints yield +50% gold.' },
-  stoneskin: { name: 'Stoneskin', description: 'Enemies reaching the Spire deal 2 less damage (min 1).' },
+  stoneskin: { name: 'Stoneskin', description: 'Heavy hitters (Brutes, bosses) deal 1 less damage to the Spire (min 1).' },
 }
 
 export const RELIC_IDS = Object.keys(RELICS) as RelicId[]
@@ -221,12 +221,13 @@ export const BOSS_WAVE_INTERVAL = 10
 export const VICTORY_WAVE = 26
 export const WAVE_CLEAR_GOLD_BASE = 20
 export const WAVE_CLEAR_GOLD_PER_WAVE = 6
-export const STARTING_GOLD = 100
-export const STARTING_SPIRE_HP = 100
-export const REPAIR_MAX_PER_CAST = 25
+export const STARTING_GOLD = 200
+export const STARTING_SPIRE_HP = 10
+export const REPAIR_MAX_PER_CAST = 3
+export const WAVE_CLEAR_KNIT_HP = 1 // the spire knits itself after every cleared wave
 
 // Repair gets pricier as waves escalate — sustain is a tool, not an
-// infinite-HP engine.
+// infinite-HP engine. Each point is a tenth of the base spire.
 export function repairCostPerHp(wave: number): number {
-  return 4 + Math.floor(wave / 3)
+  return 40 + wave * 3
 }

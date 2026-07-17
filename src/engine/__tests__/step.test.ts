@@ -180,20 +180,20 @@ describe('gold sinks', () => {
   })
 
   it('repair_spire heals for gold, capped per cast and at max HP', () => {
-    const damaged = { ...freshRun(), spireHp: 40, gold: 1000 }
+    const damaged = { ...freshRun(), spireHp: 4, gold: 1000 }
     const healed = step(damaged, [{ type: 'repair_spire' }])
-    expect(healed.state.spireHp).toBe(65) // +25 cap
-    expect(healed.state.gold).toBe(1000 - 25 * 4) // wave 0: base cost
-    expect(healed.events[0]).toMatchObject({ type: 'spire_repaired', amount: 25 })
+    expect(healed.state.spireHp).toBe(7) // +3 cap
+    expect(healed.state.gold).toBe(1000 - 3 * 40) // wave 0: base cost per point
+    expect(healed.events[0]).toMatchObject({ type: 'spire_repaired', amount: 3 })
 
-    const nearlyFull = { ...freshRun(), spireHp: 95, gold: 1000 }
+    const nearlyFull = { ...freshRun(), spireHp: 9, gold: 1000 }
     const topped = step(nearlyFull, [{ type: 'repair_spire' }])
-    expect(topped.state.spireHp).toBe(100) // never over max
+    expect(topped.state.spireHp).toBe(10) // never over max
 
     const full = step({ ...freshRun(), gold: 1000 }, [{ type: 'repair_spire' }])
     expect(full.events[0]).toMatchObject({ type: 'command_rejected', reason: 'spire is at full health' })
 
-    const broke = step({ ...freshRun(), spireHp: 40, gold: 3 }, [{ type: 'repair_spire' }])
+    const broke = step({ ...freshRun(), spireHp: 4, gold: 39 }, [{ type: 'repair_spire' }])
     expect(broke.events[0]).toMatchObject({ type: 'command_rejected', reason: 'not enough gold' })
   })
 
@@ -261,10 +261,10 @@ describe('relics', () => {
 
   it('golden_touch scales current HP proportionally — a damaged spire never gets relatively healthier', () => {
     const base = { ...freshRun(), relicOffer: ['golden_touch'] as RunState['relicOffer'] }
-    const damaged = { ...base, spireHp: 80 }
+    const damaged = { ...base, spireHp: 8 }
     const s = step(damaged, [{ type: 'choose_relic', relic: 'golden_touch' }]).state
-    expect(s.spireMaxHp).toBe(90)
-    expect(s.spireHp).toBe(72) // 80% of the new max — same fraction as before
+    expect(s.spireMaxHp).toBe(9)
+    expect(s.spireHp).toBe(7) // same fraction of the new max as before
     // At full health it stays full.
     const full = step(base, [{ type: 'choose_relic', relic: 'golden_touch' }]).state
     expect(full.spireHp).toBe(full.spireMaxHp)

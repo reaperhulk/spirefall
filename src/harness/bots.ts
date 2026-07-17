@@ -119,7 +119,7 @@ export const balancedBot: Bot = (state) => {
     if (upgrade !== null) return [{ type: 'upgrade_tower', id: upgrade.id }]
 
     // Patch the spire up between waves before banking gold.
-    if (state.spireHp <= state.spireMaxHp - 25 && state.gold >= 150) return [{ type: 'repair_spire' }]
+    if (state.spireHp <= state.spireMaxHp - 2 && state.gold >= 150) return [{ type: 'repair_spire' }]
 
     // Everything built and maxed: sink gold into the cheapest enhancement.
     let enhance: { id: number; cost: number } | null = null

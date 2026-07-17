@@ -62,8 +62,8 @@ async function clickCell(page: Page, cx: number, cy: number) {
 
 test('boots clean: canvas, HUD, and harness all present, no console errors', async ({ page }) => {
   const errors = await boot(page, 'e2e-boot')
-  await expect(page.getByTestId('gold')).toContainText('100')
-  await expect(page.getByTestId('spire-hp')).toContainText('100/100')
+  await expect(page.getByTestId('gold')).toContainText('200')
+  await expect(page.getByTestId('spire-hp')).toContainText('10/10')
   await expect(page.getByTestId('wave-label')).toContainText('Wave 0/')
   await expect(page.getByTestId('start-wave')).toBeVisible()
   const snap = await page.evaluate(() => window.__harness.snapshot())
@@ -75,10 +75,12 @@ test('placing a tower via real shop + canvas clicks spends gold', async ({ page 
   const errors = await boot(page, 'e2e-place')
   await page.getByTestId('shop-arrow').click()
   await clickCell(page, 7, 5)
+  await clickCell(page, 8, 5)
+  await clickCell(page, 9, 5)
   await expect(page.getByTestId('gold')).toContainText('50')
   const snap = await page.evaluate(() => window.__harness.snapshot())
-  expect(snap.towers).toBe(1)
-  // Clicking the tower opens its panel; upgrade button is visible but too
+  expect(snap.towers).toBe(3)
+  // Clicking a tower opens its panel; upgrade button is visible but too
   // expensive right now (50 gold left, upgrade costs 60).
   await page.keyboard.press('Escape')
   await clickCell(page, 7, 5)
@@ -99,7 +101,7 @@ test('a defended wave plays out: enemies die, bounties arrive, build phase retur
   expect(snap.phase).toBe('build')
   expect(snap.wave).toBe(1)
   expect(snap.kills).toBeGreaterThan(0)
-  expect(snap.spireHp).toBeGreaterThanOrEqual(85) // a defended spire stays near-intact
+  expect(snap.spireHp).toBeGreaterThanOrEqual(8) // a defended spire stays near-intact
   expect(errors).toEqual([])
 })
 
@@ -127,7 +129,7 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
   expect(snap.wave).toBe(0)
-  expect(snap.gold).toBe(130) // 100 base + 30 from War Chest level 1
+  expect(snap.gold).toBe(230) // 200 base + 30 from War Chest level 1
   expect(snap.runs).toBe(1)
   expect(errors).toEqual([])
 })
@@ -184,10 +186,12 @@ test('relic offers appear in the UI and apply on click', async ({ page }) => {
 
 test('an armed but unaffordable shop selection never traps you', async ({ page }) => {
   const errors = await boot(page, 'e2e-trap')
-  // Spend everything: two arrows at 50 each leaves 0 gold with arrow armed.
+  // Spend everything: four arrows at 50 each leaves 0 gold with arrow armed.
   await page.getByTestId('shop-arrow').click()
   await clickCell(page, 4, 5)
   await clickCell(page, 4, 7)
+  await clickCell(page, 5, 5)
+  await clickCell(page, 5, 7)
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).gold).toBe(0)
 
   // The unaffordable card must still toggle the selection off...
@@ -201,7 +205,7 @@ test('an armed but unaffordable shop selection never traps you', async ({ page }
   await clickCell(page, 4, 7)
   await expect(page.getByTestId('tower-panel')).toBeVisible()
   const snap = await page.evaluate(() => window.__harness.snapshot())
-  expect(snap.towers).toBe(2) // no phantom placements happened
+  expect(snap.towers).toBe(4) // no phantom placements happened
   expect(errors).toEqual([])
 })
 

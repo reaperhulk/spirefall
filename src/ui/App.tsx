@@ -230,7 +230,7 @@ export default function App() {
               className="ghost-btn"
               data-testid="repair-spire"
               disabled={state.gold < repairCostPerHp(state.wave)}
-              title={`Repair up to 25 HP at ${repairCostPerHp(state.wave)} gold per HP`}
+              title={`Repair up to 3 HP at ${repairCostPerHp(state.wave)} gold per HP`}
               onClick={() => session.dispatch({ type: 'repair_spire' })}
             >
               Repair

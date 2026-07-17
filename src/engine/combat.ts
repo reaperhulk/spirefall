@@ -93,7 +93,7 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
     const stoneskin = state.relics.includes('stoneskin')
     state.enemies = state.enemies.filter((e) => {
       if (!arrived.includes(e.id)) return true
-      const damage = stoneskin ? Math.max(1, e.damage - 2) : e.damage
+      const damage = stoneskin ? Math.max(1, e.damage - 1) : e.damage
       state.spireHp = Math.max(0, state.spireHp - damage)
       events.push({ type: 'enemy_reached_spire', id: e.id, enemy: e.type, damage, spireHp: state.spireHp })
       return false
