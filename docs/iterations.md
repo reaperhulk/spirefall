@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+136. *(marathon II, iteration 48)* **The card states its ruleset** —
+    the shareable run card claimed a wave count without saying it was
+    earned under No Mercy or Blackout; the header line now reads
+    "Frostfen · ⚔ No Mercy" so the claim other players see carries
+    its conditions. 194 unit tests, 43 e2e specs.
+
 135. *(marathon II, iteration 47)* **Cataclysms enter the score** —
     the endless had SFX but no musical response. A strike now lands
     in a half-bar of silence, then two flattened-second menace pulses

@@ -1,5 +1,5 @@
 import { BIOMES } from '../data/biomes'
-import { RELICS, TOWERS } from '../data/content'
+import { RELICS, TOWERS, TRIALS } from '../data/content'
 import type { RunSummary, TowerType } from '../engine/types'
 
 // The shareable run card: a canvas-rendered summary of a finished run —
@@ -46,7 +46,12 @@ export function drawRunCard(summary: RunSummary): HTMLCanvasElement {
   g.fillText('SPIREFALL', 28, 46)
   g.fillStyle = '#8a93ad'
   g.font = '14px ui-monospace, monospace'
-  g.fillText(BIOMES[summary.biome].name, 28, 68)
+  // The battlefield AND the ruleset: a No Mercy wave 20 is not a plain
+  // wave 20, and the card is the claim other players see.
+  const where =
+    BIOMES[summary.biome].name +
+    (summary.trials.length > 0 ? ` · ⚔ ${summary.trials.map((t) => TRIALS[t].name).join(', ')}` : '')
+  g.fillText(where, 28, 68)
 
   g.textAlign = 'right'
   g.fillStyle = summary.outcome === 'victory' ? '#9ece6a' : '#f7768e'
