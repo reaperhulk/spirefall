@@ -112,6 +112,7 @@ const TOWER_NOTES: Partial<Record<TowerType, string>> = {
   sniper: `Executes elites (+${SNIPER_ELITE_BONUS_PCT}% to them) and its heavy single shots punch through shields and armor.`,
   mint: 'Never attacks — pays gold every cleared wave. An investment against future waves.',
   beacon: 'Never attacks — boosts towers in range. Auras do NOT stack: a tower takes only the strongest beacon.',
+  lance: 'Commits to one mark: every consecutive hit lands harder. Set it to Strongest targeting and let it duel the boss — against hordes it keeps starting over.',
 }
 
 interface MechanicEntry {

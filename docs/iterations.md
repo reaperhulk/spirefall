@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+164. *(marathon II, iteration 76)* **Lance codex prose** — the
+    TOWER_NOTES map (each tower's one-line doctrine) gains the
+    lance's: commit to one mark, set Strongest targeting, let it
+    duel the boss. The ecosystem sweep for the new tower is now
+    complete: def, combat, specs, unlock, hotkey, shop grid, render
+    body, panel truth, codex table + prose, bots, fuzzer space,
+    launch pin, deep hunt, e2e. 200 unit tests, 48 e2e specs.
+
 163. *(marathon II, iteration 75)* **Lance launch follow-through** —
     the Codex tower table gained the ramp progression line (the one
     per-tier special the generic fields couldn't derive), and a
