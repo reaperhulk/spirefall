@@ -52,6 +52,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+148. *(marathon II, iteration 60)* **Block-60 boundary** — 60 of 100.
+    The 51–59 arc: cataclysm choice (the biggest engine change of the
+    marathon's second half), ascension motif, Zephyrhost + wave-60
+    air armada, narrator parity, property-test coverage of the new
+    command, and the complete mechanic-mark sweep in the scouting
+    report. Emberwaste fuzz smoke post-choice: clean, 10 niches.
+    Debt: App.tsx 1487 (threshold 1600 — extract the HUD when
+    crossed), render.ts 1860 (no new subsystem), Overlays 974.
+    Block 61–70 candidates: App.tsx HUD extraction (pre-emptive),
+    a deep 20k endless fuzz with the choice flow, relic count on
+    codex relics tab?, or fresh derivation at 61 from live main.
+    195 unit tests, 44 e2e specs.
+
 147. *(marathon II, iteration 59)* **The mechanic sweep completes** —
     healers (healer, Blightmother) were the last unmarked mechanic; a
     ✚ mark with cadence and counterplay finishes the set. Every enemy
