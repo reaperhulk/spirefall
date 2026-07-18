@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+135. *(marathon II, iteration 47)* **Cataclysms enter the score** —
+    the endless had SFX but no musical response. A strike now lands
+    in a half-bar of silence, then two flattened-second menace pulses
+    — the Crucible motif's exact language ("the world just hardened"),
+    reused rather than invented. Both mechanisms (dropout, crucible
+    pulses) were verified by measurement when built; this composes
+    them with integer step math and adds no new synthesis, so the
+    e2e console nets stand in for a fresh analyser pass. 194 unit
+    tests, 43 e2e specs.
+
 134. *(marathon II, iteration 46)* **Challenge links tell the truth**
     — "same seed, same battlefield" was false between accounts: the
     recipient's biome ROLLS from their own unlocked pool, so a bare

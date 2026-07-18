@@ -175,6 +175,13 @@ export class Music {
           this.victoryRunFrom = this.totalStep
           this.killHeat = 0
         }
+      } else if (e.type === 'cataclysm_struck') {
+        // A Cataclysm speaks the Crucible's language — the flattened-second
+        // menace pulses are already "the world just hardened" — preceded by
+        // a half-bar dropout so the strike lands in silence first.
+        this.dropUntilStep = this.totalStep + STEPS_PER_BAR / 2
+        this.crucibleFrom = this.totalStep + STEPS_PER_BAR / 2
+        this.cruciblePulses = 2
       } else if (e.type === 'wave_started') {
         this.announceFrom = this.totalStep // rising call as the horde arrives
       } else if (e.type === 'wave_cleared') {
