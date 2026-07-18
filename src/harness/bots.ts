@@ -52,6 +52,7 @@ export const RELIC_PRIORITY: RelicId[] = [
   'keen_sights',
   'executioners_seal',
   'storm_coils',
+  'duelists_oath',
   'overcharge',
   'echo_chamber',
   'bounty_banner',
@@ -86,6 +87,7 @@ const RELIC_LEAN: Partial<Record<RelicId, TowerType>> = {
   ricochet_strings: 'arrow',
   storm_coils: 'tesla',
   shatterheart: 'frost',
+  duelists_oath: 'lance',
 }
 
 function pickBuildType(state: RunState): TowerType {

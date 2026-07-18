@@ -390,6 +390,11 @@ export const RELICS: Record<RelicId, RelicDef> = {
     description: 'Beacon auras also grant +10% crit chance to towers in range.',
     rarity: 'rare',
   },
+  duelists_oath: {
+    name: "Duelist's Oath",
+    description: 'Lances keep half their ramp when switching targets — the climb never starts from nothing.',
+    rarity: 'rare',
+  },
   shatter: { name: 'Shatter', description: 'Slowed enemies take +20% damage.', rarity: 'rare' },
   soul_harvest: { name: 'Soul Harvest', description: 'Every 100th kill knits the Spire +1 HP.', rarity: 'legendary' },
 }

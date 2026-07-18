@@ -52,6 +52,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+165. *(marathon II, iteration 77)* **Duelist's Oath** — 31st relic,
+    completing the build-around family (every combat tower now has
+    one): lances keep HALF their ramp when switching targets. Wired
+    into RELIC_LEAN (bots holding it build lances) and the priority
+    list. Unit test pins the half-carry across a switch. The pool
+    grew by one, so every relic draw reshuffled: goldens regenerated
+    — balanced-fresh moved 9→13 waves on offer luck at the fresh wall
+    (the affix-dilution reshuffle class; afk/greedy bit-identical,
+    balanced-rich outcome-identical) — with the balance envelope,
+    all pins, and the sweep green under the new pool. 201 unit
+    tests, 48 e2e specs.
+
 164. *(marathon II, iteration 76)* **Lance codex prose** — the
     TOWER_NOTES map (each tower's one-line doctrine) gains the
     lance's: commit to one mark, set Strongest targeting, let it

@@ -277,6 +277,22 @@ describe('the Lance: ramp on a held target', () => {
     expect(pierced.hp).toBe(1000 - 30) // Skewer ignores the wall
   })
 
+  it("Duelist's Oath keeps half the ramp across a switch", () => {
+    const a = enemy({ id: 1, hp: 200_000, maxHp: 200_000 })
+    const b = enemy({ id: 2, hp: 100_000, maxHp: 100_000, pos: cellCenter({ cx: 6, cy: 6 }) })
+    const s = battle([tower('lance', null, { targeting: 'strongest' })], [a, b])
+    s.relics.push('duelists_oath')
+    volley(s, 7)
+    expect(s.towers[0]!.rampStacks).toBe(6)
+    a.hp = 0
+    s.towers[0]!.cooldown = 0
+    fire(s)
+    // The climb resumes from half, not from nothing.
+    expect(s.towers[0]!.rampTarget).toBe(2)
+    expect(s.towers[0]!.rampStacks).toBe(3)
+    expect(b.hp).toBe(100_000 - Math.floor((30 * (100 + LANCE_RAMP_PCT * 3)) / 100))
+  })
+
   it('the panel reads exactly what the next shot deals, and the unlock gates the shop', () => {
     const mark = enemy({ id: 1, hp: 100_000, maxHp: 100_000 })
     const s = battle([tower('lance', null, { rampTarget: 1, rampStacks: 4 })], [mark])

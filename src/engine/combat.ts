@@ -391,7 +391,8 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
         tower.rampStacks = Math.min(LANCE_MAX_STACKS, (tower.rampStacks ?? 0) + 1)
       } else {
         tower.rampTarget = target.id
-        tower.rampStacks = 0
+        // Duelist's Oath: the climb never starts from nothing.
+        tower.rampStacks = state.relics.includes('duelists_oath') ? Math.floor((tower.rampStacks ?? 0) / 2) : 0
       }
       const perStack = tower.spec === 'momentum' ? MOMENTUM_RAMP_PCT : LANCE_RAMP_PCT
       const rampBonus = perStack * (tower.rampStacks ?? 0)

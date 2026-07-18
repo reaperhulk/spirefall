@@ -58,6 +58,7 @@ export type RelicId =
   | 'deadeye_sigil'
   | 'golden_ledger'
   | 'prism_lens'
+  | 'duelists_oath'
 
 export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard' | 'shielded'
 
