@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+103. *(marathon II, iteration 15)* **Music phrase pools** — every biome
+    now owns TWO 8-bar progressions; passes alternate A → B → A-lift →
+    B-lift, a 32-bar macro-form (~87s) before the harmony literally
+    repeats (the earlier form was 16 bars/~44s). Second phrases keep
+    each biome's identity: verdant answers by climbing home the long
+    way, frostfen counters colder, emberwaste presses the ♭2 harder,
+    highlands drifts through the wider mode. Analyser verification:
+    bars 8–15 trace a different root sequence than bars 0–7. 191 unit
+    tests, 34 e2e specs.
+
 102. *(marathon II, iteration 14)* **320px small-phone audit** — an
     offender sweep at 320×568 (every element's bounding box vs the
     viewport) found two overflows: the run-over tab bar (~342px) and

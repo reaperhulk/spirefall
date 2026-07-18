@@ -48,13 +48,26 @@ const BIOME_ROOT: Record<BiomeId, number> = {
 // stacked in SCALE space (every other degree), which yields proper triads
 // on the 7-note mode and open quartal colors on the pentatonics. Each is
 // two 4-bar phrases — an antecedent that wanders and a consequent that
-// cadences home — so the harmony runs 8 bars (~22s) before repeating, and
-// the alternating lift pass stretches the full form to 16 bars (~44s).
-const BIOME_PROGRESSION: Record<BiomeId, number[]> = {
-  verdant: [0, 3, 4, 1, 2, 4, 3, 0], // I–V–vi–ii, then out through iii to a V–I close
-  frostfen: [0, 2, 4, 3, 1, 4, 2, 0], // minor drift, drifting further before it settles
-  emberwaste: [0, 1, 0, 3, 4, 1, 3, 0], // phrygian b2 menace, an excursion, back to the dark
-  highlands: [0, 5, 3, 4, 1, 5, 4, 0], // I–vi–IV–V answered by ii–vi–V–I
+// cadences home. Every biome owns TWO progressions; passes alternate
+// A → B → A-lift → B-lift, a 32-bar macro-form (~87s) before any literal
+// harmonic repeat.
+const BIOME_PROGRESSIONS: Record<BiomeId, number[][]> = {
+  verdant: [
+    [0, 3, 4, 1, 2, 4, 3, 0], // I–V–vi–ii, then out through iii to a V–I close
+    [0, 2, 3, 4, 1, 3, 4, 0], // the answer phrase: climbing, then home the long way
+  ],
+  frostfen: [
+    [0, 2, 4, 3, 1, 4, 2, 0], // minor drift, drifting further before it settles
+    [0, 3, 1, 4, 2, 4, 3, 0], // colder counter-phrase, same unresolved lean
+  ],
+  emberwaste: [
+    [0, 1, 0, 3, 4, 1, 3, 0], // phrygian b2 menace, an excursion, back to the dark
+    [0, 1, 4, 1, 0, 3, 1, 0], // the b2 pressed harder — the heat never leaves
+  ],
+  highlands: [
+    [0, 5, 3, 4, 1, 5, 4, 0], // I–vi–IV–V answered by ii–vi–V–I
+    [0, 2, 5, 3, 6, 4, 5, 0], // wind shifting through the wider mode
+  ],
 }
 
 const midiHz = (m: number): number => 440 * Math.pow(2, (m - 69) / 12)
@@ -266,11 +279,11 @@ export class Music {
     const seedHash = hashSeed(state.seed)
     const root = BIOME_ROOT[biome] + (seedHash % 12)
     const scale = BIOME_SCALE[biome]
-    const prog = BIOME_PROGRESSION[biome]
+    const progs = BIOME_PROGRESSIONS[biome]
 
     // Schedule the eighth-note grid up to 0.6s ahead.
     while (this.nextNoteAt < ctx.currentTime + 0.6) {
-      this.scheduleStep(ctx, this.nextNoteAt, root, scale, prog, (seedHash >>> 4) % RHYTHMS.length, bossAlive, overMode)
+      this.scheduleStep(ctx, this.nextNoteAt, root, scale, progs, (seedHash >>> 4) % RHYTHMS.length, bossAlive, overMode)
       this.nextNoteAt += BEAT
       this.totalStep += 1
     }
@@ -281,7 +294,7 @@ export class Music {
     at: number,
     root: number,
     scale: number[],
-    prog: number[],
+    progs: number[][],
     rhythmSalt: number,
     bossAlive: boolean,
     overMode: 'defeat' | 'victory' | null,
@@ -339,15 +352,18 @@ export class Music {
     // octave down. Different harmonic MATERIAL, not just a faster cycle:
     // that's what makes the ear say "boss music".
     const harmonicSteps = bossAlive ? STEPS_PER_BAR / 2 : STEPS_PER_BAR
+    // Macro-form: pass 0 plays progression A, pass 1 plays B, then both
+    // again LIFTED (higher chord tones, denser line, brighter pad) — a
+    // 32-bar cycle (~87s) before the harmony literally repeats.
+    const progLen = progs[0]!.length
+    const pass = Math.floor(bar / progLen)
+    const prog = progs[pass % progs.length]!
     const chordDegree = bossAlive
       ? Math.floor(this.totalStep / harmonicSteps) % 2 === 0
         ? 0
         : 1
       : prog[Math.floor(this.totalStep / harmonicSteps) % prog.length]!
-    // Every other pass through the progression LIFTS: melody reaches higher
-    // chord tones and thickens, the pad brightens, the bass answers more.
-    // Doubles the form (~44s) so the loop stops announcing itself.
-    const lift = Math.floor(bar / prog.length) % 2 === 1
+    const lift = Math.floor(pass / progs.length) % 2 === 1
     // The last bar of each pass earns a little cadence fill.
     const cadenceBar = bar % prog.length === prog.length - 1
     const tone = toneOf
