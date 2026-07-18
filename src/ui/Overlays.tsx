@@ -438,10 +438,12 @@ const SHORTCUTS: [string, string][] = [
 export function SettingsModal({
   meta,
   volume,
+  musicVolume,
   reducedMotion,
   haptics,
   colorAssist,
   onVolume,
+  onMusicVolume,
   onReducedMotion,
   onHaptics,
   onColorAssist,
@@ -449,10 +451,12 @@ export function SettingsModal({
 }: {
   meta: MetaState
   volume: number
+  musicVolume: number
   reducedMotion: boolean
   haptics: boolean
   colorAssist: boolean
   onVolume: (v: number) => void
+  onMusicVolume: (v: number) => void
   onReducedMotion: (v: boolean) => void
   onHaptics: (v: boolean) => void
   onColorAssist: (v: boolean) => void
@@ -482,6 +486,18 @@ export function SettingsModal({
             onChange={(e) => onVolume(Number(e.target.value))}
           />
           <span className="settings-value">{volume}%</span>
+        </label>
+        <label className="settings-row">
+          Music volume
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={musicVolume}
+            data-testid="music-slider"
+            onChange={(e) => onMusicVolume(Number(e.target.value))}
+          />
+          <span className="settings-value">{musicVolume}%</span>
         </label>
         <label className="settings-row">
           Reduced motion

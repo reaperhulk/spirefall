@@ -34,6 +34,7 @@ import { BIOME_IDS, BIOMES, type BiomeId } from '../data/biomes'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { AbilityId, CataclysmId, CellPos, EnemyType, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
 import { Sfx } from './audio'
+import { Music } from './music'
 import { CodexModal } from './Codex'
 import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
@@ -165,6 +166,7 @@ export default function App() {
     }
   })
   const [sfx] = useState(() => new Sfx())
+  const [music] = useState(() => new Music(sfx))
   const [muted, setMuted] = useState(() => sfx.muted)
 
   const metaRef = useRef(meta)
@@ -182,6 +184,12 @@ export default function App() {
 
   useSyncExternalStore(session.subscribe, session.getVersion)
   const state = session.state
+
+  // The score reads the LIVE session each scheduler tick — sessionRef stays
+  // current across newRun(), so the music follows every run seamlessly.
+  useEffect(() => {
+    music.attach(() => sessionRef.current.state)
+  }, [music])
 
   // Engine events drive meta settlement and saves.
   useEffect(() => {
@@ -1088,10 +1096,12 @@ export default function App() {
         <SettingsModal
           meta={meta}
           volume={uiSettings.volume}
+          musicVolume={uiSettings.musicVolume}
           reducedMotion={uiSettings.reducedMotion}
           haptics={uiSettings.haptics}
           colorAssist={uiSettings.colorAssist}
           onVolume={(v) => setUiSettings({ ...updateSettings({ volume: v }) })}
+          onMusicVolume={(v) => setUiSettings({ ...updateSettings({ musicVolume: v }) })}
           onReducedMotion={(v) => setUiSettings({ ...updateSettings({ reducedMotion: v }) })}
           onHaptics={(v) => setUiSettings({ ...updateSettings({ haptics: v }) })}
           onColorAssist={(v) => setUiSettings({ ...updateSettings({ colorAssist: v }) })}

@@ -38,6 +38,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+71. *(five-item program, 3/5)* **Generative score** — the game has music
+    now, zero assets, same philosophy as the SFX stack. Three layers over
+    a 200ms-lookahead scheduler: a two-voice detuned saw drone through a
+    slow lowpass, a sparse modal arpeggio, and a bass+hat+kick pulse that
+    only wakes as the fight heats up. INTENSITY derives from the live
+    battlefield (phase, horde size, boss presence, spire health) and is
+    eased, so the score swells into a wave and exhales when it clears;
+    bosses add a heartbeat kick. Each biome owns a mode and register
+    (verdant major-pentatonic, frostfen airy minor, emberwaste phrygian
+    low, highlands mixolydian) and the run seed transposes the key — no
+    two runs share a root, one run stays consistent. Rides the Sfx
+    AudioContext so autoplay-unlock/zombie-revival stay in one place. New
+    music-volume slider in settings (persisted; default 60%), mute button
+    silences it with everything else. UI-layer only — the sim never sees
+    any of it.
+
 70. *(five-item program, 2/5)* **Boss encounters** — every 10th wave is an
     encounter with counterplay, not a stat check. Spirebreaker: Carapace —
     every 8s a 2s shell caps all hits at 1 damage, but a single heavy blow

@@ -4,6 +4,7 @@
 
 export interface Settings {
   volume: number // 0–100, scales every SFX gain
+  musicVolume: number // 0–100, scales the generative score (0 = silence)
   reducedMotion: boolean // no screen shake, no full-screen flashes
   autoStart: boolean // build phase auto-sends the next wave after a beat
   haptics: boolean // vibration feedback on devices that support it
@@ -12,7 +13,7 @@ export interface Settings {
 
 const KEY = 'spirefall-settings'
 
-const DEFAULTS: Settings = { volume: 100, reducedMotion: false, autoStart: false, haptics: true, colorAssist: false }
+const DEFAULTS: Settings = { volume: 100, musicVolume: 60, reducedMotion: false, autoStart: false, haptics: true, colorAssist: false }
 
 function load(): Settings {
   try {
@@ -21,6 +22,8 @@ function load(): Settings {
     const parsed = JSON.parse(raw) as Partial<Settings>
     return {
       volume: typeof parsed.volume === 'number' ? Math.max(0, Math.min(100, parsed.volume)) : DEFAULTS.volume,
+      musicVolume:
+        typeof parsed.musicVolume === 'number' ? Math.max(0, Math.min(100, parsed.musicVolume)) : DEFAULTS.musicVolume,
       reducedMotion: parsed.reducedMotion === true,
       autoStart: parsed.autoStart === true,
       haptics: parsed.haptics !== false, // default on — only an explicit off sticks

@@ -277,6 +277,16 @@ export class Sfx {
     })
   }
 
+  // The generative score (music.ts) rides this context so autoplay-unlock
+  // and zombie-revival live in exactly one place.
+  currentContext(): AudioContext | null {
+    return this.ctx
+  }
+
+  currentNoiseBuffer(): AudioBuffer | null {
+    return this.noiseBuffer
+  }
+
   toggleMute(): boolean {
     this.muted = !this.muted
     try {
