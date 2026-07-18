@@ -7,6 +7,9 @@ import {
   CATACLYSMS,
   CATACLYSM_WAVE_INTERVAL,
   CRIT_BASE_DAMAGE_PCT,
+  CRUCIBLE_HP_PCT_PER_RANK,
+  CRUCIBLE_SPARK_PCT_PER_RANK,
+  CRUCIBLE_TIERS,
   ENEMIES,
   ENHANCE_COST_GROWTH_PCT,
   ENHANCE_DAMAGE_PCT,
@@ -19,6 +22,7 @@ import {
   SNIPER_ELITE_BONUS_PCT,
   TOWER_SPECS,
   TOWERS,
+  TRIAL_IDS,
   TRIALS,
   VICTORY_WAVE,
   WAVE_CLEAR_KNIT_HP,
@@ -158,6 +162,18 @@ const MECHANICS: MechanicEntry[] = [
   {
     title: 'Victory & Endless',
     body: `Clearing wave ${VICTORY_WAVE} wins the run — bank it, or push into Endless where clearing every ${CATACLYSM_WAVE_INTERVAL}th wave permanently stacks a Cataclysm onto the world.`,
+  },
+  {
+    title: 'The Crucible',
+    body: `Each victory in a cycle hardens the next run: +${CRUCIBLE_HP_PCT_PER_RANK}% enemy HP and +${CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks per rank. Rank milestones add named tiers — ${CRUCIBLE_TIERS.map((t) => `${t.name} (rank ${t.rank}: ${t.description})`).join('; ')}. Ascending resets it.`,
+  },
+  {
+    title: 'Trials',
+    body: `Opt-in handicaps chosen before a run, each paying bonus Sparks: ${TRIAL_IDS.map((t) => `${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}%)`).join(', ')}. Stack hardship, stack payout.`,
+  },
+  {
+    title: 'Replays',
+    body: 'Every run records its commands. Watch your last run from the run-over screen, paste a copied replay in Settings, or open a shared replay link — determinism plays it back exactly.',
   },
 ]
 

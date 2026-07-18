@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+111. *(marathon II, iteration 23)* **Codex catches up: Crucible, Trials,
+    Replays** — three new mechanics entries, all rendered from live
+    data: The Crucible (per-rank numbers + the named tiers enumerated
+    from CRUCIBLE_TIERS), Trials (every trial with its spark bonus from
+    TRIALS), and Replays (watch/paste/link, and why determinism makes
+    it exact). The in-game reference now covers every shipped system.
+    191 unit tests, 35 e2e specs.
+
 110. *(marathon II, iteration 22)* **PLAN.md shipped-systems index
     refreshed** — the index now covers the Marathon II systems: the
     5-boss cycle with endless-tier mechanics, named Crucible tiers, the
