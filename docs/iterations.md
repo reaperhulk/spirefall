@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+120. *(marathon II, iteration 32)* **Share & stats polish** — the
+    career sparkline's bars now carry native SVG tooltips (outcome,
+    wave, biome, crucible, sparks per hover — the wave-30 history
+    fields paying off), and the shareable run card gained the build's
+    other half: a rarity-tinted relic column beside the damage bars,
+    truncated to fit with a +n overflow line. 193 unit tests, 42 e2e
+    specs.
+
 119. *(marathon II, iteration 31)* **Emberbound Crews** — seventh
     ember node: +1 mid-wave Spire repair per level (max 2), priced
     steep (3/6 embers) because the mid-wave repair CAP is what killed

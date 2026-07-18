@@ -1,5 +1,5 @@
 import { BIOMES } from '../data/biomes'
-import { TOWERS } from '../data/content'
+import { RELICS, TOWERS } from '../data/content'
 import type { RunSummary, TowerType } from '../engine/types'
 
 // The shareable run card: a canvas-rendered summary of a finished run —
@@ -92,6 +92,26 @@ export function drawRunCard(summary: RunSummary): HTMLCanvasElement {
     g.fillStyle = '#8a93ad'
     g.fillText(`${Math.round(frac * 100)}%`, 500, y + 13)
   })
+
+  // Relic loadout: the build's other half, in the free right column.
+  if (summary.relics.length > 0) {
+    const rx = 520
+    g.fillStyle = '#565f89'
+    g.font = 'bold 11px ui-monospace, monospace'
+    g.fillText(`RELICS (${summary.relics.length})`, rx, 182)
+    const RARITY_COLORS = { common: '#8a93ad', rare: '#7dcfff', legendary: '#e5c07b' } as const
+    summary.relics.slice(0, 8).forEach((r, i) => {
+      g.fillStyle = RARITY_COLORS[RELICS[r].rarity]
+      g.font = '11px ui-monospace, monospace'
+      let name = RELICS[r].name
+      while (name.length > 3 && g.measureText(name).width > W - rx - 24) name = `${name.slice(0, -2)}…`
+      g.fillText(name, rx, 198 + i * 16)
+    })
+    if (summary.relics.length > 8) {
+      g.fillStyle = '#565f89'
+      g.fillText(`+${summary.relics.length - 8} more`, rx, 198 + 8 * 16)
+    }
+  }
 
   // Footer: the challenge.
   g.fillStyle = '#565f89'

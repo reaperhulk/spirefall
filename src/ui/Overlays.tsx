@@ -569,7 +569,12 @@ function RunHistorySpark({ history }: { history: MetaState['history'] }) {
               height={bh}
               rx={1}
               fill={r.outcome === 'victory' ? '#e5c07b' : '#3d59a1'}
-            />
+            >
+              {/* Native SVG tooltip: hover a bar for that run's story. */}
+              <title>
+                {`${r.outcome === 'victory' ? '🏆' : '💀'} wave ${r.wavesCleared}${r.biome ? ` · ${BIOMES[r.biome].name}` : ''}${(r.crucible ?? 0) > 0 ? ` · Crucible ${r.crucible}` : ''} · ✦${r.sparks}`}
+              </title>
+            </rect>
           )
         })}
       </svg>
