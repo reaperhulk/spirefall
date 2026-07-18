@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+105. *(marathon II, iteration 17)* **Debug horde hook closes the perf
+    gap** — `__harness.spawnHorde(n)` (debug-only, documented as such)
+    injects n live runners marching from the gate, because iteration
+    10's honest gap was that no supported command sequence could stage
+    a true horde scene. The definitive measurement: 20 towers firing
+    into 90 live enemies at dpr2 — p50 16.7ms (vsync), p95 17.2ms,
+    p99 34.9ms. 60fps-class under maximum realistic load; render perf
+    is conclusively a non-issue. 191 unit tests, 34 e2e specs.
+
 104. *(marathon II, iteration 16)* **Beacon shows its work** — selecting
     a beacon drew only its radius; whether a given tower was actually
     inside the aura was radius guesswork. Now amber dashed links run

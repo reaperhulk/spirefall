@@ -1,5 +1,7 @@
+import { ENEMIES } from '../data/content'
 import type { MetaUpgradeId } from '../data/metaTree'
-import type { Command, MetaState, RunState } from '../engine/types'
+import type { Command, Enemy, MetaState, RunState } from '../engine/types'
+import { cellCenter } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
 import type { GameSession, LoggedCommand } from './session'
 
@@ -34,6 +36,10 @@ export interface GameHarness {
   audioState: () => string
   // PROBED liveness: true only after the audio clock was seen advancing.
   audioLive: () => boolean
+  // DEBUG-ONLY: inject n live runners marching from the gate. Exists so
+  // perf probes can stage a true horde scene — waves die too fast against
+  // real defenses to measure render load through supported commands.
+  spawnHorde: (n: number) => void
   dispatch: (command: Command) => void
   setSpeed: (n: number) => void
   getSpeed: () => number
@@ -81,6 +87,41 @@ export function installHarness(api: HarnessApi): void {
     },
     audioState: api.audioState,
     audioLive: api.audioLive,
+    spawnHorde: (n) => {
+      const s = api.getSession().state
+      const map = getRunMap(s)
+      const spawn = cellCenter(map.spawn)
+      const def = ENEMIES.runner
+      for (let i = 0; i < n; i++) {
+        const enemy: Enemy = {
+          id: s.nextEntityId++,
+          type: 'runner',
+          pos: { x: spawn.x + (i % 8) * 120, y: spawn.y + (Math.floor(i / 8) % 3 - 1) * 250 },
+          hp: def.hp,
+          maxHp: def.hp,
+          speed: def.speed,
+          slowFactor: 100,
+          slowTicks: 0,
+          bounty: 0,
+          damage: 1,
+          shield: 0,
+          armor: 0,
+          healCooldown: 0,
+          broodCooldown: 0,
+          phased: false,
+          phaseCooldown: 0,
+          burnTicks: 0,
+          burnPerTick: 0,
+          overcharge: 0,
+          mechCooldown: 0,
+          mechActiveTicks: 0,
+          brittleTicks: 0,
+          targetCell: null,
+        }
+        s.enemies.push(enemy)
+      }
+      if (s.phase === 'build') s.phase = 'wave'
+    },
     dispatch: (command) => api.getSession().dispatch(command),
     setSpeed: (n) => {
       api.getSession().speed = Math.max(0, Math.min(100, n))
