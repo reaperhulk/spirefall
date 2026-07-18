@@ -52,6 +52,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+112. *(marathon II, iteration 24)* **The confidence matrix closes** —
+    20k hunts on the three feature biomes (60 runs each): frostfen best
+    19 waves, emberwaste 22, highlands 23 — zero breaking, zero
+    warnings. Every quadrant of budget {0, 5k, 8k, 14k, 20k} × biome
+    {verdant, frostfen, emberwaste, highlands} has now been swept with
+    the full widened genome space (placement doctrines, per-type specs,
+    focus enhancement, targeting, niched selection). Grand total across
+    Marathon II hunts: ~1,600 evolutionary runs, ONE curve-breaking
+    find (the Ember maze farm — fixed by geometry, pinned forever), two
+    over-performance warnings judged as skill expression. The curve is
+    where the design says it is. 191 unit tests, 35 e2e specs.
+
 111. *(marathon II, iteration 23)* **Codex catches up: Crucible, Trials,
     Replays** — three new mechanics entries, all rendered from live
     data: The Crucible (per-rank numbers + the named tiers enumerated
