@@ -125,5 +125,10 @@ export function drawRunCard(summary: RunSummary): HTMLCanvasElement {
 
 export function challengeLink(summary: RunSummary): string {
   const base = `${window.location.origin}${window.location.pathname}`
-  return `Wave ${summary.wavesCleared} in ${BIOMES[summary.biome].name} — beat it: ${base}?seed=${encodeURIComponent(summary.seed)}`
+  // The biome MUST ride along: the recipient's seed roll draws from their own
+  // unlocked pool, so a bare ?seed= can land on a different battlefield —
+  // "same seed, same battlefield" was a lie without this. Trials ride too:
+  // a hardship claim means nothing if the link drops the hardship.
+  const trials = summary.trials.length > 0 ? `&trials=${summary.trials.join(',')}` : ''
+  return `Wave ${summary.wavesCleared} in ${BIOMES[summary.biome].name} — beat it: ${base}?seed=${encodeURIComponent(summary.seed)}&biome=${summary.biome}${trials}`
 }

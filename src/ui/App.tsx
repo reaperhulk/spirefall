@@ -134,9 +134,20 @@ export default function App() {
     // so a reload resumes normally.
     let linkSeed: string | null = null
     let linkReplay: string | null = null
+    // Challenge links carry the full ruleset: without &biome= the seed roll
+    // draws from the RECIPIENT'S unlocked pool (a different battlefield for
+    // a different account), and without &trials= the hardship is dropped.
+    let linkBiome: BiomeId | undefined
+    let linkTrials: TrialId[] | undefined
     try {
       const params = new URLSearchParams(window.location.search)
       linkSeed = params.get('seed') ?? (params.get('daily') !== null ? dailySeed() : null)
+      const biomeParam = params.get('biome')
+      if (biomeParam !== null && (BIOME_IDS as string[]).includes(biomeParam)) linkBiome = biomeParam as BiomeId
+      const trialsParam = params.get('trials')
+      if (trialsParam !== null) {
+        linkTrials = trialsParam.split(',').filter((t): t is TrialId => Object.prototype.hasOwnProperty.call(TRIALS, t))
+      }
       // ?replay=<gzip blob>: spectate someone's exact run (decoded async
       // after mount — the boot run underneath stays the player's own).
       linkReplay = params.get('replay')
@@ -145,7 +156,8 @@ export default function App() {
       linkSeed = null
       linkReplay = null
     }
-    const run = linkSeed !== null ? createRun(meta, linkSeed) : (save?.run ?? createRun(meta, newSeed(meta.runs)))
+    const run =
+      linkSeed !== null ? createRun(meta, linkSeed, linkBiome, linkTrials) : (save?.run ?? createRun(meta, newSeed(meta.runs)))
     return { meta, run, linkReplay }
   })
   const [meta, setMeta] = useState(boot.meta)

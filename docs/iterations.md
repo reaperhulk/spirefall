@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+134. *(marathon II, iteration 46)* **Challenge links tell the truth**
+    — "same seed, same battlefield" was false between accounts: the
+    recipient's biome ROLLS from their own unlocked pool, so a bare
+    `?seed=` could land a fresh account on a different battlefield
+    than the sharer's — and trials were dropped entirely. Links now
+    carry `&biome=` and `&trials=`; boot validates both against live
+    data and passes them into createRun (the explicit-biome override
+    already bypassed the unlock gate by design). E2e: a wiped account
+    opens a frostfen + No Mercy + Glass Spire link and lands exactly
+    there. 194 unit tests, 43 e2e specs.
+
 133. *(marathon II, iteration 45)* **Docs stay honest** — the Blackout
     additions immediately dated the README (trial list, achievement
     count, trial count); corrected, and the achievement figure now

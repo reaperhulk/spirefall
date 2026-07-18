@@ -125,6 +125,19 @@ test('deep links: ?seed starts that exact run, ?daily starts the shared seed', a
   await page.waitForSelector('[data-testid="playfield"]')
   const seed = await page.evaluate(() => window.__harness.getReplay().seed)
   expect(seed).toMatch(/^daily-\d{4}-\d{2}-\d{2}$/)
+
+  // Challenge links carry the FULL ruleset: a fresh account (only Verdant
+  // unlocked) still lands on the sharer's biome, hardships included —
+  // otherwise "same seed, same battlefield" is a lie between accounts.
+  await page.evaluate(() => localStorage.clear())
+  await page.goto('/?seed=cross-account&biome=frostfen&trials=no_mercy,glass_spire')
+  await page.waitForSelector('[data-testid="playfield"]')
+  const linked = await page.evaluate(() => {
+    const s = window.__harness.getState()
+    return { seed: s.biome, trials: s.trials }
+  })
+  expect(linked.seed).toBe('frostfen')
+  expect(linked.trials.sort()).toEqual(['glass_spire', 'no_mercy'])
 })
 
 test('boots clean: canvas, HUD, and harness all present, no console errors', async ({ page }) => {
