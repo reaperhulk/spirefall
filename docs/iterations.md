@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+104. *(marathon II, iteration 16)* **Beacon shows its work** — selecting
+    a beacon drew only its radius; whether a given tower was actually
+    inside the aura was radius guesswork. Now amber dashed links run
+    from a selected beacon to every amplified tower, each ringed —
+    repositioning decisions by sight. Render-only; screenshot-verified.
+    191 unit tests, 34 e2e specs.
+
 103. *(marathon II, iteration 15)* **Music phrase pools** — every biome
     now owns TWO 8-bar progressions; passes alternate A → B → A-lift →
     B-lift, a 32-bar macro-form (~87s) before the harmony literally

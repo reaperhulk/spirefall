@@ -2,7 +2,7 @@ import { ABILITIES, ENEMIES, towerTier } from '../data/content'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
-import { blockedGrid, canPlaceTower, cellCenter, distanceField, pathFrom } from '../engine/grid'
+import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, pathFrom } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
 import type { AbilityId, CellPos, Enemy, RunState, TowerType, Vec } from '../engine/types'
 import type { GameSession } from './session'
@@ -1050,6 +1050,29 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
       ctx.arc(px(center.x), px(center.y), px(def.range), 0, Math.PI * 2)
       ctx.fill()
       ctx.stroke()
+
+      // A selected beacon shows its WORK, not just its reach: amber links
+      // to every tower inside the aura, so repositioning decisions are
+      // made by sight instead of radius guesswork.
+      if (t.type === 'beacon') {
+        const rangeSq = def.range * def.range
+        ctx.strokeStyle = '#ff9e64'
+        ctx.globalAlpha = 0.7
+        ctx.setLineDash([4, 4])
+        for (const other of state.towers) {
+          if (other.id === t.id || other.type === 'beacon') continue
+          const oc = cellCenter(other.cell)
+          if (distSq(center, oc) > rangeSq) continue
+          ctx.beginPath()
+          ctx.moveTo(px(center.x), px(center.y))
+          ctx.lineTo(px(oc.x), px(oc.y))
+          ctx.stroke()
+          circle(ctx, px(oc.x), px(oc.y), 6)
+          ctx.stroke()
+        }
+        ctx.setLineDash([])
+        ctx.globalAlpha = 1
+      }
     }
     ctx.lineWidth = 1
   }
