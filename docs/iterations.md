@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+161. *(marathon II, iteration 73)* **The hardcode sweep closes clean**
+    — after two iterations of real finds (grounded Stormcaller
+    shadow, non-fading Veilwarden), a full sweep of render and combat
+    for type-hardcoded checks with data-driven equivalents found
+    nothing left: every flying/phased/brood/split/heal behavior now
+    reads its flag from ENEMIES. Full gates re-verified: 195 unit
+    tests, 47 e2e specs, 192 commits. Next up (fresh window): the
+    7th tower — the one remaining big content item, needing a full
+    design + fuzz cycle.
+
 160. *(marathon II, iteration 72)* **Phased Veilwarden fades** — the
     same audit lens, one layer deeper: the phased-shadow check was
     hardcoded to 'wraith' (a phased Veilwarden kept its shadow), and
