@@ -941,7 +941,7 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
   const errors = await boot(page, 'e2e-wave')
   await page.locator('.hint-close').click()
 
-  // HUD button → full reference with all three tabs.
+  // HUD button → full reference with all four tabs.
   await page.getByTestId('open-codex').click()
   await expect(page.getByTestId('codex-modal')).toBeVisible()
   await expect(page.getByTestId('codex-enemy-runner')).toBeVisible()
@@ -949,6 +949,9 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
   await expect(page.getByTestId('codex-tower-arrow')).toBeVisible()
   // Tower data comes straight from the data file: arrow tier-1 cost.
   await expect(page.getByTestId('codex-tower-arrow')).toContainText('⛀ 50')
+  await page.getByTestId('codex-tab-relics').click()
+  await expect(page.getByTestId('codex-relic-colossus')).toBeVisible()
+  await expect(page.getByTestId('codex-relic-colossus')).toContainText('+25%')
   await page.getByTestId('codex-tab-mechanics').click()
   await expect(page.getByTestId('codex-mechanic-armor')).toBeVisible()
   await page.keyboard.press('Escape')

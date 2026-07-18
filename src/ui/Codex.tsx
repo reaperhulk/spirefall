@@ -12,6 +12,7 @@ import {
   ENHANCE_DAMAGE_PCT,
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
+  RELICS,
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
   SELL_REFUND_PCT,
@@ -24,7 +25,7 @@ import {
   type EnemyDef,
 } from '../data/content'
 import { BIOMES, type BiomeId } from '../data/biomes'
-import type { EnemyType, RunState, TowerType } from '../engine/types'
+import type { EnemyType, RelicId, RunState, TowerType } from '../engine/types'
 import {
   effectiveAbilityCooldown,
   effectiveDamagePct,
@@ -38,7 +39,7 @@ import { enemyColor } from './render'
 // Everything renders straight from the data files — the same objects the
 // engine reads — so the reference can never drift from the sim.
 
-type CodexTab = 'enemies' | 'towers' | 'mechanics'
+type CodexTab = 'enemies' | 'towers' | 'relics' | 'mechanics'
 
 const secs = (ticks: number): string => {
   const s = ticks / 30
@@ -211,7 +212,7 @@ export function CodexModal({
         <div className="codex-head">
           <h2>Codex</h2>
           <div className="codex-tabs" role="tablist">
-            {(['enemies', 'towers', 'mechanics'] as CodexTab[]).map((t) => (
+            {(['enemies', 'towers', 'relics', 'mechanics'] as CodexTab[]).map((t) => (
               <button
                 key={t}
                 role="tab"
@@ -220,7 +221,7 @@ export function CodexModal({
                 data-testid={`codex-tab-${t}`}
                 onClick={() => setTab(t)}
               >
-                {t === 'enemies' ? 'Enemies' : t === 'towers' ? 'Towers' : 'Mechanics'}
+                {t === 'enemies' ? 'Enemies' : t === 'towers' ? 'Towers' : t === 'relics' ? 'Relics' : 'Mechanics'}
               </button>
             ))}
           </div>
@@ -324,6 +325,38 @@ export function CodexModal({
                   </div>
                 )
               })}
+            </>
+          )}
+
+          {tab === 'relics' && (
+            <>
+              <p className="codex-trait">
+                Every {RELIC_WAVE_INTERVAL} waves the Spire offers {RELIC_OFFER_SIZE} relics — pick one, or skip for
+                gold. Relics you hold this run are marked ✦.
+              </p>
+              {(['legendary', 'rare', 'common'] as const).map((rarity) => (
+                <div key={rarity}>
+                  <h3 className={`codex-rarity ${rarity}`}>{rarity}</h3>
+                  {(Object.entries(RELICS) as [RelicId, (typeof RELICS)[RelicId]][])
+                    .filter(([, def]) => def.rarity === rarity)
+                    .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+                    .map(([id, def]) => (
+                      <div
+                        key={id}
+                        className={`codex-entry${state.relics.includes(id) ? ' owned' : ''}`}
+                        data-testid={`codex-relic-${id}`}
+                      >
+                        <div className="codex-entry-head">
+                          <strong>
+                            {def.name}
+                            {state.relics.includes(id) && <span className="codex-owned"> ✦ held</span>}
+                          </strong>
+                        </div>
+                        <p className="codex-trait">{def.description}</p>
+                      </div>
+                    ))}
+                </div>
+              ))}
             </>
           )}
 

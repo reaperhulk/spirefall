@@ -44,6 +44,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+92. *(marathon II, iteration 4)* **Relic codex** — 30 relics existed
+    nowhere outside the ten-second draft moment; planning a build around
+    Cinder Shells or Golden Ledger meant memorizing offers. The codex
+    gains a RELICS tab: all relics grouped by rarity band (legendary/
+    rare/common, color-coded), alphabetical within band, each with its
+    live description — and relics held THIS run wear a ✦ mark and a
+    gold edge, so mid-run the tab doubles as "what am I building
+    around". Draft cadence explained up top from the live constants.
+    E2e asserts the tab renders relic entries with real data. 186 unit
+    tests, 34 e2e specs.
+
 91. *(marathon II, iteration 3)* **Endless-tier bosses: Veilwarden and
     Blightmother** — the 3-boss roster meant endless runs met a repeat
     by wave 40. Two new bosses extend the cycle to 5, both PURE DATA on

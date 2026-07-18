@@ -913,6 +913,37 @@ button.preview-unit:hover {
   color: #a8b0c8;
 }
 
+/* Relic codex: rarity bands + held-this-run marks. */
+.codex-rarity {
+  margin: 10px 0 2px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.codex-rarity.legendary {
+  color: #e0af68;
+}
+
+.codex-rarity.rare {
+  color: #7dcfff;
+}
+
+.codex-rarity.common {
+  color: #8a93ad;
+}
+
+.codex-entry.owned {
+  border-left: 2px solid #e5c07b;
+  padding-left: 8px;
+}
+
+.codex-owned {
+  color: #e5c07b;
+  font-weight: 400;
+  font-size: 12px;
+}
+
 /* Boss-mechanic warning in the wave preview (carapace shield / gale spiral). */
 .mech-mark {
   margin-left: 4px;
