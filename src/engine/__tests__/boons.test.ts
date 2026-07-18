@@ -98,6 +98,7 @@ describe('wave boons', () => {
     s.pendingSpawns = [{ type: 'runner', tick: 1_000_000 }]
     s.activeBoon = 'bounty'
     s.enemies = [makeEnemy(s, { id: 1, hp: 0 })]
+    s.collectAt = cellCenter({ cx: 10, cy: 6 }) // the levy drops as a coin; catch it
     const before = s.gold
     s = step(s, []).state
     expect(s.gold).toBe(before + 1 + BOON_BOUNTY_GOLD)

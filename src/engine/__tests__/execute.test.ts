@@ -57,6 +57,7 @@ describe('execute windows', () => {
     let s = waveState()
     const max = ENEMIES.brute.hp
     s.enemies = [makeEnemy(s, { id: 1, hp: woundedHp(max), maxHp: max })]
+    s.collectAt = cellCenter({ cx: 10, cy: 6 }) // the bounty drops as a coin; catch it
     const gold = s.gold
     const r = step(s, [{ type: 'execute_enemy', id: 1 }])
     s = r.state

@@ -78,6 +78,15 @@ export interface Vec {
   y: number
 }
 
+// A dropped bounty: gold made physical. Collect it or lose it.
+export interface Coin {
+  id: number
+  pos: Vec
+  gold: number
+  bornTick: number
+  pulling: boolean // caught by the Spire Magnet — drifting home
+}
+
 export interface RngStreams {
   waves: Rng
   combat: Rng
@@ -144,6 +153,8 @@ export interface RunMods {
   critChancePct: number // % chance a tower shot crits (rolled on the combat stream)
   abilityCdPct: number // % shaved off ability cooldowns (ember: Swift Sigils)
   repairCasts: number // extra mid-wave repair casts (ember: Emberbound Crews)
+  collectRadius: number // coin pickup reach around the cursor/finger (millicells)
+  autoCollectRadius: number // Spire Magnet reach (0 = no auto-collect)
 }
 
 export interface RunState {
@@ -178,6 +189,8 @@ export interface RunState {
   boonOffer: BoonId[] | null // build phase: two single-wave perks; skipping is free
   activeBoon: BoonId | null // the perk blessing the current wave (cleared at wave end)
   executeCd: number // global execute-window cooldown (ticks, wave-time only)
+  coins: Coin[] // dropped bounty on the field, ascending id order
+  collectAt: Vec | null // the player's collector (cursor/finger); null = away
   beamTarget: Vec | null // where the player is steering the spire beam (null = off)
   beamHeat: number // 0..BEAM_HEAT_MAX; firing heats, idling vents
   beamOverheated: boolean // maxed heat locks the beam until fully vented
@@ -214,6 +227,7 @@ export type Command =
   | { type: 'choose_boon'; boon: BoonId }
   | { type: 'execute_enemy'; id: number }
   | { type: 'set_beam'; target: Vec | null }
+  | { type: 'set_collect'; at: Vec | null }
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
@@ -249,6 +263,8 @@ export type GameEvent =
   | { type: 'boon_chosen'; boon: BoonId }
   | { type: 'enemy_executed'; id: number; at: Vec; bonus: number }
   | { type: 'beam_overheated' }
+  | { type: 'coin_collected'; from: Vec; to: Vec; gold: number; auto: boolean }
+  | { type: 'coin_expired'; at: Vec; gold: number }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

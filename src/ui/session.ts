@@ -237,29 +237,13 @@ export class GameSession {
           stampDecal(`${this.state.biome}:${this.state.mapId}`, this.state.seed, e.at, enemyColor(e.enemy))
           if (this.speed <= 3) {
             this.effects.push({ kind: 'burst', at: e.at, color: enemyColor(e.enemy), t0: now, dur: 380 })
-            // Every kill showers its bounty as coins — a golden-angle
-            // scatter with a little hop, richer kills raining more. The
-            // money you earn is money you SEE hit the ground.
-            const coins = Math.min(5, 1 + Math.floor(e.bounty / 2))
-            for (let i = 0; i < coins; i++) {
-              const a = i * 2.399963 + (e.at.x % 7)
-              const r = 450 + (i % 3) * 250
-              this.effects.push({
-                kind: 'coin',
-                from: { ...e.at },
-                to: { x: e.at.x + Math.round(Math.cos(a) * r), y: e.at.y + Math.round(Math.sin(a) * r) },
-                t0: now + i * 40,
-                dur: 550,
-              })
+            // The bounty itself lands as a REAL coin entity (engine state)
+            // — drawn by drawCoins until collected or expired.
+            // The bounty DROPS as a coin now — the +N float moved to the
+            // moment of collection. Lucky rolls still announce themselves.
+            if (e.lucky) {
+              this.effects.push({ kind: 'float', at: e.at, text: 'LUCKY!', color: '#ffd700', t0: now, dur: 1000 })
             }
-            this.effects.push({
-              kind: 'float',
-              at: e.at,
-              text: e.lucky ? `+${e.bounty} LUCKY!` : `+${e.bounty}`,
-              color: e.lucky ? '#ffd700' : '#e5c07b',
-              t0: now,
-              dur: e.lucky ? 1000 : 700,
-            })
           }
           break
         case 'spire_repaired':
@@ -312,6 +296,18 @@ export class GameSession {
           }
           break
         }
+        case 'coin_collected':
+          // The magnet suck: the coin streaks into the hand (or the Spire).
+          this.effects.push({ kind: 'coin', from: { ...e.from }, to: { ...e.to }, t0: now, dur: e.auto ? 260 : 180 })
+          if (this.speed <= 3) {
+            this.effects.push({ kind: 'float', at: { ...e.to }, text: `+${e.gold}`, color: '#e5c07b', t0: now, dur: 600 })
+          }
+          break
+        case 'coin_expired':
+          if (this.speed <= 3) {
+            this.effects.push({ kind: 'float', at: { ...e.at }, text: `-${e.gold}`, color: '#5c6370', t0: now, dur: 800 })
+          }
+          break
         case 'enemy_executed':
           this.effects.push({
             kind: 'float',

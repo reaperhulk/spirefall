@@ -410,6 +410,19 @@ export const AA_TOWER_NAMES = Object.values(TOWERS)
   .filter((d) => d.hitsAir && !d.support)
   .map((d) => d.name)
 export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
+// Physical gold: kills DROP their bounty as coins on the field. Coins live
+// for a set time (flashing near the end), then vanish — money you don't
+// pick up is money you lose. The collector is your cursor/finger; meta
+// widens its reach, and the Spire Magnet nodes eventually pull coins home
+// by themselves. Wave-clear income and mint payouts stay direct: the
+// FLOOR of the economy is safe, the bounty layer rewards presence.
+export const COIN_LIFETIME_TICKS = 600 // 20s on the ground — generous, not free
+export const COIN_FLASH_TICKS = 150 // the last 5s flash a warning
+export const COLLECT_RADIUS_BASE = 1600 // millicells around the cursor/finger
+export const META_MAGNET_RADIUS_PER_LEVEL = 500 // Collector's Reach, per level
+export const META_SPIRE_MAGNET_RADIUS_PER_LEVEL = 2500 // Spire Magnet, per level
+export const AUTO_COLLECT_PULL_SPEED = 260 // millicells/tick while being sucked home
+
 // The Spire beam: a weak continuous ray YOU steer (hold B / the beam
 // toggle), with a heat bar. The ninth tower is your own hand — but it's a
 // pressure hose, not a cannon: 1 damage per tick means armor taxes it to

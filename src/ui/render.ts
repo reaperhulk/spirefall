@@ -1,6 +1,8 @@
 import {
   ABILITIES,
   BEAM_HEAT_MAX,
+  COIN_FLASH_TICKS,
+  COIN_LIFETIME_TICKS,
   ENEMIES,
   EXECUTE_THRESHOLD_PCT,
   LANCE_MAX_STACKS,
@@ -597,12 +599,55 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   drawAmbient(ctx, map, animTime(session), theme)
   drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
+  drawCoins(ctx, session, map)
   drawEnemies(ctx, session)
   drawBeam(ctx, session, map)
   drawEffects(ctx, session)
   drawAtmosphere(ctx, session, map, theme)
   drawPlacementGhost(ctx, session, ui, map)
   drawBossBar(ctx, state, map)
+}
+
+// Dropped bounty on the field. Fresh coins gleam and slowly spin; coins in
+// their last seconds FLASH — grab them or lose them. The collector's reach
+// rings the cursor, and the Spire Magnet's reach rings the spire (dashed):
+// both circles are the engine's own radii, never a guess.
+function drawCoins(ctx: CanvasRenderingContext2D, session: GameSession, map: MapDef): void {
+  const state = session.state
+  const t = animTime(session)
+  if (state.collectAt !== null && state.coins.length > 0) {
+    ctx.strokeStyle = '#e5c07b'
+    ctx.globalAlpha = 0.18
+    circle(ctx, px(state.collectAt.x), px(state.collectAt.y), px(state.mods.collectRadius))
+    ctx.stroke()
+    ctx.globalAlpha = 1
+  }
+  if (state.mods.autoCollectRadius > 0 && state.coins.length > 0) {
+    const spire = cellCenter(map.spire)
+    ctx.strokeStyle = '#e5c07b'
+    ctx.globalAlpha = 0.14
+    ctx.setLineDash([5, 7])
+    circle(ctx, px(spire.x), px(spire.y), px(state.mods.autoCollectRadius))
+    ctx.stroke()
+    ctx.setLineDash([])
+    ctx.globalAlpha = 1
+  }
+  for (const coin of state.coins) {
+    const left = COIN_LIFETIME_TICKS - (state.tick - coin.bornTick)
+    // The expiry flash: a hard blink through the final stretch.
+    if (left <= COIN_FLASH_TICKS && !coin.pulling && Math.floor(t * 0.25) % 2 === 0) continue
+    const x = px(coin.pos.x)
+    const y = px(coin.pos.y)
+    const squash = Math.abs(Math.sin(t * 0.12 + coin.id))
+    const r = coin.gold >= 5 ? 4 : 3
+    glow(ctx, x, y, r + 3, '#e0af68', coin.pulling ? 0.5 : 0.3)
+    ctx.fillStyle = '#e5c07b'
+    ellipse(ctx, x, y, r, 1 + (r - 1) * squash)
+    ctx.fill()
+    ctx.strokeStyle = '#8a6a2a'
+    ellipse(ctx, x, y, r, 1 + (r - 1) * squash)
+    ctx.stroke()
+  }
 }
 
 // The Spire beam: a steered ray from the spire to the aim point, its color

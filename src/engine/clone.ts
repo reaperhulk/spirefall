@@ -30,6 +30,8 @@ export function cloneRun(s: RunState): RunState {
     cataclysmOffer: s.cataclysmOffer ? [...s.cataclysmOffer] : null,
     boonOffer: s.boonOffer ? [...s.boonOffer] : null,
     beamTarget: s.beamTarget ? { ...s.beamTarget } : null,
+    coins: s.coins.map((c) => ({ ...c, pos: { ...c.pos } })),
+    collectAt: s.collectAt ? { ...s.collectAt } : null,
     availableTowers: [...s.availableTowers],
     mods: { ...s.mods },
   }

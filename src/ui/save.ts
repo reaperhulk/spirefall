@@ -1,3 +1,4 @@
+import { COLLECT_RADIUS_BASE } from '../data/content'
 import { deriveStream } from '../engine/rng'
 import type { MetaState, RunState } from '../engine/types'
 
@@ -177,6 +178,10 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.beamTarget ??= null
         data.run.beamHeat ??= 0
         data.run.beamOverheated ??= false
+        data.run.coins ??= []
+        data.run.collectAt ??= null
+        data.run.mods.collectRadius ??= COLLECT_RADIUS_BASE
+        data.run.mods.autoCollectRadius ??= 0
       }
       return data
     }

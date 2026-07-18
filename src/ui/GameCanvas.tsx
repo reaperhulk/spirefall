@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
+import { sameCell } from '../engine/grid'
 import type { CellPos } from '../engine/types'
 import { CELL_PX, draw, LOUPE_D, LOUPE_GAP, renderLoupe, type RenderUiState, type TouchAim } from './render'
 import { settings } from './settings'
@@ -12,19 +13,21 @@ interface Props {
   // hold-to-aim (drag with a magnifier loupe, place on release).
   armed: boolean
   beamAim?: boolean // beam mode: touch drags steer the ray (no loupe)
+  dragCollect?: boolean // live coins/wave: touch drags sweep the collector
   onCellClick: (cell: CellPos) => void
   onHover: (cell: CellPos | null) => void
 }
 
 // The playfield. One rAF loop drives both the simulation clock and the
 // renderer; React never re-renders this component per frame.
-export function GameCanvas({ session, ui, armed, beamAim, onCellClick, onHover }: Props) {
+export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellClick, onHover }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const loupeRef = useRef<HTMLCanvasElement>(null)
   const uiRef = useRef(ui)
   // Live touch aim (finger down with a tower/ability armed). A ref, not
   // state: it changes every pointermove and only the canvas cares.
   const aimRef = useRef<TouchAim | null>(null)
+  const downCellRef = useRef<CellPos | null>(null)
   // A touch release places the tower — the click event the browser fires
   // right after must not place a second one (or disarm via tower-inspect).
   // Consume-one-within-deadline: the flag eats exactly the paired click, and
@@ -134,20 +137,21 @@ export function GameCanvas({ session, ui, armed, beamAim, onCellClick, onHover }
         style={{
           width: '100%',
           aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}`,
-          // While armed (or steering the beam), a touch drag is aiming —
-          // not scrolling the page.
-          touchAction: armed || beamAim ? 'none' : 'auto',
+          // While armed, steering the beam, or sweeping coins, a touch
+          // drag belongs to the game — not to page scrolling.
+          touchAction: armed || beamAim || dragCollect ? 'none' : 'auto',
         }}
         // Long-press on touch devices opens the context menu, which in turn
         // starts a text selection — fatal for hold-to-aim placement.
         onContextMenu={(e) => e.preventDefault()}
         onPointerDown={(e) => {
-          if (e.pointerType !== 'touch' || (!armed && !beamAim)) return
+          if (e.pointerType !== 'touch' || (!armed && !beamAim && !dragCollect)) return
           const aim = aimFromEvent(e)
           aimRef.current = aim
-          // Beam steering wants a bare finger, not the placement loupe.
+          downCellRef.current = aim.cell
+          // Beam steering and coin sweeping want a bare finger, not the loupe.
           if (armed) placeLoupe(aim)
-          onHover(aim.cell) // armed: the ghost; beam: the aim point
+          onHover(aim.cell) // armed: the ghost; beam: the aim; else: the collector
         }}
         onPointerMove={(e) => {
           if (!aimRef.current || e.pointerType !== 'touch') return
@@ -166,7 +170,16 @@ export function GameCanvas({ session, ui, armed, beamAim, onCellClick, onHover }
         onPointerUp={(e) => {
           if (!aimRef.current || e.pointerType !== 'touch') return
           const release = aimFromEvent(e)
+          const downCell = downCellRef.current
           endAim()
+          if (!armed && !beamAim) {
+            // A coin sweep: lifting the finger ends it. A moved finger was a
+            // sweep (swallow the click); an in-place tap stays a real tap.
+            if (release.inside && downCell && !sameCell(release.cell, downCell)) {
+              suppressClickRef.current = { armed: true, until: performance.now() + 400 }
+            }
+            return
+          }
           // Released off the board: an aborted placement, not a tower.
           if (!release.inside) return
           suppressClickRef.current = { armed: true, until: performance.now() + 400 }

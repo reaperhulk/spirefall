@@ -318,6 +318,50 @@ test('the spire beam: B (or the button) toggles it, taps and the cursor aim it',
   expect(errors).toEqual([])
 })
 
+test('physical gold: bounties drop as coins, the cursor sweeps them, neglect loses them', async ({ page }) => {
+  const errors = await boot(page, 'e2e-coins')
+  await page.getByTestId('shop-arrow').click()
+  for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
+  await page.getByTestId('shop-arrow').click() // disarm
+  await page.evaluate(() => {
+    window.__harness.dispatch({ type: 'start_wave' })
+    window.__harness.fastForward(1)
+    // Pin the wave open and armor the spire: under parallel-suite load the
+    // wave could clear (sweeping the coins) or the run could end before the
+    // assertions land. State surgery is legal.
+    const s = window.__harness.getState()
+    s.pendingSpawns.push({ type: 'runner', tick: s.tick + 1_000_000 })
+    s.spireHp = 99
+    s.spireMaxHp = 99
+    window.__harness.fastForward(3)
+  })
+  // Kills drop coins instead of banking gold.
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().coins.length)).toBeGreaterThan(0)
+  // Sweep the cursor over a coin: it snaps to the hand and banks.
+  const target = await page.evaluate(() => {
+    const s = window.__harness.getState()
+    const c = s.coins[0]!
+    return { cx: Math.floor(c.pos.x / 1000), cy: Math.floor(c.pos.y / 1000), id: c.id, gold: s.gold }
+  })
+  const p = await cellPoint(page, target.cx, target.cy)
+  await page.mouse.move(p.x, p.y)
+  await expect
+    .poll(async () => page.evaluate((id) => window.__harness.getState().coins.every((c) => c.id !== id), target.id))
+    .toBe(true)
+  expect(await page.evaluate(() => window.__harness.getState().gold)).toBeGreaterThan(target.gold)
+  // Neglect: a coin aged past its lifetime fizzles without paying.
+  const lost = await page.evaluate(() => {
+    const s = window.__harness.getState()
+    s.coins.push({ id: 999_999, pos: { x: 500, y: 500 }, gold: 7, bornTick: s.tick - 10_000, pulling: false })
+    const gold = s.gold
+    window.__harness.fastForward(1)
+    return { gold, after: window.__harness.getState().gold, left: window.__harness.getState().coins.filter((c) => c.id === 999_999).length }
+  })
+  expect(lost.left).toBe(0)
+  expect(lost.after).toBe(lost.gold)
+  expect(errors).toEqual([])
+})
+
 test('execute windows: clicking a wounded enemy finishes it for a bonus', async ({ page }) => {
   const errors = await boot(page, 'e2e-execute')
   await page.evaluate(() => {
@@ -325,9 +369,13 @@ test('execute windows: clicking a wounded enemy finishes it for a bonus', async 
     window.__harness.fastForward(3)
   })
   await expect.poll(async () => page.evaluate(() => window.__harness.getState().enemies.length)).toBeGreaterThan(0)
-  // Wound the lead runner and nail it in place (state surgery is legal).
+  // Wound the lead runner and nail it in place; pin the wave open and armor
+  // the spire so parallel-suite load can't end the run mid-assertion.
   const mark = await page.evaluate(() => {
     const s = window.__harness.getState()
+    s.pendingSpawns.push({ type: 'runner', tick: s.tick + 1_000_000 })
+    s.spireHp = 99
+    s.spireMaxHp = 99
     const e = s.enemies[0]!
     e.hp = 1
     e.speed = 0

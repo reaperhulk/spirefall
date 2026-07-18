@@ -1125,11 +1125,18 @@ export default function App() {
           ui={renderUi}
           armed={shopSelection !== null || abilitySelection !== null}
           beamAim={beamMode}
+          dragCollect={state.phase === 'wave' || state.coins.length > 0}
           onCellClick={handleCellClick}
           onHover={(c) => {
+            const prev = hoverRef.current
             hoverRef.current = c
             // In beam mode the ray follows the cursor (or a touch drag).
             if (beamModeRef.current && c) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(c) })
+            // The pointer IS the coin collector: entering a new cell moves
+            // it, leaving the board parks it away (coins wait, then expire).
+            if ((c === null) !== (prev === null) || (c && prev && !sameCell(c, prev))) {
+              sessionRef.current.dispatch({ type: 'set_collect', at: c ? cellCenter(c) : null })
+            }
             const tower = c ? sessionRef.current.state.towers.find((t) => sameCell(t.cell, c)) : undefined
             setHoveredTowerId((cur) => (tower ? tower.id : null) === cur ? cur : (tower ? tower.id : null))
           }}

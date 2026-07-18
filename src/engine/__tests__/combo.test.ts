@@ -71,6 +71,8 @@ describe('kill-streak combo', () => {
     let s = waveState()
     s.combo = 99
     s.comboTicks = COMBO_WINDOW_TICKS
+    s.collectAt = { x: 0, y: 0 }
+    s.mods.collectRadius = 999_999 // bounties drop as coins; catch them same-tick
     const before = s.gold
     s = killOne(s, 1)
     expect(s.gold).toBe(before + 1) // base runner bounty only

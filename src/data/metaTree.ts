@@ -13,6 +13,8 @@ export type MetaUpgradeId =
   | 'gold_income'
   | 'spark_gain'
   | 'wave_skip'
+  | 'magnet_reach'
+  | 'spire_magnet'
   | 'unlock_tesla'
   | 'unlock_mint'
   | 'unlock_beacon'
@@ -117,6 +119,20 @@ export const META_TREE: MetaNodeDef[] = [
     costs: [180],
   },
   {
+    id: 'magnet_reach',
+    name: 'Collector\u2019s Reach',
+    description: 'Widen the coin-collection radius around your cursor or finger.',
+    maxLevel: 3,
+    costs: [40, 90, 160],
+  },
+  {
+    id: 'spire_magnet',
+    name: 'Spire Magnet',
+    description: 'The Spire pulls nearby coins home by itself — each level widens its reach.',
+    maxLevel: 3,
+    costs: [200, 400, 650],
+  },
+  {
     id: 'unlock_bulwark',
     name: 'Aegis Sigil',
     description: 'Unlock Bulwark — 5 seconds of Spire invulnerability.',
@@ -158,6 +174,10 @@ export function metaNodeEffect(id: MetaUpgradeId, level: number): string | null 
       return `+${level * META_SPARK_GAIN_PCT_PER_LEVEL}% sparks`
     case 'wave_skip':
       return `start at wave ${1 + level * META_WAVE_SKIP_PER_LEVEL}`
+    case 'magnet_reach':
+      return `+${(level * 500) / 1000} cells of pickup reach`
+    case 'spire_magnet':
+      return level === 0 ? null : `auto-collects within ${(level * 2500) / 1000} cells of the Spire`
     default:
       return null
   }

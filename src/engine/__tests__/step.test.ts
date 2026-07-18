@@ -857,6 +857,10 @@ describe('probability layer', () => {
         const cell = buildCandidates(s)[0]
         if (cell) s = step(s, [{ type: 'place_tower', tower: 'arrow', cell }]).state
       }
+      // Bounties drop as coins now — park an all-reaching collector so the
+      // earnings math stays the pre-coin arithmetic this test pins.
+      s.collectAt = { x: 0, y: 0 }
+      s.mods.collectRadius = 999_999
       const goldBefore = s.gold
       const luckyKills: boolean[] = []
       s = step(s, [{ type: 'start_wave' }]).state

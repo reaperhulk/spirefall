@@ -494,6 +494,9 @@ export class Sfx {
         case 'enemy_executed':
           this.play('execute', panFromX(e.at.x))
           break
+        case 'coin_collected':
+          this.play('coin', panFromX(e.to.x))
+          break
         default:
           break
       }

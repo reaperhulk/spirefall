@@ -235,8 +235,20 @@ export function buildActions(
 }
 
 // Wave-phase triage and ability usage shared by the competent bots.
+// Perfect vacuum: park the collector on the richest coin each tick. Bots
+// play the attention-free ceiling — a human sweeps a cursor; the harness
+// teleports one. The gap is the cost of inattention the design intends.
+function collectActions(state: RunState): Command[] {
+  if (state.coins.length === 0) {
+    return state.collectAt !== null ? [{ type: 'set_collect', at: null }] : []
+  }
+  const richest = state.coins.reduce((a, b) => (a.gold >= b.gold ? a : b))
+  return [{ type: 'set_collect', at: { x: richest.pos.x, y: richest.pos.y } }]
+}
+
 export function waveActions(state: RunState, waveRepairPct = 50): Command[] {
   const map = getRunMap(state)
+  const collect = collectActions(state)
   // Emergency repairs mid-assault — but not in the early game, where gold
   // is better spent on towers than triage.
   if (
@@ -245,12 +257,12 @@ export function waveActions(state: RunState, waveRepairPct = 50): Command[] {
     state.spireHp < (state.spireMaxHp * waveRepairPct) / 100 &&
     state.gold >= 100
   ) {
-    return [{ type: 'repair_spire' }]
+    return [...collect, { type: 'repair_spire' }]
   }
   const alive = state.enemies.length
   if ((state.abilities['meteor'] ?? 1) === 0 && alive >= 6) {
     const cell = densestEnemyCell(state, 1500)
-    if (cell) return [{ type: 'cast_ability', ability: 'meteor', cell }]
+    if (cell) return [...collect, { type: 'cast_ability', ability: 'meteor', cell }]
   }
   if ((state.abilities['frost_nova'] ?? 1) === 0 && alive >= 5) {
     const spireCenter = cellCenter(map.spire)
@@ -258,16 +270,16 @@ export function waveActions(state: RunState, waveRepairPct = 50): Command[] {
     if (threats.length >= 5) {
       const nearest = threats.reduce((a, b) => (distSq(a.pos, spireCenter) <= distSq(b.pos, spireCenter) ? a : b))
       const cell = { cx: Math.floor(nearest.pos.x / 1000), cy: Math.floor(nearest.pos.y / 1000) }
-      if (!sameCell(cell, map.spire)) return [{ type: 'cast_ability', ability: 'frost_nova', cell }]
+      if (!sameCell(cell, map.spire)) return [...collect, { type: 'cast_ability', ability: 'frost_nova', cell }]
     }
   }
   if ((state.abilities['gold_rush'] ?? 1) === 0 && alive >= 10) {
-    return [{ type: 'cast_ability', ability: 'gold_rush', cell: map.spawn }]
+    return [...collect, { type: 'cast_ability', ability: 'gold_rush', cell: map.spawn }]
   }
   if ((state.abilities['bulwark'] ?? 1) === 0 && state.spireHp <= Math.max(2, state.spireMaxHp / 3) && alive >= 4) {
-    return [{ type: 'cast_ability', ability: 'bulwark', cell: map.spire }]
+    return [...collect, { type: 'cast_ability', ability: 'bulwark', cell: map.spire }]
   }
-  return []
+  return collect
 }
 
 // A competent heuristic player: mixes tower types, upgrades, uses abilities.

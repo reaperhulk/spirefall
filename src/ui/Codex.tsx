@@ -4,6 +4,8 @@ import {
   ABILITIES,
   BEAM_DAMAGE_PER_TICK,
   BEAM_HEAT_MAX,
+  COIN_FLASH_TICKS,
+  COIN_LIFETIME_TICKS,
   COMBO_HASTE_THRESHOLD,
   COMBO_WINDOW_TICKS,
   EXECUTE_COOLDOWN_TICKS,
@@ -156,6 +158,10 @@ const MECHANICS: MechanicEntry[] = [
   {
     title: 'Repair',
     body: `Repair mends up to ${REPAIR_MAX_PER_CAST} HP per cast and the price per HP climbs each wave. While a wave is live, repair crews manage only ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''}; they recover when it clears. The Spire also knits ${WAVE_CLEAR_KNIT_HP} HP on its own after every cleared wave.`,
+  },
+  {
+    title: 'Gold on the ground',
+    body: `Kill bounties DROP as coins where the enemy fell and live ${COIN_LIFETIME_TICKS / 30} seconds — flashing through the last ${COIN_FLASH_TICKS / 30} — then vanish, gold and all. Your cursor (or finger) is the collector: sweep it near a coin and the coin snaps to your hand. Collector's Reach widens that sweep; the Spire Magnet nodes make the Spire reel in nearby coins by itself, visibly, and a caught coin never expires. Wave-clear income and mint payouts stay automatic — only the bounty layer asks for your hands.`,
   },
   {
     title: 'The Spire beam',

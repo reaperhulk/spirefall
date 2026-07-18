@@ -1,5 +1,8 @@
 import {
   BASE_WAVE_BUDGET,
+  COLLECT_RADIUS_BASE,
+  META_MAGNET_RADIUS_PER_LEVEL,
+  META_SPIRE_MAGNET_RADIUS_PER_LEVEL,
   hpGrowthPct,
   STARTING_GOLD,
   STARTING_SPIRE_HP,
@@ -226,6 +229,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     boonOffer: firstBoons.offer,
     activeBoon: null,
     executeCd: 0,
+    coins: [],
+    collectAt: null,
     beamTarget: null,
     beamHeat: 0,
     beamOverheated: false,
@@ -257,6 +262,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
       critChancePct: metaLevel(meta, 'crit_chance') * META_CRIT_CHANCE_PCT_PER_LEVEL,
       abilityCdPct: emberLevel(meta, 'swift_sigils') * EMBER_ABILITY_CD_PCT_PER_LEVEL,
       repairCasts: emberLevel(meta, 'ember_crews') * EMBER_REPAIR_CASTS_PER_LEVEL,
+      collectRadius: COLLECT_RADIUS_BASE + metaLevel(meta, 'magnet_reach') * META_MAGNET_RADIUS_PER_LEVEL,
+      autoCollectRadius: metaLevel(meta, 'spire_magnet') * META_SPIRE_MAGNET_RADIUS_PER_LEVEL,
     },
     sparksEarned: 0,
   }

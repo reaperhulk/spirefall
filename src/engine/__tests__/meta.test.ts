@@ -9,7 +9,9 @@ import {
   metaNode,
   metaNodeEffect,
 } from '../../data/metaTree'
-import { ABILITIES, STARTING_GOLD, STARTING_SPIRE_HP } from '../../data/content'
+import { ABILITIES, STARTING_GOLD, STARTING_SPIRE_HP,
+  COLLECT_RADIUS_BASE,
+} from '../../data/content'
 import {
   ascend,
   buyEmberUpgrade,
@@ -68,7 +70,7 @@ describe('createRun applies meta', () => {
     expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP)
     expect(run.availableTowers).not.toContain('tesla')
     expect(Object.keys(run.abilities)).not.toContain('gold_rush')
-    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0, abilityCdPct: 0, repairCasts: 0 })
+    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0, abilityCdPct: 0, repairCasts: 0, collectRadius: COLLECT_RADIUS_BASE, autoCollectRadius: 0 })
   })
 
   it('upgrades show up as run bonuses and unlocks', () => {

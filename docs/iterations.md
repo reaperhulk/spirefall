@@ -52,6 +52,28 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+198. *(active-play, physical gold — user feedback)* **Collect it or
+    lose it** — bounty gold is now PHYSICAL: kills drop coin
+    entities (engine state, not render juice) that live 20s and
+    flash through their last 5 before vanishing, gold and all. Your
+    cursor or finger is the collector — sweep near a coin and it
+    snaps to your hand with a magnet-suck streak and a chink; two
+    new Spire Tree nodes widen the loop (Collector's Reach ×3 —
+    +0.5 cells each; Spire Magnet ×3 — the Spire reels coins home
+    by itself, visibly, and a caught coin never expires). Touch
+    parity: dragging sweeps, tapping taps, sweep-vs-tap resolved by
+    cell delta. THE BALANCE STORY: v1 (drop-only) collapsed
+    balanced-fresh 13→9 waves — diagnosis showed 100% of gold was
+    collected but arrived seconds LATE, starving mid-wave and build-
+    time purchases. Fix: the wave-clear sweep banks leftovers (the
+    build phase is planning, not vacuum chores), which restored
+    every golden BIT-IDENTICAL (121/777/876 kills) while keeping
+    collect-or-lose pressure inside long waves. Both radii render
+    from the engine's own mods; bots park their collector on the
+    richest coin (the attention-free ceiling); coins.test pins
+    drop/reach/expiry/magnet-pull/build-tick; determinism covers
+    set_collect; fuzz sweep clean. 239 unit tests, 54 e2e specs.
+
 197. *(active-play, coin shower — user feedback)* **Deaths rain
     gold** — the coin economy piece only glinted a single coin on
     elite kills; ordinary deaths paid invisibly. Now EVERY kill

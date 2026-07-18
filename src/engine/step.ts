@@ -43,6 +43,7 @@ import {
 import {
   beamFire,
   beamVent,
+  tickCoins,
   bossMechanics,
   carrierBroods,
   castAbility,
@@ -121,6 +122,9 @@ export function step(state: RunState, commands: Command[]): StepResult {
   // The beam barrel doesn't care what phase the war is in: build-phase
   // downtime vents it too (the wave path vents inside beamFire).
   if (s.phase === 'build') beamVent(s)
+  // Coins tick in both live phases: leftovers can be swept up during the
+  // build pause, but the clock never stops for them.
+  if (s.phase === 'build' || s.phase === 'wave') tickCoins(s, map, events)
 
   tickStatuses(s)
   return { state: s, events }
@@ -243,6 +247,18 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.activeBoon = command.boon
       s.boonOffer = null
       events.push({ type: 'boon_chosen', boon: command.boon })
+      return
+    }
+
+    case 'set_collect': {
+      // The collector is wherever the hand is — free-form, clamped to the
+      // board, null when the pointer leaves.
+      s.collectAt = command.at
+        ? {
+            x: Math.max(0, Math.min(map.width * 1000, command.at.x)),
+            y: Math.max(0, Math.min(map.height * 1000, command.at.y)),
+          }
+        : null
       return
     }
 
@@ -593,6 +609,18 @@ function ventsErupt(s: RunState, map: MapDef, events: GameEvent[]): void {
 function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (s.pendingSpawns.length > 0 || s.enemies.length > 0) return
   s.wavesCleared = s.wave
+  // The horde is broken: the field is swept. Every coin still on the
+  // ground banks itself — the collect-or-lose pressure lives INSIDE waves
+  // (and late waves outlast the coin lifetime); the build phase is
+  // planning time, not vacuum chores.
+  if (s.coins.length > 0) {
+    const spire = cellCenter(getRunMap(s).spire)
+    for (const coin of s.coins) {
+      s.gold += coin.gold
+      events.push({ type: 'coin_collected', from: { ...coin.pos }, to: { ...spire }, gold: coin.gold, auto: true })
+    }
+    s.coins = []
+  }
   // The blessing dies with its wave, and the next choice is on the table.
   s.activeBoon = null
   const nextBoons = drawBoonOffer(s.rng.boons)

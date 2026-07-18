@@ -123,6 +123,7 @@ describe('the Spire beam', () => {
   it('beam kills collect like any other: bounty, combo, tallies', () => {
     let s = waveState()
     s.enemies = [makeEnemy(s, { id: 1, pos: { ...AIM }, hp: 1, maxHp: ENEMIES.runner.hp })]
+    s.collectAt = { ...AIM } // the bounty drops as a coin; the hand is parked on it
     const gold = s.gold
     s = step(s, [{ type: 'set_beam', target: { ...AIM } }]).state
     expect(s.kills).toBe(1)

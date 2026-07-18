@@ -2,6 +2,8 @@ import type { MapDef } from '../data/maps'
 import {
   ABILITIES,
   ARROW_AIR_BONUS_PCT,
+  AUTO_COLLECT_PULL_SPEED,
+  COIN_LIFETIME_TICKS,
   BLIZZARD_RADIUS,
   BLIZZARD_SPLASH_TICKS_PCT,
   BREAKER_DAMAGE_PCT,
@@ -70,7 +72,7 @@ import { MARSH_SPEED_PCT, MESA_RANGE_PCT } from '../data/biomes'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
 import type { TowerSpecId } from '../data/content'
-import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower, TowerType, Vec } from './types'
+import type { AbilityId, CellPos, Coin, Enemy, GameEvent, RelicId, RunState, Tower, TowerType, Vec } from './types'
 import { scaledHp } from './waves'
 
 // All functions in this file mutate a draft RunState that step() has already
@@ -937,6 +939,50 @@ export function beamFire(state: RunState, map: MapDef, events: GameEvent[]): voi
   }
 }
 
+// The coin loop, every tick in every live phase: the cursor-collector banks
+// what it reaches instantly (the render answers with the magnet suck), the
+// Spire Magnet catches coins inside its radius and reels them home at
+// AUTO_COLLECT_PULL_SPEED (a visible drift — the coin entity itself moves),
+// and anything older than COIN_LIFETIME_TICKS fizzles away, gold and all.
+export function tickCoins(state: RunState, map: MapDef, events: GameEvent[]): void {
+  if (state.coins.length === 0) return
+  const spire = cellCenter(map.spire)
+  const collectSq = state.mods.collectRadius * state.mods.collectRadius
+  const autoSq = state.mods.autoCollectRadius * state.mods.autoCollectRadius
+  const kept: Coin[] = []
+  for (const coin of state.coins) {
+    // Manual collection wins ties: the hand is faster than the magnet.
+    if (state.collectAt !== null && distSq(coin.pos, state.collectAt) <= collectSq) {
+      state.gold += coin.gold
+      events.push({ type: 'coin_collected', from: { ...coin.pos }, to: { ...state.collectAt }, gold: coin.gold, auto: false })
+      continue
+    }
+    if (state.mods.autoCollectRadius > 0 && !coin.pulling && distSq(coin.pos, spire) <= autoSq) {
+      coin.pulling = true // caught — the reel-in is visible, not instant
+    }
+    if (coin.pulling) {
+      const dx = spire.x - coin.pos.x
+      const dy = spire.y - coin.pos.y
+      const dist = Math.max(1, Math.floor(Math.sqrt(dx * dx + dy * dy)))
+      if (dist <= AUTO_COLLECT_PULL_SPEED) {
+        state.gold += coin.gold
+        events.push({ type: 'coin_collected', from: { ...coin.pos }, to: { ...spire }, gold: coin.gold, auto: true })
+        continue
+      }
+      coin.pos.x += Math.floor((dx * AUTO_COLLECT_PULL_SPEED) / dist)
+      coin.pos.y += Math.floor((dy * AUTO_COLLECT_PULL_SPEED) / dist)
+      kept.push(coin) // a pulling coin never expires — it's already yours
+      continue
+    }
+    if (state.tick - coin.bornTick >= COIN_LIFETIME_TICKS) {
+      events.push({ type: 'coin_expired', at: { ...coin.pos }, gold: coin.gold })
+      continue
+    }
+    kept.push(coin)
+  }
+  state.coins = kept
+}
+
 export function collectDead(state: RunState, events: GameEvent[]): void {
   const survivors: Enemy[] = []
   const children: Enemy[] = []
@@ -971,7 +1017,14 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     if (state.combo > state.bestCombo) state.bestCombo = state.combo
     if (state.combo % COMBO_MILESTONE === 0) events.push({ type: 'combo_milestone', combo: state.combo })
     if (state.activeBoon === 'bounty') bounty += BOON_BOUNTY_GOLD // War Levy, this wave only
-    state.gold += bounty
+    // The bounty is PHYSICAL: it drops where the enemy fell and lives for
+    // COIN_LIFETIME_TICKS. Collect it (cursor/finger, or the Spire Magnet)
+    // or lose it — the floor of the economy (wave clears, mints) stays
+    // direct; the bounty layer rewards presence.
+    if (bounty > 0) {
+      state.coins.push({ id: state.nextEntityId, pos: { ...e.pos }, gold: bounty, bornTick: state.tick, pulling: false })
+      state.nextEntityId += 1
+    }
     state.kills += 1
     state.killsByEnemy[e.type] = (state.killsByEnemy[e.type] ?? 0) + 1
     events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty, lucky })
