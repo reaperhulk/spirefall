@@ -221,10 +221,12 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(replay.log.some((c) => c.command.type === 'place_tower')).toBe(true)
   expect(replay.log.some((c) => c.command.type === 'start_wave')).toBe(true)
 
-  // Spend sparks on starting gold, pick a biome, then begin the next run.
-  // (A fresh account has only Verdant unlocked — the picker's other biomes
-  // are disabled, which this select would fail on.)
+  // Spend sparks on starting gold (Spire Tree tab), pick a biome and trial
+  // (Next Run tab), then begin. (A fresh account has only Verdant unlocked —
+  // the picker's other biomes are disabled, which this select would fail on.)
+  await page.getByTestId('tab-tree').click()
   await page.getByTestId('buy-starting_gold').click()
+  await page.getByTestId('tab-next').click()
   await page.getByTestId('map-select').selectOption('verdant')
   await page.getByTestId('trial-select').selectOption('glass_spire')
   await page.getByTestId('next-run').click()
@@ -348,6 +350,7 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   // otherwise mashing "give up → next run" farms unlimited sparks.
   const sparksText = await page.getByTestId('sparks-earned').textContent()
   expect(Number(sparksText!.replace(/\D/g, ''))).toBe(0)
+  await page.getByTestId('tab-next').click()
   await page.getByTestId('next-run').click()
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
@@ -636,6 +639,7 @@ test.describe('mobile viewport', () => {
     const errors = await boot(page, 'e2e-mobile-overflow')
     await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))
     await expect(page.getByTestId('run-over')).toBeVisible()
+    await page.getByTestId('tab-next').click() // the pickers live on the Next Run tab
 
     // The modal is the scroll container; its content (the trial select's
     // intrinsic width, driven by long option labels) must not exceed it.

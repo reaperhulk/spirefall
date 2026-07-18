@@ -1080,6 +1080,37 @@ button.preview-unit:hover {
   color: #8a93ad;
 }
 
+/* Run-over tabs: Result | Spire Tree | Next Run. One job per view. */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #2c3448;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 8px 12px;
+  color: #8a93ad;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tab:hover:not(:disabled) {
+  background: none;
+  border-color: transparent;
+  border-bottom-color: #4a5578;
+  color: #d8dee9;
+}
+
+.tab.active {
+  color: #e5c07b;
+  border-bottom-color: #e5c07b;
+  font-weight: 600;
+}
+
 /* Next-run controls: battlefield picker beside the launch button. */
 .next-run-row {
   display: flex;

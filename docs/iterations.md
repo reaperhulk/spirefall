@@ -38,6 +38,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+87. *(program 2/4)* **Run-over screen: three tabs instead of one long
+    scroll** — the loop's most-visited screen had accreted run stats,
+    the share card, three share/replay buttons, the entire Spire Tree,
+    the Ascension panel, and the next-run pickers into a single phone
+    scroll with "Begin next run" at the very bottom. Now: RESULT
+    (default — summary, trials, unlocks, sparkline, analytics, card,
+    share/replay), SPIRE TREE (spark balance in the tab label, ascend
+    callout, tree, ascension panel), NEXT RUN (biome, trial, crucible
+    badge, launch — everything above the fold at 375px). Header + spark
+    summary stay visible on every tab. E2e flows updated to click
+    through tabs; screenshots verified both tabs fit a phone screen.
+    183 unit tests, 32 e2e specs.
+
 86. *(program 1/4 + 4/4)* **Victory hunt clean; victory + Crucible get
     their sounds** — HUNT: 768 runs (pop 16 × 4 gens × seeds α–δ) at
     8k/14k/20k over the full breadth space. ZERO breaking finds; no

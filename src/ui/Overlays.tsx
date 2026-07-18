@@ -261,6 +261,9 @@ export function RunOverOverlay({
   onNextRun: () => void
 }) {
   const victory = summary.outcome === 'victory'
+  // The screen carries three jobs — reading the result, spending sparks,
+  // configuring the next run — each gets a tab instead of one long scroll.
+  const [tab, setTab] = useState<'result' | 'tree' | 'next'>('result')
   const [replayText, setReplayText] = useState<string | null>(null)
   const [shared, setShared] = useState<'' | 'card' | 'link'>('')
   const cardHost = useRef<HTMLDivElement | null>(null)
@@ -302,6 +305,28 @@ export function RunOverOverlay({
             </span>
           )}
         </p>
+        <div className="tab-bar" role="tablist" aria-label="Run over sections">
+          {(
+            [
+              ['result', 'Result'],
+              ['tree', `Spire Tree · ✦${meta.sparks}`],
+              ['next', 'Next Run'],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={tab === id}
+              className={`tab${tab === id ? ' active' : ''}`}
+              data-testid={`tab-${id}`}
+              onClick={() => setTab(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {tab === 'result' && (
+          <>
         {summary.trials.length > 0 && (
           <p className="run-summary" data-testid="summary-trials">
             {summary.trials.map((t) => `⚔ ${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}% ✦)`).join(' · ')}
@@ -335,16 +360,6 @@ export function RunOverOverlay({
             ? 'Against every prior collapse, this cycle holds.'
             : 'Its embers remember. Spend them, and reach further next time.'}
         </p>
-        {canAscend(meta) && (
-          <div className="ascend-callout" data-testid="runover-ascend-callout">
-            <p>
-              🔥 <strong>Ascension is ready</strong> — burn the Spire Tree below for{' '}
-              <strong>{emberGainOnAscend(meta)} Embers</strong>, or keep winning: each victory this cycle adds{' '}
-              <strong>+1 Ember</strong> while the Crucible hardens the horde (+{CRUCIBLE_HP_PCT_PER_RANK}% HP) and
-              raises the Spark payout (+{CRUCIBLE_SPARK_PCT_PER_RANK}%).
-            </p>
-          </div>
-        )}
         <div ref={cardHost} className="run-card-host" />
         <div className="replay-row">
           <button className="ghost-btn" data-testid="copy-card" onClick={copyCard}>
@@ -377,9 +392,26 @@ export function RunOverOverlay({
         {replayText !== null && (
           <textarea className="transfer-code" data-testid="replay-json" readOnly value={replayText} />
         )}
+          </>
+        )}
+        {tab === 'tree' && (
+          <>
+        {canAscend(meta) && (
+          <div className="ascend-callout" data-testid="runover-ascend-callout">
+            <p>
+              🔥 <strong>Ascension is ready</strong> — burn the Spire Tree below for{' '}
+              <strong>{emberGainOnAscend(meta)} Embers</strong>, or keep winning: each victory this cycle adds{' '}
+              <strong>+1 Ember</strong> while the Crucible hardens the horde (+{CRUCIBLE_HP_PCT_PER_RANK}% HP) and
+              raises the Spark payout (+{CRUCIBLE_SPARK_PCT_PER_RANK}%).
+            </p>
+          </div>
+        )}
         <h3>The Spire Tree — ✦ {meta.sparks} available</h3>
         <SpireTree meta={meta} onBuy={onBuy} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
+          </>
+        )}
+        {tab === 'next' && (
         <div className="next-run-row">
           <label className="map-pick">
             Biome
@@ -429,6 +461,7 @@ export function RunOverOverlay({
             Begin next run
           </button>
         </div>
+        )}
       </div>
     </div>
   )
