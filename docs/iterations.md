@@ -38,6 +38,36 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+83. *(fuzzer breadth program)* **The search space now covers the spatial
+    game** — audit verdict on "does the fuzzer try mazes / single-tower
+    maxing / meta dumps?": meta dumps yes, tower-maxing partial, mazes
+    not at all (every bot shared one hardcoded path-adjacent placement).
+    Shipped four new genome axes, all OPTIONAL fields defaulting to
+    pre-axis semantics so the three pinned genomes reproduce exactly:
+    (1) `placement` — five deterministic spatial doctrines in
+    `placement.ts`: pathAdjacent (legacy), mazeLengthen (greedy
+    path-length maximization via hypothetical distanceField), 
+    killboxCluster (max path cells in reach), mesaFirst (highlands high
+    ground), spireChoke (stack the last line); (2) `specByType` — 
+    per-type tier-3 paths (32 combos, was 2); (3) `enhanceFocus` — 
+    'focus' feeds the SAME tower forever (true single-tower maxing,
+    inexpressible before because 'cheapest' round-robins); (4)
+    `targetingByType` — per-type fire doctrine (set_targeting existed,
+    no bot ever used it). Search side: fuzzBuilds keeps a MAP-elites-lite
+    ARCHIVE (best genome per placement×dominantTower×focus archetype,
+    persisted across generations) and breeds mutants from every niche
+    elite instead of the global top third — plus nichesByBudget in the
+    result so breadth is measured, not assumed. Mutation gained 4 slots;
+    a test pins that every axis is mutation-reachable. 8 new tests
+    (placement legality/determinism, maze-lengthens-the-walk, mesa
+    claim, choke distance, per-type spec, focus-vs-spread, targeting
+    once-then-quiet, axis reachability). 183 unit tests green with
+    goldens and pinned genomes untouched. First deep hunt over the new
+    space (288 runs, budgets 0/5k/8k, pop 12 × 4 gens): NO breaking or
+    warning finds — best 21 waves @ 8k against a 24-wave win — with
+    21–24 archetypes visited per budget incl. the mazing niches, so the
+    curve currently holds against the spatial game too.
+
 82. *(playtest feedback)* **Score reactions land before the enemy dies** —
     the #81 reactions were lagging indicators: boss double-time waited
     for the next bar boundary (up to ~2.7s, longer than many bosses

@@ -1,10 +1,10 @@
 import { createMeta, createRun } from '../engine/meta'
 import { deriveStream } from '../engine/rng'
-import type { MetaState } from '../engine/types'
+import type { MetaState, TowerType } from '../engine/types'
 import { autoplay, spendSparks } from './autoplay'
 import { BOTS } from './bots'
 import { DEFAULT_BUY_PRIORITY } from './scenarios'
-import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome } from './policy'
+import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYPES } from './policy'
 
 // The build fuzzer: an evolutionary search over PolicyGenome space that hunts
 // for strategies which BREAK the intended difficulty curve — winning far
@@ -47,6 +47,28 @@ export interface FuzzResult {
   findings: FuzzFinding[]
   evaluated: number
   bestByBudget: Record<number, { wavesCleared: number; genome: PolicyGenome }>
+  // Which strategy archetypes the search actually visited, per budget —
+  // breadth is MEASURED, not assumed.
+  nichesByBudget: Record<number, string[]>
+}
+
+// The niche a genome competes in: spatial doctrine × dominant tower ×
+// enhancement concentration. The archive keeps the best genome of EVERY
+// niche alive as breeding stock (MAP-elites-lite), so qualitatively
+// different strategies — a mazing mono-arrow, a choke-stacked sniper
+// focus build — keep evolving instead of being culled by this
+// generation's single best basin.
+export function archetype(genome: PolicyGenome): string {
+  let dominant: TowerType = 'arrow'
+  let bestW = -1
+  for (const t of TOWER_TYPES) {
+    const w = genome.ratio[t]
+    if (w > bestW) {
+      bestW = w
+      dominant = t
+    }
+  }
+  return `${genome.placement ?? 'pathAdjacent'}:${dominant}:${genome.enhanceFocus ?? 'spread'}`
 }
 
 interface EvalOutcome {
@@ -138,6 +160,7 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
   }
 
   const bestByBudget: FuzzResult['bestByBudget'] = {}
+  const nichesByBudget: FuzzResult['nichesByBudget'] = {}
   for (const budget of opts.budgets) {
     // Seed the population with fresh random genomes.
     let population: { genome: PolicyGenome; score: number }[] = []
@@ -147,11 +170,19 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
       population.push({ genome: g.genome, score: 0 })
     }
 
+    // Niche archive: the best genome per archetype, persisted across
+    // generations for this budget. Elites live HERE, not in the population
+    // — re-evaluating a deterministic elite would only waste runs.
+    const archive = new Map<string, { genome: PolicyGenome; score: number }>()
+
     for (let gen = 0; gen < opts.generations; gen++) {
       for (const member of population) {
         const runs = evaluate(member.genome, budget, opts.seeds)
         evaluated += runs.length
         member.score = record(member.genome, budget, runs)
+        const key = archetype(member.genome)
+        const held = archive.get(key)
+        if (!held || member.score > held.score) archive.set(key, { genome: member.genome, score: member.score })
       }
       population.sort((a, b) => b.score - a.score)
       const best = population[0]!
@@ -160,12 +191,14 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
       }
       if (gen === opts.generations - 1) break
 
-      // Next generation: keep the top third, mutate them, top up with fresh
-      // randoms so the search never collapses into one basin.
-      const keep = Math.max(1, Math.floor(opts.population / 3))
-      const next: typeof population = population.slice(0, keep).map((m) => ({ ...m, score: 0 }))
+      // Next generation: mutants drawn round-robin from EVERY niche elite
+      // (strongest niches first), topped up with fresh randoms. Breeding
+      // from all niches is what carries the search across the
+      // combinatorial space instead of collapsing into one basin.
+      const parents = [...archive.values()].sort((a, b) => b.score - a.score)
+      const next: typeof population = []
       while (next.length < opts.population - 2) {
-        const parent = next[next.length % keep]!.genome
+        const parent = parents[next.length % parents.length]!.genome
         const m = mutateGenome(rng, parent)
         rng = m.rng
         next.push({ genome: m.genome, score: 0 })
@@ -177,8 +210,9 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
       }
       population = next
     }
+    nichesByBudget[budget] = [...archive.keys()].sort()
   }
 
   findings.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'breaking' ? -1 : 1))
-  return { findings, evaluated, bestByBudget }
+  return { findings, evaluated, bestByBudget, nichesByBudget }
 }

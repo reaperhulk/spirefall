@@ -1,8 +1,9 @@
 import type { MetaUpgradeId } from '../data/metaTree'
 import { META_TREE } from '../data/metaTree'
 import { nextInt, type Rng } from '../engine/rng'
-import type { RelicId, RunState, TowerType } from '../engine/types'
+import type { RelicId, RunState, Targeting, TowerType } from '../engine/types'
 import { type Bot, type BuildKnobs, buildActions, RELIC_PRIORITY, waveActions } from './bots'
+import { PLACEMENT_STRATEGIES, type PlacementStrategy } from './placement'
 
 // A PolicyGenome is a whole strategy as plain data: what to build, when to
 // upgrade, what to buy between runs. The build fuzzer searches this space
@@ -22,12 +23,20 @@ export interface PolicyGenome {
   repairDeficit: number
   repairMinGold: number
   waveRepairPct: number // 0 disables mid-wave repairs
-  specChoice: 0 | 1 // tier-3 path preference (index into TOWER_SPECS)
+  specChoice: 0 | 1 // global tier-3 path fallback (kept for pinned genomes)
   relicPriority: RelicId[]
   metaPriority: MetaUpgradeId[] // spark spending order between runs
+  // Breadth axes (2026-07). OPTIONAL: pinned genome literals predate them,
+  // and absent fields must reproduce the exact behavior they were pinned
+  // with — makePolicyBot defaults each to the pre-axis semantics.
+  placement?: PlacementStrategy // spatial doctrine incl. mazing (placement.ts)
+  specByType?: Record<TowerType, 0 | 1> // per-type tier-3 paths (32 combos, not 2)
+  enhanceFocus?: 'spread' | 'focus' // focus = max ONE tower out
+  targetingByType?: Partial<Record<TowerType, Targeting>> // per-type fire doctrine
 }
 
 const META_IDS = META_TREE.map((n) => n.id)
+const TARGETINGS: readonly Targeting[] = ['first', 'last', 'strongest', 'weakest', 'nearest', 'elites']
 
 // Deterministic helpers on the engine's own seeded RNG — the fuzzer must be
 // perfectly reproducible from its seed string (no Math.random, ever).
@@ -85,6 +94,23 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
   r = relics.rng
   const metas = shuffled(r, META_IDS)
   r = metas.rng
+  const placement = pickOne(r, PLACEMENT_STRATEGIES)
+  r = placement.rng
+  const specByType = {} as Record<TowerType, 0 | 1>
+  for (const t of TOWER_TYPES) {
+    const bit = draw(r, 0, 1)
+    r = bit.rng
+    specByType[t] = bit.value as 0 | 1
+  }
+  const focus = pickOne(r, ['spread', 'spread', 'focus'] as const)
+  r = focus.rng
+  // Sparse targeting: 0 = leave the engine default, else a doctrine.
+  const targetingByType: Partial<Record<TowerType, Targeting>> = {}
+  for (const t of TOWER_TYPES) {
+    const pick = draw(r, 0, TARGETINGS.length)
+    r = pick.rng
+    if (pick.value > 0) targetingByType[t] = TARGETINGS[pick.value - 1]!
+  }
   return {
     genome: {
       ratio,
@@ -100,6 +126,10 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
       specChoice: (waveRepairPct.value % 2) as 0 | 1, // seeded, no extra draw
       relicPriority: relics.value,
       metaPriority: metas.value,
+      placement: placement.value,
+      specByType,
+      enhanceFocus: focus.value,
+      targetingByType,
     },
     rng: r,
   }
@@ -113,7 +143,7 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
   const count = draw(r, 1, 3)
   r = count.rng
   for (let i = 0; i < count.value; i++) {
-    const which = draw(r, 0, 6)
+    const which = draw(r, 0, 10)
     r = which.rng
     switch (which.value) {
       case 0: {
@@ -170,6 +200,38 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
         g.metaPriority.unshift(node!)
         break
       }
+      case 7: {
+        // Switch spatial doctrine — mazing enters and leaves the gene pool here.
+        const p = pickOne(r, PLACEMENT_STRATEGIES)
+        r = p.rng
+        g.placement = p.value
+        break
+      }
+      case 8: {
+        // Flip one type's tier-3 path (materializing the map from the
+        // global bit for pre-axis genomes).
+        const t = pickOne(r, TOWER_TYPES)
+        r = t.rng
+        g.specByType ??= Object.fromEntries(TOWER_TYPES.map((k) => [k, g.specChoice])) as Record<TowerType, 0 | 1>
+        g.specByType[t.value] = (1 - g.specByType[t.value]) as 0 | 1
+        break
+      }
+      case 9: {
+        // Redraw one type's targeting doctrine (0 = back to engine default).
+        const t = pickOne(r, TOWER_TYPES)
+        r = t.rng
+        const pick = draw(r, 0, TARGETINGS.length)
+        r = pick.rng
+        g.targetingByType ??= {}
+        if (pick.value === 0) delete g.targetingByType[t.value]
+        else g.targetingByType[t.value] = TARGETINGS[pick.value - 1]!
+        break
+      }
+      case 10: {
+        // Toggle between spreading enhancements and maxing one tower out.
+        g.enhanceFocus = (g.enhanceFocus ?? 'spread') === 'spread' ? 'focus' : 'spread'
+        break
+      }
     }
   }
   return { genome: g, rng: r }
@@ -197,6 +259,8 @@ function pickWeighted(state: RunState, genome: PolicyGenome): TowerType {
 }
 
 export function makePolicyBot(genome: PolicyGenome): Bot {
+  // Absent breadth axes default to the exact pre-axis semantics, so pinned
+  // genome literals reproduce the behavior they were pinned with.
   const knobs: BuildKnobs = {
     upgradeAtTowers: genome.upgradeAtTowers,
     targetBase: genome.targetBase,
@@ -205,7 +269,10 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
     repairDeficit: genome.repairDeficit,
     repairMinGold: genome.repairMinGold,
     enhanceStrategy: genome.enhanceStrategy,
-    specChoice: genome.specChoice ?? 0,
+    enhanceFocus: genome.enhanceFocus ?? 'spread',
+    placement: genome.placement ?? 'pathAdjacent',
+    targeting: genome.targetingByType ?? null,
+    specChoice: genome.specByType ?? genome.specChoice ?? 0,
     relicPriority: genome.relicPriority,
   }
   return (state) => {

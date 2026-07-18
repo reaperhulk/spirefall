@@ -1,37 +1,17 @@
 import { enhanceCost, TOWER_SPECS, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
-import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, inBounds, pathFrom, sameCell } from '../engine/grid'
+import { cellCenter, distSq, sameCell } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
-import type { CellPos, Command, RelicId, RunState, TowerType } from '../engine/types'
+import type { Command, RelicId, RunState, Targeting, TowerType } from '../engine/types'
+import { buildCandidates, pickBuildCell, type PlacementStrategy } from './placement'
 
 // Bots are deterministic pure functions of the state — no randomness, so a
 // (seed, bot) pair always produces the same run. Called once per tick; they
 // issue at most one command per tick to keep validation simple.
 export type Bot = (state: RunState) => Command[]
 
-// Buildable cells adjacent to the enemies' natural path, in walk order.
-export function buildCandidates(state: RunState): CellPos[] {
-  const map = getRunMap(state)
-  const field = distanceField(map, blockedGrid(map, state.towers))
-  const path = [map.spawn, ...pathFrom(map, field, map.spawn)]
-  const seen = new Set<string>()
-  const candidates: CellPos[] = []
-  for (const cell of path) {
-    for (const [dx, dy] of [
-      [0, -1],
-      [1, 0],
-      [0, 1],
-      [-1, 0],
-    ] as const) {
-      const c = { cx: cell.cx + dx, cy: cell.cy + dy }
-      const key = `${c.cx},${c.cy}`
-      if (seen.has(key) || !inBounds(map, c)) continue
-      seen.add(key)
-      if (canPlaceTower(state, map, c).ok) candidates.push(c)
-    }
-  }
-  return candidates
-}
+// Placement geometry lives in placement.ts; re-exported for existing users.
+export { buildCandidates } from './placement'
 
 // Does nothing but send waves. The floor of the difficulty envelope.
 export const afkBot: Bot = (state) => {
@@ -134,13 +114,17 @@ function pickBuildType(state: RunState): TowerType {
 // defaults; the build fuzzer (src/harness/fuzz.ts) searches over them.
 export interface BuildKnobs {
   upgradeAtTowers: number // start tier-upgrading once this many towers exist
-  specChoice: 0 | 1 // which tier-3 path each tower takes (index into TOWER_SPECS)
+  // Tier-3 path: one index for every type, or a per-type map (fuzzer).
+  specChoice: 0 | 1 | Partial<Record<TowerType, 0 | 1>>
   targetBase: number // desired tower count = base + perWave·wave, capped
   targetPerWave: number
   targetMax: number
   repairDeficit: number // build-phase repair when missing ≥ this much HP...
   repairMinGold: number // ...and holding at least this much gold
-  enhanceStrategy: 'cheapest' | TowerType // which tier-3 tower to enhance
+  enhanceStrategy: 'cheapest' | TowerType // which tier-3 tower(s) to enhance
+  enhanceFocus: 'spread' | 'focus' // spread = cheapest next; focus = max ONE tower out
+  placement: PlacementStrategy // where towers go (see placement.ts)
+  targeting: Partial<Record<TowerType, Targeting>> | null // per-type mode, null = engine default
   relicPriority: RelicId[]
 }
 
@@ -153,6 +137,9 @@ export const DEFAULT_KNOBS: BuildKnobs = {
   repairDeficit: 2,
   repairMinGold: 150,
   enhanceStrategy: 'cheapest',
+  enhanceFocus: 'spread',
+  placement: 'pathAdjacent',
+  targeting: null,
   relicPriority: RELIC_PRIORITY,
 }
 
@@ -166,6 +153,14 @@ export function buildActions(
   if (state.relicOffer !== null) {
     const pick = knobs.relicPriority.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
     return [{ type: 'choose_relic', relic: pick }]
+  }
+
+  // Targeting doctrine first — it's free, one tower per tick.
+  if (knobs.targeting) {
+    for (const t of state.towers) {
+      const want = knobs.targeting[t.type]
+      if (want && t.targeting !== want) return [{ type: 'set_targeting', id: t.id, targeting: want }]
+    }
   }
 
   // Once a small killbox exists, tier-2 upgrades beat new tier-1 towers.
@@ -186,7 +181,7 @@ export function buildActions(
     const type = pickType(state)
     const cost = towerTier(type, 1).cost
     if (state.gold >= cost) {
-      const spot = buildCandidates(state)[0]
+      const spot = pickBuildCell(state, knobs.placement)
       if (spot) return [{ type: 'place_tower', tower: type, cell: spot }]
     }
   }
@@ -197,7 +192,8 @@ export function buildActions(
     if (t.tier !== 3 || t.spec !== null) continue
     const options = TOWER_SPECS[t.type]
     if (!options) continue
-    const pick = options[knobs.specChoice]!
+    const choice = typeof knobs.specChoice === 'number' ? knobs.specChoice : (knobs.specChoice[t.type] ?? 0)
+    const pick = options[choice]!
     if (state.gold >= pick.cost) return [{ type: 'specialize_tower', id: t.id, spec: pick.id }]
   }
 
@@ -206,15 +202,20 @@ export function buildActions(
     return [{ type: 'repair_spire' }]
   }
 
-  // Everything built and maxed: sink gold into an enhancement.
-  let enhance: { id: number; cost: number } | null = null
+  // Everything built and maxed: sink gold into an enhancement. 'spread'
+  // feeds whichever eligible tower is cheapest next (round-robins as costs
+  // scale); 'focus' always feeds the SAME tower — the most-enhanced one —
+  // expressing the max-one-tower-out archetype the spread rule cannot.
+  let enhance: { id: number; cost: number; level: number } | null = null
   for (const t of state.towers) {
     if (t.tier !== 3) continue
     if (knobs.enhanceStrategy !== 'cheapest' && t.type !== knobs.enhanceStrategy) continue
     const cost = enhanceCost(t.type, t.enhance)
-    if (state.gold >= cost && (enhance === null || cost < enhance.cost)) enhance = { id: t.id, cost }
+    const better =
+      enhance === null || (knobs.enhanceFocus === 'focus' ? t.enhance > enhance.level : cost < enhance.cost)
+    if (better) enhance = { id: t.id, cost, level: t.enhance }
   }
-  if (enhance !== null) return [{ type: 'upgrade_tower', id: enhance.id }]
+  if (enhance !== null && state.gold >= enhance.cost) return [{ type: 'upgrade_tower', id: enhance.id }]
 
   return [{ type: 'start_wave' }]
 }

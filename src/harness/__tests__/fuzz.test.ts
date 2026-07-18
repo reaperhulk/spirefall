@@ -28,6 +28,23 @@ describe('build fuzzer', () => {
     expect(bot(run)).toEqual(bot(run))
   })
 
+  it('mutation actually reaches every breadth axis', () => {
+    // Chain mutations and require each new gene axis to move at least once
+    // — a slot that can never fire silently narrows the search space.
+    let { genome, rng } = randomGenome(deriveStream('fuzz-axes', 'build-fuzz'))
+    const seen = { placement: false, spec: false, targeting: false, focus: false }
+    for (let i = 0; i < 300; i++) {
+      const m = mutateGenome(rng, genome)
+      if (m.genome.placement !== genome.placement) seen.placement = true
+      if (JSON.stringify(m.genome.specByType) !== JSON.stringify(genome.specByType)) seen.spec = true
+      if (JSON.stringify(m.genome.targetingByType) !== JSON.stringify(genome.targetingByType)) seen.targeting = true
+      if (m.genome.enhanceFocus !== genome.enhanceFocus) seen.focus = true
+      genome = m.genome
+      rng = m.rng
+    }
+    expect(seen).toEqual({ placement: true, spec: true, targeting: true, focus: true })
+  })
+
   it('the oracle classifies runs against the curve contract', () => {
     const win = { wavesCleared: 24, outcome: 'victory' as const, seed: 'x' }
     expect(classify(win, 8_000, 20)?.severity).toBe('breaking') // cheap win = broken build
@@ -194,6 +211,9 @@ describe('build fuzzer', () => {
     console.log(`fuzz sweep: ${result.evaluated} runs evaluated`)
     for (const [budget, best] of Object.entries(result.bestByBudget)) {
       console.log(`  best @ ${budget} sparks: ${best.wavesCleared} waves`)
+    }
+    for (const [budget, niches] of Object.entries(result.nichesByBudget)) {
+      console.log(`  niches visited @ ${budget}: ${niches.length} (${niches.join(', ')})`)
     }
     const breaking = result.findings.filter((f) => f.severity === 'breaking')
     expect(breaking, breaking.map((f) => f.reason).join('; ')).toEqual([])
