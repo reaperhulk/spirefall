@@ -146,6 +146,18 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     earned: (run) => run.victoryClaimed && run.trials.includes('no_mercy'),
   },
   {
+    id: 'duelist',
+    name: 'Duelist',
+    description: 'Win a run in which the Lance out-damaged every other tower.',
+    sparks: 450,
+    earned: (run) => {
+      if (!run.victoryClaimed) return false
+      const lance = run.damageByTower.lance ?? 0
+      if (lance <= 0) return false
+      return Object.entries(run.damageByTower).every(([type, dmg]) => type === 'lance' || dmg < lance)
+    },
+  },
+  {
     id: 'in_the_dark',
     name: 'Eyes Shut',
     description: 'Win under the Blackout trial — every wave arrived unseen.',

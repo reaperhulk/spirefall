@@ -38,7 +38,7 @@ npm run dev     # then open http://localhost:5173
 - **Fall**: the Spire has 10 HP and every enemy hits differently — first runs die
   in minutes. Sparks buy the Spire Tree (12 nodes); victories unlock Ascension,
   which burns the tree for Embers and permanent Ember Tree upgrades (7 nodes).
-  Achievements (21 and counting) pay bounties along the way; mid-run stats live on S.
+  Achievements (22 and counting) pay bounties along the way; mid-run stats live on S.
 - **Push**: clear wave 24 to break the cycle, then dare the endless — every 5th
   wave past victory strikes a permanent, stacking Cataclysm. Win again and the
   **Crucible** hardens each subsequent run for bonus sparks and embers.
@@ -86,7 +86,7 @@ the repository (Settings → Pages → Source: GitHub Actions).
 **Post-M6, in continuous iteration.** Playable game with 8 tower types (each
 with two tier-3 specializations), 16 enemy types across a 6-boss cycle, wave
 affixes, 31 relics with rarity/reroll/pity, four abilities, six Trials, endless
-Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 21
+Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 22
 achievements, daily runs with streaks, generated battlefields across 4 biomes, a
 generative biome-keyed score with key-matched SFX, watchable/shareable replays,
 saves with transfer codes, PWA install, deep links, and a full test harness
