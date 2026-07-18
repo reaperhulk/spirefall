@@ -7,8 +7,12 @@ Read PLAN.md before making architectural changes — it is the design contract.
 - `src/engine/` — Pure, deterministic simulation. **No DOM, no `Date`, no
   `Math.random`, no I/O, no scheduling.** ESLint enforces this.
 - `src/engine/__tests__/` — Unit, determinism, property, and golden tests.
-- `src/data/` — Content as plain data: maps (string art), towers, enemies,
-  abilities, relics, the meta tree, pacing constants.
+- `src/data/` — Content as plain data: biomes (`biomes.ts` — battlefield rules
+  and unlock gates), towers + tier-3 specs, enemies (incl. boss mechanics),
+  abilities, relics, achievements, the meta/ember trees, pacing constants.
+  `maps.ts` holds the legacy fixed layouts (only used by pre-biome saves);
+  live battlefields generate in `src/engine/mapgen.ts` from (biome, seed) —
+  always resolve a run's map with `getRunMap(state)`, never `getMap(mapId)`.
 - `src/harness/` — Headless tooling: strategy bots, autoplay/careers, scenarios,
   state hashing, and the build fuzzer (`policy.ts` + `fuzz.ts`: seeded
   evolutionary search for curve-breaking strategies). `src/harness/__tests__/`

@@ -859,20 +859,25 @@ export default function App() {
                 const cd = effectiveTowerCooldown(state, selectedTower.type, selectedTower.tier, selectedTower.spec)
                 const rate = 30 / cd
                 const ratePct = cd < baseCd ? Math.round((baseCd / cd - 1) * 100) : 0
+                // Capacitor: 3 normal + 1 triple per cycle = ×1.5 sustained.
+                const dpsAvg = selectedTower.spec === 'capacitor' ? 1.5 : 1
+                const specDef = selectedTower.spec !== null ? specForTower(selectedTower.type, selectedTower.spec) : null
                 return (
                   <>
                     <p>
                       DMG {b.effective}
-                      {b.parts.length > 0 && ` (base ${b.base})`} · {rate.toFixed(1)} shots/s · ≈
-                      {Math.round(b.effective * rate)} DPS
+                      {(b.parts.length > 0 || b.specPct !== 100) && ` (base ${b.base})`} · {rate.toFixed(1)} shots/s · ≈
+                      {Math.round(b.effective * rate * dpsAvg)} DPS
                     </p>
-                    {(b.parts.length > 0 || ratePct > 0) && (
+                    {(b.parts.length > 0 || ratePct > 0 || specDef !== null) && (
                       <ul className="dmg-breakdown" data-testid="dmg-breakdown">
                         {b.parts.map((p) => (
                           <li key={p.source}>
                             +{p.pct}% {p.source}
                           </li>
                         ))}
+                        {b.specPct !== 100 && <li>×{(b.specPct / 100).toFixed(2)} {specDef?.name} (T3 path)</li>}
+                        {selectedTower.spec === 'capacitor' && <li>every 4th shot ×3 — Capacitor (T3 path)</li>}
                         {ratePct > 0 && <li>+{ratePct}% fire rate Quickdraw (relic)</li>}
                       </ul>
                     )}

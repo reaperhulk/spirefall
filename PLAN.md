@@ -8,6 +8,33 @@ power. Each run reaches further than the last. Failure *is* the progression loop
 This document is the blueprint: game design, engine architecture, the deterministic
 test harness that everything hangs off of, the UI layer, tooling/CI, and milestones.
 
+> **Shipped-systems index (kept current).** The contract below described the v1
+> plan; everything in it shipped, and these systems shipped on top of it, each
+> honoring the same determinism rules:
+> - **Biomes + generated battlefields** (`src/engine/mapgen.ts`, `src/data/biomes.ts`):
+>   the biome owns the rules (marsh, vents, mesas), the run seed owns the structure.
+>   Biomes unlock across the meta ladder; dailies share one roll for all players.
+> - **Tier-3 specializations** (`TOWER_SPECS` in content.ts): each combat tower
+>   commits to one of two paths at tier 3 (Volley/Longbow, Mortar/Breaker,
+>   Blizzard/Permafrost, Arc Lattice/Capacitor, Executor/Overpenetration).
+> - **Transformative relics**: a rare/legendary tier that changes how a tower
+>   plays (ricochet, burn, detonate-on-slowed-death, ramping tesla, executes,
+>   interest, crit auras).
+> - **Boss encounters**: carapace break-windows, mid-life broods, gale surges —
+>   each with explicit counterplay; every 10th wave.
+> - **The Crucible**: post-victory escalation — each cycle victory hardens the
+>   next run (+10% HP) and sweetens it (+15% sparks, +1 ember at ascension).
+> - **The Codex** (`src/ui/Codex.tsx`): in-game reference rendered from the same
+>   data objects the engine reads; quotes EFFECTIVE numbers via engine helpers.
+> - **Generative score** (`src/ui/music.ts`): biome-keyed, intensity-driven,
+>   zero assets, UI-layer only.
+> - **Run cards + endless milestones**: shareable canvas cards with ?seed=
+>   challenge links; cataclysm-depth and biome-mastery achievements.
+> Balance discipline throughout: the envelope re-derives when the curve moves
+> intentionally, and every fuzzer-found exploit is tuned away then pinned as a
+> permanent regression genome (three to date: Honed-Arsenal, Bounty-Banner,
+> Mortar-Blizzard).
+
 ---
 
 ## 1. Design pillars
@@ -374,14 +401,15 @@ Pages deploy). Deliberate upgrades:
 ### 7.2 Repo layout
 
 ```
-src/engine/           pure sim (rng, step, subsystems, invariants)
-src/engine/__tests__/ unit + determinism + property tests
-src/data/             content definitions (towers, enemies, relics, meta tree)
-src/harness/          bots, scenario runner, replay tools (Node, no DOM)
-src/ui/               React + canvas
-fixtures/replays/     golden replay fixtures
-scripts/              balance CLI, golden regeneration
-.github/workflows/    ci.yml (+ deploy.yml at M3)
+src/engine/           pure sim (rng, step, subsystems, mapgen, invariants)
+src/engine/__tests__/ unit + determinism + property + mechanic tests
+src/data/             content as data (towers+specs, enemies, relics, biomes,
+                      achievements, meta/ember trees, pacing)
+src/harness/          bots, autoplay careers, policy fuzzer (Node, no DOM)
+src/ui/               React + canvas renderer, codex, music, run cards
+fixtures/             golden playthrough fixtures
+scripts/              golden regeneration, deep fuzz entry
+.github/workflows/    ci.yml
 ```
 
 ### 7.3 Scripts

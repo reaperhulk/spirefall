@@ -11,7 +11,7 @@ import {
   TOWER_SPECS,
   VOLLEY_PCT,
 } from '../../data/content'
-import { applyHit, effectiveTowerCooldown, effectiveTowerRange, tickStatuses, towersFire } from '../combat'
+import { applyHit, damageBreakdown, effectiveTowerCooldown, effectiveTowerRange, tickStatuses, towersFire } from '../combat'
 import { blockedGrid, cellCenter, distanceField } from '../grid'
 import { getRunMap } from '../mapgen'
 import { createMeta, createRun } from '../meta'
@@ -103,6 +103,22 @@ describe('specialize_tower command', () => {
     // No double-dipping.
     const again = step(r.state, [{ type: 'specialize_tower', id: 2, spec: 'breaker' }])
     expect(again.events.some((e) => e.type === 'command_rejected')).toBe(true)
+  })
+})
+
+describe('panel truthfulness', () => {
+  it('damageBreakdown mirrors the exact shot math for specced towers', () => {
+    const s = battle([], [])
+    const mortar = tower('cannon', 'mortar')
+    const b = damageBreakdown(s, mortar)
+    expect(b.specPct).toBe(MORTAR_DAMAGE_PCT)
+    expect(b.effective).toBe(Math.floor((Math.floor((95 * b.totalPct) / 100) * MORTAR_DAMAGE_PCT) / 100))
+    // And the mirrored number is what the shot actually lands.
+    const victim = enemy({ id: 1 })
+    const live = battle([tower('cannon', 'breaker')], [victim])
+    const bb = damageBreakdown(live, live.towers[0]!)
+    fire(live)
+    expect(victim.hp).toBe(1000 - bb.effective)
   })
 })
 

@@ -83,7 +83,7 @@ export interface DamagePart {
 export function damageBreakdown(
   state: RunState,
   tower: Tower,
-): { base: number; parts: DamagePart[]; totalPct: number; effective: number } {
+): { base: number; parts: DamagePart[]; totalPct: number; specPct: number; effective: number } {
   const base = towerTier(tower.type, tower.tier).damage
   const parts: DamagePart[] = []
   if (state.mods.damagePct > 0) parts.push({ source: 'Honed Arsenal (Spire Tree)', pct: state.mods.damagePct })
@@ -98,7 +98,12 @@ export function damageBreakdown(
   const aura = beaconAuraPct(state, tower)
   if (aura > 0) parts.push({ source: 'Beacon aura', pct: aura })
   const totalPct = 100 + parts.reduce((sum, p) => sum + p.pct, 0)
-  return { base, parts, totalPct, effective: Math.floor((base * totalPct) / 100) }
+  // Tier-3 paths multiply AFTER the additive stack — the same order
+  // towersFire applies them, so the panel's number is the shot's number.
+  // (Capacitor's burst is periodic, not steady — reported separately.)
+  const specPct = tower.spec === 'mortar' ? MORTAR_DAMAGE_PCT : tower.spec === 'breaker' ? BREAKER_DAMAGE_PCT : 100
+  const effective = Math.floor((Math.floor((base * totalPct) / 100) * specPct) / 100)
+  return { base, parts, totalPct, specPct, effective }
 }
 
 // The probability layer: crit chance comes from the meta tree and relics,

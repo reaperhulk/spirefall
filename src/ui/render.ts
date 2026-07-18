@@ -402,10 +402,10 @@ function terrainLayer(map: MapDef, theme: MapTheme): HTMLCanvasElement {
       if (!map.marsh[cy * map.width + cx]) continue
       const x = cx * CELL_PX
       const y = cy * CELL_PX
-      g.fillStyle = 'rgba(14, 34, 46, 0.85)'
+      g.fillStyle = 'rgba(16, 44, 62, 0.95)'
       g.fillRect(x, y, CELL_PX, CELL_PX)
       const n = hash01(cx, cy, 31)
-      g.globalAlpha = 0.16
+      g.globalAlpha = 0.3
       g.fillStyle = '#8fd0ff'
       ellipse(g, x + CELL_PX * (0.3 + n * 0.4), y + CELL_PX * (0.35 + n * 0.3), CELL_PX * 0.28, CELL_PX * 0.1)
       g.fill()
@@ -841,6 +841,20 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
       ] as const) {
         ctx.fillRect(gx + ox, gy + oy, 2, 2)
       }
+    }
+
+    // A committed tier-3 path wears a gold badge on the plate's crown — the
+    // commitment reads on the field, not just in the panel.
+    if (t.spec !== null) {
+      glow(ctx, cx, gy + 4, 7, '#e0af68', 0.35)
+      ctx.fillStyle = '#e0af68'
+      ctx.beginPath()
+      ctx.moveTo(cx, gy + 1)
+      ctx.lineTo(cx + 3.5, gy + 4.5)
+      ctx.lineTo(cx, gy + 8)
+      ctx.lineTo(cx - 3.5, gy + 4.5)
+      ctx.closePath()
+      ctx.fill()
     }
 
     // Recoil: attackers kick back along their aim for a blink after firing.
@@ -1310,11 +1324,46 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
     }
     ctx.restore()
 
-    if (e.slowTicks > 0) {
+    // Status tells, in one visual language: slows ring blue, haste streaks
+    // amber, burns flicker ember, brittleness crazes the body with pale ice.
+    if (e.slowTicks > 0 && e.slowFactor <= 100) {
       ctx.strokeStyle = COLORS.towers.frost
       ctx.beginPath()
       ctx.arc(x, y, r + 3, 0, Math.PI * 2)
       ctx.stroke()
+    }
+    if (e.slowTicks > 0 && e.slowFactor > 100) {
+      // Gale haste: motion streaks trailing the body.
+      ctx.strokeStyle = 'rgba(255, 199, 119, 0.65)'
+      ctx.lineWidth = 1.5
+      for (const dy of [-r * 0.4, 0, r * 0.4]) {
+        ctx.beginPath()
+        ctx.moveTo(x - r - 8, y + dy)
+        ctx.lineTo(x - r - 2, y + dy)
+        ctx.stroke()
+      }
+    }
+    if (e.burnTicks > 0) {
+      const flick = 0.5 + 0.5 * Math.sin(t0 * 0.9 + e.id * 2.3)
+      glow(ctx, x, y - r * 0.5, r * 1.6, '#ff7a3c', 0.25 + 0.2 * flick)
+      ctx.fillStyle = '#ffb27a'
+      ctx.globalAlpha = 0.7
+      ellipse(ctx, x + r * 0.35, y - r - 2 - flick * 2, 1.8, 3.2 + flick * 1.5)
+      ctx.fill()
+      ctx.globalAlpha = 1
+    }
+    if (e.brittleTicks > 0) {
+      ctx.strokeStyle = 'rgba(200, 235, 255, 0.85)'
+      ctx.lineWidth = 1
+      // Craze lines: three fixed-angle cracks across the body.
+      for (const a of [0.6, 2.2, 4.1]) {
+        const dx = Math.cos(a)
+        const dy = Math.sin(a)
+        ctx.beginPath()
+        ctx.moveTo(x - dx * r * 0.8, y - dy * r * 0.8)
+        ctx.lineTo(x + dx * r * 0.5, y + dy * r * 0.5)
+        ctx.stroke()
+      }
     }
     // Fresh hits flash the body white for a blink.
     const hitAt = session.hits.get(e.id)

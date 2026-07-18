@@ -38,6 +38,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+74. *(burn-down sprint)* **Polish + debt burn-down** — five tasks, one
+    pass: (1) PANEL TRUTHFULNESS — damageBreakdown ignored the tier-3
+    multipliers, so a Mortar cannon's panel showed base numbers; the
+    breakdown now carries a multiplicative specPct mirroring towersFire's
+    exact order (pinned: the panel's number IS the shot's number), the
+    panel itemizes the path line and shows Capacitor's ×1.5 sustained
+    DPS. (2) STATUS TELLS — burning enemies flicker with an ember lick,
+    Permafrost-brittle bodies craze with pale ice lines, gale-hastened
+    enemies trail amber speed streaks (slows keep their blue ring; the
+    ring now correctly excludes haste), and Frostfen pools got a contrast
+    boost. (3) SPEC IDENTITY — committed towers wear a gold diamond badge
+    on the plate crown, so the tier-3 choice reads on the field. (4) E2e
+    covers music-volume persistence. (5) DOCS DEBT — PLAN.md gains a
+    kept-current shipped-systems index (biomes/specs/relics/bosses/
+    crucible/codex/music/cards + the three pinned exploit genomes) and a
+    corrected repo layout; CLAUDE.md now warns getRunMap-not-getMap and
+    describes the biome-era data layer. 170 unit tests, 29 e2e specs.
+
 73. *(five-item program, 5/5)* **Tier-3 specializations** — at tier 3,
     every combat tower commits to one of two paths (a one-time purchase;
     Mint/Beacon keep their economy identity): Arrow → Volley (2 extra
