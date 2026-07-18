@@ -618,6 +618,25 @@ test.describe('mobile viewport', () => {
     await expect(page.getByTestId('shop-cannon')).toHaveClass(/selected/)
     expect(errors).toEqual([])
   })
+
+  test('run-over modal fits the phone: the trial dropdown cannot force horizontal scroll', async ({ page }) => {
+    const errors = await boot(page, 'e2e-mobile-overflow')
+    await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))
+    await expect(page.getByTestId('run-over')).toBeVisible()
+
+    // The modal is the scroll container; its content (the trial select's
+    // intrinsic width, driven by long option labels) must not exceed it.
+    const overflow = await page
+      .locator('[data-testid="run-over"] .modal')
+      .evaluate((el) => el.scrollWidth - el.clientWidth)
+    expect(overflow).toBeLessThanOrEqual(1)
+
+    const box = await page.getByTestId('trial-select').boundingBox()
+    expect(box).not.toBeNull()
+    expect(box!.x).toBeGreaterThanOrEqual(0)
+    expect(box!.x + box!.width).toBeLessThanOrEqual(375)
+    expect(errors).toEqual([])
+  })
 })
 
 test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refund', async ({ page }) => {

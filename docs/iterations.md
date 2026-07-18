@@ -38,6 +38,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+75. *(mobile playtest fixes)* **Long-press selection + run-over overflow** —
+    two phone bugs from live play: (1) holding to aim a tower placement
+    started a browser TEXT SELECTION when the finger didn't move — the app
+    shell now sets `user-select: none` (inputs/textareas opt back in so
+    replay JSON and transfer codes stay copyable), the playfield disables
+    the iOS long-press callout, and the canvas swallows `contextmenu` (the
+    Android long-press route into selection). (2) The run-over modal
+    scrolled HORIZONTALLY on phones: the trial `<select>`'s intrinsic
+    width — driven by long option labels like "Iron Horde (+35% ✦) — …" —
+    forced the modal wide; `.map-pick` and its select now clamp to
+    `max-width: 100%` / `min-width: 0`, so the closed control shrinks to
+    fit while the native dropdown still shows full option text. New e2e
+    (mobile 375×667): abandon a run, assert the modal has zero internal
+    horizontal scroll and the trial select sits fully on-screen. 170 unit
+    tests, 30 e2e specs.
+
 74. *(burn-down sprint)* **Polish + debt burn-down** — five tasks, one
     pass: (1) PANEL TRUTHFULNESS — damageBreakdown ignored the tier-3
     multipliers, so a Mortar cannon's panel showed base numbers; the

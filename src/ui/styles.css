@@ -38,6 +38,16 @@ button:disabled {
   padding: 12px;
   max-width: 900px;
   margin: 0 auto;
+  /* Long-press (hold-to-aim, button mashing) must not start a text
+     selection on touch devices; fields that need copy/paste opt back in. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app input,
+.app textarea {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* HUD */
@@ -194,6 +204,8 @@ button:disabled {
   border: 1px solid #2c3448;
   border-radius: 8px;
   cursor: crosshair;
+  /* iOS long-press callout would hijack hold-to-aim. */
+  -webkit-touch-callout: none;
 }
 
 /* The touch-aim loupe: a screen-space overlay, deliberately NOT clipped to
@@ -1059,6 +1071,8 @@ button.preview-unit:hover {
   gap: 8px;
   font-size: 13px;
   color: #8a93ad;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .map-pick select {
@@ -1068,6 +1082,10 @@ button.preview-unit:hover {
   border-radius: 6px;
   padding: 6px 8px;
   font: inherit;
+  /* Trial options carry long descriptions; never let the select's
+     intrinsic width force horizontal scroll in the run-over modal. */
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* Replay capture: seed + command log for reproducible bug reports. */

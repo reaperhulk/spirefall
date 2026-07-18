@@ -136,6 +136,9 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
           // While armed, a touch drag is aiming — not scrolling the page.
           touchAction: armed ? 'none' : 'auto',
         }}
+        // Long-press on touch devices opens the context menu, which in turn
+        // starts a text selection — fatal for hold-to-aim placement.
+        onContextMenu={(e) => e.preventDefault()}
         onPointerDown={(e) => {
           if (e.pointerType !== 'touch' || !armed) return
           const aim = aimFromEvent(e)
