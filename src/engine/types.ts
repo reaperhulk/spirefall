@@ -222,6 +222,9 @@ export interface StepResult {
 
 export interface RunSummary {
   outcome: 'defeat' | 'victory'
+  seed: string // shareable challenge: ?seed=<seed> replays this battlefield
+  biome: BiomeId
+  crucible: number
   wavesCleared: number
   kills: number
   sparks: number

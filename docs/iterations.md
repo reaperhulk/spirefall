@@ -38,6 +38,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+72. *(five-item program, 4/5)* **Endless milestones + shareable run cards**
+    — the long tail gets goals and the game gets its only backend-less
+    social loop. Four achievements: Into the Dark / Storm-Sworn /
+    World-Ender (1/3/6 stacked Cataclysms, 150/300/600 ✦) and Worldwalker
+    (win in every biome, 500 ✦ — counts the settling run's own biome). A
+    live "★ new depth" HUD badge appears whenever the current run passes
+    the biome's standing record. The run-over screen now leads with a
+    canvas-rendered RUN CARD (biome, outcome, waves/kills/sparks/crucible,
+    damage-profile bars, seed) — copy it as a PNG to the clipboard, or
+    copy a challenge line ("Wave 31 in Frostfen — beat it: <?seed= link>")
+    that drops anyone onto the exact same battlefield. RunSummary carries
+    seed/biome/crucible for the card. E2e drives both share buttons;
+    milestone predicates unit-tested. 162 unit tests, 28 e2e specs.
+
 71. *(five-item program, 3/5)* **Generative score** — the game has music
     now, zero assets, same philosophy as the SFX stack. Three layers over
     a 200ms-lookahead scheduler: a two-voice detuned saw drone through a

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
+import { drawRunCard, challengeLink } from './runCard'
 import { CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
 import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
@@ -261,6 +262,32 @@ export function RunOverOverlay({
 }) {
   const victory = summary.outcome === 'victory'
   const [replayText, setReplayText] = useState<string | null>(null)
+  const [shared, setShared] = useState<'' | 'card' | 'link'>('')
+  const cardHost = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    // The run card doubles as the run-over hero visual.
+    const canvas = drawRunCard(summary)
+    canvas.style.width = '100%'
+    canvas.style.height = 'auto'
+    canvas.setAttribute('data-testid', 'run-card')
+    cardHost.current?.replaceChildren(canvas)
+  }, [summary])
+  const copyCard = () => {
+    setShared('card')
+    try {
+      drawRunCard(summary).toBlob((blob) => {
+        if (blob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+          void navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).catch(() => {})
+        }
+      })
+    } catch {
+      // clipboard images are best-effort; the visible card can be screenshotted
+    }
+  }
+  const copyLink = () => {
+    setShared('link')
+    void navigator.clipboard?.writeText(challengeLink(summary)).catch(() => {})
+  }
   return (
     <div className="modal-backdrop" data-testid="run-over">
       <div className="modal run-over" role="dialog" aria-modal="true" aria-label="Run over">
@@ -318,7 +345,19 @@ export function RunOverOverlay({
             </p>
           </div>
         )}
+        <div ref={cardHost} className="run-card-host" />
         <div className="replay-row">
+          <button className="ghost-btn" data-testid="copy-card" onClick={copyCard}>
+            {shared === 'card' ? 'Card copied ✓' : '📸 Copy run card'}
+          </button>
+          <button
+            className="ghost-btn"
+            data-testid="copy-challenge"
+            title="Copies a link that drops anyone onto this exact battlefield."
+            onClick={copyLink}
+          >
+            {shared === 'link' ? 'Challenge copied ✓' : '⚔ Copy challenge link'}
+          </button>
           <button
             className="ghost-btn"
             data-testid="copy-replay"

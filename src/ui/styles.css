@@ -426,6 +426,19 @@ button:disabled {
   color: #e0af68;
 }
 
+.depth-badge {
+  border-color: #9ece6a;
+  color: #9ece6a;
+  background: #14201a;
+}
+
+.run-card-host {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2c3448;
+  line-height: 0;
+}
+
 .crucible-badge {
   border-color: #e0af68;
   color: #e0af68;

@@ -254,6 +254,9 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
   const bounty = unlocked.reduce((sum, a) => sum + a.sparks, 0)
   const summary: RunSummary = {
     outcome: run.phase,
+    seed: run.seed,
+    biome: run.biome,
+    crucible: run.crucible,
     wavesCleared: run.wavesCleared,
     kills: run.kills,
     sparks: run.sparksEarned + bounty,

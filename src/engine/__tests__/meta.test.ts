@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { CataclysmId } from '../types'
 import {
   META_CRIT_CHANCE_PCT_PER_LEVEL,
   META_SPIRE_HP_PER_LEVEL,
@@ -178,6 +179,9 @@ describe('settleRun', () => {
     const { meta, summary } = settleRun(createMeta(), ended)
     expect(summary).toEqual({
       outcome: 'defeat',
+      seed: ended.seed,
+      biome: ended.biome,
+      crucible: 0,
       wavesCleared: 7,
       kills: 40,
       sparks: 85 + 25, // +25: the First Blood achievement bounty
@@ -217,6 +221,35 @@ describe('computeSparks', () => {
 
     const siphoned = computeSparks({ ...base, relics: ['spark_siphon'] })
     expect(siphoned).toBe(Math.floor((defeat * 125) / 100))
+  })
+})
+
+describe('endless milestones', () => {
+  it('cataclysm depth and biome mastery pay their bounties at settle', () => {
+    let meta = createMeta()
+    const run = {
+      ...createRun(meta, 'milestones'),
+      phase: 'defeat' as const,
+      wavesCleared: 29,
+      kills: 900,
+      sparksEarned: 100,
+      cataclysms: ['surge', 'juggernaut', 'swarm'] as CataclysmId[],
+      victoryClaimed: true,
+    }
+    const { summary } = settleRun(meta, run)
+    const ids = summary.unlocked.map((a) => a.id)
+    expect(ids).toContain('cataclysm_1')
+    expect(ids).toContain('cataclysm_3')
+    expect(ids).not.toContain('cataclysm_6')
+
+    // Worldwalker: wins recorded on three biomes + this run's fourth.
+    meta = { ...createMeta(), bestWaveByMap: { verdant: 24, frostfen: 25, emberwaste: 24 } }
+    const hl = { ...createRun(meta, 'walker', 'highlands'), phase: 'victory' as const, wavesCleared: 24, kills: 500, sparksEarned: 500 }
+    const walked = settleRun(meta, hl).summary.unlocked.map((a) => a.id)
+    expect(walked).toContain('worldwalker')
+    // The summary carries the share-card fields.
+    expect(settleRun(meta, hl).summary.seed).toBe('walker')
+    expect(settleRun(meta, hl).summary.biome).toBe('highlands')
   })
 })
 

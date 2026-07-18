@@ -202,6 +202,13 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   const sparksText = await page.getByTestId('sparks-earned').textContent()
   expect(Number(sparksText!.replace(/\D/g, ''))).toBeGreaterThan(0)
 
+  // The shareable run card renders, and both share buttons acknowledge.
+  await expect(page.getByTestId('run-card')).toBeVisible()
+  await page.getByTestId('copy-challenge').click()
+  await expect(page.getByTestId('copy-challenge')).toContainText('copied')
+  await page.getByTestId('copy-card').click()
+  await expect(page.getByTestId('copy-card')).toContainText('copied')
+
   // The replay button exposes seed + the full command log as JSON.
   await page.getByTestId('copy-replay').click()
   const replay = JSON.parse(await page.getByTestId('replay-json').inputValue()) as {

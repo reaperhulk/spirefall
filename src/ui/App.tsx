@@ -504,6 +504,17 @@ export default function App() {
             {cataclysmIn === 1 ? '⚠ Cataclysm this wave' : `⚠ Cataclysm in ${cataclysmIn} waves`}
           </span>
         )}
+        {state.mapSeed !== '' &&
+          state.wavesCleared > 0 &&
+          state.wavesCleared > (meta.bestWaveByMap[state.biome] ?? 0) && (
+            <span
+              className="trial-badge depth-badge"
+              data-testid="new-depth"
+              title={`Deeper than any prior run in ${BIOMES[state.biome].name} — the record updates when this run ends.`}
+            >
+              ★ new depth
+            </span>
+          )}
         {state.crucible > 0 && (
           <span
             className="trial-badge crucible-badge"

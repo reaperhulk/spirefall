@@ -1,3 +1,4 @@
+import { BIOME_IDS } from './biomes'
 import type { MetaState, RunState } from '../engine/types'
 
 // Achievements: one-shot goals checked when a run settles. Pure predicates
@@ -89,6 +90,39 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     description: 'Clear wave 40 in a single endless run.',
     sparks: 400,
     earned: (run) => run.wavesCleared >= 40,
+  },
+  {
+    id: 'cataclysm_1',
+    name: 'Into the Dark',
+    description: 'Survive your first Cataclysm in an endless run.',
+    sparks: 150,
+    earned: (run) => run.cataclysms.length >= 1,
+  },
+  {
+    id: 'cataclysm_3',
+    name: 'Storm-Sworn',
+    description: 'Endure three stacked Cataclysms in one run.',
+    sparks: 300,
+    earned: (run) => run.cataclysms.length >= 3,
+  },
+  {
+    id: 'cataclysm_6',
+    name: 'World-Ender',
+    description: 'Endure six stacked Cataclysms in one run.',
+    sparks: 600,
+    earned: (run) => run.cataclysms.length >= 6,
+  },
+  {
+    id: 'worldwalker',
+    name: 'Worldwalker',
+    description: 'Win a run in every biome.',
+    sparks: 500,
+    earned: (run, meta) =>
+      BIOME_IDS.every((b) => {
+        const best = meta.bestWaveByMap[b] ?? 0
+        const withThisRun = run.mapSeed !== '' && run.biome === b ? Math.max(best, run.wavesCleared) : best
+        return withThisRun >= 24
+      }),
   },
   {
     id: 'ascendant',
