@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+123. *(marathon II, iteration 35)* **Keyboard-only builds** — placement
+    required a pointer; now arming a tower or ability lets the arrow
+    keys steer the SAME grid cursor the mouse drives (`hoverRef`, so
+    the placement ghost renders for free) and Enter confirms at the
+    cursor. Enter skips focused buttons (their native click would
+    double-fire), Escape still disarms, and the listener reads live
+    state through refs to dodge the stale-closure trap. E2e arms with
+    1, steers center→target, places, and proves bare Enter is inert.
+    193 unit tests, 43 e2e specs.
+
 122. *(marathon II, iteration 34)* **The ability nudge** — meteor and
     frost nova sit charged from run one, and nothing ever pointed at
     them (the victory pilot's six defeats showed how much they

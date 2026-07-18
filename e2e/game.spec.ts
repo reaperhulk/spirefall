@@ -996,6 +996,33 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
   expect(errors).toEqual([])
 })
 
+test('keyboard-only build: arm with 1, steer with arrows, place with Enter', async ({ page }) => {
+  const errors = await boot(page, 'e2e-wave')
+  await page.locator('.hint-close').click()
+  const [[cx, cy]] = await findBuildCells(page, 1)
+
+  await page.keyboard.press('1') // arm the arrow tower
+  // Steer from the cursor's spawn point (map center) to the target cell.
+  const startX = Math.floor(MAP_W / 2)
+  const startY = Math.floor(MAP_H / 2)
+  for (let i = 0; i < Math.abs(cx! - startX); i++) {
+    await page.keyboard.press(cx! > startX ? 'ArrowRight' : 'ArrowLeft')
+  }
+  for (let i = 0; i < Math.abs(cy! - startY); i++) {
+    await page.keyboard.press(cy! > startY ? 'ArrowDown' : 'ArrowUp')
+  }
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+  expect(await page.evaluate(() => window.__harness.getState().towers[0]!.cell)).toEqual({ cx, cy })
+
+  // Enter with nothing armed must not place a second tower.
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(150)
+  expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+  expect(errors).toEqual([])
+})
+
 test('auto-advance sends the next wave by itself', async ({ page }) => {
   const errors = await boot(page, 'e2e-auto')
   await page.getByTestId('shop-arrow').click()

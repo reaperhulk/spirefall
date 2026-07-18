@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import {
   ABILITIES,
   AFFIXES,
@@ -408,6 +409,15 @@ export default function App() {
     setSelectedTowerId(tower ? tower.id : null)
   }
 
+  // Keyboard aiming reads live state through refs — the keydown listener's
+  // closure would otherwise capture a stale first-render handler.
+  const handleCellClickRef = useRef(handleCellClick)
+  const keyAimArmedRef = useRef(false)
+  useEffect(() => {
+    handleCellClickRef.current = handleCellClick
+    keyAimArmedRef.current = shopSelection !== null || abilitySelection !== null
+  })
+
   // Auto-advance: with the toggle on, the build phase sends the next wave
   // after a short beat — unless something needs the player (relic offer,
   // victory prompt, run over).
@@ -449,6 +459,35 @@ export default function App() {
       }
       if (e.key === '?') {
         setShowSettings((v) => !v)
+        return
+      }
+      // Keyboard-only builds: with a tower or ability armed, arrows steer a
+      // cursor on the grid (the same ghost the mouse drives) and Enter
+      // confirms at the cursor.
+      if (e.key === 'Enter') {
+        // A focused button's native Enter-click must not double-fire a place.
+        if (t instanceof HTMLButtonElement) return
+        if (keyAimArmedRef.current && hoverRef.current) {
+          e.preventDefault()
+          handleCellClickRef.current(hoverRef.current)
+        }
+        return
+      }
+      if (e.key.startsWith('Arrow')) {
+        if (!keyAimArmedRef.current) return
+        e.preventDefault()
+        const deltas: Record<string, [number, number]> = {
+          ArrowUp: [0, -1],
+          ArrowDown: [0, 1],
+          ArrowLeft: [-1, 0],
+          ArrowRight: [1, 0],
+        }
+        const [dx, dy] = deltas[e.key]!
+        const cur = hoverRef.current ?? { cx: Math.floor(MAP_WIDTH / 2), cy: Math.floor(MAP_HEIGHT / 2) }
+        hoverRef.current = {
+          cx: Math.max(0, Math.min(MAP_WIDTH - 1, cur.cx + dx)),
+          cy: Math.max(0, Math.min(MAP_HEIGHT - 1, cur.cy + dy)),
+        }
         return
       }
       const key = e.key.toLowerCase()
