@@ -159,7 +159,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'The Spire beam',
-    body: `Hold B to fire a thin ray you steer with the cursor — the ninth tower is your own hand. It bites for ${BEAM_DAMAGE_PER_TICK} per tick at the aim point: armor taxes it to the bone and any shield blocks it outright, so it's a pressure hose for chaff, not a cannon. ${BEAM_HEAT_MAX / 30}s of fire overheats it, and an overheated beam stays locked until FULLY vented — burst, vent, burst.`,
+    body: `Press B (or the Beam button) and the ninth tower is your own hand: tap or hover the battlefield to aim, and the ray burns EVERYTHING on the line from the Spire to your aim point for ${BEAM_DAMAGE_PER_TICK} per tick. Armor taxes it to the bone and any shield blocks it outright — a pressure hose for chaff, not a cannon. ${BEAM_HEAT_MAX / 30}s of fire overheats it and it stays locked until FULLY vented (the Beam button counts the seconds; the barrel keeps cooling between waves) — burst, vent, burst.`,
   },
   {
     title: 'Execute windows',

@@ -51,18 +51,23 @@ function waveState(): RunState {
 const AIM = cellCenter({ cx: 10, cy: 6 })
 
 describe('the Spire beam', () => {
-  it('bites the enemy nearest the aim point, once per tick, while heating', () => {
+  it('bites EVERYTHING along the spire→aim path — the line you see burns', () => {
     let s = waveState()
+    // The spire sits on the right edge; the ray to AIM crosses these two…
     s.enemies = [
       makeEnemy(s, { id: 1, pos: { ...AIM } }),
-      makeEnemy(s, { id: 2, pos: { x: AIM.x + 500, y: AIM.y } }),
+      makeEnemy(s, { id: 2, pos: { x: AIM.x + 4000, y: AIM.y } }), // mid-path
+      makeEnemy(s, { id: 3, pos: { x: AIM.x, y: AIM.y + 3000 } }), // well off the line
+      makeEnemy(s, { id: 4, pos: { x: AIM.x - 4000, y: AIM.y } }), // BEYOND the aim point
     ]
     s = step(s, [{ type: 'set_beam', target: { ...AIM } }]).state
     expect(s.beamTarget).toEqual(AIM)
     expect(s.beamHeat).toBe(1)
     expect(s.enemies.find((e) => e.id === 1)!.hp).toBe(1000 - BEAM_DAMAGE_PER_TICK)
-    expect(s.enemies.find((e) => e.id === 2)!.hp).toBe(1000) // only the nearest
-    // Armor taxes to the min-1 floor; shields block outright; phased are beyond.
+    expect(s.enemies.find((e) => e.id === 2)!.hp).toBe(1000 - BEAM_DAMAGE_PER_TICK)
+    expect(s.enemies.find((e) => e.id === 3)!.hp).toBe(1000) // off the path
+    expect(s.enemies.find((e) => e.id === 4)!.hp).toBe(1000) // the ray STOPS at the aim
+    // Armor taxes to the min-1 floor; shields block outright.
     s.enemies[0]!.armor = 5
     const hpBefore = s.enemies[0]!.hp
     s = step(s, []).state
@@ -71,6 +76,14 @@ describe('the Spire beam', () => {
     const shielded = s.enemies.find((e) => e.id === 1)!.hp
     s = step(s, []).state
     expect(s.enemies.find((e) => e.id === 1)!.hp).toBe(shielded) // bounced
+  })
+
+  it('the barrel vents during the build phase too', () => {
+    let s = createRun(createMeta(), 'beam-lab')
+    s.beamHeat = BEAM_HEAT_MAX
+    s.beamOverheated = true
+    while (s.beamHeat > 0) s = step(s, []).state
+    expect(s.beamOverheated).toBe(false)
   })
 
   it('overheats at max, stays locked until fully vented, then fires again', () => {

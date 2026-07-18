@@ -281,24 +281,40 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
-test('the spire beam: hold B to steer it, release to vent', async ({ page }) => {
+test('the spire beam: B (or the button) toggles it, taps and the cursor aim it', async ({ page }) => {
   const errors = await boot(page, 'e2e-beam')
   await page.evaluate(() => {
     window.__harness.dispatch({ type: 'start_wave' })
     window.__harness.fastForward(3)
   })
   await expect.poll(async () => page.evaluate(() => window.__harness.getState().enemies.length)).toBeGreaterThan(0)
-  // Aim at the board center and hold B.
+  // The Beam button always shows the barrel's state.
+  await expect(page.getByTestId('beam-state')).toHaveText('ready')
+  // Toggle on with B, aimed at the hovered board center; heat climbs and
+  // the button counts the seconds.
   const canvas = page.locator('canvas').first()
   const box = (await canvas.boundingBox())!
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
-  await page.keyboard.down('b')
+  await page.keyboard.press('b')
   await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamTarget !== null)).toBe(true)
   await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamHeat)).toBeGreaterThan(0)
-  // Release: the beam goes dark and the heat vents to zero.
-  await page.keyboard.up('b')
+  await expect(page.getByTestId('beam-state')).toHaveText(/s left/)
+  // Toggle off with the BUTTON — the same control, touch parity — and vent.
+  await page.getByTestId('beam-toggle').click()
   await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamTarget === null)).toBe(true)
   await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamHeat)).toBe(0)
+  // Tap-to-aim: toggle on via the button, click a cell, the ray obeys.
+  await page.getByTestId('beam-toggle').click()
+  await clickCell(page, 5, 5)
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const t = window.__harness.getState().beamTarget
+        return t !== null && Math.floor(t.x / 1000) === 5 && Math.floor(t.y / 1000) === 5
+      }),
+    )
+    .toBe(true)
+  await page.getByTestId('beam-toggle').click()
   expect(errors).toEqual([])
 })
 

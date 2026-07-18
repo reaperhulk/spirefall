@@ -9,6 +9,8 @@ import {
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   relicSkipGold,
+  BEAM_COOL_PER_TICK,
+  BEAM_DAMAGE_PER_TICK,
   BEAM_HEAT_MAX,
   BOONS,
   COMBO_HASTE_THRESHOLD,
@@ -216,7 +218,10 @@ export default function App() {
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
-  const beamHeldRef = useRef(false)
+  // Beam mode is a LATCH (B key or the Beam button), not a held chord —
+  // the same control works identically with a mouse or a thumb.
+  const beamModeRef = useRef(false)
+  const [beamMode, setBeamMode] = useState(false)
   // Screen-reader narration of major beats (aria-live, visually hidden).
   const [srMessage, setSrMessage] = useState('')
   // In-app confirmation (replaces window.confirm — see ConfirmModal).
@@ -483,6 +488,19 @@ export default function App() {
 
   }, [sfx])
 
+  const toggleBeam = (on: boolean) => {
+    beamModeRef.current = on
+    setBeamMode(on)
+    if (on) {
+      const st = sessionRef.current.state
+      const map = getRunMap(st)
+      const at = hoverRef.current ? cellCenter(hoverRef.current) : { x: (map.width * 1000) / 2, y: (map.height * 1000) / 2 }
+      sessionRef.current.dispatch({ type: 'set_beam', target: at })
+    } else {
+      sessionRef.current.dispatch({ type: 'set_beam', target: null })
+    }
+  }
+
   const handleCellClick = (cell: CellPos) => {
     // Touch taps arrive with a synthetic hover that no mouseleave ever
     // clears — reset it on every tap so tooltips can't stick on mobile.
@@ -503,6 +521,12 @@ export default function App() {
       }
       session.dispatch({ type: 'place_tower', tower: shopSelection, cell })
       return // stay armed for multi-placement
+    }
+    // Beam mode: every tap/click on the field aims the ray. Predictable on
+    // touch — nothing underneath can steal the tap while the beam is yours.
+    if (beamModeRef.current) {
+      session.dispatch({ type: 'set_beam', target: cellCenter(cell) })
+      return
     }
     // Execute window: mid-wave, unarmed, clicking a cell holding a wounded
     // enemy finishes it (the render marks them with a gold ring while the
@@ -529,9 +553,11 @@ export default function App() {
   // Keyboard aiming reads live state through refs — the keydown listener's
   // closure would otherwise capture a stale first-render handler.
   const handleCellClickRef = useRef(handleCellClick)
+  const toggleBeamRef = useRef(toggleBeam)
   const keyAimArmedRef = useRef(false)
   useEffect(() => {
     handleCellClickRef.current = handleCellClick
+    toggleBeamRef.current = toggleBeam
     keyAimArmedRef.current = shopSelection !== null || abilitySelection !== null
   })
 
@@ -655,10 +681,8 @@ export default function App() {
         return
       }
       if (e.key.toLowerCase() === 'b' && !e.repeat) {
-        // Hold B to fire the Spire beam at the cursor; release to vent.
-        beamHeldRef.current = true
-        const hover = hoverRef.current
-        if (hover) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(hover) })
+        // B toggles the Spire beam; the cursor (or a tap) aims it.
+        toggleBeamRef.current(!beamModeRef.current)
         return
       }
       if (e.key === '-' || e.key === '=' || e.key === '+') {
@@ -690,18 +714,8 @@ export default function App() {
         }
       }
     }
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === 'b') {
-        beamHeldRef.current = false
-        sessionRef.current.dispatch({ type: 'set_beam', target: null })
-      }
-    }
     window.addEventListener('keydown', onKey)
-    window.addEventListener('keyup', onKeyUp)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('keyup', onKeyUp)
-    }
+    return () => window.removeEventListener('keydown', onKey)
   }, [summary, sfx])
 
   const renderUi: RenderUiState = {
@@ -1110,11 +1124,12 @@ export default function App() {
           session={session}
           ui={renderUi}
           armed={shopSelection !== null || abilitySelection !== null}
+          beamAim={beamMode}
           onCellClick={handleCellClick}
           onHover={(c) => {
             hoverRef.current = c
-            // A held beam follows the cursor cell by cell.
-            if (beamHeldRef.current && c) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(c) })
+            // In beam mode the ray follows the cursor (or a touch drag).
+            if (beamModeRef.current && c) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(c) })
             const tower = c ? sessionRef.current.state.towers.find((t) => sameCell(t.cell, c)) : undefined
             setHoveredTowerId((cur) => (tower ? tower.id : null) === cur ? cur : (tower ? tower.id : null))
           }}
@@ -1411,6 +1426,31 @@ export default function App() {
               </button>
             )
           })}
+          {(() => {
+            const fireLeft = Math.ceil((BEAM_HEAT_MAX - state.beamHeat) / 30)
+            const ventLeft = Math.ceil(state.beamHeat / BEAM_COOL_PER_TICK / 30)
+            const label = state.beamOverheated
+              ? `venting ${ventLeft}s`
+              : state.beamTarget !== null && state.phase === 'wave'
+                ? `${fireLeft}s left`
+                : state.beamHeat > 0
+                  ? `cooling ${ventLeft}s`
+                  : 'ready'
+            return (
+              <button
+                className={`ability-btn beam-btn${beamMode ? ' selected' : ''}${state.beamOverheated ? ' overheated' : ''}`}
+                data-testid="beam-toggle"
+                title={`The Spire beam — press B or this button to toggle it, then tap (or hover) the battlefield to aim. Burns EVERYTHING on the line for ${BEAM_DAMAGE_PER_TICK}/tick; ${BEAM_HEAT_MAX / 30}s of fire overheats it and it stays locked until fully vented. It cools between waves too.`}
+                onClick={() => toggleBeam(!beamModeRef.current)}
+              >
+                🔆 Beam
+                <kbd className="key-hint">B</kbd>
+                <span className="cooldown" data-testid="beam-state">
+                  {label}
+                </span>
+              </button>
+            )
+          })()}
         </div>
       </footer>
 

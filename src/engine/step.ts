@@ -42,6 +42,7 @@ import {
 } from '../data/content'
 import {
   beamFire,
+  beamVent,
   bossMechanics,
   carrierBroods,
   castAbility,
@@ -103,7 +104,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
       bossMechanics(s, events)
       carrierBroods(s, events)
       towersFire(s, map, field, events)
-      beamFire(s, events)
+      beamFire(s, map, events)
       collectDead(s, events)
       checkWaveEnd(s, events)
     }
@@ -117,6 +118,9 @@ export function step(state: RunState, commands: Command[]): StepResult {
   }
   // The execute blade recovers on wave time, like everything active.
   if (s.phase === 'wave' && s.executeCd > 0) s.executeCd -= 1
+  // The beam barrel doesn't care what phase the war is in: build-phase
+  // downtime vents it too (the wave path vents inside beamFire).
+  if (s.phase === 'build') beamVent(s)
 
   tickStatuses(s)
   return { state: s, events }

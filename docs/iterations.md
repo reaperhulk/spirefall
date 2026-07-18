@@ -52,6 +52,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+196. *(active-play package, beam rework — user feedback)* **The line
+    you see burns, the button tells the time, the thumb is a first-
+    class hand** — three reported confusions, three fixes. (1) The
+    beam now bites EVERYTHING along the spire→aim segment (integer
+    point-to-segment math, no trig), stopping at the aim point —
+    matching the drawn ray exactly; the off-path and beyond-the-aim
+    cases are pinned by test. (2) Duration/cooldown made legible: a
+    Beam button lives in the ability row showing ready / "Ns left" /
+    "venting Ns" live, red when locked — and the barrel now vents
+    during the build phase too (a hot barrel doesn't care what phase
+    the war is in). (3) Mobile parity: hold-B became a LATCH — B or
+    the button toggles beam mode, any tap aims the ray, touch drags
+    steer it (GameCanvas beamAim path, loupe-free), identical
+    semantics to the mouse. E2e drives toggle-by-key, toggle-by-
+    button, and tap-to-aim; fuzz sanity sweep clean (zero-budget
+    free-play ceiling 15→17 waves, warning-class, weekly hunt
+    watching). 233 unit tests, 53 e2e specs.
+
 195. *(active-play package, close-out)* **Docs + confidence pass** —
     PLAN's shipped index gains the active-play package entry; README
     names the seven systems. Closing deep hunt (378 evals, budgets

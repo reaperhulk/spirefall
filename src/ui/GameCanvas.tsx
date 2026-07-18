@@ -11,13 +11,14 @@ interface Props {
   // Something is armed for placement/casting: touch input switches to
   // hold-to-aim (drag with a magnifier loupe, place on release).
   armed: boolean
+  beamAim?: boolean // beam mode: touch drags steer the ray (no loupe)
   onCellClick: (cell: CellPos) => void
   onHover: (cell: CellPos | null) => void
 }
 
 // The playfield. One rAF loop drives both the simulation clock and the
 // renderer; React never re-renders this component per frame.
-export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) {
+export function GameCanvas({ session, ui, armed, beamAim, onCellClick, onHover }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const loupeRef = useRef<HTMLCanvasElement>(null)
   const uiRef = useRef(ui)
@@ -133,25 +134,27 @@ export function GameCanvas({ session, ui, armed, onCellClick, onHover }: Props) 
         style={{
           width: '100%',
           aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}`,
-          // While armed, a touch drag is aiming — not scrolling the page.
-          touchAction: armed ? 'none' : 'auto',
+          // While armed (or steering the beam), a touch drag is aiming —
+          // not scrolling the page.
+          touchAction: armed || beamAim ? 'none' : 'auto',
         }}
         // Long-press on touch devices opens the context menu, which in turn
         // starts a text selection — fatal for hold-to-aim placement.
         onContextMenu={(e) => e.preventDefault()}
         onPointerDown={(e) => {
-          if (e.pointerType !== 'touch' || !armed) return
+          if (e.pointerType !== 'touch' || (!armed && !beamAim)) return
           const aim = aimFromEvent(e)
           aimRef.current = aim
-          placeLoupe(aim)
-          onHover(aim.cell) // the placement ghost is the loupe's payload
+          // Beam steering wants a bare finger, not the placement loupe.
+          if (armed) placeLoupe(aim)
+          onHover(aim.cell) // armed: the ghost; beam: the aim point
         }}
         onPointerMove={(e) => {
           if (!aimRef.current || e.pointerType !== 'touch') return
           const aim = aimFromEvent(e)
           aimRef.current = aim
           if (aim.inside) {
-            placeLoupe(aim)
+            if (armed) placeLoupe(aim)
             onHover(aim.cell)
           } else {
             // Off the board: the loupe vanishes — the universal "let go here

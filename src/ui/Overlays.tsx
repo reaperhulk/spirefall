@@ -698,7 +698,7 @@ const SHORTCUTS: [string, string][] = [
   ['Space', 'Start the next wave (or begin the next run)'],
   ['U', 'Upgrade / enhance the selected tower'],
   ['O', 'Overcharge the selected tower (next shot ×2)'],
-  ['B (hold)', 'Fire the Spire beam at the cursor'],
+  ['B', 'Toggle the Spire beam — tap or hover the field to aim it'],
   ['X', 'Sell the selected tower'],
   ['R', 'Repair the Spire'],
   ['T', 'Toggle the Spire Tree'],

@@ -70,7 +70,7 @@ import { MARSH_SPEED_PCT, MESA_RANGE_PCT } from '../data/biomes'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
 import type { TowerSpecId } from '../data/content'
-import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower, TowerType } from './types'
+import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower, TowerType, Vec } from './types'
 import { scaledHp } from './waves'
 
 // All functions in this file mutate a draft RunState that step() has already
@@ -883,17 +883,41 @@ export function enemyAuras(state: RunState, events: GameEvent[]): void {
   }
 }
 
-// The Spire beam: the player's own hand. Aimed = heating (a hose that's on
-// is hot whether or not it bites); overheat locks it until fully vented.
-// The bite goes through applyHit unmodified — armor taxes it, shields
-// block it, phased wraiths are beyond it. Kills collect like any other.
-export function beamFire(state: RunState, events: GameEvent[]): void {
-  const venting = state.beamTarget === null || state.beamOverheated
-  if (venting) {
-    if (state.beamHeat > 0) {
-      state.beamHeat = Math.max(0, state.beamHeat - BEAM_COOL_PER_TICK)
-      if (state.beamHeat === 0) state.beamOverheated = false
-    }
+// Integer point-to-segment distance², for the beam's path. Pure arithmetic
+// (projection with floored division) — no trig, spec-stable.
+function distSqToSegment(p: Vec, a: Vec, b: Vec): number {
+  const abx = b.x - a.x
+  const aby = b.y - a.y
+  const lenSq = abx * abx + aby * aby
+  let tNum = (p.x - a.x) * abx + (p.y - a.y) * aby
+  if (lenSq === 0) tNum = 0
+  else if (tNum < 0) tNum = 0
+  else if (tNum > lenSq) tNum = lenSq
+  const cx = lenSq === 0 ? a.x : a.x + Math.floor((abx * tNum) / lenSq)
+  const cy = lenSq === 0 ? a.y : a.y + Math.floor((aby * tNum) / lenSq)
+  const dx = p.x - cx
+  const dy = p.y - cy
+  return dx * dx + dy * dy
+}
+
+// Venting is shared between phases: build-phase downtime cools the beam too
+// (a hot barrel doesn't care what phase the war is in).
+export function beamVent(state: RunState): void {
+  if (state.beamHeat > 0) {
+    state.beamHeat = Math.max(0, state.beamHeat - BEAM_COOL_PER_TICK)
+    if (state.beamHeat === 0) state.beamOverheated = false
+  }
+}
+
+// The Spire beam: the player's own hand. The ray runs spire → aim point and
+// bites EVERYTHING along it — the line you see is the line that burns.
+// Aimed = heating (a hose that's on is hot whether or not it bites);
+// overheat locks it until fully vented. Every bite goes through applyHit
+// unmodified — armor taxes it, shields block it, phased wraiths are beyond
+// it. Kills collect like any other.
+export function beamFire(state: RunState, map: MapDef, events: GameEvent[]): void {
+  if (state.beamTarget === null || state.beamOverheated) {
+    beamVent(state)
     return
   }
   state.beamHeat += 1
@@ -903,18 +927,14 @@ export function beamFire(state: RunState, events: GameEvent[]): void {
     events.push({ type: 'beam_overheated' })
     return
   }
+  const from = cellCenter(map.spire)
   const rSq = BEAM_RADIUS * BEAM_RADIUS
-  let best: Enemy | null = null
-  let bestD = Infinity
   for (const e of state.enemies) {
     if (e.hp <= 0 || e.phased) continue
-    const d = distSq(e.pos, state.beamTarget!)
-    if (d <= rSq && d < bestD) {
-      bestD = d
-      best = e
+    if (distSqToSegment(e.pos, from, state.beamTarget) <= rSq) {
+      applyHit(e, BEAM_DAMAGE_PER_TICK)
     }
   }
-  if (best) applyHit(best, BEAM_DAMAGE_PER_TICK)
 }
 
 export function collectDead(state: RunState, events: GameEvent[]): void {

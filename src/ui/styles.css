@@ -1010,6 +1010,15 @@ button.preview-unit:hover {
   opacity: 0.7;
 }
 
+/* The beam toggle: selected = live; overheated = red pulse until vented. */
+.beam-btn.selected {
+  outline: 1px solid #7dcfff;
+}
+
+.beam-btn.overheated {
+  color: #db4b4b;
+}
+
 /* Spire-beam heat: a filling bar under the sun glyph; red when locked. */
 .hud-beam {
   position: relative;
