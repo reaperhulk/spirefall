@@ -1,6 +1,7 @@
 import type { MetaUpgradeId } from '../data/metaTree'
 import { META_TREE } from '../data/metaTree'
 import { nextInt, type Rng } from '../engine/rng'
+import { TOWERS } from '../data/content'
 import type { RelicId, RunState, Targeting, TowerType } from '../engine/types'
 import { type Bot, type BuildKnobs, buildActions, RELIC_PRIORITY, waveActions } from './bots'
 import { PLACEMENT_STRATEGIES, type PlacementStrategy } from './placement'
@@ -33,7 +34,13 @@ export interface PolicyGenome {
   specByType?: Record<TowerType, 0 | 1> // per-type tier-3 paths (32 combos, not 2)
   enhanceFocus?: 'spread' | 'focus' // focus = max ONE tower out
   targetingByType?: Partial<Record<TowerType, Targeting>> // per-type fire doctrine
+  // Overcharge doctrine (2026-07, active-play package). The bot plays the
+  // attention-free CEILING — arming every ready tower — so the fuzzer probes
+  // what perfect spam is worth, which no human reaches.
+  overchargePolicy?: 'never' | 'boss' | 'ready'
 }
+
+const OVERCHARGE_POLICIES = ['never', 'boss', 'ready'] as const
 
 const META_IDS = META_TREE.map((n) => n.id)
 const TARGETINGS: readonly Targeting[] = ['first', 'last', 'strongest', 'weakest', 'nearest', 'elites']
@@ -111,6 +118,8 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
     r = pick.rng
     if (pick.value > 0) targetingByType[t] = TARGETINGS[pick.value - 1]!
   }
+  const oc = pickOne(r, OVERCHARGE_POLICIES)
+  r = oc.rng
   return {
     genome: {
       ratio,
@@ -130,6 +139,7 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
       specByType,
       enhanceFocus: focus.value,
       targetingByType,
+      overchargePolicy: oc.value,
     },
     rng: r,
   }
@@ -143,7 +153,7 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
   const count = draw(r, 1, 3)
   r = count.rng
   for (let i = 0; i < count.value; i++) {
-    const which = draw(r, 0, 10)
+    const which = draw(r, 0, 11)
     r = which.rng
     switch (which.value) {
       case 0: {
@@ -232,6 +242,13 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
         g.enhanceFocus = (g.enhanceFocus ?? 'spread') === 'spread' ? 'focus' : 'spread'
         break
       }
+      case 11: {
+        // Redraw the overcharge doctrine — perfect spam enters the pool here.
+        const o = pickOne(r, OVERCHARGE_POLICIES)
+        r = o.rng
+        g.overchargePolicy = o.value
+        break
+      }
     }
   }
   return { genome: g, rng: r }
@@ -277,7 +294,17 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
   }
   return (state) => {
     if (state.phase === 'build') return buildActions(state, (s) => pickWeighted(s, genome), knobs)
-    if (state.phase === 'wave') return waveActions(state, genome.waveRepairPct)
+    if (state.phase === 'wave') {
+      const acts = waveActions(state, genome.waveRepairPct)
+      const oc = genome.overchargePolicy ?? 'never'
+      if (oc === 'ready' || (oc === 'boss' && state.enemies.some((e) => e.type.startsWith('boss')))) {
+        for (const t of state.towers) {
+          if (TOWERS[t.type].support || t.overcharged || (t.overchargeCd ?? 0) > 0) continue
+          acts.push({ type: 'overcharge_tower', id: t.id })
+        }
+      }
+      return acts
+    }
     return []
   }
 }

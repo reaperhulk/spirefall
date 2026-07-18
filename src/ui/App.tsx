@@ -11,6 +11,8 @@ import {
   relicSkipGold,
   COMBO_HASTE_THRESHOLD,
   COMBO_WINDOW_TICKS,
+  OVERCHARGE_COOLDOWN_TICKS,
+  OVERCHARGE_DAMAGE_PCT,
   CRUCIBLE_HP_PCT_PER_RANK,
   CRUCIBLE_SPARK_PCT_PER_RANK,
   crucibleTiersAt,
@@ -603,6 +605,11 @@ export default function App() {
         }
         return
       }
+      if (key === 'o') {
+        const id = selectedTowerIdRef.current
+        if (id !== null) sessionRef.current.dispatch({ type: 'overcharge_tower', id })
+        return
+      }
       if (key === 'r') {
         sessionRef.current.dispatch({ type: 'repair_spire' })
         return
@@ -1110,7 +1117,7 @@ export default function App() {
                       {(b.parts.length > 0 || b.specPct !== 100) && ` (base ${b.base})`} · {rate.toFixed(1)} shots/s · ≈
                       {Math.round(b.effective * rate * dpsAvg)} DPS
                     </p>
-                    {(b.parts.length > 0 || ratePct > 0 || specDef !== null) && (
+                    {(b.parts.length > 0 || ratePct > 0 || specDef !== null || selectedTower.overcharged) && (
                       <ul className="dmg-breakdown" data-testid="dmg-breakdown">
                         {b.parts.map((p) => (
                           <li key={p.source}>
@@ -1119,6 +1126,7 @@ export default function App() {
                         ))}
                         {b.specPct !== 100 && <li>×{(b.specPct / 100).toFixed(2)} {specDef?.name} (T3 path)</li>}
                         {selectedTower.spec === 'capacitor' && <li>every 4th shot ×3 — Capacitor (T3 path)</li>}
+                        {selectedTower.overcharged && <li>next shot ×{OVERCHARGE_DAMAGE_PCT / 100} — Overcharged</li>}
                         {ratePct > 0 && <li>+{ratePct}% fire rate Quickdraw (relic)</li>}
                       </ul>
                     )}
@@ -1199,6 +1207,23 @@ export default function App() {
                 Enhance (⛀ {enhanceCost(selectedTower.type, selectedTower.enhance)}) <kbd className="key-hint">U</kbd>
               </button>
               </>
+            )}
+            {!TOWERS[selectedTower.type].support && (
+              <button
+                className={`ghost-btn overcharge-btn${selectedTower.overcharged ? ' armed' : ''}`}
+                data-testid="overcharge-tower"
+                title={`Supercharge the next shot (×${OVERCHARGE_DAMAGE_PCT / 100}) — free; each tower recharges over ${OVERCHARGE_COOLDOWN_TICKS / 30}s of wave time. The cost is your attention.`}
+                disabled={selectedTower.overcharged === true || (selectedTower.overchargeCd ?? 0) > 0}
+                onClick={() => session.dispatch({ type: 'overcharge_tower', id: selectedTower.id })}
+              >
+                ⚡{' '}
+                {selectedTower.overcharged
+                  ? 'Overcharged — next shot ×2'
+                  : (selectedTower.overchargeCd ?? 0) > 0
+                    ? `Recharging ${Math.ceil((selectedTower.overchargeCd ?? 0) / 30)}s`
+                    : 'Overcharge'}{' '}
+                <kbd className="key-hint">O</kbd>
+              </button>
             )}
             <button
               className="ghost-btn"

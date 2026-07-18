@@ -12,6 +12,7 @@ import {
   MOMENTUM_RAMP_PCT,
   MORTAR_COOLDOWN_PCT,
   MORTAR_DAMAGE_PCT,
+  OVERCHARGE_DAMAGE_PCT,
   PERMAFROST_BONUS_PCT,
   TOWER_SPECS,
   towerTier,
@@ -109,6 +110,43 @@ describe('towerRangeOnBoard: the ring is the engine', () => {
     const mesa: boolean[] = Array(map.width * map.height).fill(false)
     mesa[s.towers[0]!.cell.cy * map.width + s.towers[0]!.cell.cx] = true
     expect(towerRangeOnBoard(s, { ...map, mesa }, s.towers[0]!)).toBe(Math.floor((sighted * MESA_RANGE_PCT) / 100))
+  })
+})
+
+describe('overcharge: the attention verb', () => {
+  it('arms via command, doubles exactly one shot, then recharges', () => {
+    // Arm while the rifle is between shots, so the charge visibly holds.
+    let s = battle([tower('sniper', null, { id: 1, cooldown: 5 })], [enemy({ id: 1, hp: 100_000, maxHp: 100_000 })])
+    s.pendingSpawns = [{ type: 'runner', tick: 1_000_000 }]
+    s = step(s, [{ type: 'overcharge_tower', id: 1 }]).state
+    expect(s.towers[0]!.overcharged).toBe(true)
+    // The armed shot lands at double weight (sniper t3 = 260 base)…
+    const before = s.enemies[0]!.hp
+    s.towers[0]!.cooldown = 0
+    s = step(s, []).state
+    expect(before - s.enemies[0]!.hp).toBe(Math.floor((260 * OVERCHARGE_DAMAGE_PCT) / 100))
+    // …the charge is spent, and the personal recharge begins.
+    expect(s.towers[0]!.overcharged).toBe(false)
+    expect(s.towers[0]!.overchargeCd).toBeGreaterThan(0)
+    const r = step(s, [{ type: 'overcharge_tower', id: 1 }])
+    expect(r.events.some((e) => e.type === 'command_rejected')).toBe(true)
+    // The next un-charged shot is back to base weight.
+    s.towers[0]!.cooldown = 0
+    const hpBefore = s.enemies[0]!.hp
+    s = step(s, []).state
+    expect(hpBefore - s.enemies[0]!.hp).toBe(260)
+  })
+
+  it('support towers cannot overcharge; the recharge ticks only in waves', () => {
+    let s = battle([tower('mint', null, { id: 1 }), tower('sniper', null, { id: 2, overchargeCd: 10 })], [])
+    s.pendingSpawns = [{ type: 'runner', tick: 1_000_000 }]
+    const r = step(s, [{ type: 'overcharge_tower', id: 1 }])
+    expect(r.events.some((e) => e.type === 'command_rejected')).toBe(true)
+    s = step(s, []).state
+    expect(s.towers[1]!.overchargeCd).toBe(9)
+    s.phase = 'build'
+    s = step(s, []).state
+    expect(s.towers[1]!.overchargeCd).toBe(9) // build time is not wave time
   })
 })
 

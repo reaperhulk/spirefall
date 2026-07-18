@@ -1098,6 +1098,11 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
       if (frac >= 1) glow(ctx, cx, cy, 16, color, 0.3) // full climb burns
     }
 
+    // Overcharge: an armed tower burns white-hot until the shot spends it.
+    if (t.overcharged) {
+      glow(ctx, cx, cy, CELL_PX * 0.6, '#ffffff', 0.35 + 0.15 * Math.sin(t0 * 0.25))
+    }
+
     // Tier pips + enhancement badge, on top of everything.
     ctx.fillStyle = color
     for (let i = 0; i < t.tier; i++) ctx.fillRect(gx + 7 + i * 5, gy + CELL_PX - 9, 3, 3)

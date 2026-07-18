@@ -281,6 +281,29 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
+test('overcharge: the panel button arms the next shot and the recharge gates it', async ({ page }) => {
+  const errors = await boot(page, 'e2e-overcharge')
+  await page.getByTestId('shop-arrow').click()
+  const [[cx, cy]] = await findBuildCells(page, 1)
+  await clickCell(page, cx!, cy!)
+  await page.getByTestId('shop-arrow').click() // disarm placement
+  await clickCell(page, cx!, cy!) // select the tower
+  await expect(page.getByTestId('tower-panel')).toBeVisible()
+  await expect(page.getByTestId('overcharge-tower')).toHaveText(/Overcharge/)
+  await page.getByTestId('overcharge-tower').click()
+  expect(await page.evaluate(() => window.__harness.getState().towers[0]!.overcharged)).toBe(true)
+  await expect(page.getByTestId('overcharge-tower')).toBeDisabled()
+  // The armed shot spends the charge and starts the personal recharge.
+  await page.evaluate(() => {
+    window.__harness.dispatch({ type: 'start_wave' })
+    window.__harness.fastForward(20)
+  })
+  await expect
+    .poll(async () => page.evaluate(() => window.__harness.getState().towers[0]!.overchargeCd ?? 0))
+    .toBeGreaterThan(0)
+  expect(errors).toEqual([])
+})
+
 test('rematch: one click refights the exact battlefield, next run still rolls fresh', async ({ page }) => {
   const errors = await boot(page, 'e2e-rematch')
   const first = await page.evaluate(() => {

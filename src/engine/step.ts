@@ -224,6 +224,17 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       return
     }
 
+    case 'overcharge_tower': {
+      const tower = s.towers.find((t) => t.id === command.id)
+      if (!tower) return reject(command, 'no such tower', events)
+      if (TOWERS[tower.type].support) return reject(command, 'support towers cannot overcharge', events)
+      if (tower.overcharged) return reject(command, 'already overcharged', events)
+      if ((tower.overchargeCd ?? 0) > 0) return reject(command, 'overcharge recharging', events)
+      tower.overcharged = true
+      events.push({ type: 'tower_overcharged', id: tower.id, cell: tower.cell })
+      return
+    }
+
     case 'sell_tower': {
       const index = s.towers.findIndex((t) => t.id === command.id)
       if (index === -1) return reject(command, 'no such tower', events)

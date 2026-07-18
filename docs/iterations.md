@@ -52,6 +52,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+191. *(active-play package, 4/7)* **Overcharge** — tap any combat
+    tower (panel button, or O with it selected) to supercharge its
+    NEXT shot to ×2. Free; the cost is attention — each tower
+    recharges over 10s of wave time, capping perfect spam around
+    +12% for one tower and far less across a board. New
+    `overcharge_tower` command (support towers refused; the charge
+    consumes on fire, applied after the additive stack and before
+    the crit roll — an overcharged crit is both). White-hot glow on
+    armed towers, capacitor-whine arm sound, panel breakdown note,
+    codex entry, shortcut row. The fuzzer gained an overcharge
+    doctrine gene (never/boss/ready — the attention-free ceiling no
+    human reaches) in randomGenome + a new mutation axis; named bots
+    never use it, so goldens hold. Determinism property covers the
+    new command. E2e: arm → disabled button → charge spent on the
+    first wave shot. 218 unit tests, 50 e2e specs.
+
 190. *(active-play package, 3/7)* **The combo meter** — unbroken kills
     build a streak: 3s of mid-wave silence or any leak breaks it, the
     build phase freezes (and wave start refreshes) the window, and

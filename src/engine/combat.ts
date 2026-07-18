@@ -9,6 +9,8 @@ import {
   COMBO_HASTE_THRESHOLD,
   COMBO_MILESTONE,
   COMBO_WINDOW_TICKS,
+  OVERCHARGE_COOLDOWN_TICKS,
+  OVERCHARGE_DAMAGE_PCT,
   LANCE_MAX_STACKS,
   LANCE_RAMP_PCT,
   MOMENTUM_RAMP_PCT,
@@ -362,6 +364,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
 
   for (const tower of state.towers) {
     if (TOWERS[tower.type].support) continue // support towers don't fight
+    if ((tower.overchargeCd ?? 0) > 0) tower.overchargeCd = tower.overchargeCd! - 1
     if (tower.cooldown > 0) {
       tower.cooldown -= 1
       continue
@@ -407,6 +410,16 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       const perStack = tower.spec === 'momentum' ? MOMENTUM_RAMP_PCT : LANCE_RAMP_PCT
       const rampBonus = perStack * (tower.rampStacks ?? 0)
       if (rampBonus > 0) baseDamage = Math.floor((def.damage * (pct + rampBonus)) / 100)
+    }
+
+    // Overcharge: the armed shot lands at double weight, then the charge is
+    // spent and the tower's personal recharge begins. Applied after the
+    // additive stack, before the crit roll — a lucky overcharged crit is
+    // both, multiplied.
+    if (tower.overcharged) {
+      baseDamage = Math.floor((baseDamage * OVERCHARGE_DAMAGE_PCT) / 100)
+      tower.overcharged = false
+      tower.overchargeCd = OVERCHARGE_COOLDOWN_TICKS
     }
 
     // One crit roll per shot: a critical cannon shell crits its whole splash,

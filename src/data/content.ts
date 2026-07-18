@@ -410,6 +410,13 @@ export const AA_TOWER_NAMES = Object.values(TOWERS)
   .filter((d) => d.hitsAir && !d.support)
   .map((d) => d.name)
 export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
+// Overcharge: tap a tower to supercharge its NEXT shot. Free, per-tower
+// cooldown — the cost is your attention. ×2 on a 10s cycle caps the perfect
+// -spam ceiling around +12% for one tower and far less across a board, so
+// the verb rewards presence without becoming the economy.
+export const OVERCHARGE_DAMAGE_PCT = 200 // the armed shot lands at double weight
+export const OVERCHARGE_COOLDOWN_TICKS = 300 // 10s per tower, wave-time only
+
 // Combo: unbroken kills build a streak. The reward is TEMPO, not gold —
 // while the streak holds at the threshold, ability cooldowns recover at
 // double speed, so a defense that never stops mowing cycles its meteors

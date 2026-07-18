@@ -97,6 +97,8 @@ export interface Tower {
   damageDealt: number // total damage dealt (lifetime)
   shots: number // shots fired (mints: payouts made); 0 = full sell refund
   earned?: number // mints only: lifetime gold paid out (optional — backfills lazily)
+  overcharged?: boolean // armed: the next shot lands at OVERCHARGE_DAMAGE_PCT
+  overchargeCd?: number // ticks until this tower can be overcharged again
   rampTarget?: number // lances only: enemy id the ramp is locked onto
   rampStacks?: number // lances only: consecutive hits on rampTarget (capped)
 }
@@ -201,6 +203,7 @@ export type Command =
   | { type: 'upgrade_tower'; id: number }
   | { type: 'specialize_tower'; id: number; spec: TowerSpecId }
   | { type: 'sell_tower'; id: number }
+  | { type: 'overcharge_tower'; id: number }
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
@@ -232,6 +235,7 @@ export type GameEvent =
   | { type: 'boss_gale'; id: number; hastened: number }
   | { type: 'ramp_capped'; id: number; cell: CellPos } // a lance's climb hit LANCE_MAX_STACKS
   | { type: 'combo_milestone'; combo: number } // every COMBO_MILESTONE unbroken kills
+  | { type: 'tower_overcharged'; id: number; cell: CellPos }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

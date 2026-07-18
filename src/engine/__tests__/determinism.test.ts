@@ -79,6 +79,7 @@ describe('determinism', () => {
       }),
       fc.record({ type: fc.constant('upgrade_tower' as const), id: fc.integer({ min: 0, max: 50 }) }),
       fc.record({ type: fc.constant('sell_tower' as const), id: fc.integer({ min: 0, max: 50 }) }),
+      fc.record({ type: fc.constant('overcharge_tower' as const), id: fc.integer({ min: 0, max: 50 }) }),
       fc.record({
         type: fc.constant('set_targeting' as const),
         id: fc.integer({ min: 0, max: 50 }),

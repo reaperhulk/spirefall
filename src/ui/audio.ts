@@ -34,6 +34,7 @@ type SoundKind =
   | 'ramp_capped'
   | 'coin'
   | 'combo'
+  | 'overcharge'
   | 'kill'
   | 'spire_hit'
   | 'wave_cleared'
@@ -126,6 +127,11 @@ const SOUNDS: Record<SoundKind, Note[]> = {
   coin: [
     { freq: 1320, dur: 0.06, type: 'pluck', gain: 0.035 },
     { freq: 1980, dur: 0.09, type: 'sine', gain: 0.012, at: 0.02, pure: true },
+  ],
+  // Overcharge arm: a capacitor whine winding up — the promise of the shot.
+  overcharge: [
+    { freq: 500, dur: 0.16, type: 'sine', gain: 0.03, sweep: 2.6, pure: true },
+    { freq: 2200, dur: 0.08, type: 'noise', gain: 0.015, q: 5, sweep: 1.4, at: 0.04 },
   ],
   // Combo milestone: two quick FM bells a fifth apart — momentum, audibly.
   combo: [
@@ -243,6 +249,7 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
   ramp_capped: 600,
   coin: 120,
   combo: 500,
+  overcharge: 150,
 }
 const DEFAULT_MIN_GAP = 140
 
@@ -469,6 +476,9 @@ export class Sfx {
           break
         case 'combo_milestone':
           this.play('combo')
+          break
+        case 'tower_overcharged':
+          this.play('overcharge', panFromX((e.cell.cx + 0.5) * 1000))
           break
         default:
           break
