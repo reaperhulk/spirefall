@@ -609,18 +609,9 @@ function ventsErupt(s: RunState, map: MapDef, events: GameEvent[]): void {
 function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (s.pendingSpawns.length > 0 || s.enemies.length > 0) return
   s.wavesCleared = s.wave
-  // The horde is broken: the field is swept. Every coin still on the
-  // ground banks itself — the collect-or-lose pressure lives INSIDE waves
-  // (and late waves outlast the coin lifetime); the build phase is
-  // planning time, not vacuum chores.
-  if (s.coins.length > 0) {
-    const spire = cellCenter(getRunMap(s).spire)
-    for (const coin of s.coins) {
-      s.gold += coin.gold
-      events.push({ type: 'coin_collected', from: { ...coin.pos }, to: { ...spire }, gold: coin.gold, auto: true })
-    }
-    s.coins = []
-  }
+  // No sweep at wave end: coins left on the ground stay there through the
+  // build phase, still flashing down their lifetime. Only the player's
+  // collector or a spire magnet gathers them — collect-or-lose is real.
   // The blessing dies with its wave, and the next choice is on the table.
   s.activeBoon = null
   const nextBoons = drawBoonOffer(s.rng.boons)

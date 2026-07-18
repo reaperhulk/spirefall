@@ -8,27 +8,27 @@
     "stateHash": "4a097a99"
   },
   "greedy-fresh": {
-    "ticks": 1724,
+    "ticks": 1516,
     "wavesCleared": 4,
-    "kills": 121,
+    "kills": 99,
     "outcome": "defeat",
-    "sparks": 70,
-    "stateHash": "3fef858a"
+    "sparks": 68,
+    "stateHash": "f8633633"
   },
   "balanced-fresh": {
-    "ticks": 7351,
-    "wavesCleared": 13,
-    "kills": 777,
+    "ticks": 4176,
+    "wavesCleared": 9,
+    "kills": 402,
     "outcome": "defeat",
-    "sparks": 259,
-    "stateHash": "ecf5d310"
+    "sparks": 168,
+    "stateHash": "1802e257"
   },
   "balanced-rich": {
-    "ticks": 9214,
-    "wavesCleared": 14,
-    "kills": 876,
+    "ticks": 6973,
+    "wavesCleared": 12,
+    "kills": 588,
     "outcome": "defeat",
-    "sparks": 283,
-    "stateHash": "1f00cb50"
+    "sparks": 229,
+    "stateHash": "64870d80"
   }
 }

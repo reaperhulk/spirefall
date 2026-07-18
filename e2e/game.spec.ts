@@ -327,8 +327,8 @@ test('physical gold: bounties drop as coins, the cursor sweeps them, neglect los
     window.__harness.dispatch({ type: 'start_wave' })
     window.__harness.fastForward(1)
     // Pin the wave open and armor the spire: under parallel-suite load the
-    // wave could clear (sweeping the coins) or the run could end before the
-    // assertions land. State surgery is legal.
+    // wave could clear or the run could end before the assertions land.
+    // State surgery is legal.
     const s = window.__harness.getState()
     s.pendingSpawns.push({ type: 'runner', tick: s.tick + 1_000_000 })
     s.spireHp = 99
@@ -695,7 +695,17 @@ test('relic offers appear in the UI and apply on click', async ({ page }) => {
       if (s.phase !== 'build' || s.relicOffer !== null) break
       while (act()) window.__harness.fastForward(1)
       window.__harness.dispatch({ type: 'start_wave' })
-      window.__harness.fastForward(600)
+      // Coins only pay when collected: sweep the collector to the richest
+      // drop between fast-forward chunks, exactly like a hovering cursor.
+      // Forward FIRST — the start_wave dispatch itself needs a tick.
+      for (let chunk = 0; chunk < 30; chunk++) {
+        window.__harness.fastForward(20)
+        const w = window.__harness.getState()
+        if (w.coins.length > 0) {
+          const richest = w.coins.reduce((a, b) => (b.gold > a.gold ? b : a))
+          window.__harness.dispatch({ type: 'set_collect', at: { x: richest.pos.x, y: richest.pos.y } })
+        } else if (w.phase !== 'wave') break
+      }
     }
   })
   const snap = await page.evaluate(() => window.__harness.snapshot())
@@ -1523,6 +1533,7 @@ const MAXED_PILOT = (seed: string) => {
   const ids = [
     'starting_gold', 'spire_hp', 'tower_damage', 'crit_chance', 'gold_income', 'spark_gain',
     'unlock_tesla', 'unlock_mint', 'unlock_beacon', 'unlock_gold_rush', 'unlock_bulwark',
+    'magnet_reach', 'spire_magnet',
   ]
   for (let pass = 0; pass < 25; pass++) for (const id of ids) h.buyMeta(id)
   h.newRun(seed)
@@ -1542,7 +1553,7 @@ const MAXED_PILOT = (seed: string) => {
   const cells: [number, number][] = []
   {
     const info = h.getMapInfo()
-    for (let cx = 1; cx < info.width - 1 && cells.length < 14; cx++) {
+    for (let cx = 1; cx < info.width - 1 && cells.length < 18; cx++) {
       for (const dy of [-1, 1, -2, 2]) {
         const cy = info.spawn.cy + dy
         if (cy < 0 || cy >= info.height) continue
@@ -1563,7 +1574,9 @@ const MAXED_PILOT = (seed: string) => {
   }
   // Frost (slow) and beacon (aura amplifier) are force multipliers a pure
   // DPS line lacks — they're what push the line over the wave-24 hump.
-  const types = ['arrow', 'tesla', 'cannon', 'arrow', 'frost', 'beacon', 'sniper', 'tesla', 'cannon', 'arrow', 'frost', 'tesla', 'cannon', 'arrow']
+  // 18 posts, not 14: the consolidated elites survive the gate-side guns
+  // and die along the enfilade, so the line runs deeper down the walk.
+  const types = ['arrow', 'tesla', 'cannon', 'arrow', 'frost', 'beacon', 'sniper', 'tesla', 'cannon', 'arrow', 'frost', 'tesla', 'cannon', 'arrow', 'sniper', 'frost', 'tesla', 'cannon']
   let lastGold = -1 // whiff detector: a build action that moved no gold means "stop shopping, send the wave"
   for (let guard = 0; guard < 1500; guard++) {
     const s = h.getState()
@@ -1593,11 +1606,27 @@ const MAXED_PILOT = (seed: string) => {
         // chest on walls while the towers grind the flood down.
         h.dispatch({ type: 'repair_spire' })
       }
+      // Coins wait on the field until someone picks them up; sweep the
+      // collector to the richest drop so the war chest actually fills.
+      const coins = s.coins as { pos: { x: number; y: number }; gold: number }[]
+      if (coins.length > 0) {
+        const richest = coins.reduce((a, b) => (b.gold > a.gold ? b : a))
+        h.dispatch({ type: 'set_collect', at: { x: richest.pos.x, y: richest.pos.y } })
+      }
       h.fastForward(4)
       continue
     }
     if (s.victoryClaimed) {
       h.dispatch({ type: 'abandon_run' }) // the "End run" path: bank the win
+      h.fastForward(0.2)
+      continue
+    }
+    // Build phase: leftovers from the last wave sit on the grass until
+    // collected — vacuum before shopping so the budget is real.
+    const groundGold = s.coins as { pos: { x: number; y: number }; gold: number }[]
+    if (groundGold.length > 0) {
+      const richest = groundGold.reduce((a, b) => (b.gold > a.gold ? b : a))
+      h.dispatch({ type: 'set_collect', at: { x: richest.pos.x, y: richest.pos.y } })
       h.fastForward(0.2)
       continue
     }

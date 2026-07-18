@@ -52,6 +52,38 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+199. *(rebalance — user feedback ×2)* **The consolidation** — "enemies
+    die so quickly that all the money ends up in the same place." The
+    probe agreed: 92% of fresh-account kills (gold-weighted) landed in
+    the first 20% of the path. The mid/heavy roster consolidated —
+    fewer, tankier, slower, RICHER bodies (brute 70hp×2 → 120hp×1 at
+    2× cost/bounty, likewise shieldbearer/healer/splitter/wraith/
+    carrier/flier; per-cost HP now ~10% BELOW old, per-cost bounty
+    held) while the true hordes (runners/swarmlings/shards) stay the
+    flood. Death spread after: fresh 77/18 first-two-quintiles, 5k
+    meta 41/39/11 — kills and coins now happen along the enfilade.
+    Second directive folded in: **no auto-collection between rounds**
+    — the wave-clear sweep is gone; leftovers sit on the grass through
+    the build phase until the cursor or a Spire Magnet takes them (or
+    they expire). Bots vacuum during build to keep the reference
+    envelope honest. The deep debugging story: the deep tree kept
+    dying w16-23 and every obvious lever (elite HP −25%, comp pivots,
+    support-rate trims, placement doctrines, skip/catch-up tuning)
+    moved it ≤1 wave — until a composition probe showed w24 fielding
+    **+35% base HP**: the 202-unit wave cap had been silently
+    truncating the old chaff roster's late waves, and consolidated
+    bodies pack more HP per capped slot. Fix: three-phase HP growth
+    (115 ≤w8, 122 w9-18, 117 w19+) gives back exactly the cap-slot
+    inflation where the cap binds — deep tree now WINS at 24 on all
+    four biomes × both seeds, every pinned exploit genome stays
+    contained (the flat-120 attempt opened a w18-22 pocket that let
+    Mortar-Blizzard and Bounty-Banner win at 8k — the three-phase
+    shape closes it), six-run career still hasn't won, and Ashen Road
+    catch-up rises /4 → /3 so skipping into tanky-singles waves buys
+    a real opening army. Goldens re-pinned: greedy 121→99 kills,
+    balanced-fresh 13→9 waves, balanced-rich 14→12 (golden seeds sit
+    in the consolidated 9-12 fresh band; envelope 10/10 green).
+
 198. *(active-play, physical gold — user feedback)* **Collect it or
     lose it** — bounty gold is now PHYSICAL: kills drop coin
     entities (engine state, not render juice) that live 20s and

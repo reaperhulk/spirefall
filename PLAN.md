@@ -68,9 +68,17 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 > - **Physical gold**: kill bounties drop as coin ENTITIES that live 20s
 >   (flashing near expiry) — sweep the cursor/finger to collect within a
 >   radius; Collector's Reach widens it, Spire Magnet reels coins home
->   visibly. The wave-clear sweep banks leftovers so the intended curve is
->   untaxed (goldens bit-identical); the collect-or-lose pressure lives
->   inside long waves. Wave-clear income and mints stay direct.
+>   visibly. NO auto-collection, ever: leftovers persist through the build
+>   phase until collected or expired — collect-or-lose is the whole deal.
+>   Wave-clear income and mints stay direct.
+> - **The consolidation**: the mid/heavy roster is fewer/tankier/slower/
+>   richer bodies (per-cost bounty held, per-cost HP slightly below the old
+>   chaff) so enemies survive the entrance woodchipper and die along the
+>   enfilade, scattering coins down the path; true hordes stay hordes. HP
+>   growth is three-phase (115 to w8, 122 to w18, 117 after) — the tail
+>   discount compensates the unit-cap slot inflation of richer bodies so
+>   the fielded-HP curve the envelope was calibrated on stays put. The
+>   mid-band stays steep so optimized 8k builds can't coast a soft pocket.
 > - **Derived UI truth**: strings that enumerate game content derive from the
 >   data tables instead of restating them — `AA_TOWER_NAMES` (hitsAir &&
 >   !support) feeds every "who can hit fliers" sentence, and the `support`

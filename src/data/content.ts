@@ -48,16 +48,23 @@ export interface EnemyDef {
 // match — total wave threat and income stay on the pinned curve, but losing
 // feels like being overrun and winning like mowing down a flood.
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
-  runner: { name: 'Runner', hp: 14, speed: 120, cost: 5, pack: 5, spacing: 7, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
+  // Consolidation rebalance (2026-07, staged): the death-spread probe showed
+  // 92% of fresh-account kills landing in the first 20% of the path — the
+  // entrance was a woodchipper and the maze was decoration. The mid/heavy
+  // roster consolidates (fewer, tankier, slower, RICHER bodies; per-cost HP
+  // and bounty ratios held) so enemies survive the first kill zone and die
+  // along the enfilade — where their coins now scatter. The true horde
+  // types (swarmlings, runners, shards) stay the flood on purpose.
+  runner: { name: 'Runner', hp: 16, speed: 110, cost: 5, pack: 5, spacing: 7, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
   swarmling: { name: 'Swarmling', hp: 5, speed: 155, cost: 2, pack: 10, spacing: 4, bounty: 1, damage: 1, shield: 0, unlockWave: 1 },
-  brute: { name: 'Brute', hp: 70, speed: 58, cost: 13, pack: 2, spacing: 16, bounty: 3, damage: 3, shield: 0, armor: 1, unlockWave: 4, elite: true },
-  flier: { name: 'Gale Imp', hp: 20, speed: 95, cost: 7, pack: 4, spacing: 10, bounty: 2, damage: 2, shield: 0, unlockWave: 6, flying: true },
-  shieldbearer: { name: 'Shieldbearer', hp: 50, speed: 72, cost: 15, pack: 2, spacing: 14, bounty: 4, damage: 2, shield: 4, unlockWave: 8, elite: true },
-  healer: { name: 'Mendwitch', hp: 60, speed: 66, cost: 17, pack: 1, spacing: 18, bounty: 4, damage: 1, shield: 0, armor: 1, unlockWave: 11, elite: true, heal: { everyTicks: 60, amount: 4, radius: 1800 } },
-  splitter: { name: 'Amalgam', hp: 45, speed: 82, cost: 13, pack: 2, spacing: 14, bounty: 2, damage: 1, shield: 0, armor: 1, unlockWave: 13, elite: true, splitInto: { type: 'splitling', count: 2 } },
+  brute: { name: 'Brute', hp: 120, speed: 52, cost: 26, pack: 1, spacing: 16, bounty: 6, damage: 3, shield: 0, armor: 1, unlockWave: 5, elite: true },
+  flier: { name: 'Gale Imp', hp: 35, speed: 85, cost: 13, pack: 2, spacing: 10, bounty: 4, damage: 2, shield: 0, unlockWave: 6, flying: true },
+  shieldbearer: { name: 'Shieldbearer', hp: 110, speed: 62, cost: 36, pack: 1, spacing: 14, bounty: 10, damage: 2, shield: 3, unlockWave: 8, elite: true },
+  healer: { name: 'Mendwitch', hp: 128, speed: 58, cost: 40, pack: 1, spacing: 18, bounty: 10, damage: 1, shield: 0, armor: 1, unlockWave: 11, elite: true, heal: { everyTicks: 60, amount: 3, radius: 1800 } },
+  splitter: { name: 'Amalgam', hp: 92, speed: 72, cost: 30, pack: 1, spacing: 14, bounty: 6, damage: 1, shield: 0, armor: 1, unlockWave: 13, elite: true, splitInto: { type: 'splitling', count: 2 } },
   splitling: { name: 'Shard', hp: 13, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
-  wraith: { name: 'Wraith', hp: 35, speed: 88, cost: 11, pack: 2, spacing: 12, bounty: 2, damage: 2, shield: 0, unlockWave: 12, phasing: { visibleTicks: 60, hiddenTicks: 45 } },
-  carrier: { name: 'Broodmother', hp: 80, speed: 40, cost: 30, pack: 1, spacing: 26, bounty: 8, damage: 4, shield: 3, armor: 1, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 140 } },
+  wraith: { name: 'Wraith', hp: 77, speed: 76, cost: 26, pack: 1, spacing: 12, bounty: 6, damage: 2, shield: 0, unlockWave: 12, phasing: { visibleTicks: 60, hiddenTicks: 45 } },
+  carrier: { name: 'Broodmother', hp: 170, speed: 36, cost: 70, pack: 1, spacing: 26, bounty: 20, damage: 4, shield: 3, armor: 1, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 180 } },
   boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, armor: 1, unlockWave: 10, elite: true, mech: { kind: 'carapace', everyTicks: 240, durationTicks: 60 } },
   boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, armor: 1, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 }, brood: { type: 'splitling', count: 2, everyTicks: 180 } },
   boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, armor: 1, unlockWave: 30, elite: true, flying: true, mech: { kind: 'gale', everyTicks: 210, durationTicks: 45 } },
@@ -678,9 +685,18 @@ export const WAVE_BUDGET_GROWTH_PCT = 118 // ×1.18 per wave
 export const HP_GROWTH_EARLY_PCT = 115
 export const HP_GROWTH_LATE_PCT = 122
 export const HP_GROWTH_BREAK_WAVE = 8
+// Consolidation tail discount: past ~w18 the unit cap binds and the richer
+// consolidated bodies pack far more HP per capped slot than the old chaff
+// did (+35% fielded at w24 measured). The tail growth rate gives that back
+// so the fielded-HP curve the envelope was calibrated on stays put — while
+// waves 9-18, where the cap doesn't bind, keep the full 122 so optimized
+// mid-budget builds can't coast through a soft pocket.
+export const HP_GROWTH_TAIL_PCT = 117
+export const HP_GROWTH_TAIL_WAVE = 19
 
 export function hpGrowthPct(wave: number): number {
-  return wave <= HP_GROWTH_BREAK_WAVE ? HP_GROWTH_EARLY_PCT : HP_GROWTH_LATE_PCT
+  if (wave <= HP_GROWTH_BREAK_WAVE) return HP_GROWTH_EARLY_PCT
+  return wave >= HP_GROWTH_TAIL_WAVE ? HP_GROWTH_TAIL_PCT : HP_GROWTH_LATE_PCT
 }
 export const MAX_UNITS_PER_WAVE = 320
 export const BOSS_WAVE_INTERVAL = 10

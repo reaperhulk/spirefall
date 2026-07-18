@@ -156,9 +156,12 @@ export function buildActions(
   pickType: (s: RunState) => TowerType,
   knobs: BuildKnobs = DEFAULT_KNOBS,
 ): Command[] {
+  // Leftover coins from the last wave sit on the field until collected —
+  // vacuum them through the build phase so gold is in hand for shopping.
+  const collect = collectActions(state)
   if (state.relicOffer !== null) {
     const pick = knobs.relicPriority.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
-    return [{ type: 'choose_relic', relic: pick }]
+    return [...collect, { type: 'choose_relic', relic: pick }]
   }
 
   // Endless: pick the least-bad doom for a DPS comp — losing tower damage
@@ -166,14 +169,14 @@ export function buildActions(
   if (state.cataclysmOffer !== null) {
     const leastBad: CataclysmId[] = ['crumbling', 'ironclad', 'surge', 'swarm', 'juggernaut', 'dampening']
     const pick = leastBad.find((c) => state.cataclysmOffer!.includes(c)) ?? state.cataclysmOffer[0]!
-    return [{ type: 'choose_cataclysm', cataclysm: pick }]
+    return [...collect, { type: 'choose_cataclysm', cataclysm: pick }]
   }
 
   // Targeting doctrine first — it's free, one tower per tick.
   if (knobs.targeting) {
     for (const t of state.towers) {
       const want = knobs.targeting[t.type]
-      if (want && t.targeting !== want) return [{ type: 'set_targeting', id: t.id, targeting: want }]
+      if (want && t.targeting !== want) return [...collect, { type: 'set_targeting', id: t.id, targeting: want }]
     }
   }
 
@@ -187,7 +190,7 @@ export function buildActions(
     }
   }
   if (upgrade !== null && upgrade.tier === 1 && state.towers.length >= knobs.upgradeAtTowers) {
-    return [{ type: 'upgrade_tower', id: upgrade.id }]
+    return [...collect, { type: 'upgrade_tower', id: upgrade.id }]
   }
 
   const targetTowers = Math.min(knobs.targetBase + state.wave * knobs.targetPerWave, knobs.targetMax)
@@ -196,10 +199,10 @@ export function buildActions(
     const cost = towerTier(type, 1).cost
     if (state.gold >= cost) {
       const spot = pickBuildCell(state, knobs.placement)
-      if (spot) return [{ type: 'place_tower', tower: type, cell: spot }]
+      if (spot) return [...collect, { type: 'place_tower', tower: type, cell: spot }]
     }
   }
-  if (upgrade !== null) return [{ type: 'upgrade_tower', id: upgrade.id }]
+  if (upgrade !== null) return [...collect, { type: 'upgrade_tower', id: upgrade.id }]
 
   // Tier-3 towers commit to a path once the gold is there.
   for (const t of state.towers) {
@@ -208,12 +211,12 @@ export function buildActions(
     if (!options) continue
     const choice = typeof knobs.specChoice === 'number' ? knobs.specChoice : (knobs.specChoice[t.type] ?? 0)
     const pick = options[choice]!
-    if (state.gold >= pick.cost) return [{ type: 'specialize_tower', id: t.id, spec: pick.id }]
+    if (state.gold >= pick.cost) return [...collect, { type: 'specialize_tower', id: t.id, spec: pick.id }]
   }
 
   // Patch the spire up between waves before banking gold.
   if (state.spireHp <= state.spireMaxHp - knobs.repairDeficit && state.gold >= knobs.repairMinGold) {
-    return [{ type: 'repair_spire' }]
+    return [...collect, { type: 'repair_spire' }]
   }
 
   // Everything built and maxed: sink gold into an enhancement. 'spread'
@@ -229,8 +232,11 @@ export function buildActions(
       enhance === null || (knobs.enhanceFocus === 'focus' ? t.enhance > enhance.level : cost < enhance.cost)
     if (better) enhance = { id: t.id, cost, level: t.enhance }
   }
-  if (enhance !== null && state.gold >= enhance.cost) return [{ type: 'upgrade_tower', id: enhance.id }]
+  if (enhance !== null && state.gold >= enhance.cost) return [...collect, { type: 'upgrade_tower', id: enhance.id }]
 
+  // Don't ring the bell with coins still on the ground — the collector
+  // teleports, so draining the field costs only a few ticks.
+  if (state.coins.length > 0) return collect
   return [{ type: 'start_wave' }]
 }
 

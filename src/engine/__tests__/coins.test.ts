@@ -111,6 +111,18 @@ describe('physical gold', () => {
     expect(s.coins).toHaveLength(0)
   })
 
+  it('wave end does NOT sweep the field — leftovers wait on the ground', () => {
+    let s = waveState()
+    s.pendingSpawns = []
+    s.enemies = []
+    s.coins = [{ id: 1, pos: { ...AT }, gold: 7, bornTick: s.tick, pulling: false }]
+    const r = step(s, [])
+    s = r.state
+    expect(s.phase).toBe('build') // the wave DID end...
+    expect(s.coins).toHaveLength(1) // ...but the coin stayed put
+    expect(r.events.some((e) => e.type === 'coin_collected')).toBe(false)
+  })
+
   it('coins keep ticking (and can be swept) during the build phase', () => {
     let s = createRun(createMeta(), 'coin-lab')
     s.coins = [{ id: 1, pos: { ...AT }, gold: 3, bornTick: 0, pulling: false }]

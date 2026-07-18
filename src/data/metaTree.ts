@@ -147,6 +147,9 @@ export const META_TOWER_DAMAGE_PCT_PER_LEVEL = 8
 export const META_CRIT_CHANCE_PCT_PER_LEVEL = 2
 export const META_GOLD_INCOME_PCT_PER_LEVEL = 8
 export const META_SPARK_GAIN_PCT_PER_LEVEL = 10
+// Consolidation-era note: skipping drops a bare board into waves of tanky
+// singles, so the skip is only honest if the catch-up bankroll (meta.ts)
+// can stand up a real opening army — the depth of the skip itself is fine.
 export const META_WAVE_SKIP_PER_LEVEL = 2
 
 export function metaNode(id: MetaUpgradeId): MetaNodeDef {

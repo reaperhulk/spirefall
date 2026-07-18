@@ -185,7 +185,11 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
   for (let w = 1; w <= startWave; w++) {
     waveBudget = w === 1 ? BASE_WAVE_BUDGET : Math.floor((waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
     if (w > 1) hpScalePct = Math.floor((hpScalePct * hpGrowthPct(w)) / 100)
-    catchUpGold += WAVE_CLEAR_GOLD_BASE + w * WAVE_CLEAR_GOLD_PER_WAVE + Math.floor(waveBudget / 4)
+    // budget/3 since the consolidation rebalance (was /4): skipping drops a
+    // bare board into waves of tanky SINGLES, which punish an undeveloped
+    // defense far harder than the old chaff floods did — the catch-up
+    // bankroll has to buy a real opening army, not a picket.
+    catchUpGold += WAVE_CLEAR_GOLD_BASE + w * WAVE_CLEAR_GOLD_PER_WAVE + Math.floor(waveBudget / 3)
   }
 
   const firstBoons = drawBoonOffer(deriveStream(seed, 'boons'))
