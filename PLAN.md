@@ -36,9 +36,14 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 >   victory bloom), zero assets, UI-layer only; tonal SFX quantize to the
 >   score's live key (`src/ui/tonality.ts`).
 > - **Run cards + endless milestones**: shareable canvas cards (damage profile
->   + relic loadout) with ?seed= challenge links; cataclysm-depth and
->   biome-mastery achievements. Run summaries carry the full loadout (relics,
->   cataclysms) and history remembers where each run happened.
+>   + relic loadout) with ?seed= challenge links (biome + trials ride along);
+>   cataclysm-depth and biome-mastery achievements. Run summaries carry the
+>   full loadout (relics, cataclysms) and history remembers where each run
+>   happened.
+> - **Cataclysm choice** (`choose_cataclysm`): endless strikes OFFER two
+>   distinct dooms and gate start_wave until one is chosen — endless is a
+>   gauntlet you steer. Bots rank dooms least-bad-first; the 20k fuzz sweep
+>   confirms choice is agency, not a discount.
 > - **Victory identity**: the win is scored (bloom + crucible motif), dressed
 >   (gold modal, rising embers, first-win callout), and proven — the e2e suite
 >   pilots a real maxed account through all 24 waves with real commands.

@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+155. *(marathon II, iteration 67)* **The contract records the choice**
+    — PLAN.md's shipped-systems index now carries cataclysm choice
+    (new command + wave gate = architecture, not just content) and
+    the challenge-link ruleset fix. Audited on the way: the endless
+    HUD countdown (⚠ Cataclysm in N waves, imminent state) was
+    already fully wired. 195 unit tests, 44 e2e specs.
+
 154. *(marathon II, iteration 66)* **WavePreview extracted** — the
     mechanic-mark sweep grew the scouting strip into a ~120-line
     subsystem inside App.tsx; it now lives in `WavePreview.tsx` with
