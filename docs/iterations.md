@@ -52,6 +52,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+158. *(marathon II, iteration 70)* **Block-70 boundary** — 70 of 100.
+    The 61–69 arc: endless verified under choice (20k sweep), SW
+    cache hygiene, codex tally, the cataclysm-gate integration audit
+    (auto-start + Space fixed; narrator, haptics, countdown, codex
+    all confirmed covered), WavePreview extracted with its contract,
+    PLAN.md updated, and the maxed pilot lifted + generalized across
+    all four biomes through the real UI. Debt: App.tsx 1402, render
+    1860, e2e file ~1520 — all under thresholds. Block 71–80
+    candidates: a 7th tower (the one remaining big content item —
+    needs a full design + fuzz cycle), boss-6 render distinctiveness
+    (a flying carrier currently reads like any boss), e2e-runtime
+    watch (~44s), fresh derivation each iteration. 195 unit tests,
+    47 e2e specs.
+
 157. *(marathon II, iteration 69)* **Full biome coverage for the
     pilot** — the frostfen reach spec became a three-biome matrix
     (frostfen marsh, emberwaste slag, highlands mesas), each booting
