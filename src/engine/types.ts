@@ -63,7 +63,7 @@ export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
 export type CataclysmId = 'surge' | 'juggernaut' | 'swarm' | 'dampening' | 'crumbling' | 'ironclad'
 
 // Trials: opt-in run handicaps chosen at run start, paying bonus sparks.
-export type TrialId = 'glass_spire' | 'swift_horde' | 'iron_horde' | 'famine'
+export type TrialId = 'glass_spire' | 'swift_horde' | 'iron_horde' | 'famine' | 'no_mercy'
 
 export interface CellPos {
   cx: number

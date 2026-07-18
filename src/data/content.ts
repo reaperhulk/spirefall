@@ -459,6 +459,7 @@ export const TRIALS: Record<TrialId, TrialDef> = {
   swift_horde: { name: 'Swift Horde', description: 'Enemies move 15% faster.', sparkBonusPct: 25 },
   iron_horde: { name: 'Iron Horde', description: 'Enemies field 25% more HP.', sparkBonusPct: 35 },
   famine: { name: 'Famine', description: 'All gold income is cut by 25%.', sparkBonusPct: 30 },
+  no_mercy: { name: 'No Mercy', description: 'The Spire cannot be repaired. What breaks stays broken.', sparkBonusPct: 45 },
 }
 
 export const TRIAL_IDS = Object.keys(TRIALS) as TrialId[]

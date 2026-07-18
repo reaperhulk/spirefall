@@ -222,6 +222,10 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     }
 
     case 'repair_spire': {
+      // No Mercy trial: the crews were left behind. Damage is forever.
+      if (s.trials.includes('no_mercy')) {
+        return reject(command, 'No Mercy — the Spire cannot be repaired', events)
+      }
       // Under fire the crews manage only a couple of patches — gold cannot
       // tank a wave. Between waves they work freely.
       if (s.phase === 'wave' && s.repairsThisWave >= REPAIR_CASTS_PER_WAVE) {
@@ -493,8 +497,9 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   events.push({ type: 'wave_cleared', wave: s.wave, goldAwarded })
 
   // The spire knits itself a little after every survived wave — early
-  // scratches are forgivable; late-game floods far outpace it.
-  if (s.spireHp < s.spireMaxHp) {
+  // scratches are forgivable; late-game floods far outpace it. Under the
+  // No Mercy trial nothing heals: what breaks stays broken.
+  if (s.spireHp < s.spireMaxHp && !s.trials.includes('no_mercy')) {
     const knit = WAVE_CLEAR_KNIT_HP + (s.relics.includes('field_medicine') ? FIELD_MEDICINE_KNIT_HP : 0)
     s.spireHp = Math.min(s.spireMaxHp, s.spireHp + knit)
     events.push({ type: 'spire_repaired', amount: knit, cost: 0, spireHp: s.spireHp })

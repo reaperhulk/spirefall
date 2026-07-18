@@ -44,6 +44,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+94. *(marathon II, iteration 6)* **No Mercy trial** — a fifth opt-in
+    handicap for the players who treat the repair button as a crutch:
+    the Spire cannot be repaired at all (the command bounces with the
+    trial's reason) and the wave-clear knit never fires — what breaks
+    stays broken. +45% sparks, the richest trial bonus, because every
+    point of damage is now permanent. Pure data + two engine guards;
+    the trial picker, run-over summary, and preview pick it up from
+    TRIALS automatically. Engine test pins both the rejected repair
+    (gold untouched) and the silent knit. 187 unit tests, 34 e2e specs.
+
 93. *(marathon II, iteration 5)* **Career sparkline** — meta.history
     powered only an 8-row table; the actual shape of a player's career
     (am I getting deeper?) was invisible. Settings now leads its Run

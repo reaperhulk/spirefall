@@ -557,6 +557,20 @@ describe('cataclysms', () => {
     expect(trialSparks).toBeGreaterThan(plainSparks)
   })
 
+  it('No Mercy: repairs are rejected and the wave-clear knit never fires', () => {
+    const s = cloneRun({ ...freshRun('no-mercy'), trials: ['no_mercy' as const], gold: 5000, spireHp: 5 })
+    // The repair command bounces with the trial's reason.
+    const tried = step(s, [{ type: 'repair_spire' }])
+    expect(tried.state.spireHp).toBe(5)
+    expect(tried.state.gold).toBe(5000)
+    expect(tried.events.some((e) => e.type === 'command_rejected')).toBe(true)
+    // Surviving a wave heals nothing either — what breaks stays broken.
+    let run = tried.state
+    run = step(run, [{ type: 'start_wave' }]).state
+    run = stepUntil(run, (st) => st.phase === 'build' || st.phase === 'defeat', 30 * 120)
+    if (run.phase === 'build') expect(run.spireHp).toBeLessThanOrEqual(5)
+  })
+
   it('wavesUntilCataclysm mirrors the strike schedule', () => {
     const s = cloneRun(freshRun('cataclysm-countdown'))
     // No victory yet → no countdown.
