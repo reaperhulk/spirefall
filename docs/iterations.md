@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+107. *(marathon II, iteration 19)* **Replay links** — the replay stack
+    completes: "⏯ Copy replay link" gzips the v2 payload (tick-0 state
+    + command log) into a base64url `?replay=` parameter; anyone who
+    opens the link boots straight into spectating that exact run, with
+    their own save untouched underneath (exit lands on their own game).
+    New `codec.ts` (URL-safe gzip). E2e: defeat a run, copy the link,
+    open it cold, watch to completion — identical wave/kills/spire-HP.
+    191 unit tests, 35 e2e specs.
+
 106. *(marathon II, iteration 18)* **Debt check + backlog re-derivation**
     — sizes: render.ts 1857, styles.css 1530, App.tsx 1281. Assessment:
     large but coherent single-purpose modules with clear sections; a

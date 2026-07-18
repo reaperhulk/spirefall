@@ -239,6 +239,7 @@ export function RunOverOverlay({
   summary,
   meta,
   replay,
+  replayLink,
   onWatchReplay,
   mapPref,
   onMapPref,
@@ -252,6 +253,7 @@ export function RunOverOverlay({
   summary: RunSummary
   meta: MetaState
   replay: () => string
+  replayLink: () => Promise<string | null>
   onWatchReplay: () => void
   mapPref: string
   onMapPref: (v: string) => void
@@ -394,6 +396,20 @@ export function RunOverOverlay({
             }}
           >
             {replayText === null ? '🐞 Copy replay' : 'Replay copied ✓'}
+          </button>
+          <button
+            className="ghost-btn"
+            data-testid="copy-replay-link"
+            title="Copies a link — anyone who opens it watches this exact run live."
+            onClick={() => {
+              void replayLink().then((link) => {
+                if (!link) return
+                setReplayText(link)
+                void navigator.clipboard?.writeText(link).catch(() => {})
+              })
+            }}
+          >
+            ⏯ Copy replay link
           </button>
           {replayText !== null && (
             <span className="replay-hint">Paste it into a bug report — same seed, same commands, same run.</span>

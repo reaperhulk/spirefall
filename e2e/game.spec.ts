@@ -347,6 +347,45 @@ test('watch replay: the last run replays deterministically to the same outcome',
   expect(errors).toEqual([])
 })
 
+test('replay links: opening a ?replay= URL spectates the exact run on arrival', async ({ page }) => {
+  const errors = await boot(page, 'e2e-replay-link')
+  await page.getByTestId('shop-arrow').click()
+  for (const [cx, cy] of await findBuildCells(page, 2)) await clickCell(page, cx, cy)
+  await page.evaluate(() => {
+    const send = () => {
+      const s = window.__harness.getState()
+      if (s.phase === 'build') window.__harness.dispatch({ type: 'start_wave' })
+      window.__harness.fastForward(300)
+      if (window.__harness.snapshot().phase !== 'defeat') send()
+    }
+    send()
+  })
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  const original = await page.evaluate(() => {
+    const s = window.__harness.snapshot()
+    return { wave: s.wave, kills: s.kills, spireHp: s.spireHp }
+  })
+  await page.getByTestId('copy-replay-link').click()
+  await expect(page.getByTestId('replay-json')).toBeVisible()
+  const link = await page.getByTestId('replay-json').inputValue()
+  expect(link).toContain('?replay=')
+
+  // Open the link cold: the app boots and spectates immediately.
+  await page.goto(link)
+  await expect(page.getByTestId('replay-banner')).toBeVisible()
+  await page.evaluate(() => {
+    for (let i = 0; i < 40 && window.__harness.snapshot().phase !== 'defeat'; i++) {
+      window.__harness.fastForward(300)
+    }
+  })
+  const spectated = await page.evaluate(() => {
+    const s = window.__harness.snapshot()
+    return { wave: s.wave, kills: s.kills, spireHp: s.spireHp }
+  })
+  expect(spectated).toEqual(original)
+  expect(errors).toEqual([])
+})
+
 test('relic offers appear in the UI and apply on click', async ({ page }) => {
   const errors = await boot(page, 'e2e-relic-a')
   // Actually play: each build phase, buy/upgrade arrows, then send the wave —

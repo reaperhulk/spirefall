@@ -44,6 +44,7 @@ import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
 import { RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
+import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
 import { clearSave, loadSave, persistSave } from './save'
@@ -126,15 +127,20 @@ export default function App() {
     // seed (PWA shortcut). Meta always carries over; the param is stripped
     // so a reload resumes normally.
     let linkSeed: string | null = null
+    let linkReplay: string | null = null
     try {
       const params = new URLSearchParams(window.location.search)
       linkSeed = params.get('seed') ?? (params.get('daily') !== null ? dailySeed() : null)
-      if (linkSeed !== null) window.history.replaceState(null, '', window.location.pathname)
+      // ?replay=<gzip blob>: spectate someone's exact run (decoded async
+      // after mount — the boot run underneath stays the player's own).
+      linkReplay = params.get('replay')
+      if (linkSeed !== null || linkReplay !== null) window.history.replaceState(null, '', window.location.pathname)
     } catch {
       linkSeed = null
+      linkReplay = null
     }
     const run = linkSeed !== null ? createRun(meta, linkSeed) : (save?.run ?? createRun(meta, newSeed(meta.runs)))
-    return { meta, run }
+    return { meta, run, linkReplay }
   })
   const [meta, setMeta] = useState(boot.meta)
   const [session, setSession] = useState(() => new GameSession(boot.run))
@@ -289,6 +295,16 @@ export default function App() {
       return false
     }
   }
+
+  // A ?replay= deep link spectates on arrival, once the app is mounted.
+  const linkReplayDoneRef = useRef(false)
+  useEffect(() => {
+    if (linkReplayDoneRef.current || !boot.linkReplay) return
+    linkReplayDoneRef.current = true
+    void gunzipBase64Url(boot.linkReplay).then((text) => {
+      if (text) watchImported(text)
+    })
+  })
 
   const beginNextRun = (seed?: string) => {
     // Daily runs always play the seed's rolled map — the whole point is that
@@ -1209,6 +1225,15 @@ export default function App() {
               log: session.commandLog,
             })
           }
+          replayLink={async () => {
+            // The same v2 payload, gzipped into a URL: anyone who opens it
+            // spectates this exact run on arrival.
+            const blob = await gzipBase64Url(
+              JSON.stringify({ v: 2, seed: session.state.seed, initial: session.initial, log: session.commandLog }),
+            )
+            if (!blob) return null
+            return `${window.location.origin}${window.location.pathname}?replay=${blob}`
+          }}
           onBuy={buyMeta}
           onBuyEmber={buyEmber}
           onAscend={doAscend}
