@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+147. *(marathon II, iteration 59)* **The mechanic sweep completes** —
+    healers (healer, Blightmother) were the last unmarked mechanic; a
+    ✚ mark with cadence and counterplay finishes the set. Every enemy
+    mechanic now has a visible tell in the scouting report: mech 🛡🌀,
+    phase ◌, brood 🐣, split ✂, heal ✚, air ✈, armor ▣. E2e asserts
+    Blightmother's mark at wave 49. 195 unit tests, 44 e2e specs.
+
 146. *(marathon II, iteration 58)* **Split marks too** — the sibling
     gap: Amalgam and Gravemind split on death, equally unwarned. A ✂
     mark now flags split-on-death units with count and child type in

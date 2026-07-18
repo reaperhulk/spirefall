@@ -981,6 +981,15 @@ export default function App() {
                         ◌
                       </span>
                     )}
+                    {ENEMIES[type].heal && (
+                      <span
+                        className="brood-mark"
+                        data-testid={`heal-mark-${type}`}
+                        title={`Healer — mends nearby wounded allies every ${Math.round(ENEMIES[type].heal.everyTicks / 30)}s. Focus it down or your damage leaks away.`}
+                      >
+                        ✚
+                      </span>
+                    )}
                     {ENEMIES[type].splitInto && (
                       <span
                         className="brood-mark"

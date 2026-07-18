@@ -316,6 +316,16 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
   // Spawner warning: the report says Zephyrhost births fliers while it lives.
   await expect(page.getByTestId('brood-mark-boss6')).toBeVisible()
   await expect(page.getByTestId('brood-mark-boss6')).toHaveAttribute('title', /Spawner/)
+
+  // Blightmother at wave 49: the healer mark completes the mechanic sweep —
+  // every enemy mechanic (mech, phase, brood, split, heal, air, armor) now
+  // has a visible tell in the report.
+  await page.evaluate(() => {
+    window.__harness.getState().wave = 49
+    window.__harness.fastForward(1)
+  })
+  await expect(page.getByTestId('heal-mark-boss5')).toBeVisible()
+  await expect(page.getByTestId('heal-mark-boss5')).toHaveAttribute('title', /Healer/)
   expect(errors).toEqual([])
 })
 
