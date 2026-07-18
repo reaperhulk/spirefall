@@ -68,7 +68,7 @@ describe('createRun applies meta', () => {
     expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP)
     expect(run.availableTowers).not.toContain('tesla')
     expect(Object.keys(run.abilities)).not.toContain('gold_rush')
-    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0, abilityCdPct: 0 })
+    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0, abilityCdPct: 0, repairCasts: 0 })
   })
 
   it('upgrades show up as run bonuses and unlocks', () => {

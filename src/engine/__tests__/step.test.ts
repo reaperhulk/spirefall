@@ -271,6 +271,27 @@ describe('gold sinks', () => {
     expect(calm.repairsThisWave).toBe(0)
   })
 
+  it('Emberbound Crews raises the mid-wave repair cap by its level', () => {
+    const base = {
+      ...freshRun(),
+      phase: 'wave' as const,
+      spireHp: 1,
+      spireMaxHp: 12,
+      gold: 10_000,
+      pendingSpawns: [{ type: 'runner' as const, tick: 9_999_999 }],
+    }
+    const crewed = { ...base, mods: { ...base.mods, repairCasts: 1 } }
+    const first = step(crewed, [{ type: 'repair_spire' }])
+    const second = step(first.state, [{ type: 'repair_spire' }])
+    expect(second.state.spireHp).toBe(7) // second cast LANDS with the ember node
+    const third = step(second.state, [{ type: 'repair_spire' }])
+    expect(third.events[0]).toMatchObject({ type: 'command_rejected', reason: expect.stringContaining('repair crews') })
+
+    // And createRun wires the ember level into the mod.
+    const meta = { ...createMeta(), embers: 99, emberUpgrades: { ember_crews: 2 } }
+    expect(createRun(meta, 'crew-run').mods.repairCasts).toBe(2)
+  })
+
   it('towers record kills and damage dealt', () => {
     const state = { ...freshRun(), gold: 10_000 }
     let s = state

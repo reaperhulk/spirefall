@@ -9,6 +9,7 @@ export type EmberUpgradeId =
   | 'ashen_legacy'
   | 'molten_vaults'
   | 'swift_sigils'
+  | 'ember_crews'
 
 export interface EmberNodeDef {
   id: EmberUpgradeId
@@ -61,6 +62,16 @@ export const EMBER_TREE: EmberNodeDef[] = [
     maxLevel: 2,
     costs: [2, 4],
   },
+  {
+    // Deliberately expensive: the mid-wave repair CAP is what killed the
+    // repair-tanking exploit — each extra cast is a late-meta luxury, not a
+    // cheap resurrection of it (costs still scale with wave).
+    id: 'ember_crews',
+    name: 'Emberbound Crews',
+    description: '+1 mid-wave Spire repair per level — the crews learn to work under fire.',
+    maxLevel: 2,
+    costs: [3, 6],
+  },
 ]
 
 export const EMBER_DAMAGE_PCT_PER_LEVEL = 10
@@ -69,6 +80,7 @@ export const EMBER_SPARK_PCT_PER_LEVEL = 25
 export const EMBER_LEGACY_SPARKS_PER_LEVEL = 300
 export const EMBER_GOLD_PCT_PER_LEVEL = 15
 export const EMBER_ABILITY_CD_PCT_PER_LEVEL = 10
+export const EMBER_REPAIR_CASTS_PER_LEVEL = 1
 
 export function emberNode(id: EmberUpgradeId): EmberNodeDef {
   const node = EMBER_TREE.find((n) => n.id === id)

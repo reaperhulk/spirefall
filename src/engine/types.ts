@@ -136,6 +136,7 @@ export interface RunMods {
   sparkPct: number
   critChancePct: number // % chance a tower shot crits (rolled on the combat stream)
   abilityCdPct: number // % shaved off ability cooldowns (ember: Swift Sigils)
+  repairCasts: number // extra mid-wave repair casts (ember: Emberbound Crews)
 }
 
 export interface RunState {

@@ -230,7 +230,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       }
       // Under fire the crews manage only a couple of patches — gold cannot
       // tank a wave. Between waves they work freely.
-      if (s.phase === 'wave' && s.repairsThisWave >= REPAIR_CASTS_PER_WAVE) {
+      if (s.phase === 'wave' && s.repairsThisWave >= REPAIR_CASTS_PER_WAVE + s.mods.repairCasts) {
         return reject(command, 'repair crews exhausted until the wave clears', events)
       }
       const missing = s.spireMaxHp - s.spireHp

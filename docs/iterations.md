@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+119. *(marathon II, iteration 31)* **Emberbound Crews** — seventh
+    ember node: +1 mid-wave Spire repair per level (max 2), priced
+    steep (3/6 embers) because the mid-wave repair CAP is what killed
+    the fuzzer's repair-tanking exploit — this is a scarce late-meta
+    luxury, not its resurrection (repair costs still scale with wave).
+    Wired as `mods.repairCasts` (createRun → step cap check; save
+    default `??= 0`). Goldens regenerated: ONLY stateHash moved (the
+    new field in serialized state) — ticks/waves/kills/sparks all
+    identical, proving zero behavior change without the node. 193
+    unit tests, 42 e2e specs.
+
 118. *(marathon II, iteration 30)* **History says where + block-30
     re-derivation** — run history entries now record biome and
     crucible rank (optional fields, so pre-existing saves need no

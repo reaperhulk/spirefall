@@ -24,6 +24,7 @@ import {
 import { ACHIEVEMENTS } from '../data/achievements'
 import {
   EMBER_ABILITY_CD_PCT_PER_LEVEL,
+  EMBER_REPAIR_CASTS_PER_LEVEL,
   EMBER_DAMAGE_PCT_PER_LEVEL,
   EMBER_GOLD_PCT_PER_LEVEL,
   EMBER_LEGACY_SPARKS_PER_LEVEL,
@@ -237,6 +238,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
         emberLevel(meta, 'ember_memory') * EMBER_SPARK_PCT_PER_LEVEL,
       critChancePct: metaLevel(meta, 'crit_chance') * META_CRIT_CHANCE_PCT_PER_LEVEL,
       abilityCdPct: emberLevel(meta, 'swift_sigils') * EMBER_ABILITY_CD_PCT_PER_LEVEL,
+      repairCasts: emberLevel(meta, 'ember_crews') * EMBER_REPAIR_CASTS_PER_LEVEL,
     },
     sparksEarned: 0,
   }
