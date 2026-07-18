@@ -38,6 +38,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+82. *(playtest feedback)* **Score reactions land before the enemy dies** —
+    the #81 reactions were lagging indicators: boss double-time waited
+    for the next bar boundary (up to ~2.7s, longer than many bosses
+    live) and kill heat needed a long streak to register. Reactions now
+    fire on ARRIVAL and DEATH: a boss's entrance slams the chord on the
+    very next step (~0.3s) with a heartbeat kick, a long dark root drone,
+    and the pad filter snapping shut before creeping back open; a boss
+    going DOWN triggers the triumphant cadence run immediately; a wave
+    starting plays a two-note rising call as the horde arrives (the
+    score reacts to enemies appearing, not only dying). Kill heat is
+    punchier and stickier: cap 16, slower decay, bigger melody-gate
+    bonus, and it now drives the groove directly — hats join when kills
+    stream (heat>5), the bass shifts to eighth-note pulses on a hot
+    streak (heat>7), and the melody reaches a chord tone higher
+    (heat>8). 175 unit tests, 32 e2e specs.
+
 81. *(the coupling runs both ways)* **Combat plays the score** — the
     reverse direction of #79: Music.handleEvents rides the same GameEvent
     stream as the SFX. Kill momentum (a decaying heat counter) audibly

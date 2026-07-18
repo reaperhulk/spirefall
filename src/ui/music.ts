@@ -99,8 +99,10 @@ export class Music {
   private padLevel = 0
   private timer: ReturnType<typeof setInterval> | null = null
   private lastTonality: Tonality | null = null
-  private killHeat = 0 // decaying recent-kill momentum (0..12)
-  private flourishFrom = -1 // totalStep where a wave-cleared cadence run starts
+  private killHeat = 0 // decaying recent-kill momentum (0..16)
+  private flourishFrom = -1 // totalStep where a cadence run starts (wave clear, boss down)
+  private announceFrom = -1 // totalStep where the wave-start call plays
+  private forceChordStep = -1 // boss entrance: chord slams on THIS step, not the next bar
 
   constructor(sfx: Sfx) {
     this.sfx = sfx
@@ -119,10 +121,21 @@ export class Music {
   }
 
   // The battle plays the score too: fed the same GameEvents as the SFX.
+  // Reactions fire on ARRIVAL and DEATH, not just sustained presence — an
+  // enemy that only lives a few seconds still gets its musical moment.
   handleEvents(events: GameEvent[]): void {
     for (const e of events) {
       if (e.type === 'enemy_killed') {
-        this.killHeat = Math.min(12, this.killHeat + 1)
+        this.killHeat = Math.min(16, this.killHeat + 1)
+        // A boss going down earns the triumphant cadence run immediately.
+        if (e.enemy.startsWith('boss')) this.flourishFrom = this.totalStep
+      } else if (e.type === 'enemy_spawned' && e.enemy.startsWith('boss')) {
+        // Boss entrance: the chord slams on the very next step (~0.3s),
+        // with a heartbeat kick and a dark drone — not at the next bar,
+        // which could be seconds after the boss is already dead.
+        this.forceChordStep = this.totalStep
+      } else if (e.type === 'wave_started') {
+        this.announceFrom = this.totalStep // rising call as the horde arrives
       } else if (e.type === 'wave_cleared') {
         this.flourishFrom = this.totalStep // cadence run starts next step
       } else if (e.type === 'enemy_reached_spire') {
@@ -204,7 +217,7 @@ export class Music {
     }
     if (over) target = 0.05
     this.intensity += (target - this.intensity) * 0.12
-    this.killHeat *= 0.92 // momentum fades in a couple of seconds
+    this.killHeat *= 0.95 // momentum lingers a few seconds past the streak
     // The pad's resting level; the per-bar swell breathes around it.
     this.padLevel = 0.2 + this.intensity * 0.15
 
@@ -252,7 +265,8 @@ export class Music {
       return root + scale[off % len]! + 12 * Math.floor(off / len)
     }
 
-    if (this.totalStep % harmonicSteps === 0) {
+    const bossEntrance = this.totalStep === this.forceChordStep
+    if (this.totalStep % harmonicSteps === 0 || bossEntrance) {
       // Chord change: glide the pad voices to the new chord, swell the level
       // on the downbeat and relax through the bar (breathing, not droning),
       // and let the filter bloom open then settle.
@@ -268,6 +282,14 @@ export class Music {
       this.padFilter.frequency.setTargetAtTime(700 + this.intensity * 1600 + bright, at, 0.06)
       this.padFilter.frequency.setTargetAtTime(380 + this.intensity * 1100 + bright, at + 0.5, 0.9)
     }
+    if (bossEntrance) {
+      // The entrance hit itself: heartbeat kick, a long dark drone on the
+      // chord root, and the filter slamming shut before creeping back open.
+      this.kick(ctx, at)
+      this.blip(ctx, at, midiHz(tone(chordDegree, 0) - 12), 1.4, 'triangle', 0.55)
+      this.padFilter.frequency.setTargetAtTime(240, at, 0.03)
+      this.padFilter.frequency.setTargetAtTime(380 + this.intensity * 1100, at + 1.2, 1.2)
+    }
 
     // Bass: the chord root anchors every downbeat (triangle, not sine — the
     // upper harmonics keep it audible on phone speakers), the chord's fifth
@@ -276,7 +298,9 @@ export class Music {
       this.blip(ctx, at, midiHz(tone(chordDegree, 0)), 0.6, 'triangle', 0.35 + this.intensity * 0.3)
     } else if (step === 4 && (lift || this.intensity > 0.3)) {
       this.blip(ctx, at, midiHz(tone(chordDegree, 1)), 0.45, 'triangle', 0.4)
-    } else if (step % 2 === 0 && this.intensity > 0.65) {
+    } else if (step % 2 === 0 && (this.intensity > 0.65 || this.killHeat > 7)) {
+      // A hot streak drives the bass into eighth-note pulses even before
+      // raw intensity gets there — the groove audibly rides the kills.
       this.blip(ctx, at, midiHz(tone(chordDegree, 0)), 0.2, 'triangle', 0.3)
     }
 
@@ -284,9 +308,20 @@ export class Music {
     if ((bossAlive && step % 4 === 0) || (this.intensity > 0.7 && step === 0)) {
       this.kick(ctx, at)
     }
-    // Hat: offbeat air at high intensity.
-    if (this.intensity > 0.55 && step % 2 === 1 && Math.random() < 0.8) {
+    // Hat: offbeat air at high intensity — or whenever kills are streaming.
+    if ((this.intensity > 0.55 || this.killHeat > 5) && step % 2 === 1 && Math.random() < 0.8) {
       this.hat(ctx, at)
+    }
+
+    // Wave start: a two-note rising call as the horde arrives — the score
+    // reacts to enemies APPEARING, not only to them dying.
+    if (this.announceFrom >= 0 && this.totalStep >= this.announceFrom) {
+      const off = this.totalStep - this.announceFrom
+      if (off < 2) {
+        this.blip(ctx, at, midiHz(tone(chordDegree, off) + 12), 0.3, 'triangle', 0.45, true)
+      } else {
+        this.announceFrom = -1
+      }
     }
 
     // Wave cleared: the melody answers with a descending chord-tone run —
@@ -308,12 +343,13 @@ export class Music {
     // the lift pass reaches into higher chord tones and drops fewer, and
     // the cadence bar's back half fills in to hand the phrase over.
     const mask = RHYTHMS[(bar + rhythmSalt) % RHYTHMS.length]!
-    let gate = 0.35 + this.intensity * 0.55 + Math.min(0.25, this.killHeat * 0.025)
+    let gate = 0.35 + this.intensity * 0.55 + Math.min(0.35, this.killHeat * 0.03)
     if (lift) gate += 0.15
     if (cadenceBar && step >= 6) gate += 0.3
     if (mask[step] === 1 && Math.random() < gate) {
       if (step % 4 === 0 || Math.random() < 0.35) {
-        const stack = (lift ? 1 : 0) + Math.floor(Math.random() * 3)
+        // Hot streaks also push the line into higher chord tones.
+        const stack = (lift ? 1 : 0) + (this.killHeat > 8 ? 1 : 0) + Math.floor(Math.random() * 3)
         const targetPos = chordDegree + 2 * stack + len
         const drift = Math.max(-2, Math.min(2, targetPos - this.melodyPos))
         this.melodyPos += drift
