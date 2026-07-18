@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+149. *(marathon II, iteration 61)* **Endless holds under choice** —
+    a 20k-budget evolutionary sweep (48 runs, pop 8 × 3 gens, fresh
+    seed) with the cataclysm-choice flow live: no curve-breaking or
+    warning finds, 11 niches visited. Bots picking least-bad dooms
+    doesn't crack the victory-budget curve — the choice is agency,
+    not a discount. Verification-only iteration; no code changed.
+    195 unit tests, 44 e2e specs.
+
 148. *(marathon II, iteration 60)* **Block-60 boundary** — 60 of 100.
     The 51–59 arc: cataclysm choice (the biggest engine change of the
     marathon's second half), ascension motif, Zephyrhost + wave-60
