@@ -55,6 +55,16 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 > - **Rematch**: the run-over screen relaunches the ended run's exact ruleset
 >   (seed + biome + trials from the RunSummary) in one click, while meta still
 >   applies — same wall, stronger you. Begin-next-run keeps rolling fresh.
+> - **The active-play package** (user-directed, post-marathon): seven systems
+>   that make 1× worth playing instead of a 10× chore — veterancy stars,
+>   physical coin payouts, the kill-streak combo (reward is TEMPO — ability
+>   haste at 25+ — never gold, by hard-won lesson), the overcharge tap
+>   (next shot ×2, attention as the cost), wave boons (two single-wave
+>   blessings every build phase, never gating, own RNG stream), execute
+>   windows (click the gold-ringed wounded for bonus gold, one 2s blade),
+>   and the steerable Spire beam (hold B; heat rhythm, armor/shield
+>   counterplay). Every verb is a serializable command with a fuzzer gene
+>   probing its attention-free ceiling.
 > - **Derived UI truth**: strings that enumerate game content derive from the
 >   data tables instead of restating them — `AA_TOWER_NAMES` (hitsAir &&
 >   !support) feeds every "who can hit fliers" sentence, and the `support`

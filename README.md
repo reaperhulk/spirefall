@@ -89,6 +89,9 @@ affixes, 31 relics with rarity/reroll/pity, four abilities, six Trials, endless
 Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 23
 achievements, daily runs with streaks, generated battlefields across 4 biomes, a
 generative biome-keyed score with key-matched SFX, watchable/shareable replays,
+an active-play layer (overcharge taps, execute windows, a steerable Spire beam,
+per-wave boon drafts, kill-streak tempo combos, tower veterancy, physical coin
+payouts — seven reasons to play at 1×),
 saves with transfer codes, PWA install, deep links, and a full test harness
 (unit, determinism, property, golden, balance-envelope, perf, fuzz, and browser
 E2E suites — including an honest piloted victory). `docs/iterations.md` logs the

@@ -52,6 +52,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+195. *(active-play package, close-out)* **Docs + confidence pass** —
+    PLAN's shipped index gains the active-play package entry; README
+    names the seven systems. Closing deep hunt (378 evals, budgets
+    0/5k/8k, seeds alpha/gamma/delta, all new genes live): PASSED —
+    no breaking finds; warnings are zero-spark accounts reaching
+    12–15 waves (ref 3) on the soft delta seed under PERFECT
+    attention-free verb spam (beam + execute + overcharge every
+    tick). That skew is the design pillar working — an engaged
+    player should beat an AFK one — but it does mean early-meta
+    sparks come faster for skilled hands; if progression starts
+    feeling cheap, the free verbs (beam DPT, execute bonus) are the
+    tuning knobs, and the weekly CI hunt is watching. 232 unit
+    tests, 53 e2e specs.
+
 194. *(active-play package, 7/7)* **The Spire beam** — hold B and the
     ninth tower is your own hand: a thin steered ray (cursor-follow,
     cell by cell) biting 1/tick at the aim point. Armor taxes it to
