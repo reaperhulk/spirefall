@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+174. *(marathon II, iteration 86)* **Anti-air roster truth** — three
+    stale strings still said "only Arrow, Tesla, and Sniper" hit
+    fliers (codex trait, codex Flying mechanic, preview ✈ tooltip);
+    the lance joined that roster at birth. All three now name it,
+    and the codex lance prose matches the shipped Strongest default.
+    203 unit tests, 48 e2e specs.
+
 173. *(marathon II, iteration 85)* **The lance ships aimed right** —
     the codex told players to set Strongest targeting; the tower
     spawned on 'first', bouncing its ramp off every fresh runner. A

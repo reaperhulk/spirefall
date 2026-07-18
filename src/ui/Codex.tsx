@@ -60,7 +60,7 @@ const speedCps = (mcPerTick: number): string => ((mcPerTick * 30) / 1000).toFixe
 
 function enemyTraits(type: EnemyType, def: EnemyDef): string[] {
   const traits: string[] = []
-  if (def.flying) traits.push('Flying — walks over the maze; only Arrow, Tesla, and Sniper can target it')
+  if (def.flying) traits.push('Flying — walks over the maze; only Arrow, Tesla, Sniper, and Lance can target it')
   if (def.phasing)
     traits.push(
       `Phasing — untargetable for ${secs(def.phasing.hiddenTicks)} out of every ${secs(def.phasing.visibleTicks + def.phasing.hiddenTicks)}`,
@@ -112,7 +112,7 @@ const TOWER_NOTES: Partial<Record<TowerType, string>> = {
   sniper: `Executes elites (+${SNIPER_ELITE_BONUS_PCT}% to them) and its heavy single shots punch through shields and armor.`,
   mint: 'Never attacks — pays gold every cleared wave. An investment against future waves.',
   beacon: 'Never attacks — boosts towers in range. Auras do NOT stack: a tower takes only the strongest beacon.',
-  lance: 'Commits to one mark: every consecutive hit lands harder. Set it to Strongest targeting and let it duel the boss — against hordes it keeps starting over.',
+  lance: 'Commits to one mark: every consecutive hit lands harder. It ships aimed at the Strongest — let it duel the boss; against hordes it keeps starting over.',
 }
 
 interface MechanicEntry {
@@ -137,7 +137,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'Flying',
-    body: `Fliers (✈) ignore your maze and fly straight for the Spire. Only Arrow, Tesla, and Sniper towers can target them — and Arrows deal +${ARROW_AIR_BONUS_PCT}% to them.`,
+    body: `Fliers (✈) ignore your maze and fly straight for the Spire. Only Arrow, Tesla, Sniper, and Lance towers can target them — and Arrows deal +${ARROW_AIR_BONUS_PCT}% to them.`,
   },
   {
     title: 'Crits',

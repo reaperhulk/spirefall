@@ -44,7 +44,7 @@ export function WavePreview({
               >
                 {n}× {ENEMIES[type].name}
                 {ENEMIES[type].flying && (
-                  <span className="air-mark" title="Flying — only Arrow, Tesla, and Sniper can hit it">
+                  <span className="air-mark" title="Flying — only Arrow, Tesla, Sniper, and Lance can hit it">
                     ✈
                   </span>
                 )}
