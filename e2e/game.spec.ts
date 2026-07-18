@@ -980,6 +980,13 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
   await clickCell(page, 7, 5)
   await clickCell(page, 8, 5)
   await expect(page.getByTestId('hint')).toContainText('Send the wave')
+  // Waves 1 and 2: gold economy, then the ability nudge mid-wave-2 — the
+  // footer buttons players most often never discover on their own.
+  await page.getByTestId('start-wave').click()
+  await page.evaluate(() => window.__harness.fastForward(90))
+  await expect(page.getByTestId('hint')).toContainText('Kills pay gold')
+  await page.getByTestId('start-wave').click()
+  await expect(page.getByTestId('hint')).toContainText('Meteor')
   // Dismiss kills hints permanently, across reloads.
   await page.locator('.hint-close').click()
   await expect(page.getByTestId('hint')).not.toBeVisible()

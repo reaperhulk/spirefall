@@ -555,6 +555,10 @@ export default function App() {
       hint = 'Send the wave when ready (Space). Enemies march the lit path — leaks hit the Spire, and it only has 10 HP.'
     } else if (state.wave === 1 && state.phase === 'build') {
       hint = 'Kills pay gold; every wave is stronger than the last. The scouting report above shows exactly what is coming.'
+    } else if (state.wave === 2 && state.phase === 'wave') {
+      // Meteor and Frost Nova sit charged from run one — the footer buttons
+      // players most often never discover on their own.
+      hint = 'Your abilities are charged: Meteor (Q) and Frost Nova (W) are free every wave — aim them into the thick of the horde.'
     }
   }
   const dismissHints = () => {

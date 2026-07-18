@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+122. *(marathon II, iteration 34)* **The ability nudge** — meteor and
+    frost nova sit charged from run one, and nothing ever pointed at
+    them (the victory pilot's six defeats showed how much they
+    matter). Fourth first-run hint, mid-wave-2: "Your abilities are
+    charged: Meteor (Q) and Frost Nova (W) are free every wave." The
+    hints e2e now walks all four hints in sequence before dismissing.
+    193 unit tests, 42 e2e specs.
+
 121. *(marathon II, iteration 33)* **Repair budget truthfulness +
     PLAN refresh** — the repair button computed its cap from the base
     constant, so an Emberbound Crews account would see "crews spent"
