@@ -52,6 +52,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+175. *(marathon II, iteration 87)* **The roster can't rot again** —
+    iteration 86 fixed three stale anti-air strings by hand; this one
+    makes the class of bug impossible. `AA_TOWER_NAMES`/`AA_TOWER_LIST`
+    derive from the tower table (`hitsAir && !support`), and all three
+    UI sentences (codex trait, codex Flying mechanic, preview ✈
+    tooltip) interpolate the derived list — a future ninth tower that
+    hits air names itself everywhere on the day it's defined. The new
+    `support` flag on TowerDef also replaces combat's hardcoded
+    `mint || beacon` skip, so "never fires" is now data, not a type
+    list. Behavior-identical: goldens untouched. 203 unit tests, 48
+    e2e specs.
+
 174. *(marathon II, iteration 86)* **Anti-air roster truth** — three
     stale strings still said "only Arrow, Tesla, and Sniper" hit
     fliers (codex trait, codex Flying mechanic, preview ✈ tooltip);

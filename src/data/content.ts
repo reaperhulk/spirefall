@@ -96,6 +96,7 @@ export interface TowerTierDef {
 export interface TowerDef {
   name: string
   hitsAir: boolean // can this tower target fliers?
+  support?: boolean // never fires (mint, beacon) — combat skips it entirely
   tiers: [TowerTierDef, TowerTierDef, TowerTierDef]
 }
 
@@ -148,6 +149,7 @@ export const TOWERS: Record<TowerType, TowerDef> = {
   mint: {
     name: 'Mint',
     hitsAir: false,
+    support: true,
     tiers: [
       { cost: 100, damage: 0, range: 0, cooldown: 0, mintYield: 12 },
       { cost: 130, damage: 0, range: 0, cooldown: 0, mintYield: 28 },
@@ -170,6 +172,7 @@ export const TOWERS: Record<TowerType, TowerDef> = {
   beacon: {
     name: 'Beacon',
     hitsAir: false,
+    support: true,
     tiers: [
       { cost: 90, damage: 0, range: 1600, cooldown: 0, auraPct: 12 },
       { cost: 120, damage: 0, range: 1800, cooldown: 0, auraPct: 18 },
@@ -400,6 +403,13 @@ export const RELICS: Record<RelicId, RelicDef> = {
 }
 
 export const RELIC_IDS = Object.keys(RELICS) as RelicId[]
+
+// The anti-air roster, DERIVED — every UI string naming who can hit fliers
+// reads this, so a new tower can never silently rot the docs again.
+export const AA_TOWER_NAMES = Object.values(TOWERS)
+  .filter((d) => d.hitsAir && !d.support)
+  .map((d) => d.name)
+export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
 export const RELIC_WAVE_INTERVAL = 5
 export const RELIC_OFFER_SIZE = 3
 

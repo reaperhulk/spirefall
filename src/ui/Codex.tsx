@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  AA_TOWER_LIST,
   ABILITIES,
   AFFIXES,
   ARROW_AIR_BONUS_PCT,
@@ -60,7 +61,7 @@ const speedCps = (mcPerTick: number): string => ((mcPerTick * 30) / 1000).toFixe
 
 function enemyTraits(type: EnemyType, def: EnemyDef): string[] {
   const traits: string[] = []
-  if (def.flying) traits.push('Flying — walks over the maze; only Arrow, Tesla, Sniper, and Lance can target it')
+  if (def.flying) traits.push(`Flying — walks over the maze; only ${AA_TOWER_LIST} can target it`)
   if (def.phasing)
     traits.push(
       `Phasing — untargetable for ${secs(def.phasing.hiddenTicks)} out of every ${secs(def.phasing.visibleTicks + def.phasing.hiddenTicks)}`,
@@ -137,7 +138,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'Flying',
-    body: `Fliers (✈) ignore your maze and fly straight for the Spire. Only Arrow, Tesla, Sniper, and Lance towers can target them — and Arrows deal +${ARROW_AIR_BONUS_PCT}% to them.`,
+    body: `Fliers (✈) ignore your maze and fly straight for the Spire. Only ${AA_TOWER_LIST} towers can target them — and Arrows deal +${ARROW_AIR_BONUS_PCT}% to them.`,
   },
   {
     title: 'Crits',

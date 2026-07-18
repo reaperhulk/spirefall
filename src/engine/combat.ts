@@ -354,7 +354,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
   }
 
   for (const tower of state.towers) {
-    if (tower.type === 'mint' || tower.type === 'beacon') continue // support towers don't fight
+    if (TOWERS[tower.type].support) continue // support towers don't fight
     if (tower.cooldown > 0) {
       tower.cooldown -= 1
       continue

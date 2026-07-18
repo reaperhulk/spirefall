@@ -1,4 +1,4 @@
-import { AFFIXES, CARAPACE_BREAK_DAMAGE, ENEMIES, TRIALS } from '../data/content'
+import { AA_TOWER_LIST, AFFIXES, CARAPACE_BREAK_DAMAGE, ENEMIES, TRIALS } from '../data/content'
 import type { previewNextWave } from '../engine/step'
 import type { EnemyType, RunState } from '../engine/types'
 
@@ -44,7 +44,7 @@ export function WavePreview({
               >
                 {n}× {ENEMIES[type].name}
                 {ENEMIES[type].flying && (
-                  <span className="air-mark" title="Flying — only Arrow, Tesla, Sniper, and Lance can hit it">
+                  <span className="air-mark" title={`Flying — only ${AA_TOWER_LIST} can hit it`}>
                     ✈
                   </span>
                 )}
