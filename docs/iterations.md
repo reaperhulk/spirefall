@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+183. *(marathon II, iteration 95)* **The hunt gets a schedule** — the
+    deep evolutionary fuzz only ran when someone remembered to run
+    it. New `fuzz.yml` workflow: Mondays 06:00 UTC (plus manual
+    dispatch), a fail-fast-off matrix over all four biomes running
+    `npm run fuzz:builds` with `FUZZ_BIOME` set — 4×(pop 20 × 5 gens
+    × 4 budgets × 4 seeds). A BREAKING finding fails the job with the
+    repro genome in the log; warnings print, same as local. Verified:
+    YAML parses, the sweep honors FUZZ_BIOME in a smoke run. CI
+    config only — no app code, no goldens. 204 unit tests, 49 e2e
+    specs.
+
 182. *(marathon II, iteration 94)* **The dial gets documented, the
     sweep finishes** — the codex lance prose and ramp progression
     line now name the new battlefield tell (full dial = ×10, the
