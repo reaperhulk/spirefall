@@ -95,6 +95,23 @@ describe('build fuzzer', () => {
     }
   }, 300_000)
 
+  // Emberbound Crews (2026-07) raises the mid-wave repair cap to 3 — the
+  // very cap that killed this exploit. Prove the node priced out the tank:
+  // the same all-in genome with MAX crews must still lose every cheap run.
+  it('Emberbound Crews at max does not resurrect the repair-tank win', () => {
+    const bot = makePolicyBot(HONED_ALLIN)
+    for (const budget of [5000, 8000]) {
+      for (const seed of ['alpha', 'gamma']) {
+        const meta = spendSparks(
+          { ...createMeta(), sparks: budget, emberUpgrades: { ember_crews: 2 } },
+          HONED_ALLIN.metaPriority,
+        )
+        const { state } = autoplay(createRun(meta, seed), bot, 120_000)
+        expect(state.phase, `${seed} @ ${budget} sparks + max crews`).toBe('defeat')
+      }
+    }
+  }, 300_000)
+
   // Second pinned find (2026-07, iteration-50 deep hunt): a mint-heavy
   // economy comp riding Bounty Banner (+1 gold per kill — linear in the
   // horde's body count) plus Glass Cannon into 5k/8k victories on beta and

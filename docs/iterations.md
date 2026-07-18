@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+126. *(marathon II, iteration 38)* **Emberbound Crews proven safe** —
+    the node raises the exact cap that killed the repair-tank exploit,
+    so prove it stayed dead: the pinned Honed-Arsenal all-in genome
+    with MAX crews (3 casts/wave) still loses every 5k/8k run on both
+    hunt seeds. Pinned as a permanent regression beside the original.
+    194 unit tests, 43 e2e specs.
+
 125. *(marathon II, iteration 37)* **The invisible narrator** — screen
     readers heard nothing from a canvas game. A visually-hidden
     `role="status"` aria-live region now narrates the major beats:
