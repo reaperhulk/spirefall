@@ -52,6 +52,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+106. *(marathon II, iteration 18)* **Debt check + backlog re-derivation**
+    — sizes: render.ts 1857, styles.css 1530, App.tsx 1281. Assessment:
+    large but coherent single-purpose modules with clear sections; a
+    mechanical split would churn hundreds of lines with zero behavior
+    change and real regression risk mid-marathon. NOT split; thresholds
+    set — revisit when App.tsx crosses ~1600 lines or render.ts gains
+    another subsystem. Next block (19+): replay-link sharing (?replay=
+    gzip blob in the URL, building on SF2 compression + spectator
+    sessions); replay banner UX (wave progress + speed presets);
+    all-biome deep hunts at 5k/8k with the full axis space (frostfen/
+    highlands only ever got 60-run sweeps); tablet/landscape audit
+    (768–1024px). No code change this iteration. 191 unit tests, 34
+    e2e specs.
+
 105. *(marathon II, iteration 17)* **Debug horde hook closes the perf
     gap** — `__harness.spawnHorde(n)` (debug-only, documented as such)
     injects n live runners marching from the gate, because iteration
