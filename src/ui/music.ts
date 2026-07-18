@@ -103,6 +103,7 @@ export class Music {
   private flourishFrom = -1 // totalStep where a cadence run starts (wave clear, boss down)
   private announceFrom = -1 // totalStep where the wave-start call plays
   private forceChordStep = -1 // boss entrance: chord slams on THIS step, not the next bar
+  private dropUntilStep = -1 // boss entrance dropout: groove silenced until this step
 
   constructor(sfx: Sfx) {
     this.sfx = sfx
@@ -131,9 +132,24 @@ export class Music {
         if (e.enemy.startsWith('boss')) this.flourishFrom = this.totalStep
       } else if (e.type === 'enemy_spawned' && e.enemy.startsWith('boss')) {
         // Boss entrance: the chord slams on the very next step (~0.3s),
-        // with a heartbeat kick and a dark drone — not at the next bar,
-        // which could be seconds after the boss is already dead.
+        // then a full BAR of dropout — melody, bass, and hats silenced,
+        // heartbeat kick only. Silence-then-different reads as "the music
+        // changed"; another layer on top of the same groove never did.
         this.forceChordStep = this.totalStep
+        this.dropUntilStep = this.totalStep + STEPS_PER_BAR
+      } else if (e.type === 'run_ended') {
+        // Defeat: the score collapses NOW — the pad sinks an octave in a
+        // slow power-down glide, the filter closes to a murmur, and the
+        // scheduler (see scheduleStep) drops to a cold toll.
+        const ctx = this.boundCtx
+        if (e.outcome === 'defeat' && ctx && ctx.state === 'running') {
+          for (const o of this.padOsc) {
+            o.frequency.setTargetAtTime(o.frequency.value / 2, ctx.currentTime, 0.7)
+          }
+          this.padFilter?.frequency.setTargetAtTime(160, ctx.currentTime, 0.4)
+          this.padGain?.gain.setTargetAtTime(0.06, ctx.currentTime, 0.8)
+          this.killHeat = 0
+        }
       } else if (e.type === 'wave_started') {
         this.announceFrom = this.totalStep // rising call as the horde arrives
       } else if (e.type === 'wave_cleared') {
@@ -208,7 +224,9 @@ export class Music {
 
     // Intensity from the battlefield, eased toward its target.
     const over = state.phase === 'defeat' || state.phase === 'victory'
-    const bossAlive = state.enemies.some((e) => e.type.startsWith('boss') && e.hp > 0)
+    const overMode = over ? (state.phase === 'defeat' ? ('defeat' as const) : ('victory' as const)) : null
+    // A boss corpse on the defeat screen must not keep the vamp going.
+    const bossAlive = !over && state.enemies.some((e) => e.type.startsWith('boss') && e.hp > 0)
     let target = 0.15
     if (state.phase === 'wave') {
       target = 0.4 + Math.min(0.25, state.enemies.length / 120)
@@ -230,7 +248,7 @@ export class Music {
 
     // Schedule the eighth-note grid up to 0.6s ahead.
     while (this.nextNoteAt < ctx.currentTime + 0.6) {
-      this.scheduleStep(ctx, this.nextNoteAt, root, scale, prog, (seedHash >>> 4) % RHYTHMS.length, bossAlive)
+      this.scheduleStep(ctx, this.nextNoteAt, root, scale, prog, (seedHash >>> 4) % RHYTHMS.length, bossAlive, overMode)
       this.nextNoteAt += BEAT
       this.totalStep += 1
     }
@@ -244,38 +262,68 @@ export class Music {
     prog: number[],
     rhythmSalt: number,
     bossAlive: boolean,
+    overMode: 'defeat' | 'victory' | null,
   ): void {
     if (!this.bus || !this.padGain || !this.padFilter) return
     const len = scale.length
     const bar = Math.floor(this.totalStep / STEPS_PER_BAR)
     const step = this.totalStep % STEPS_PER_BAR
-    // A living boss doubles the harmonic rhythm: the same progression, but
-    // chords turn over every half bar — urgency without touching tempo.
+    // A chord tone, stacked in scale space: k=0 root, k=1 "third", k=2 "fifth".
+    // (Defined before the defeat branch — the toll needs the root too.)
+    const toneOf = (deg: number, k: number): number => {
+      const off = deg + 2 * k
+      return root + scale[off % len]! + 12 * Math.floor(off / len)
+    }
+
+    if (overMode === 'defeat') {
+      // The Spire has fallen. No groove, no melody — the pad holds a cold
+      // octave-down tonic at a whisper and a dry low bell tolls every
+      // other bar. The silence between tolls IS the defeat.
+      if (this.totalStep % STEPS_PER_BAR === 0) {
+        this.tunePad(ctx, at, [toneOf(0, 0) - 12, toneOf(0, 1) - 12, toneOf(0, 2) - 12], 0.5)
+        this.padGain.gain.setTargetAtTime(0.04, at, 0.6)
+        this.padFilter.frequency.setTargetAtTime(160, at, 0.6)
+      }
+      if (this.totalStep % (STEPS_PER_BAR * 2) === 0) {
+        this.blip(ctx, at, midiHz(toneOf(0, 0) - 12), 1.6, 'sine', 0.25)
+      }
+      return
+    }
+
+    // A living boss abandons the wandering progression for a two-chord dark
+    // vamp — an ostinato oscillating every half bar, the whole pad an
+    // octave down. Different harmonic MATERIAL, not just a faster cycle:
+    // that's what makes the ear say "boss music".
     const harmonicSteps = bossAlive ? STEPS_PER_BAR / 2 : STEPS_PER_BAR
-    const chordDegree = prog[Math.floor(this.totalStep / harmonicSteps) % prog.length]!
+    const chordDegree = bossAlive
+      ? Math.floor(this.totalStep / harmonicSteps) % 2 === 0
+        ? 0
+        : 1
+      : prog[Math.floor(this.totalStep / harmonicSteps) % prog.length]!
     // Every other pass through the progression LIFTS: melody reaches higher
     // chord tones and thickens, the pad brightens, the bass answers more.
     // Doubles the form (~44s) so the loop stops announcing itself.
     const lift = Math.floor(bar / prog.length) % 2 === 1
     // The last bar of each pass earns a little cadence fill.
     const cadenceBar = bar % prog.length === prog.length - 1
-    // A chord tone, stacked in scale space: k=0 root, k=1 "third", k=2 "fifth".
-    const tone = (deg: number, k: number): number => {
-      const off = deg + 2 * k
-      return root + scale[off % len]! + 12 * Math.floor(off / len)
-    }
+    const tone = toneOf
+    // Boss-entrance dropout: the groove (bass, hats, melody, calls) is
+    // silenced for a bar — only the heartbeat kick under the ducked pad.
+    const dropped = this.totalStep < this.dropUntilStep
 
     const bossEntrance = this.totalStep === this.forceChordStep
     if (this.totalStep % harmonicSteps === 0 || bossEntrance) {
       // Chord change: glide the pad voices to the new chord, swell the level
       // on the downbeat and relax through the bar (breathing, not droning),
-      // and let the filter bloom open then settle.
-      this.tunePad(ctx, at, [tone(chordDegree, 0), tone(chordDegree, 1), tone(chordDegree, 2)])
+      // and let the filter bloom open then settle. Boss vamps ride an
+      // octave down — register is half of what makes them read as a shift.
+      const drop = bossAlive ? 12 : 0
+      this.tunePad(ctx, at, [tone(chordDegree, 0) - drop, tone(chordDegree, 1) - drop, tone(chordDegree, 2) - drop])
       this.lastTonality = {
         scalePCs: scale.map((s) => (root + s) % 12),
         chordPCs: [0, 1, 2].map((k) => tone(chordDegree, k) % 12),
       }
-      const level = this.padLevel * (lift ? 1.12 : 1)
+      const level = this.padLevel * (lift ? 1.12 : 1) * (dropped ? 0.4 : 1)
       const bright = lift ? 260 : 0
       this.padGain.gain.setTargetAtTime(level, at, 0.3)
       this.padGain.gain.setTargetAtTime(level * 0.65, at + BEAT * 4, 0.9)
@@ -294,7 +342,9 @@ export class Music {
     // Bass: the chord root anchors every downbeat (triangle, not sine — the
     // upper harmonics keep it audible on phone speakers), the chord's fifth
     // answers mid-bar once the fight warms, and at full boil it pulses.
-    if (step === 0) {
+    if (dropped) {
+      // Dropout bar: heartbeat only. The kick block below still runs.
+    } else if (step === 0) {
       this.blip(ctx, at, midiHz(tone(chordDegree, 0)), 0.6, 'triangle', 0.35 + this.intensity * 0.3)
     } else if (step === 4 && (lift || this.intensity > 0.3)) {
       this.blip(ctx, at, midiHz(tone(chordDegree, 1)), 0.45, 'triangle', 0.4)
@@ -309,9 +359,10 @@ export class Music {
       this.kick(ctx, at)
     }
     // Hat: offbeat air at high intensity — or whenever kills are streaming.
-    if ((this.intensity > 0.55 || this.killHeat > 5) && step % 2 === 1 && Math.random() < 0.8) {
+    if (!dropped && (this.intensity > 0.55 || this.killHeat > 5) && step % 2 === 1 && Math.random() < 0.8) {
       this.hat(ctx, at)
     }
+    if (dropped) return // the dropout bar: heartbeat and ducked pad, nothing else
 
     // Wave start: a two-note rising call as the horde arrives — the score
     // reacts to enemies APPEARING, not only to them dying.
@@ -365,7 +416,8 @@ export class Music {
 
   // Glide the sustained pad voices to a new chord; build them on first use
   // (or after a context rebuild). Slight per-voice detune keeps it wide.
-  private tunePad(ctx: AudioContext, at: number, midis: number[]): void {
+  // `glide` is the retune time constant — slow for the defeat collapse.
+  private tunePad(ctx: AudioContext, at: number, midis: number[], glide = 0.08): void {
     if (!this.padFilter) return
     if (this.padOsc.length !== midis.length) {
       this.padOsc.forEach((o) => {
@@ -389,7 +441,7 @@ export class Music {
       return
     }
     midis.forEach((m, i) => {
-      this.padOsc[i]!.frequency.setTargetAtTime(midiHz(m), at, 0.08)
+      this.padOsc[i]!.frequency.setTargetAtTime(midiHz(m), at, glide)
     })
   }
 

@@ -38,6 +38,26 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+84. *(playtest feedback)* **Boss music is structural, defeat is a
+    collapse** — the boss entrance read as a NOISE on top of an
+    unchanged score (additive kick+drone over the same progression,
+    register, and groove), and defeat only eased an intensity variable
+    (the pad hummed on as if nothing happened). Both rebuilt as
+    structural changes to what gets scheduled: BOSS — entrance triggers
+    a one-bar DROPOUT (bass/hats/melody silenced, heartbeat kick under
+    a ducked pad), the pad drops an OCTAVE and stays there, and while
+    the boss lives the harmony abandons the 8-chord progression for a
+    two-chord half-bar VAMP (different harmonic material, not a faster
+    cycle). DEFEAT — on run_ended the pad sinks an octave in a slow
+    power-down glide, the filter closes to 160Hz, the groove stops
+    being scheduled entirely, and a dry low bell tolls every other bar;
+    the silence between tolls is the defeat. Verified in a REAL
+    playthrough (rich-meta pilot driven through the harness, analyser
+    tap, SFX muted): boss vamp low-register median 97Hz vs 221Hz
+    pre-boss (octave+ shift), entrance dropout dips to 32% of combat
+    RMS, post-defeat median RMS 20% of combat. 183 unit tests, 32 e2e
+    specs.
+
 83. *(fuzzer breadth program)* **The search space now covers the spatial
     game** — audit verdict on "does the fuzzer try mazes / single-tower
     maxing / meta dumps?": meta dumps yes, tower-maxing partial, mazes
