@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+142. *(marathon II, iteration 54)* **The narrator learns endless** —
+    Cataclysm offers ("choose your doom: Surge or Ironclad") and
+    strikes ("the world hardens: Surge") now reach the aria-live
+    region, completing iteration 51's accessibility story. 195 unit
+    tests, 44 e2e specs.
+
 141. *(marathon II, iteration 53)* **Zephyrhost** — sixth boss, wave
     60 in the cycle: an airborne carrier that soars over every maze
     and broods FLIERS, so deep endless faces an air armada only

@@ -254,6 +254,12 @@ export default function App() {
           setSrMessage(`The Spire takes ${e.damage} damage — ${e.spireHp} HP left.`)
         } else if (e.type === 'victory_achieved') {
           setSrMessage('Victory — the cycle breaks. The Spire stands.')
+        } else if (e.type === 'cataclysm_offered') {
+          setSrMessage(
+            `A Cataclysm strikes — choose your doom: ${e.options.map((c) => CATACLYSMS[c].name).join(' or ')}.`,
+          )
+        } else if (e.type === 'cataclysm_struck') {
+          setSrMessage(`The world hardens: ${CATACLYSMS[e.cataclysm].name}.`)
         } else if (e.type === 'run_ended') {
           setSrMessage(
             e.outcome === 'victory'
