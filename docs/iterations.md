@@ -52,6 +52,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+168. *(marathon II, iteration 80)* **Block-80 boundary** — 80 of 100.
+    The 71–79 arc was the Lance arc bracketed by render truthfulness:
+    boss regalia + phased fades, then the full 8th-tower cycle (def →
+    combat → specs → unlock → shop grid → render → panel → codex →
+    bots → fuzzer space → launch pin → deep hunt → e2e), Duelist's
+    Oath completing the build-around relic family (goldens
+    regenerated with the reshuffle explained), and the voice/dart
+    launch-gap audit. Final-stretch backlog (81–100): a Duelist
+    achievement (lance top-damage win), the closing fuzz confidence
+    matrix (biomes × budgets — the pool AND tower roster changed
+    since iteration 24's), a final docs/PLAN status pass, App/render
+    split only if forced, and fresh derivation each iteration. 201
+    unit tests, 48 e2e specs.
+
 167. *(marathon II, iteration 79)* **The lance gets its voice and its
     dart** — launch-gap audit found the lance firing SILENTLY (the
     per-type shot map predates it) and drawing the generic fallback
