@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+128. *(marathon II, iteration 40)* **README truth pass + block-40
+    boundary** — the README still described the fixed-map era: 5 maps
+    (now 4 generated biomes), 23 relics (30), 13 enemies (15, 5-boss
+    cycle), four trials (five), a dozen achievements (twenty), and a
+    replay story that predates watching/`?replay=` links, keyboard
+    play, and the narrator. All corrected against live data counts.
+    Next-block candidates: daily-done marker on the calendar button,
+    render.ts split *if* a new subsystem lands, boss-5 heal telegraph
+    audit, deep fuzz refresh after the next balance-adjacent change.
+    194 unit tests, 43 e2e specs.
+
 127. *(marathon II, iteration 39)* **Mid-run loadout parity** — the S
     stats modal answered "how's it going" but not "what am I playing":
     the relic/cataclysm chip rows from the Result tab are now a shared
