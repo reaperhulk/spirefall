@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+150. *(marathon II, iteration 62)* **Service-worker hygiene** — the
+    PWA's update story was audited sound (network-first navigations +
+    skipWaiting: new builds land on next load), but every old build's
+    fingerprinted assets stayed cached forever. The worker now prunes
+    oldest-first past 80 entries on successful navigations (activate
+    almost never refires — the worker's own bytes rarely change, so
+    pruning rides fetch instead). Best-effort by design: hygiene is
+    never worth failing a fetch. 195 unit tests, 44 e2e specs.
+
 149. *(marathon II, iteration 61)* **Endless holds under choice** —
     a 20k-budget evolutionary sweep (48 runs, pop 8 × 3 gens, fresh
     seed) with the cataclysm-choice flow live: no curve-breaking or
