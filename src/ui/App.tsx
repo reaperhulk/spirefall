@@ -81,7 +81,7 @@ function loadDailyBest(): DailyBest | null {
   return parsed && parsed.date === new Date().toISOString().slice(0, 10) ? parsed : null
 }
 
-const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon']
+const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon', 'lance']
 const SPEEDS = [0, 1, 2, 3, 5, 10]
 
 // One-line combat role, shown in tooltips and the tower panel.
@@ -90,6 +90,7 @@ function towerRole(type: TowerType): string {
   if (type === 'sniper') return 'hits ground & air ✈ · 1.5× vs elites, pierces shields'
   if (type === 'tesla') return 'hits ground & air ✈'
   if (type === 'beacon') return 'support — amplifies towers in range, never fires'
+  if (type === 'lance') return 'hits ground & air ✈ · ramps +15%/hit on a held target'
   return 'ground only — cannot hit fliers'
 }
 const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush', 'bulwark']
@@ -589,7 +590,7 @@ export default function App() {
         sessionRef.current.setSpeed(SPEEDS[next]!)
         return
       }
-      const towerIdx = ['1', '2', '3', '4', '5', '6', '7'].indexOf(e.key)
+      const towerIdx = ['1', '2', '3', '4', '5', '6', '7', '8'].indexOf(e.key)
       if (towerIdx !== -1) {
         const type = TOWER_KEYS[towerIdx]!
         if (sessionRef.current.state.availableTowers.includes(type)) {

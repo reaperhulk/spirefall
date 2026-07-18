@@ -7,7 +7,7 @@ import type { Rng } from './rng'
 // (determinism.test.ts proves it).
 
 export type Phase = 'build' | 'wave' | 'defeat' | 'victory'
-export type TowerType = 'arrow' | 'cannon' | 'frost' | 'tesla' | 'sniper' | 'mint' | 'beacon'
+export type TowerType = 'arrow' | 'cannon' | 'frost' | 'tesla' | 'sniper' | 'mint' | 'beacon' | 'lance'
 export type Targeting = 'first' | 'last' | 'strongest' | 'weakest' | 'nearest' | 'elites'
 export type EnemyType =
   | 'runner'
@@ -96,6 +96,8 @@ export interface Tower {
   damageDealt: number // total damage dealt (lifetime)
   shots: number // shots fired (mints: payouts made); 0 = full sell refund
   earned?: number // mints only: lifetime gold paid out (optional — backfills lazily)
+  rampTarget?: number // lances only: enemy id the ramp is locked onto
+  rampStacks?: number // lances only: consecutive hits on rampTarget (capped)
 }
 
 export interface Enemy {

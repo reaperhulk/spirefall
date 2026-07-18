@@ -154,6 +154,19 @@ export const TOWERS: Record<TowerType, TowerDef> = {
       { cost: 280, damage: 0, range: 0, cooldown: 0, mintYield: 52 },
     ],
   },
+  lance: {
+    // The boss-killer: every consecutive hit on the SAME target ramps the
+    // next one (+LANCE_RAMP_PCT per stack, capped); switching targets — or
+    // the target dying — resets to zero. Monstrous against something that
+    // survives ten hits, mediocre against a horde that doesn't.
+    name: 'Lance',
+    hitsAir: true,
+    tiers: [
+      { cost: 140, damage: 9, range: 3800, cooldown: 12 },
+      { cost: 160, damage: 18, range: 4200, cooldown: 11 },
+      { cost: 340, damage: 30, range: 4600, cooldown: 10 },
+    ],
+  },
   beacon: {
     name: 'Beacon',
     hitsAir: false,
@@ -176,6 +189,8 @@ export const TOWERS: Record<TowerType, TowerDef> = {
 // something you steer. Mint and Beacon keep their economy/support identity.
 
 export type TowerSpecId =
+  | 'momentum'
+  | 'skewer'
   | 'volley'
   | 'longbow'
   | 'mortar'
@@ -215,6 +230,10 @@ export const TOWER_SPECS: Partial<Record<TowerType, [TowerSpecDef, TowerSpecDef]
     { id: 'executor', name: 'Executor', description: 'Hits execute non-boss enemies below 10% HP.', cost: 250 },
     { id: 'overpen', name: 'Overpenetration', description: 'The slug carries through: one more enemy near the target takes full damage.', cost: 250 },
   ],
+  lance: [
+    { id: 'momentum', name: 'Momentum', description: 'The ramp climbs faster: +22% per consecutive hit instead of +15%.', cost: 260 },
+    { id: 'skewer', name: 'Skewer', description: 'Shots pierce shields outright — nothing blunts a committed lance.', cost: 260 },
+  ],
 }
 
 export const VOLLEY_EXTRA_TARGETS = 2
@@ -238,6 +257,9 @@ export const CAPACITOR_EVERY_SHOTS = 4
 export const CAPACITOR_DAMAGE_PCT = 300
 export const EXECUTOR_THRESHOLD_PCT = 10
 export const OVERPEN_RANGE = 1200
+export const LANCE_RAMP_PCT = 15 // per consecutive hit on the same target
+export const LANCE_MAX_STACKS = 10
+export const MOMENTUM_RAMP_PCT = 22 // Momentum spec: steeper ramp
 
 export function specForTower(type: TowerType, spec: TowerSpecId): TowerSpecDef | null {
   return TOWER_SPECS[type]?.find((sp) => sp.id === spec) ?? null

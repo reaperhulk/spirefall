@@ -81,6 +81,7 @@ const COLORS = {
     sniper: '#73daca',
     mint: '#e5c07b',
     beacon: '#ff9e64',
+    lance: '#f7768e',
   } as Record<TowerType, string>,
   hpBack: '#30354a',
   hpFill: '#9ece6a',
@@ -1006,6 +1007,25 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
         ctx.arc(0, 0, 11, halo + Math.PI, halo + Math.PI + 2.1)
         ctx.stroke()
         ctx.globalAlpha = 1
+        break
+      }
+      case 'lance': {
+        // A long couched spear on a pivot ring — one line of intent.
+        ctx.strokeStyle = '#5a2a34'
+        ctx.lineWidth = 2
+        circle(ctx, 0, 0, 5) // pivot ring
+        ctx.stroke()
+        ctx.rotate(aim)
+        ctx.fillStyle = color
+        ctx.fillRect(-5, -1, 20, 2) // shaft
+        ctx.beginPath() // head
+        ctx.moveTo(15, -3.5)
+        ctx.lineTo(21, 0)
+        ctx.lineTo(15, 3.5)
+        ctx.closePath()
+        ctx.fill()
+        ctx.fillStyle = '#5a2a34'
+        ctx.fillRect(-6, -2.5, 3, 5) // counterweight
         break
       }
       case 'mint': {

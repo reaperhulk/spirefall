@@ -18,6 +18,7 @@ export type MetaUpgradeId =
   | 'unlock_beacon'
   | 'unlock_gold_rush'
   | 'unlock_bulwark'
+  | 'unlock_lance'
 
 export interface MetaNodeDef {
   id: MetaUpgradeId
@@ -107,6 +108,13 @@ export const META_TREE: MetaNodeDef[] = [
     description: 'Unlock the Gold Rush ability.',
     maxLevel: 1,
     costs: [100],
+  },
+  {
+    id: 'unlock_lance',
+    name: 'Duelist Doctrine',
+    description: 'Unlock the Lance — its shots ramp against a sustained target. Bosses hate it.',
+    maxLevel: 1,
+    costs: [180],
   },
   {
     id: 'unlock_bulwark',

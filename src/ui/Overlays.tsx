@@ -177,6 +177,7 @@ const TOWER_BAR_COLORS: Record<string, string> = {
   sniper: '#73daca',
   mint: '#e5c07b',
   beacon: '#ff9e64',
+  lance: '#f7768e',
 }
 
 // Compact share bars: who did the work this run, and what died.
@@ -674,7 +675,7 @@ function HpSparkline({ hp }: { hp: number[] }) {
 }
 
 const SHORTCUTS: [string, string][] = [
-  ['1–7', 'Arm a tower for placement'],
+  ['1–8', 'Arm a tower for placement'],
   ['Q / W / E / F', 'Cast Meteor / Frost Nova / Gold Rush / Bulwark'],
   ['↑ ↓ ← →', 'Steer the placement cursor while armed'],
   ['Enter', 'Place / cast at the cursor'],

@@ -16,7 +16,12 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 >   Biomes unlock across the meta ladder; dailies share one roll for all players.
 > - **Tier-3 specializations** (`TOWER_SPECS` in content.ts): each combat tower
 >   commits to one of two paths at tier 3 (Volley/Longbow, Mortar/Breaker,
->   Blizzard/Permafrost, Arc Lattice/Capacitor, Executor/Overpenetration).
+>   Blizzard/Permafrost, Arc Lattice/Capacitor, Executor/Overpenetration,
+>   Momentum/Skewer).
+> - **The Lance** (8th tower, `unlock_lance`): consecutive hits on a held
+>   target join the additive damage stack (+15%/stack, cap 10; the panel's
+>   number is the shot's number); switching resets. Launch-pinned: a
+>   lance-rush loses at every budget — it's a specialist, not a core.
 > - **Transformative relics**: a rare/legendary tier that changes how a tower
 >   plays (ricochet, burn, detonate-on-slowed-death, ramping tesla, executes,
 >   interest, crit auras).

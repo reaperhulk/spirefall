@@ -18,6 +18,7 @@ const TOWER_COLORS: Record<string, string> = {
   sniper: '#73daca',
   mint: '#e5c07b',
   beacon: '#ff9e64',
+  lance: '#f7768e',
 }
 
 export function drawRunCard(summary: RunSummary): HTMLCanvasElement {

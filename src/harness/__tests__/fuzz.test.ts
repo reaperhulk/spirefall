@@ -61,7 +61,7 @@ describe('build fuzzer', () => {
   // curve. The per-wave repair-cast cap is what kills it; this pin keeps it
   // dead. If this test goes red, the repair economy has reopened.
   const HONED_ALLIN: PolicyGenome = {
-    ratio: { arrow: 4, cannon: 6, frost: 0, tesla: 2, sniper: 2, mint: 1, beacon: 1 },
+    ratio: { arrow: 4, cannon: 6, frost: 0, tesla: 2, sniper: 2, mint: 1, beacon: 1, lance: 0 },
     earlyType: 'arrow',
     upgradeAtTowers: 8,
     targetBase: 6,
@@ -121,7 +121,7 @@ describe('build fuzzer', () => {
   // optimality, not a relic exploit — so this pin holds the line exactly
   // there: any 5k win, or any 8k win beyond beta, is a regression.
   const BOUNTY_ECONOMY: PolicyGenome = {
-    ratio: { arrow: 7, cannon: 6, frost: 5, tesla: 1, sniper: 7, mint: 8, beacon: 0 },
+    ratio: { arrow: 7, cannon: 6, frost: 5, tesla: 1, sniper: 7, mint: 8, beacon: 0, lance: 0 },
     earlyType: 'arrow',
     upgradeAtTowers: 6,
     targetBase: 2,
@@ -164,7 +164,7 @@ describe('build fuzzer', () => {
   // gamma. Killed by the blizzard splash-duration haircut (50%) and the
   // mortar damage trim (140 -> 125). This pin holds that line.
   const MORTAR_BLIZZARD: PolicyGenome = {
-    ratio: { arrow: 1, cannon: 8, frost: 7, tesla: 3, sniper: 4, mint: 3, beacon: 1 },
+    ratio: { arrow: 1, cannon: 8, frost: 7, tesla: 3, sniper: 4, mint: 3, beacon: 1, lance: 0 },
     earlyType: 'arrow',
     upgradeAtTowers: 7,
     targetBase: 7,
@@ -206,7 +206,7 @@ describe('build fuzzer', () => {
   // maze→flier bias standing guard against low-anti-air maze comps
   // everywhere. This pin holds both.
   const EMBER_MAZE: PolicyGenome = {
-    ratio: { arrow: 7, cannon: 3, frost: 3, tesla: 0, sniper: 8, mint: 5, beacon: 6 },
+    ratio: { arrow: 7, cannon: 3, frost: 3, tesla: 0, sniper: 8, mint: 5, beacon: 6, lance: 0 },
     earlyType: 'arrow',
     upgradeAtTowers: 9,
     targetBase: 2,
@@ -230,7 +230,7 @@ describe('build fuzzer', () => {
       'spire_hp', 'starting_gold', 'unlock_mint', 'unlock_bulwark', 'unlock_beacon', 'unlock_gold_rush',
     ],
     placement: 'mazeLengthen',
-    specByType: { arrow: 0, cannon: 1, frost: 0, tesla: 0, sniper: 0, mint: 0, beacon: 0 },
+    specByType: { arrow: 0, cannon: 1, frost: 0, tesla: 0, sniper: 0, mint: 0, beacon: 0, lance: 0 },
     enhanceFocus: 'focus',
     targetingByType: { arrow: 'weakest', cannon: 'strongest', frost: 'first', sniper: 'elites', mint: 'first', beacon: 'nearest' },
   }

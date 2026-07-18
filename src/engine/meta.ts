@@ -159,6 +159,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
   if (metaLevel(meta, 'unlock_tesla') > 0) availableTowers.push('tesla')
   if (metaLevel(meta, 'unlock_mint') > 0) availableTowers.push('mint')
   if (metaLevel(meta, 'unlock_beacon') > 0) availableTowers.push('beacon')
+  if (metaLevel(meta, 'unlock_lance') > 0) availableTowers.push('lance')
 
   const abilities: Record<string, number> = { meteor: 0, frost_nova: 0 }
   if (metaLevel(meta, 'unlock_gold_rush') > 0) abilities['gold_rush' satisfies AbilityId] = 0

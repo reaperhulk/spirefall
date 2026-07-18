@@ -6,6 +6,9 @@ import {
   BLIZZARD_SPLASH_TICKS_PCT,
   BREAKER_DAMAGE_PCT,
   CAPACITOR_DAMAGE_PCT,
+  LANCE_MAX_STACKS,
+  LANCE_RAMP_PCT,
+  MOMENTUM_RAMP_PCT,
   CAPACITOR_EVERY_SHOTS,
   EXECUTOR_THRESHOLD_PCT,
   LATTICE_EXTRA_CHAIN,
@@ -97,6 +100,12 @@ export function damageBreakdown(
   if (tower.enhance > 0) parts.push({ source: `Enhance +${tower.enhance}`, pct: ENHANCE_DAMAGE_PCT * tower.enhance })
   const aura = beaconAuraPct(state, tower)
   if (aura > 0) parts.push({ source: 'Beacon aura', pct: aura })
+  // Lance ramp: the LIVE stack count, so the panel reads what the next shot
+  // will actually do — the whole tower is this number climbing.
+  if (tower.type === 'lance' && (tower.rampStacks ?? 0) > 0) {
+    const perStack = tower.spec === 'momentum' ? MOMENTUM_RAMP_PCT : LANCE_RAMP_PCT
+    parts.push({ source: `Ramp ×${tower.rampStacks} (held target)`, pct: perStack * (tower.rampStacks ?? 0) })
+  }
   const totalPct = 100 + parts.reduce((sum, p) => sum + p.pct, 0)
   // Tier-3 paths multiply AFTER the additive stack — the same order
   // towersFire applies them, so the panel's number is the shot's number.
@@ -371,6 +380,23 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     else if (tower.spec === 'capacitor' && (tower.shots + 1) % CAPACITOR_EVERY_SHOTS === 0) {
       baseDamage = Math.floor((baseDamage * CAPACITOR_DAMAGE_PCT) / 100)
     }
+    // Lance ramp: consecutive hits on the SAME target each hit harder;
+    // switching targets (or the target dying) resets the climb to zero.
+    // Bookkeeping happens before the shot so this shot pays for the aim
+    // already held, not for itself. The bonus joins the ADDITIVE damage
+    // stack — the same math damageBreakdown reports, so the panel's number
+    // is the shot's number.
+    if (tower.type === 'lance') {
+      if (tower.rampTarget === target.id) {
+        tower.rampStacks = Math.min(LANCE_MAX_STACKS, (tower.rampStacks ?? 0) + 1)
+      } else {
+        tower.rampTarget = target.id
+        tower.rampStacks = 0
+      }
+      const perStack = tower.spec === 'momentum' ? MOMENTUM_RAMP_PCT : LANCE_RAMP_PCT
+      const rampBonus = perStack * (tower.rampStacks ?? 0)
+      if (rampBonus > 0) baseDamage = Math.floor((def.damage * (pct + rampBonus)) / 100)
+    }
 
     // One crit roll per shot: a critical cannon shell crits its whole splash,
     // a critical tesla arc crits the whole chain.
@@ -390,7 +416,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // bonuses (arrow vs air, sniper vs elites) apply on top of crits.
     // Shields judge a shot by its HONEST (pre-crit) weight: a lucky crit
     // never slips a light shot through — piercing or heavy hits only.
-    const pierceShield = tower.type === 'sniper' || tower.spec === 'longbow'
+    const pierceShield = tower.type === 'sniper' || tower.spec === 'longbow' || tower.spec === 'skewer'
     const shatter = state.relics.includes('shatter')
     const stormCoils = tower.type === 'tesla' && state.relics.includes('storm_coils')
     const cinder = tower.type === 'cannon' && state.relics.includes('cinder_shells')
@@ -566,6 +592,12 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
           hitIds.push(next.id)
           current = next
         }
+        break
+      }
+      case 'lance': {
+        // Single-target by design: the ramp (applied to baseDamage above) is
+        // the whole identity — commitment to one mark, nothing else.
+        hit(target)
         break
       }
     }

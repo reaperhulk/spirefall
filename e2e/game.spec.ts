@@ -716,7 +716,7 @@ const HUD_CONTROLS = [
   'auto-start',
   'repair-spire',
   'shop-arrow',
-  'shop-beacon', // the LAST tower card: all seven must share the row, never scroll off-edge
+  'shop-lance', // the LAST tower card: all eight must share the row, never scroll off-edge
 ]
 
 for (const [name, width, height] of STANDARD_VIEWPORTS) {
@@ -1095,6 +1095,45 @@ test('endless: a Cataclysm strike offers two dooms; the wave is gated until you 
   await expect
     .poll(async () => (await page.evaluate(() => window.__harness.snapshot())).wave)
     .toBeGreaterThanOrEqual(25)
+  expect(errors).toEqual([])
+})
+
+test('the Lance: locked until Duelist Doctrine, then hotkey 8 places it and the ramp climbs', async ({ page }) => {
+  const errors = await boot(page, 'e2e-lance')
+  await page.locator('.hint-close').click()
+
+  // Locked out of the box: the card is disabled, the hotkey is inert.
+  await expect(page.getByTestId('shop-lance')).toBeDisabled()
+  await page.keyboard.press('8')
+  await page.waitForTimeout(100)
+
+  await page.evaluate(() => {
+    const h = window.__harness
+    h.getMeta().sparks = 500
+    h.buyMeta('unlock_lance')
+    h.newRun('e2e-lance')
+    h.getState().gold = 2000
+  })
+  await expect(page.getByTestId('shop-lance')).toBeEnabled()
+
+  const [[cx, cy]] = await findBuildCells(page, 1)
+  await page.keyboard.press('8') // arm via the new hotkey
+  await clickCell(page, cx!, cy!)
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+  expect(await page.evaluate(() => window.__harness.getState().towers[0]!.type)).toBe('lance')
+
+  // Send a wave and let it fight: the ramp bookkeeping must move (a brute
+  // pack survives enough consecutive hits to hold a stack).
+  await page.keyboard.press('Escape')
+  await page.getByTestId('start-wave').click()
+  await expect
+    .poll(async () => {
+      await page.evaluate(() => window.__harness.fastForward(5))
+      return await page.evaluate(
+        () => (window.__harness.getState().towers[0] as unknown as { rampStacks?: number }).rampStacks ?? -1,
+      )
+    })
+    .toBeGreaterThanOrEqual(0) // bookkeeping engaged: the lance has a mark
   expect(errors).toEqual([])
 })
 

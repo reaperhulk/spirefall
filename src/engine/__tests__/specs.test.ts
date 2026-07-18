@@ -4,7 +4,10 @@ import {
   CAPACITOR_DAMAGE_PCT,
   CAPACITOR_EVERY_SHOTS,
   EXECUTOR_THRESHOLD_PCT,
+  LANCE_MAX_STACKS,
+  LANCE_RAMP_PCT,
   LATTICE_EXTRA_CHAIN,
+  MOMENTUM_RAMP_PCT,
   MORTAR_COOLDOWN_PCT,
   MORTAR_DAMAGE_PCT,
   PERMAFROST_BONUS_PCT,
@@ -214,5 +217,82 @@ describe('the ten paths', () => {
     fire(o)
     expect(a.hp).toBe(1000 - 260)
     expect(behind.hp).toBe(1000 - 260) // full weight, carried through
+  })
+})
+
+describe('the Lance: ramp on a held target', () => {
+  const volley = (s: RunState, shots: number) => {
+    for (let i = 0; i < shots; i++) {
+      s.towers[0]!.cooldown = 0
+      fire(s)
+    }
+  }
+
+  it('consecutive hits climb the additive stack and cap at LANCE_MAX_STACKS', () => {
+    const mark = enemy({ id: 1, hp: 100_000, maxHp: 100_000 })
+    const s = battle([tower('lance', null)], [mark])
+    volley(s, 1)
+    expect(mark.hp).toBe(100_000 - 30) // stack 0: base tier-3 damage
+    volley(s, 1)
+    expect(mark.hp).toBe(100_000 - 30 - Math.floor((30 * (100 + LANCE_RAMP_PCT)) / 100)) // stack 1
+    volley(s, LANCE_MAX_STACKS + 5)
+    // Deep into the climb the ramp is pinned at the cap.
+    const capped = Math.floor((30 * (100 + LANCE_RAMP_PCT * LANCE_MAX_STACKS)) / 100)
+    const before = s.enemies[0]!.hp
+    volley(s, 1)
+    expect(before - s.enemies[0]!.hp).toBe(capped)
+    expect(s.towers[0]!.rampStacks).toBe(LANCE_MAX_STACKS)
+  })
+
+  it('switching targets resets the climb to zero', () => {
+    // The mark must stay decisively strongest or 'strongest' targeting
+    // itself would bounce between equals and never hold a ramp.
+    const a = enemy({ id: 1, hp: 200_000, maxHp: 200_000 })
+    const b = enemy({ id: 2, hp: 100_000, maxHp: 100_000, pos: cellCenter({ cx: 6, cy: 6 }) })
+    const s = battle([tower('lance', null, { targeting: 'strongest' })], [a, b])
+    volley(s, 4)
+    expect(s.towers[0]!.rampStacks).toBe(3)
+    // The held mark dies; the lance re-aims and starts over.
+    a.hp = 0
+    s.towers[0]!.cooldown = 0
+    fire(s)
+    expect(s.towers[0]!.rampTarget).toBe(2)
+    expect(s.towers[0]!.rampStacks).toBe(0)
+    expect(b.hp).toBe(100_000 - 30) // base damage again
+  })
+
+  it('Momentum ramps steeper; Skewer pierces shields outright', () => {
+    const mark = enemy({ id: 1, hp: 100_000, maxHp: 100_000 })
+    const m = battle([tower('lance', 'momentum')], [mark])
+    volley(m, 2)
+    expect(mark.hp).toBe(100_000 - 30 - Math.floor((30 * (100 + MOMENTUM_RAMP_PCT)) / 100))
+
+    const walled = enemy({ id: 1, hp: 1000, maxHp: 1000, shield: 100 })
+    const plain = battle([tower('lance', null)], [walled])
+    volley(plain, 1)
+    expect(walled.hp).toBe(1000) // shot ≤ shield: fully blocked
+    const pierced = enemy({ id: 1, hp: 1000, maxHp: 1000, shield: 100 })
+    const skewer = battle([tower('lance', 'skewer')], [pierced])
+    volley(skewer, 1)
+    expect(pierced.hp).toBe(1000 - 30) // Skewer ignores the wall
+  })
+
+  it('the panel reads exactly what the next shot deals, and the unlock gates the shop', () => {
+    const mark = enemy({ id: 1, hp: 100_000, maxHp: 100_000 })
+    const s = battle([tower('lance', null, { rampTarget: 1, rampStacks: 4 })], [mark])
+    // Bookkeeping increments to 5 before the shot — the panel shown between
+    // shots (stacks 4 → next shot at 5)... the breakdown reports the LIVE
+    // stack count; fire, then compare the post-shot panel to the shot dealt.
+    s.towers[0]!.cooldown = 0
+    fire(s)
+    const dealt = 100_000 - mark.hp
+    const b = damageBreakdown(s, s.towers[0]!)
+    expect(b.effective).toBe(dealt)
+    expect(b.parts.some((p) => p.source.startsWith('Ramp'))).toBe(true)
+
+    // Duelist Doctrine gates availability.
+    expect(createRun(createMeta(), 'lance-locked').availableTowers).not.toContain('lance')
+    const meta = { ...createMeta(), upgrades: { unlock_lance: 1 } }
+    expect(createRun(meta, 'lance-open').availableTowers).toContain('lance')
   })
 })

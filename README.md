@@ -20,10 +20,11 @@ npm install
 npm run dev     # then open http://localhost:5173
 ```
 
-- **Build**: pick a tower in the shop (hotkeys 1–7), click the field to place.
-  Towers block the path — build mazes. Seven types: Arrow (2× vs fliers), Cannon
+- **Build**: pick a tower in the shop (hotkeys 1–8), click the field to place.
+  Towers block the path — build mazes. Eight types: Arrow (2× vs fliers), Cannon
   (splash), Frost (slows), Tesla (chains), Sniper (pierces shields, 1.5× vs
-  elites), Mint (earns gold each wave), Beacon (amplifies neighbors). Click a
+  elites), Mint (earns gold each wave), Beacon (amplifies neighbors), Lance
+  (ramps +15%/hit on a held target — the boss-killer). Click a
   tower for its itemized damage breakdown, upgrades, and targeting (six modes,
   including Weakest and Elite Hunter).
 - **Fight**: press *Start wave* (or Space; ▶▶ auto-advances). The scouting report
@@ -82,7 +83,7 @@ the repository (Settings → Pages → Source: GitHub Actions).
 
 ## Status
 
-**Post-M6, in continuous iteration.** Playable game with 7 tower types (each
+**Post-M6, in continuous iteration.** Playable game with 8 tower types (each
 with two tier-3 specializations), 16 enemy types across a 6-boss cycle, wave
 affixes, 30 relics with rarity/reroll/pity, four abilities, six Trials, endless
 Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 21

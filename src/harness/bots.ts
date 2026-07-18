@@ -74,8 +74,8 @@ export const RELIC_PRIORITY: RelicId[] = [
 // (arrows shred it, cannons are slow overkill), but armor scales on the hp
 // curve, so from the midgame the competent answer leans on cannons and
 // snipers — heavy hits barely feel flat reduction, rapid fire bleeds it.
-const EARLY_RATIO: Record<TowerType, number> = { arrow: 5, cannon: 2, frost: 1, tesla: 3, sniper: 2, mint: 1, beacon: 1 }
-const LATE_RATIO: Record<TowerType, number> = { arrow: 4, cannon: 4, frost: 1, tesla: 2, sniper: 3, mint: 1, beacon: 1 }
+const EARLY_RATIO: Record<TowerType, number> = { arrow: 5, cannon: 2, frost: 1, tesla: 3, sniper: 2, mint: 1, beacon: 1, lance: 0 }
+const LATE_RATIO: Record<TowerType, number> = { arrow: 4, cannon: 4, frost: 1, tesla: 2, sniper: 3, mint: 1, beacon: 1, lance: 0 }
 const HEAVY_META_WAVE = 9 // armor starts to bite; the build plan pivots
 
 // Transformative relics reward building AROUND them — that's their point.
@@ -100,7 +100,7 @@ function pickBuildType(state: RunState): TowerType {
       ratio[type] += 2
     }
   }
-  const counts: Record<TowerType, number> = { arrow: 0, cannon: 0, frost: 0, tesla: 0, sniper: 0, mint: 0, beacon: 0 }
+  const counts: Record<TowerType, number> = { arrow: 0, cannon: 0, frost: 0, tesla: 0, sniper: 0, mint: 0, beacon: 0, lance: 0 }
   for (const t of state.towers) counts[t.type] += 1
   let best: TowerType = 'arrow'
   let bestScore = -Infinity

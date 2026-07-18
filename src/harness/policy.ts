@@ -10,7 +10,7 @@ import { PLACEMENT_STRATEGIES, type PlacementStrategy } from './placement'
 // for strategies that break the intended difficulty curve. Everything is
 // JSON, so any find is trivially reproducible and pinnable as a regression.
 
-export const TOWER_TYPES: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon']
+export const TOWER_TYPES: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon', 'lance']
 
 export interface PolicyGenome {
   ratio: Record<TowerType, number> // build weights, 0 = never build

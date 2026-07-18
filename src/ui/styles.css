@@ -325,9 +325,10 @@ button:disabled {
   width: 100%;
 }
 
-/* Compact two-line cards that split the row evenly: all seven towers are
-   ALWAYS visible at once, at every viewport. A horizontal scroll here made
-   players forget the towers past the right edge existed. */
+/* Compact two-line cards that split the row evenly: all eight towers are
+   ALWAYS visible at once, at every viewport — one row on wide screens, a
+   2×4 grid under 900px. A horizontal scroll here made players forget the
+   towers past the right edge existed. */
 .shop-card {
   flex: 1 1 0;
   min-width: 0;
@@ -369,6 +370,18 @@ button:disabled {
   color: #db4b4b;
 }
 
+/* Eight cards can't share one honest row below ~900px: wrap to 2×4 instead
+   of ellipsizing names or growing a scrollbar. */
+@media (max-width: 900px) {
+  .shop-towers {
+    flex-wrap: wrap;
+  }
+
+  .shop-card {
+    flex: 1 1 23%;
+  }
+}
+
 .tower-dot {
   width: 12px;
   height: 12px;
@@ -383,6 +396,7 @@ button:disabled {
 .tower-sniper { background: #73daca; }
 .tower-mint { background: #e5c07b; }
 .tower-beacon { background: #ff9e64; }
+.tower-lance { background: #f7768e; }
 
 .cost {
   color: #e5c07b;
@@ -600,7 +614,7 @@ button:disabled {
   }
 
   /* Phone-sized shop cards: tighter type, no hotkey badges (they're
-     touch screens), smaller dots — seven cards still share one row. */
+     touch screens), smaller dots — the 2×4 grid keeps every card whole. */
   .shop-towers {
     gap: 3px;
   }

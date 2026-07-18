@@ -52,6 +52,26 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+162. *(marathon II, iteration 74)* **The Lance** — 8th tower, filling
+    the one empty niche: sustained single-target. Consecutive hits on
+    a held target join the ADDITIVE damage stack (+15%/stack, cap 10
+    — made additive precisely so damageBreakdown's number is the
+    shot's number); switching targets or losing the mark resets to
+    zero. Specs: Momentum (+22%/stack) / Skewer (pierces shields).
+    Unlocked by Duelist Doctrine (180✦); hotkey 8; couched-spear
+    body in rose. Full-stack sweep: bots carry lance:0 ratios (bit-
+    identical behavior — goldens VERIFIED unchanged, not regenerated),
+    the fuzzer's TOWER_TYPES now searches lance builds (sweep clean),
+    and a launch pin proves a dedicated lance-rush loses at every
+    budget (measured waves 14–16 at 5k/8k/20k — a specialist's tool,
+    not a core; viability tuning is future work with those numbers
+    recorded). The shop's all-visible contract survives 8 cards by
+    wrapping to a 2×4 grid under 900px — the viewport matrix caught
+    the ellipsizing and enforced the fix. Five unit tests (ramp
+    climb/cap, reset, specs, panel truth, unlock gate) + e2e (locked
+    card → unlock → hotkey-8 place → live ramp). 200 unit tests, 48
+    e2e specs.
+
 161. *(marathon II, iteration 73)* **The hardcode sweep closes clean**
     — after two iterations of real finds (grounded Stormcaller
     shadow, non-fading Veilwarden), a full sweep of render and combat
