@@ -218,6 +218,31 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
     nichesByBudget[budget] = [...archive.keys()].sort()
   }
 
+  calibrateFindings(findings)
+
   findings.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'breaking' ? -1 : 1))
   return { findings, evaluated, bestByBudget, nichesByBudget }
+}
+
+// Seed-luck calibration: a cheap victory is only a ROBUST exploit if the
+// same genome converts on 2+ seeds at that budget. The first scheduled CI
+// hunt proved the need — its 5k-victory finds were one lucky seed each, and
+// every HP wall steep enough to seal them also broke the intended deep-tree
+// path. The curve is defended against strategies, not dice: single-seed
+// cheap wins demote to warnings (still logged, with repro genomes).
+export function calibrateFindings(findings: FuzzFinding[]): void {
+  const breakingWins = new Map<string, Set<string>>()
+  for (const f of findings) {
+    if (f.severity !== 'breaking') continue
+    const key = `${f.budget}:${JSON.stringify(f.genome)}`
+    if (!breakingWins.has(key)) breakingWins.set(key, new Set())
+    breakingWins.get(key)!.add(f.seed)
+  }
+  for (const f of findings) {
+    if (f.severity !== 'breaking') continue
+    if (breakingWins.get(`${f.budget}:${JSON.stringify(f.genome)}`)!.size < 2) {
+      f.severity = 'warning'
+      f.reason += ' (single-seed — seed softness, not a robust exploit)'
+    }
+  }
 }

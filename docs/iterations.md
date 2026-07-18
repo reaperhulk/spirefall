@@ -52,6 +52,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+186. *(marathon II, iteration 98)* **The hunt catches one on day one**
+    — dispatched the new weekly Deep fuzz workflow live: all four
+    biome jobs FAILED with a breaking find — a broad tier-3
+    cannon/sniper line converting 21–23-wave depth into 5k-spark
+    victories (curve contract ~20k) on one lucky seed per biome.
+    Reproduced locally; full ablation: no lance, no oath, no single
+    relic, no placement dependency — and 'delta'-seed softness lets
+    even the balanced reference win at 5k with a good spend. Tried
+    the curve: every third-phase HP wall steep enough to seal the
+    lucky-seed wins (124–126 past wave 18/19) also broke the
+    INTENDED path (deep-tree frostfen win at 20k). Verdict: play
+    quality + seed dice, not a curve hole. Landed: the curve stays;
+    the oracle demotes single-seed cheap wins to warnings
+    (`calibrateFindings`, unit-tested — multi-seed wins stay
+    breaking); CANNON_WALL pinned to never convert at 8k on the very
+    combos where it stole 5k wins. CI audit: II-89..97 all green.
+    208 unit tests, 49 e2e specs.
+
 185. *(marathon II, iteration 97)* **The cap announces itself** — new
     `ramp_capped` GameEvent fires the moment a lance's climb tops out
     (once per climb, not once per capped shot — tested, including the

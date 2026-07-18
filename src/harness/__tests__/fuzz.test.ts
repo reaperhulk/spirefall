@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createMeta, createRun } from '../../engine/meta'
 import { deriveStream } from '../../engine/rng'
 import { autoplay, spendSparks } from '../autoplay'
-import { classify, fuzzBuilds } from '../fuzz'
+import { calibrateFindings, classify, type FuzzFinding, fuzzBuilds } from '../fuzz'
 import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome } from '../policy'
 
 // The build fuzzer hunts for strategies that break the difficulty curve.
@@ -53,6 +53,27 @@ describe('build fuzzer', () => {
     expect(classify({ wavesCleared: 36, outcome: 'defeat', seed: 'x' }, 20_000, 27)?.reason).toMatch(/endless/)
     expect(classify({ wavesCleared: 26, outcome: 'defeat', seed: 'x' }, 5_000, 17)?.reason).toMatch(/reference/)
     expect(classify({ wavesCleared: 18, outcome: 'defeat', seed: 'x' }, 5_000, 17)).toBeNull() // near the reference is fine
+  })
+
+  it('calibration: single-seed cheap wins demote to warnings, multi-seed stay breaking', () => {
+    const g1 = { marker: 'lucky' } as unknown as PolicyGenome
+    const g2 = { marker: 'robust' } as unknown as PolicyGenome
+    const finding = (genome: PolicyGenome, seed: string): FuzzFinding => ({
+      severity: 'breaking',
+      reason: 'victory at 5000 sparks — the curve says a win costs ~20k',
+      budget: 5000,
+      seed,
+      wavesCleared: 24,
+      outcome: 'victory',
+      referenceWaves: 17,
+      genome,
+    })
+    const findings = [finding(g1, 'gamma'), finding(g2, 'alpha'), finding(g2, 'delta')]
+    calibrateFindings(findings)
+    expect(findings[0]!.severity).toBe('warning') // one lucky seed — dice, not strategy
+    expect(findings[0]!.reason).toMatch(/single-seed/)
+    expect(findings[1]!.severity).toBe('breaking') // converts on two seeds — a real exploit
+    expect(findings[2]!.severity).toBe('breaking')
   })
 
   // Pinned find from the 2026-07 deep hunt: an all-offense account (Honed
@@ -112,6 +133,32 @@ describe('build fuzzer', () => {
       expect(state.phase, `emberwaste gamma @ ${budget} sparks`).toBe('defeat')
     }
   }, 300_000)
+
+  // First scheduled CI deep-hunt find (2026-07, iteration 98): a broad
+  // tier-3 cannon/sniper line (volley arrows early, breakers + executors
+  // behind a lengthened maze) converting 21–23-wave depth into WINS at 5k
+  // sparks on one lucky seed per biome. Every ablation survived — no lance,
+  // no oath, no single relic, any placement — and every HP wall steep
+  // enough to seal the lucky-seed wins also broke the intended deep-tree
+  // path (frostfen at 20k). Verdict: play quality + seed luck, not a curve
+  // hole — the oracle now demotes single-seed cheap wins to warnings
+  // (calibrateFindings). This pin holds the line that matters: the comp
+  // must never convert at 8k on the very combos where it stole 5k wins —
+  // if it does, the curve has genuinely opened, luck excuse void.
+  const CANNON_WALL: PolicyGenome = {"ratio":{"arrow":0,"cannon":8,"frost":2,"tesla":0,"sniper":7,"mint":2,"beacon":3,"lance":5},"earlyType":"arrow","upgradeAtTowers":6,"targetBase":6,"targetPerWave":1,"targetMax":23,"enhanceStrategy":"cannon","repairDeficit":3,"repairMinGold":270,"waveRepairPct":0,"specChoice":0,"relicPriority":["last_stand","longsight","quickdraw","spark_siphon","cinder_shells","golden_ledger","duelists_oath","deadeye_sigil","stoneskin","overcharge","bounty_banner","mint_condition","piercing_arrows","keen_sights","storm_coils","overclock","golden_touch","ricochet_strings","shatterheart","field_medicine","shatter","fortune_idol","echo_chamber","heavy_powder","prism_lens","deep_pockets","winters_grip","soul_harvest","colossus","executioners_seal","glass_cannon"],"metaPriority":["unlock_tesla","unlock_beacon","tower_damage","unlock_gold_rush","gold_income","spire_hp","wave_skip","unlock_mint","spark_gain","crit_chance","starting_gold","unlock_lance","unlock_bulwark"],"placement":"mazeLengthen","specByType":{"arrow":0,"cannon":1,"frost":1,"tesla":0,"sniper":0,"mint":1,"beacon":0,"lance":1},"enhanceFocus":"focus","targetingByType":{"cannon":"last","frost":"last","sniper":"elites","mint":"last","beacon":"elites","lance":"last"}} as PolicyGenome
+
+  it('CI-hunt find: the cannon/sniper wall comp cannot win cheap anymore', () => {
+    const bot = makePolicyBot(CANNON_WALL)
+    const combos: [number, 'verdant' | 'frostfen', string][] = [
+      [8000, 'verdant', 'gamma'],
+      [8000, 'frostfen', 'delta'],
+    ]
+    for (const [budget, biome, seed] of combos) {
+      const meta = spendSparks({ ...createMeta(), sparks: budget }, CANNON_WALL.metaPriority)
+      const { state } = autoplay(createRun(meta, seed, biome), bot, 150_000)
+      expect(state.phase, `${biome} ${seed} @ ${budget} sparks`).toBe('defeat')
+    }
+  }, 600_000)
 
   // Emberbound Crews (2026-07) raises the mid-wave repair cap to 3 — the
   // very cap that killed this exploit. Prove the node priced out the tank:

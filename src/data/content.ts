@@ -586,7 +586,12 @@ export const BASE_WAVE_BUDGET = 95
 export const WAVE_BUDGET_GROWTH_PCT = 118 // ×1.18 per wave
 // Two-phase HP ramp: gentle early so fresh skill can express itself, steep
 // after the break so the wall is real and meta progression is the only way
-// through it.
+// through it. (A third, steeper endgame phase was tried when the first
+// scheduled CI deep hunt found a cannon/sniper comp winning at 5k sparks on
+// lucky seeds: every wall steep enough to kill those wins also broke the
+// INTENDED path — the deep-tree reference could no longer win frostfen at
+// 20k. The gap is play quality plus seed luck, not a curve hole, so the
+// curve stays and the fuzz oracle demotes single-seed cheap wins instead.)
 export const HP_GROWTH_EARLY_PCT = 115
 export const HP_GROWTH_LATE_PCT = 122
 export const HP_GROWTH_BREAK_WAVE = 8
