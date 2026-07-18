@@ -698,10 +698,11 @@ export function SettingsModal({
             className="ghost-btn"
             data-testid="export-save"
             onClick={() => {
-              const code = exportSave()
-              if (!code) return
-              setTransferCode(code)
-              void navigator.clipboard?.writeText(code).catch(() => {})
+              void exportSave().then((code) => {
+                if (!code) return
+                setTransferCode(code)
+                void navigator.clipboard?.writeText(code).catch(() => {})
+              })
             }}
           >
             Export code
@@ -712,8 +713,10 @@ export function SettingsModal({
             onClick={() => {
               if (!transferCode.trim()) return
               if (!window.confirm('Import this code? Your current progress will be replaced.')) return
-              if (importSave(transferCode)) window.location.reload()
-              else setImportFailed(true)
+              void importSave(transferCode).then((ok) => {
+                if (ok) window.location.reload()
+                else setImportFailed(true)
+              })
             }}
           >
             Import code

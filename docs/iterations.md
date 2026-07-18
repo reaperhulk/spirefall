@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+101. *(marathon II, iteration 13)* **Compressed transfer codes** — save
+    codes were raw base64 JSON; v2 codes gzip through CompressionStream
+    first (prefix "SF2:", ~4× shorter — friendlier to paste anywhere)
+    with the legacy raw format still importable forever and a
+    no-CompressionStream fallback for older browsers. Export/import
+    went async; the settings UI awaits them. The transfer e2e passes on
+    the new format unchanged. 191 unit tests, 34 e2e specs.
+
 100. *(marathon II, iteration 12)* **Phasing tell in the scouting
     report** — wraiths and Veilwarden flicker untargetable, punishing
     burst comps, and the preview never warned. Phasing types now wear a

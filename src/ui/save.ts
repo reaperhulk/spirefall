@@ -39,24 +39,57 @@ export function clearSave(): void {
 }
 
 // --- transfer codes ---------------------------------------------------------
-// Base64 of the exact save JSON: portable across devices, and imports run
-// through the same migrate() path as a normal load so old codes stay valid.
+// v2 codes are gzip-compressed (prefix "SF2:") — roughly 4× shorter than the
+// raw-base64 v1 codes, which import still accepts. Imports run through the
+// same migrate() path as a normal load so codes of any age stay valid.
 
-export function exportSave(): string | null {
+const CODE_PREFIX = 'SF2:'
+
+async function throughStream(bytes: Uint8Array, stream: { writable: WritableStream; readable: ReadableStream }): Promise<Uint8Array> {
+  const writer = stream.writable.getWriter()
+  void writer.write(bytes)
+  void writer.close()
+  const out: number[] = []
+  const reader = stream.readable.getReader()
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    out.push(...(value as Uint8Array))
+  }
+  return new Uint8Array(out)
+}
+
+function toBase64(bytes: Uint8Array): string {
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin)
+}
+
+export async function exportSave(): Promise<string | null> {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return null
-    // Unicode-safe btoa.
-    return btoa(String.fromCharCode(...new TextEncoder().encode(raw)))
+    const bytes = new TextEncoder().encode(raw)
+    if (typeof CompressionStream !== 'undefined') {
+      const packed = await throughStream(bytes, new CompressionStream('gzip'))
+      return CODE_PREFIX + toBase64(packed)
+    }
+    return toBase64(bytes) // legacy path for browsers without CompressionStream
   } catch {
     return null
   }
 }
 
-export function importSave(code: string): boolean {
+export async function importSave(code: string): Promise<boolean> {
   try {
-    const bytes = Uint8Array.from(atob(code.trim()), (c) => c.charCodeAt(0))
-    const raw = new TextDecoder().decode(bytes)
+    const trimmed = code.trim()
+    let raw: string
+    if (trimmed.startsWith(CODE_PREFIX)) {
+      const bytes = Uint8Array.from(atob(trimmed.slice(CODE_PREFIX.length)), (c) => c.charCodeAt(0))
+      raw = new TextDecoder().decode(await throughStream(bytes, new DecompressionStream('gzip')))
+    } else {
+      raw = new TextDecoder().decode(Uint8Array.from(atob(trimmed), (c) => c.charCodeAt(0)))
+    }
     const parsed = JSON.parse(raw) as { version?: number }
     const data = migrate(parsed)
     if (!data) return false
