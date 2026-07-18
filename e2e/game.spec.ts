@@ -715,6 +715,37 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
       await assertLayout('wave live')
       expect(errors).toEqual([])
     })
+
+    test('run-over tabs fit: no tab overflows the modal, next-run pickers on screen', async ({ page }) => {
+      // The matrix predates the tabbed run-over screen — each tab has its own
+      // widest element (share row / spire tree / trial dropdown), so every tab
+      // must be swept at every size, not just the phone that first broke.
+      const errors = await boot(page, 'e2e-wave')
+      await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))
+      await expect(page.getByTestId('run-over')).toBeVisible()
+
+      for (const tab of ['tab-result', 'tab-tree', 'tab-next']) {
+        await page.getByTestId(tab).click()
+        const overflow = await page
+          .locator('[data-testid="run-over"] .modal')
+          .evaluate((el) => el.scrollWidth - el.clientWidth)
+        expect(overflow, `${tab}: modal content overflows horizontally`).toBeLessThanOrEqual(1)
+        // The tab strip itself must also stay inside the viewport.
+        const strip = await page.locator('[data-testid="run-over"] .tab-bar').boundingBox()
+        expect(strip!.x, `${tab}: tab bar clipped left`).toBeGreaterThanOrEqual(-0.5)
+        expect(strip!.x + strip!.width, `${tab}: tab bar clipped right`).toBeLessThanOrEqual(width + 0.5)
+      }
+
+      // Next Run is the interactive tab: its pickers and the launch button
+      // must sit fully on screen or the player literally cannot start a run.
+      for (const id of ['map-select', 'trial-select', 'next-run']) {
+        const box = await page.getByTestId(id).boundingBox()
+        expect(box, `${id} not rendered`).not.toBeNull()
+        expect(box!.x, `${id} clipped left`).toBeGreaterThanOrEqual(-0.5)
+        expect(box!.x + box!.width, `${id} clipped right`).toBeLessThanOrEqual(width + 0.5)
+      }
+      expect(errors).toEqual([])
+    })
   })
 }
 

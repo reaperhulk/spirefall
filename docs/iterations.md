@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+115. *(marathon II, iteration 27)* **Run-over tabs join the viewport
+    matrix** — the six-viewport layout matrix predates the tabbed
+    run-over screen, so only one phone size ever swept the tabs (the
+    one that first broke). Every viewport now abandons a run and walks
+    Result → Spire Tree → Next Run, asserting the modal never scrolls
+    horizontally, the tab strip stays inside the viewport, and the
+    biome/trial pickers plus the launch button sit fully on screen.
+    Considered rewording the first-run hints first; they're accurate
+    and intentionally minimal — no manufactured churn. 191 unit tests,
+    41 e2e specs (35 + 6 matrix entries).
+
 114. *(marathon II, iteration 26)* **Daily streaks** — the daily had no
     pull toward tomorrow. Finishing a daily now extends a consecutive-
     day streak (yesterday's chain +1; a gap resets to 1), stored in the
