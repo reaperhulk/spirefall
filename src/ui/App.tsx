@@ -100,18 +100,25 @@ const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'weakest',
 // map. Daily runs ignore this — everyone shares the daily's rolled map.
 const MAP_PREF_KEY = 'spirefall-map'
 
-// Trial preference: 'none' or a TrialId. Daily runs ignore trials too — the
-// shared seed means a shared ruleset.
+// Trial preference: comma-joined TrialIds ('' = none). Daily runs ignore
+// trials — the shared seed means a shared ruleset.
 const TRIAL_PREF_KEY = 'spirefall-trial'
 
+// Stored as a comma-joined TrialId list ('' = none). The pre-stacking format
+// ('none' or a single id) normalizes through the same filter.
 function loadTrialPref(): string {
   try {
     const raw = localStorage.getItem(TRIAL_PREF_KEY)
-    if (raw !== null && (raw === 'none' || Object.prototype.hasOwnProperty.call(TRIALS, raw))) return raw
+    if (raw !== null) {
+      return raw
+        .split(',')
+        .filter((t) => Object.prototype.hasOwnProperty.call(TRIALS, t))
+        .join(',')
+    }
   } catch {
     // fall through
   }
-  return 'none'
+  return ''
 }
 
 function loadMapPref(): string {
@@ -360,7 +367,9 @@ export default function App() {
     const isDaily = seed === dailySeed()
     const pref = mapPrefRef.current
     const biomeOverride = !isDaily && pref !== 'random' ? (pref as BiomeId) : undefined
-    const trials = !isDaily && trialPrefRef.current !== 'none' ? [trialPrefRef.current as TrialId] : []
+    const trials = !isDaily
+      ? trialPrefRef.current.split(',').filter((t): t is TrialId => Object.prototype.hasOwnProperty.call(TRIALS, t))
+      : []
     const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), biomeOverride, trials)
     const next = new GameSession(run)
     // Update the ref synchronously: the dev harness (window.__harness) reads

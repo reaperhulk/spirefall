@@ -547,14 +547,15 @@ export function RunOverOverlay({
             </select>
           </label>
           <label className="map-pick">
-            Trial
+            Trials — stack any; hardship compounds, so does the payout
             <select
               data-testid="trial-select"
-              value={trialPref}
-              onChange={(e) => onTrialPref(e.target.value)}
-              title="Opt-in handicaps that pay bonus sparks. Daily runs ignore trials."
+              multiple
+              size={TRIAL_IDS.length}
+              value={trialPref.split(',').filter(Boolean)}
+              onChange={(e) => onTrialPref(Array.from(e.target.selectedOptions, (o) => o.value).join(','))}
+              title="Opt-in handicaps that pay bonus sparks. Select several to stack. Daily runs ignore trials."
             >
-              <option value="none">None</option>
               {TRIAL_IDS.map((t) => (
                 <option key={t} value={t}>
                   {TRIALS[t].name} (+{TRIALS[t].sparkBonusPct}% ✦) — {TRIALS[t].description}

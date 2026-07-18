@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+137. *(marathon II, iteration 49)* **Trials actually stack** — the
+    engine and codex promised stacking ("stack hardship, stack
+    payout") but the UI's single-select allowed exactly one trial.
+    The picker is now a native multi-select (same testid, so every
+    existing single-selectOption spec still passes); the preference
+    stores a comma-joined list, the legacy 'none'/single format
+    normalizes through the same filter, and daily runs still ignore
+    it. E2e stacks Blackout + Iron Horde and finds both on the run.
+    194 unit tests, 43 e2e specs.
+
 136. *(marathon II, iteration 48)* **The card states its ruleset** —
     the shareable run card claimed a wave count without saying it was
     earned under No Mercy or Blackout; the header line now reads
