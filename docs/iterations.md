@@ -52,6 +52,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+178. *(marathon II, iteration 90)* **Block-90 boundary** — 90 of 100.
+    The 81–89 arc: the Duelist achievement, the closing confidence
+    matrix (576 evolutionary runs, 4 biomes × 3 budgets; Ember-Choke
+    ablated and pinned), PLAN's pin roster, two remote CI audits
+    (every completed main run green through II-88; the cancelled
+    twins are same-sha concurrency supersessions), the lance's
+    Strongest default, the derived anti-air roster + `support` flag
+    (the "docs can't rot" pattern promoted from fix to architecture),
+    Rematch, and the upgrade preview. Final-stretch backlog (91–100):
+    PLAN's shipped index owes entries for Rematch/upgrade preview/
+    derived roster; extend the m4 hitsAir pins to all eight towers +
+    a support-never-fires engine test (and rename combat's misleading
+    `aliveAir` — it holds everyone); fresh derivation each iteration;
+    a closing fuzz sanity sweep near 99; the final docs/README/PLAN
+    truth pass at 100. 203 unit tests, 49 e2e specs.
+
 177. *(marathon II, iteration 89)* **The price shows its goods** — the
     Upgrade button quoted a cost with no word on what it bought; the
     panel described only the tower you already had. A green preview
