@@ -38,6 +38,23 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+86. *(program 1/4 + 4/4)* **Victory hunt clean; victory + Crucible get
+    their sounds** — HUNT: 768 runs (pop 16 × 4 gens × seeds α–δ) at
+    8k/14k/20k over the full breadth space. ZERO breaking finds; no
+    fuzzer victory even at 20k (the win stays skill-shaped); one +7
+    overperformance warning at 8k/delta — an economy-snowball cousin of
+    the pinned Bounty genome (mint-7, golden_ledger/bounty_banner,
+    longbow+breaker specs) that reached 23 waves WITHOUT winning:
+    that's the envelope working (strong play beats the reference), not
+    a break — no tuning. Placement axes confirmed active in the niche
+    logs (25 archetypes at 20k). MUSIC: victory is now a structural
+    gesture — the filter throws wide open, the pad swells and holds a
+    bright tonic, a six-note ascent climbs the chord, then easy high
+    sparkles; defeat's mirror, resolution as texture. And a run that
+    starts at Crucible rank N announces it: N dark pulses (capped 4) on
+    the flattened second — the same darkness the boss vamp leans on —
+    each under a heartbeat kick. 183 unit tests, 32 e2e specs.
+
 84. *(playtest feedback)* **Boss music is structural, defeat is a
     collapse** — the boss entrance read as a NOISE on top of an
     unchanged score (additive kick+drone over the same progression,

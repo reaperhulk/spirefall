@@ -104,6 +104,10 @@ export class Music {
   private announceFrom = -1 // totalStep where the wave-start call plays
   private forceChordStep = -1 // boss entrance: chord slams on THIS step, not the next bar
   private dropUntilStep = -1 // boss entrance dropout: groove silenced until this step
+  private victoryRunFrom = -1 // totalStep where the victory ascent plays
+  private crucibleFrom = -1 // totalStep where the crucible menace motif plays
+  private cruciblePulses = 0 // rank-scaled pulse count for the motif
+  private lastRunSeed = '' // detects a fresh run for the crucible motif
 
   constructor(sfx: Sfx) {
     this.sfx = sfx
@@ -138,16 +142,24 @@ export class Music {
         this.forceChordStep = this.totalStep
         this.dropUntilStep = this.totalStep + STEPS_PER_BAR
       } else if (e.type === 'run_ended') {
-        // Defeat: the score collapses NOW — the pad sinks an octave in a
-        // slow power-down glide, the filter closes to a murmur, and the
-        // scheduler (see scheduleStep) drops to a cold toll.
         const ctx = this.boundCtx
         if (e.outcome === 'defeat' && ctx && ctx.state === 'running') {
+          // Defeat: the score collapses NOW — the pad sinks an octave in a
+          // slow power-down glide, the filter closes to a murmur, and the
+          // scheduler (see scheduleStep) drops to a cold toll.
           for (const o of this.padOsc) {
             o.frequency.setTargetAtTime(o.frequency.value / 2, ctx.currentTime, 0.7)
           }
           this.padFilter?.frequency.setTargetAtTime(160, ctx.currentTime, 0.4)
           this.padGain?.gain.setTargetAtTime(0.06, ctx.currentTime, 0.8)
+          this.killHeat = 0
+        } else if (e.outcome === 'victory' && ctx && ctx.state === 'running') {
+          // Victory: the opposite gesture — the filter throws wide open,
+          // the pad swells, and the scheduler answers with a six-note
+          // ascending resolution (see the victory branch in scheduleStep).
+          this.padFilter?.frequency.setTargetAtTime(2600, ctx.currentTime, 0.3)
+          this.padGain?.gain.setTargetAtTime(this.padLevel * 1.35, ctx.currentTime, 0.4)
+          this.victoryRunFrom = this.totalStep
           this.killHeat = 0
         }
       } else if (e.type === 'wave_started') {
@@ -239,6 +251,16 @@ export class Music {
     // The pad's resting level; the per-bar swell breathes around it.
     this.padLevel = 0.2 + this.intensity * 0.15
 
+    // A fresh run announces its Crucible rank: one dark pulse per rank
+    // (capped) before the score settles in — the hardening is audible.
+    if (state.seed !== this.lastRunSeed) {
+      this.lastRunSeed = state.seed
+      if (state.crucible > 0 && state.phase === 'build' && state.wave === 0) {
+        this.crucibleFrom = this.totalStep
+        this.cruciblePulses = Math.min(4, state.crucible)
+      }
+    }
+
     // Key: biome mode + seed transpose; seed also salts the rhythm rotation.
     const biome: BiomeId = BIOME_IDS.includes(state.biome) ? state.biome : 'verdant'
     const seedHash = hashSeed(state.seed)
@@ -273,6 +295,28 @@ export class Music {
     const toneOf = (deg: number, k: number): number => {
       const off = deg + 2 * k
       return root + scale[off % len]! + 12 * Math.floor(off / len)
+    }
+
+    if (overMode === 'victory') {
+      // THE SPIRE STANDS: a held bright tonic, a six-note ascent through
+      // the chord right after the win, then easy high sparkles — resolution
+      // as a texture, not just lower intensity.
+      if (this.totalStep % STEPS_PER_BAR === 0) {
+        this.tunePad(ctx, at, [toneOf(0, 0), toneOf(0, 1), toneOf(0, 2)])
+        this.padGain.gain.setTargetAtTime(this.padLevel, at, 0.5)
+        this.padFilter.frequency.setTargetAtTime(1700, at, 0.5)
+      }
+      if (this.victoryRunFrom >= 0 && this.totalStep >= this.victoryRunFrom) {
+        const off = this.totalStep - this.victoryRunFrom
+        if (off < 6) {
+          this.blip(ctx, at, midiHz(toneOf(0, off) + 12), 0.35, 'triangle', 0.5, true)
+        } else {
+          this.victoryRunFrom = -1
+        }
+      } else if (Math.random() < 0.22) {
+        this.blip(ctx, at, midiHz(toneOf(0, Math.floor(Math.random() * 3)) + 24), 0.4, 'triangle', 0.28, true)
+      }
+      return
     }
 
     if (overMode === 'defeat') {
@@ -363,6 +407,20 @@ export class Music {
       this.hat(ctx, at)
     }
     if (dropped) return // the dropout bar: heartbeat and ducked pad, nothing else
+
+    // Crucible motif: rank-many low pulses on the flattened second — the
+    // same darkness the boss vamp leans on — spaced a beat apart.
+    if (this.crucibleFrom >= 0 && this.totalStep >= this.crucibleFrom) {
+      const off = this.totalStep - this.crucibleFrom
+      if (off < this.cruciblePulses * 2) {
+        if (off % 2 === 0) {
+          this.blip(ctx, at, midiHz(toneOf(1, 0) - 12), 0.5, 'triangle', 0.5)
+          this.kick(ctx, at)
+        }
+      } else {
+        this.crucibleFrom = -1
+      }
+    }
 
     // Wave start: a two-note rising call as the horde arrives — the score
     // reacts to enemies APPEARING, not only to them dying.
