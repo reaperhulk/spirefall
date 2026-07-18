@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+130. *(marathon II, iteration 42)* **Confirm dialog keyboard flow** —
+    focus lands on the Confirm button when the dialog opens (Enter
+    accepts, Escape cancels — the flow window.confirm gave for free),
+    and the give-up e2e now exercises the CANCEL path first: dismiss,
+    prove the run unharmed, then confirm for real. 194 unit tests,
+    43 e2e specs.
+
 129. *(marathon II, iteration 41)* **window.confirm is gone** — all
     five native confirms (abandon/end run, daily start, ascend, save
     import, hard reset) now flow through one in-app ConfirmModal:

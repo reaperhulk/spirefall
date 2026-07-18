@@ -491,6 +491,12 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   await page.getByRole('button', { name: '10×' }).click()
   expect(await page.evaluate(() => window.__harness.getSpeed())).toBe(10)
 
+  // Cancel first: the dialog must be a real question, not a speed bump.
+  await page.getByTestId('abandon-run').click()
+  await page.getByTestId('confirm-no').click()
+  await expect(page.getByTestId('confirm-modal')).not.toBeVisible()
+  expect((await page.evaluate(() => window.__harness.snapshot())).phase).toBe('build') // run unharmed
+
   await page.getByTestId('abandon-run').click()
   await page.getByTestId('confirm-yes').click() // in-app confirm, not window.confirm
   await expect(page.getByTestId('run-over')).toBeVisible()

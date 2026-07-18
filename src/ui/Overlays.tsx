@@ -216,7 +216,9 @@ export function ConfirmModal({
       <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true" aria-label="Confirm">
         <p className="run-summary">{message}</p>
         <div className="confirm-row">
-          <button className="primary-btn" data-testid="confirm-yes" onClick={onConfirm}>
+          {/* Focus lands on Confirm: Enter accepts, Escape cancels — the
+              keyboard flow window.confirm used to give for free. */}
+          <button className="primary-btn" data-testid="confirm-yes" autoFocus onClick={onConfirm}>
             Confirm
           </button>
           <button className="ghost-btn" data-testid="confirm-no" onClick={onCancel}>
