@@ -138,6 +138,17 @@ export class Music {
     }
   }
 
+  // Ascension is a META act (no engine event reaches the score): the tree
+  // burns and something permanent is born. Same gesture as victory — the
+  // six-note ascent and a briefly wide-open filter — because it IS one.
+  ascendMotif(): void {
+    const ctx = this.boundCtx
+    if (ctx && ctx.state === 'running') {
+      this.padFilter?.frequency.setTargetAtTime(2600, ctx.currentTime, 0.3)
+      this.victoryRunFrom = this.totalStep
+    }
+  }
+
   // The battle plays the score too: fed the same GameEvents as the SFX.
   // Reactions fire on ARRIVAL and DEATH, not just sustained presence — an
   // enemy that only lives a few seconds still gets its musical moment.

@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+140. *(marathon II, iteration 52)* **The ascension motif** — burning
+    the entire Spire Tree was musically silent (ascension is a meta
+    act; no engine event reaches the score). `music.ascendMotif()`
+    replays the measured victory gesture — six-note ascent, filter
+    thrown wide — because ascending IS a victory. Called from the
+    confirmed ascend action. 194 unit tests, 44 e2e specs.
+
 139. *(marathon II, iteration 51)* **Pick your poison** — Cataclysm
     strikes now OFFER two distinct dooms (two relics-stream draws,
     second over the reduced pool so distinctness is structural) and

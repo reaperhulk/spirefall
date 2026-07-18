@@ -409,6 +409,7 @@ export default function App() {
       const next = ascend(metaRef.current)
       metaRef.current = next
       setMeta(next)
+      music.ascendMotif() // the burning of the tree deserves its six notes
       persistSave({ version: 1, meta: next, run: sessionRef.current.terminal ? null : sessionRef.current.state })
     })
   }
