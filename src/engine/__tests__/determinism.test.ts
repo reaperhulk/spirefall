@@ -97,6 +97,12 @@ describe('determinism', () => {
           null,
         ) as fc.Arbitrary<'piercing_arrows' | null>,
       }),
+      // Almost always rejected at these wave counts (offers exist only past
+      // wave 24) — which is the point: hostile/mistimed picks stay safe.
+      fc.record({
+        type: fc.constant('choose_cataclysm' as const),
+        cataclysm: fc.constantFrom('surge', 'dampening', 'crumbling') as fc.Arbitrary<'surge'>,
+      }),
     )
 
     fc.assert(

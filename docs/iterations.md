@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+144. *(marathon II, iteration 56)* **Property tests learn the new
+    command** — the determinism suite's command arbitrary now
+    generates choose_cataclysm (almost always rejected at property-
+    test wave counts, which is the point: hostile and mistimed picks
+    must stay safe under serialize/restore). Also audited: the
+    cataclysm-depth achievements key off cataclysms.length, which the
+    choice flow still feeds — no gap. 195 unit tests, 44 e2e specs.
+
 143. *(marathon II, iteration 55)* **Zephyrhost scouted** — the boss-
     preview e2e now sweeps wave 59: the report shows the new boss
     with its ✈ mark, the one warning that a mazeless air armada is
