@@ -950,6 +950,11 @@ button.preview-unit:hover {
   margin-left: 4px;
 }
 
+/* Spawner warning: this unit births more while it lives. */
+.brood-mark {
+  margin-left: 4px;
+}
+
 /* Phasing warning: the dotted circle of something that isn't quite there. */
 .phase-mark {
   margin-left: 4px;

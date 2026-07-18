@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+145. *(marathon II, iteration 57)* **Spawner marks in the report** —
+    carriers, Gravemind, and Zephyrhost birth enemies while alive and
+    the scouting report never warned. A 🐣 mark now flags every brood
+    unit with the count, child type, and cadence in its tooltip —
+    "kill it first" is the whole counterplay, so the report must say
+    so. E2e asserts the mark on the wave-59 boss chip. 195 unit
+    tests, 44 e2e specs.
+
 144. *(marathon II, iteration 56)* **Property tests learn the new
     command** — the determinism suite's command arbitrary now
     generates choose_cataclysm (almost always rejected at property-

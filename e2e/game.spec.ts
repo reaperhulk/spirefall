@@ -304,6 +304,9 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
   })
   await expect(page.getByTestId('preview-unit-boss6')).toBeVisible()
   await expect(page.getByTestId('preview-unit-boss6').locator('.air-mark')).toBeVisible()
+  // Spawner warning: the report says Zephyrhost births fliers while it lives.
+  await expect(page.getByTestId('brood-mark-boss6')).toBeVisible()
+  await expect(page.getByTestId('brood-mark-boss6')).toHaveAttribute('title', /Spawner/)
   expect(errors).toEqual([])
 })
 

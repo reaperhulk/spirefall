@@ -981,6 +981,15 @@ export default function App() {
                         ◌
                       </span>
                     )}
+                    {ENEMIES[type].brood && (
+                      <span
+                        className="brood-mark"
+                        data-testid={`brood-mark-${type}`}
+                        title={`Spawner — births ${ENEMIES[type].brood.count} ${ENEMIES[ENEMIES[type].brood.type].name}s every ${Math.round(ENEMIES[type].brood.everyTicks / 30)}s while alive. Kill it first or drown in its children.`}
+                      >
+                        🐣
+                      </span>
+                    )}
                     {ENEMIES[type].mech && (
                       <span
                         className="mech-mark"
