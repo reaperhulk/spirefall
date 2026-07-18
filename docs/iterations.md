@@ -52,6 +52,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+138. *(marathon II, iteration 50)* **Halfway** — 50 of 100. This
+    half's arc: run-over tabs → honest victory e2e (+ celebration) →
+    loadout truth everywhere (summary, card, links, mid-run stats) →
+    accessibility (keyboard builds, narrator, confirm dialogs) →
+    content with proofs (Emberbound Crews + exploit pin, Blackout +
+    Eyes Shut, trial stacking) → endless audio identity. Halfway
+    fuzz smoke on highlands: clean, 10 niches. Debt: App.tsx 1447
+    (split at ~1600 by extracting the HUD), render.ts 1857 (split on
+    next subsystem), styles 1710 (fine). Second-half candidates:
+    cataclysm CHOICE (pick 1 of 2 — agency in endless), ascension
+    motif, boss-6 for deep endless, App.tsx split, watch trial
+    multi-select ergonomics on phones. 194 unit tests, 43 e2e specs,
+    169 commits.
+
 137. *(marathon II, iteration 49)* **Trials actually stack** — the
     engine and codex promised stacking ("stack hardship, stack
     payout") but the UI's single-select allowed exactly one trial.
