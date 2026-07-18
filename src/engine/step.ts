@@ -129,6 +129,8 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
 
     case 'start_wave': {
       if (s.phase !== 'build') return reject(command, `phase is ${s.phase}`, events)
+      // The world must settle before the next wave fields under it.
+      if (s.cataclysmOffer !== null) return reject(command, 'a Cataclysm must be chosen first', events)
       const { wave, waveBudget, fielded } = nextWaveBudget(s)
       s.wave = wave
       s.waveBudget = waveBudget
@@ -265,6 +267,21 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       if (s.abilities[command.ability]! > 0) return reject(command, 'ability on cooldown', events)
       if (!inBounds(map, command.cell)) return reject(command, 'out of bounds', events)
       castAbility(s, command.ability, command.cell, events)
+      return
+    }
+
+    case 'choose_cataclysm': {
+      if (s.cataclysmOffer === null) return reject(command, 'no cataclysm pending', events)
+      if (!s.cataclysmOffer.includes(command.cataclysm)) return reject(command, 'not among the offered dooms', events)
+      const cataclysm = command.cataclysm
+      s.cataclysmOffer = null
+      s.cataclysms.push(cataclysm)
+      if (cataclysm === 'dampening') s.mods.damagePct -= 10
+      if (cataclysm === 'crumbling') {
+        s.spireMaxHp = Math.max(1, s.spireMaxHp - 2)
+        s.spireHp = Math.max(1, Math.min(s.spireHp, s.spireMaxHp))
+      }
+      events.push({ type: 'cataclysm_struck', cataclysm, wave: s.wave })
       return
     }
 
@@ -555,17 +572,18 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   // Past the cycle, every 5th cleared wave strikes a Cataclysm: a permanent,
   // stacking run modifier. Struck at wave CLEAR so the build phase (and the
   // scouting report) see the new world before the next wave fields under it.
+  // The strike OFFERS two distinct dooms and the player picks their poison
+  // (choose_cataclysm; start_wave is gated until the world settles) — endless
+  // is a gauntlet you steer, not weather that happens to you.
   if (s.wave >= VICTORY_WAVE && (s.wave - VICTORY_WAVE) % CATACLYSM_WAVE_INTERVAL === 0) {
-    const pick = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 1)
-    s.rng.relics = pick.rng
-    const cataclysm = CATACLYSM_IDS[pick.value]!
-    s.cataclysms.push(cataclysm)
-    if (cataclysm === 'dampening') s.mods.damagePct -= 10
-    if (cataclysm === 'crumbling') {
-      s.spireMaxHp = Math.max(1, s.spireMaxHp - 2)
-      s.spireHp = Math.max(1, Math.min(s.spireHp, s.spireMaxHp))
-    }
-    events.push({ type: 'cataclysm_struck', cataclysm, wave: s.wave })
+    const first = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 1)
+    s.rng.relics = first.rng
+    const second = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 2)
+    s.rng.relics = second.rng
+    // Second draw over a pool with the first removed: always distinct.
+    const secondIdx = second.value >= first.value ? second.value + 1 : second.value
+    s.cataclysmOffer = [CATACLYSM_IDS[first.value]!, CATACLYSM_IDS[secondIdx]!]
+    events.push({ type: 'cataclysm_offered', options: [...s.cataclysmOffer], wave: s.wave })
   }
 
   s.phase = 'build'
@@ -604,6 +622,7 @@ function endRun(s: RunState, events: GameEvent[]): void {
   s.phase = outcome
   s.sparksEarned = sparks
   s.relicOffer = null
+  s.cataclysmOffer = null
   s.pendingSpawns = []
   events.push({ type: 'run_ended', outcome, wavesCleared: s.wavesCleared, kills: s.kills, sparks })
 }

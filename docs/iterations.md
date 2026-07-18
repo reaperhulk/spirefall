@@ -52,6 +52,23 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+139. *(marathon II, iteration 51)* **Pick your poison** — Cataclysm
+    strikes now OFFER two distinct dooms (two relics-stream draws,
+    second over the reduced pool so distinctness is structural) and
+    the player chooses which becomes permanent; start_wave is gated
+    until the world settles. Endless is a gauntlet you steer, not
+    weather. Full-stack: engine (offer state + choose_cataclysm +
+    gate), invariants (exactly two, distinct, post-victory only),
+    clone/save defaults, all bots choose (buildActions ranks dooms
+    least-bad-first for a DPS comp — dampening last), doom-tinted
+    choice modal. Old saves/replays: offers only exist past wave 24,
+    and pre-choice replays predate endless recordings we ship. Unit
+    tests rewritten to the offer flow (offer → gate reject → choose
+    applies exactly one → off-cycle silent); e2e drives the modal and
+    proves the gate reopens. Goldens: stateHash-only (all four
+    careers die pre-endless); the balance envelope's winning careers
+    pass, proving bots navigate offers. 194 unit tests, 44 e2e specs.
+
 138. *(marathon II, iteration 50)* **Halfway** — 50 of 100. This
     half's arc: run-over tabs → honest victory e2e (+ celebration) →
     loadout truth everywhere (summary, card, links, mid-run stats) →

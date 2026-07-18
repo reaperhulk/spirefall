@@ -1030,6 +1030,43 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
   expect(errors).toEqual([])
 })
 
+test('endless: a Cataclysm strike offers two dooms; the wave is gated until you choose', async ({ page }) => {
+  const errors = await boot(page, 'e2e-cataclysm')
+  await page.locator('.hint-close').click()
+  // Surgery to the victory doorstep with a spire tall enough to tank the
+  // wave undefended — the offer flow is what's under test, not combat.
+  await page.evaluate(() => {
+    const h = window.__harness
+    const s = h.getState() as unknown as { wave: number; wavesCleared: number; spireHp: number; spireMaxHp: number }
+    s.wave = 23
+    s.wavesCleared = 23
+    s.spireHp = 100_000
+    s.spireMaxHp = 100_000
+    h.dispatch({ type: 'start_wave' })
+  })
+  await page.evaluate(() => window.__harness.fastForward(600))
+  const offer = await page.evaluate(() => window.__harness.getState() as unknown as { cataclysmOffer: string[] | null })
+  expect(offer.cataclysmOffer).toHaveLength(2)
+
+  // The modal offers exactly the two dooms; picking one applies it and
+  // reopens the road (start_wave un-gates).
+  await expect(page.getByTestId('cataclysm-modal')).toBeVisible()
+  const pick = offer.cataclysmOffer![0]!
+  await page.getByTestId(`cataclysm-${pick}`).click()
+  await expect(page.getByTestId('cataclysm-modal')).not.toBeVisible()
+  await page.getByTestId('continue-endless').click() // the victory prompt was underneath
+  const after = await page.evaluate(() => window.__harness.getState() as unknown as { cataclysms: string[]; cataclysmOffer: string[] | null })
+  expect(after.cataclysms).toEqual([pick])
+  expect(after.cataclysmOffer).toBeNull()
+  await page.getByTestId('start-wave').click()
+  // The gate is open again: wave 25 fields (and may even clear under the
+  // surgically tall spire before we look — ≥25 is the proof either way).
+  await expect
+    .poll(async () => (await page.evaluate(() => window.__harness.snapshot())).wave)
+    .toBeGreaterThanOrEqual(25)
+  expect(errors).toEqual([])
+})
+
 test('keyboard-only build: arm with 1, steer with arrows, place with Enter', async ({ page }) => {
   const errors = await boot(page, 'e2e-wave')
   await page.locator('.hint-close').click()

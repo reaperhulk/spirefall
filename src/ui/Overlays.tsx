@@ -7,7 +7,7 @@ import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
 import { canAscend, emberGainOnAscend, emberLevel, emberUpgradeCost, metaLevel, metaUpgradeCost } from '../engine/meta'
 import { computeSparks } from '../engine/step'
-import type { MetaState, RelicId, RunState, RunSummary } from '../engine/types'
+import type { CataclysmId, MetaState, RelicId, RunState, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
 import { exportSave, importSave } from './save'
 
@@ -196,6 +196,33 @@ function ShareBars({ title, entries, color }: { title: string; entries: [string,
           <span className="share-value">{value.toLocaleString()}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+// Endless agency: every 5th cleared wave past victory offers two dooms and
+// the player picks the poison. The next wave is gated until they do.
+export function CataclysmModal({
+  options,
+  onChoose,
+}: {
+  options: CataclysmId[]
+  onChoose: (cataclysm: CataclysmId) => void
+}) {
+  return (
+    <div className="modal-backdrop" data-testid="cataclysm-modal">
+      <div className="modal" role="dialog" aria-modal="true" aria-label="Cataclysm">
+        <h2>✸ The world hardens</h2>
+        <p className="run-flavor">A Cataclysm strikes — permanent, stacking. Choose which doom you take.</p>
+        <div className="relic-cards">
+          {options.map((id) => (
+            <button key={id} className="relic-card cataclysm-card" onClick={() => onChoose(id)} data-testid={`cataclysm-${id}`}>
+              <strong>✸ {CATACLYSMS[id].name}</strong>
+              <span>{CATACLYSMS[id].description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

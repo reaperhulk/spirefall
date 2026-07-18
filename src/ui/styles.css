@@ -1453,6 +1453,20 @@ button.preview-unit:hover {
   font-weight: 700;
 }
 
+/* Cataclysm choice: relic-card bones, doom-tinted. */
+.relic-card.cataclysm-card {
+  border-color: #5c2c34;
+}
+
+.relic-card.cataclysm-card strong {
+  color: #ff9e64;
+}
+
+.relic-card.cataclysm-card:hover {
+  border-color: #ff5f3c;
+  background: #2a1418;
+}
+
 /* In-app confirm dialog. */
 .confirm-modal {
   max-width: 380px;

@@ -22,6 +22,7 @@ export function cloneRun(s: RunState): RunState {
     repairsThisWave: s.repairsThisWave,
     killsByEnemy: { ...s.killsByEnemy },
     relicOffer: s.relicOffer ? [...s.relicOffer] : null,
+    cataclysmOffer: s.cataclysmOffer ? [...s.cataclysmOffer] : null,
     availableTowers: [...s.availableTowers],
     mods: { ...s.mods },
   }

@@ -111,6 +111,17 @@ export function assertInvariants(state: RunState): void {
     state.cataclysms.length === 0 || state.victoryClaimed,
     'cataclysms can only strike after the victory wave',
   )
+  if (state.cataclysmOffer !== null) {
+    check(state.cataclysmOffer.length === 2, 'cataclysm offer must hold exactly two options')
+    check(new Set(state.cataclysmOffer).size === 2, 'cataclysm offer options must be distinct')
+    for (const c of state.cataclysmOffer) {
+      check(
+        ['surge', 'juggernaut', 'swarm', 'dampening', 'crumbling', 'ironclad'].includes(c),
+        `unknown offered cataclysm ${String(c)}`,
+      )
+    }
+    check(state.victoryClaimed, 'cataclysm offers only exist past the victory wave')
+  }
 
   for (const t of state.trials) {
     check(['glass_spire', 'swift_horde', 'iron_horde', 'famine', 'no_mercy', 'blackout'].includes(t), `unknown trial ${String(t)}`)

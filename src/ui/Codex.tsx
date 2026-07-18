@@ -161,7 +161,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'Victory & Endless',
-    body: `Clearing wave ${VICTORY_WAVE} wins the run — bank it, or push into Endless where clearing every ${CATACLYSM_WAVE_INTERVAL}th wave permanently stacks a Cataclysm onto the world.`,
+    body: `Clearing wave ${VICTORY_WAVE} wins the run — bank it, or push into Endless where clearing every ${CATACLYSM_WAVE_INTERVAL}th wave strikes a Cataclysm: two dooms offered, you choose which becomes permanent. The next wave waits until you do.`,
   },
   {
     title: 'The Crucible',

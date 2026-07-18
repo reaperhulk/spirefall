@@ -215,6 +215,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     relics: [],
     relicOffer: null,
     relicRerolled: false,
+    cataclysmOffer: null,
     availableTowers,
     activeAffix: null,
     cataclysms: [],

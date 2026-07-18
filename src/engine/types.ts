@@ -167,6 +167,7 @@ export interface RunState {
   relics: RelicId[]
   relicOffer: RelicId[] | null
   relicRerolled: boolean // one reroll per offer
+  cataclysmOffer: CataclysmId[] | null // endless: two dooms offered, pick one (gates start_wave)
   availableTowers: TowerType[]
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
@@ -196,6 +197,7 @@ export type Command =
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
   | { type: 'reroll_relic' }
+  | { type: 'choose_cataclysm'; cataclysm: CataclysmId }
 
 export type GameEvent =
   | { type: 'wave_started'; wave: number; spawnCount: number; affix: AffixId | null }
@@ -210,6 +212,7 @@ export type GameEvent =
   | { type: 'mint_income'; id: number; amount: number }
   | { type: 'victory_achieved'; wave: number }
   | { type: 'cataclysm_struck'; cataclysm: CataclysmId; wave: number }
+  | { type: 'cataclysm_offered'; options: CataclysmId[]; wave: number }
   | { type: 'tower_sold'; id: number; refund: number }
   | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[]; crit: boolean }
   | { type: 'tower_specialized'; id: number; spec: TowerSpecId; cost: number }

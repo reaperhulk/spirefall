@@ -502,18 +502,31 @@ describe('cataclysms', () => {
     return step(s, [])
   }
 
-  it('clearing the victory wave claims victory AND strikes the first cataclysm', () => {
+  it('clearing the victory wave claims victory AND offers the first cataclysm — pick your poison', () => {
     const { state, events } = clearedAt(24)
     expect(state.victoryClaimed).toBe(true)
-    expect(state.cataclysms).toHaveLength(1)
-    expect(events.some((e) => e.type === 'cataclysm_struck')).toBe(true)
+    // The strike is now an OFFER of two distinct dooms; nothing applies yet.
+    expect(state.cataclysms).toHaveLength(0)
+    expect(state.cataclysmOffer).toHaveLength(2)
+    expect(new Set(state.cataclysmOffer).size).toBe(2)
+    expect(events.some((e) => e.type === 'cataclysm_offered')).toBe(true)
     expect(() => assertInvariants(state)).not.toThrow()
-    // Strikes repeat every 5th cleared wave…
-    const later = clearedAt(29, { victoryClaimed: true, cataclysms: [...state.cataclysms] })
-    expect(later.state.cataclysms).toHaveLength(2)
+
+    // Choosing applies exactly the chosen doom and clears the gate.
+    const pick = state.cataclysmOffer![1]!
+    const chosen = step(state, [{ type: 'choose_cataclysm', cataclysm: pick }]).state
+    expect(chosen.cataclysms).toEqual([pick])
+    expect(chosen.cataclysmOffer).toBeNull()
+    // A doom outside the offer is refused.
+    const bogus = step(state, [{ type: 'choose_cataclysm', cataclysm: state.cataclysmOffer!.includes('surge') ? 'juggernaut' : 'surge' }])
+    expect(bogus.events.some((e) => e.type === 'command_rejected')).toBe(true)
+
+    // Offers repeat every 5th cleared wave…
+    const later = clearedAt(29, { victoryClaimed: true, cataclysms: [pick] })
+    expect(later.state.cataclysmOffer).toHaveLength(2)
     // …and never off-cycle.
-    const off = clearedAt(27, { victoryClaimed: true, cataclysms: [...state.cataclysms] })
-    expect(off.state.cataclysms).toHaveLength(1)
+    const off = clearedAt(27, { victoryClaimed: true, cataclysms: [pick] })
+    expect(off.state.cataclysmOffer).toBeNull()
   })
 
   it('juggernaut/surge bend the next wave; swarm inflates the scouting report', () => {

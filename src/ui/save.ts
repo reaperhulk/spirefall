@@ -162,6 +162,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.mods.critChancePct ??= 0
         data.run.mods.abilityCdPct ??= 0
         data.run.mods.repairCasts ??= 0
+        data.run.cataclysmOffer ??= null
       }
       return data
     }

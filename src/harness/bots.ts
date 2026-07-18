@@ -2,7 +2,7 @@ import { enhanceCost, TOWER_SPECS, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
 import { cellCenter, distSq, sameCell } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
-import type { Command, RelicId, RunState, Targeting, TowerType } from '../engine/types'
+import type { CataclysmId, Command, RelicId, RunState, Targeting, TowerType } from '../engine/types'
 import { buildCandidates, pickBuildCell, type PlacementStrategy } from './placement'
 
 // Bots are deterministic pure functions of the state — no randomness, so a
@@ -15,7 +15,10 @@ export { buildCandidates } from './placement'
 
 // Does nothing but send waves. The floor of the difficulty envelope.
 export const afkBot: Bot = (state) => {
-  if (state.phase === 'build') return [{ type: 'start_wave' }]
+  if (state.phase === 'build') {
+    if (state.cataclysmOffer !== null) return [{ type: 'choose_cataclysm', cataclysm: state.cataclysmOffer[0]! }]
+    return [{ type: 'start_wave' }]
+  }
   return []
 }
 
@@ -23,6 +26,7 @@ export const afkBot: Bot = (state) => {
 export const greedyBot: Bot = (state) => {
   if (state.phase !== 'build') return []
   if (state.relicOffer !== null) return [{ type: 'choose_relic', relic: state.relicOffer[0]! }]
+  if (state.cataclysmOffer !== null) return [{ type: 'choose_cataclysm', cataclysm: state.cataclysmOffer[0]! }]
   if (state.gold >= TOWERS.arrow.tiers[0].cost) {
     const spot = buildCandidates(state)[0]
     if (spot) return [{ type: 'place_tower', tower: 'arrow', cell: spot }]
@@ -153,6 +157,14 @@ export function buildActions(
   if (state.relicOffer !== null) {
     const pick = knobs.relicPriority.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
     return [{ type: 'choose_relic', relic: pick }]
+  }
+
+  // Endless: pick the least-bad doom for a DPS comp — losing tower damage
+  // (dampening) hurts most; a chip of max HP (crumbling) hurts least.
+  if (state.cataclysmOffer !== null) {
+    const leastBad: CataclysmId[] = ['crumbling', 'ironclad', 'surge', 'swarm', 'juggernaut', 'dampening']
+    const pick = leastBad.find((c) => state.cataclysmOffer!.includes(c)) ?? state.cataclysmOffer[0]!
+    return [{ type: 'choose_cataclysm', cataclysm: pick }]
   }
 
   // Targeting doctrine first — it's free, one tower per tick.

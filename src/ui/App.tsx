@@ -44,7 +44,7 @@ import { CodexModal } from './Codex'
 import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
-import { ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
+import { CataclysmModal, ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
 import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
@@ -1319,6 +1319,12 @@ export default function App() {
           canReroll={!state.relicRerolled && state.gold >= relicSkipGold(state.wave)}
           onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })}
           onReroll={() => session.dispatch({ type: 'reroll_relic' })}
+        />
+      )}
+      {state.cataclysmOffer && !summary && (
+        <CataclysmModal
+          options={state.cataclysmOffer}
+          onChoose={(cataclysm) => session.dispatch({ type: 'choose_cataclysm', cataclysm })}
         />
       )}
       {watching && (

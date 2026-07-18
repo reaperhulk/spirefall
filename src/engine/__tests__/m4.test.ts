@@ -226,8 +226,16 @@ describe('endless victory', () => {
     expect(cleared.state.victoryClaimed).toBe(true)
     expect(cleared.state.phase).toBe('build') // endless: keep playing
 
+    // The victory-wave clear also OFFERS the first cataclysm: the next wave
+    // is gated until the player picks their poison.
+    expect(cleared.state.cataclysmOffer).toHaveLength(2)
+    const gated = step(cleared.state, [{ type: 'start_wave' }])
+    expect(gated.events.some((e) => e.type === 'command_rejected')).toBe(true)
+    const chosen = step(cleared.state, [{ type: 'choose_cataclysm', cataclysm: cleared.state.cataclysmOffer![0]! }])
+    expect(chosen.state.cataclysms).toHaveLength(1)
+
     // The next wave can still be sent...
-    const next = step(cleared.state, [{ type: 'start_wave' }])
+    const next = step(chosen.state, [{ type: 'start_wave' }])
     expect(next.state.phase).toBe('wave')
     expect(next.state.wave).toBe(VICTORY_WAVE + 1)
 
