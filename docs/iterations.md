@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+171. *(marathon II, iteration 83)* **The pin roster, stated** — PLAN's
+    balance-discipline note counted four pinned genomes; the roster
+    is six (…+ Lance-Rush, Ember-Choke), and the note now also names
+    the method that earned them: ablation before blame. 202 unit
+    tests, 48 e2e specs.
+
 170. *(marathon II, iteration 82)* **The closing confidence matrix**
     — 576 evolutionary runs across 4 biomes × 3 budgets (5k/8k/20k)
     under the post-Lance, post-Oath world. Verdant, frostfen, and

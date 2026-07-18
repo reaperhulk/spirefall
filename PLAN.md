@@ -53,9 +53,11 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 >   (gold modal, rising embers, first-win callout), and proven — the e2e suite
 >   pilots a real maxed account through all 24 waves with real commands.
 > Balance discipline throughout: the envelope re-derives when the curve moves
-> intentionally, and every fuzzer-found exploit is tuned away then pinned as a
-> permanent regression genome (four to date: Honed-Arsenal, Bounty-Banner,
-> Mortar-Blizzard, Ember-Maze).
+> intentionally, and every fuzzer-found exploit or corner is investigated
+> (ablation before blame) then pinned as a permanent regression genome — six
+> to date: Honed-Arsenal, Bounty-Banner, Mortar-Blizzard, Ember-Maze,
+> Lance-Rush (launch guard), Ember-Choke (depth corner, must never convert
+> to a cheap win).
 
 ---
 
