@@ -1,5 +1,5 @@
 import { BIOME_IDS, type BiomeId } from '../data/biomes'
-import type { RunState } from '../engine/types'
+import type { GameEvent, RunState } from '../engine/types'
 import type { Sfx } from './audio'
 import { settings } from './settings'
 import type { Tonality } from './tonality'
@@ -16,6 +16,14 @@ import type { Tonality } from './tonality'
 // Each biome owns a mode, register, and progression; the run seed
 // transposes the key and salts the rhythm patterns, so no two runs sit on
 // the same root but a given run is musically consistent.
+//
+// The battle also plays the score beat-by-beat (handleEvents): kill
+// momentum thickens the melody line, a living boss doubles the harmonic
+// rhythm (chords change every half bar — urgency without a tempo change),
+// a cleared wave answers with a descending chord-tone cadence run, and an
+// enemy reaching the Spire makes the pad flinch. Combat and score are one
+// instrument played from both ends — and since tonal SFX quantize to the
+// same live key (tonality.ts), the coupling runs in both directions.
 //
 // UI-layer module: Math.random is fine here (humanization), and the sim
 // never sees any of it. The score rides the Sfx's AudioContext so the
@@ -91,6 +99,8 @@ export class Music {
   private padLevel = 0
   private timer: ReturnType<typeof setInterval> | null = null
   private lastTonality: Tonality | null = null
+  private killHeat = 0 // decaying recent-kill momentum (0..12)
+  private flourishFrom = -1 // totalStep where a wave-cleared cadence run starts
 
   constructor(sfx: Sfx) {
     this.sfx = sfx
@@ -105,6 +115,25 @@ export class Music {
     if (this.timer === null) {
       // Lookahead scheduler: wake often, schedule a beat or two ahead.
       this.timer = setInterval(() => this.tick(), 200)
+    }
+  }
+
+  // The battle plays the score too: fed the same GameEvents as the SFX.
+  handleEvents(events: GameEvent[]): void {
+    for (const e of events) {
+      if (e.type === 'enemy_killed') {
+        this.killHeat = Math.min(12, this.killHeat + 1)
+      } else if (e.type === 'wave_cleared') {
+        this.flourishFrom = this.totalStep // cadence run starts next step
+      } else if (e.type === 'enemy_reached_spire') {
+        // The pad flinches: an immediate dip, recovering over ~a second.
+        // The next bar boundary re-owns the gain, so no scheduling fight.
+        const ctx = this.boundCtx
+        if (ctx && this.padGain && ctx.state === 'running') {
+          this.padGain.gain.setTargetAtTime(this.padLevel * 0.25, ctx.currentTime, 0.04)
+          this.padGain.gain.setTargetAtTime(this.padLevel, ctx.currentTime + 0.35, 0.5)
+        }
+      }
     }
   }
 
@@ -175,6 +204,7 @@ export class Music {
     }
     if (over) target = 0.05
     this.intensity += (target - this.intensity) * 0.12
+    this.killHeat *= 0.92 // momentum fades in a couple of seconds
     // The pad's resting level; the per-bar swell breathes around it.
     this.padLevel = 0.2 + this.intensity * 0.15
 
@@ -206,7 +236,10 @@ export class Music {
     const len = scale.length
     const bar = Math.floor(this.totalStep / STEPS_PER_BAR)
     const step = this.totalStep % STEPS_PER_BAR
-    const chordDegree = prog[bar % prog.length]!
+    // A living boss doubles the harmonic rhythm: the same progression, but
+    // chords turn over every half bar — urgency without touching tempo.
+    const harmonicSteps = bossAlive ? STEPS_PER_BAR / 2 : STEPS_PER_BAR
+    const chordDegree = prog[Math.floor(this.totalStep / harmonicSteps) % prog.length]!
     // Every other pass through the progression LIFTS: melody reaches higher
     // chord tones and thickens, the pad brightens, the bass answers more.
     // Doubles the form (~44s) so the loop stops announcing itself.
@@ -219,7 +252,7 @@ export class Music {
       return root + scale[off % len]! + 12 * Math.floor(off / len)
     }
 
-    if (step === 0) {
+    if (this.totalStep % harmonicSteps === 0) {
       // Chord change: glide the pad voices to the new chord, swell the level
       // on the downbeat and relax through the bar (breathing, not droning),
       // and let the filter bloom open then settle.
@@ -256,13 +289,26 @@ export class Music {
       this.hat(ctx, at)
     }
 
+    // Wave cleared: the melody answers with a descending chord-tone run —
+    // a real cadence figure, echoed, that resolves onto the chord root.
+    if (this.flourishFrom >= 0 && this.totalStep >= this.flourishFrom) {
+      const offset = this.totalStep - this.flourishFrom
+      if (offset < 4) {
+        const note = tone(chordDegree, 3 - offset) + 12
+        this.blip(ctx, at, midiHz(note), 0.3, 'triangle', 0.5, true)
+        return // the run owns the melody for these four steps
+      }
+      this.flourishFrom = -1
+    }
+
     // Melody: a seeded rhythm pattern per bar. Strong beats pull toward
     // chord tones an octave above the pad; passing notes walk the scale.
-    // Intensity thins or thickens the line by dropping pattern hits; the
-    // lift pass reaches into higher chord tones and drops fewer, and the
-    // cadence bar's back half fills in to hand the phrase over.
+    // Intensity thins or thickens the line by dropping pattern hits; kill
+    // momentum thickens it further (the score audibly rides a hot streak);
+    // the lift pass reaches into higher chord tones and drops fewer, and
+    // the cadence bar's back half fills in to hand the phrase over.
     const mask = RHYTHMS[(bar + rhythmSalt) % RHYTHMS.length]!
-    let gate = 0.35 + this.intensity * 0.55
+    let gate = 0.35 + this.intensity * 0.55 + Math.min(0.25, this.killHeat * 0.025)
     if (lift) gate += 0.15
     if (cadenceBar && step >= 6) gate += 0.3
     if (mask[step] === 1 && Math.random() < gate) {

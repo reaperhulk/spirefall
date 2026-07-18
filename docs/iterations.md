@@ -38,6 +38,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+81. *(the coupling runs both ways)* **Combat plays the score** — the
+    reverse direction of #79: Music.handleEvents rides the same GameEvent
+    stream as the SFX. Kill momentum (a decaying heat counter) audibly
+    thickens the melody line during a hot streak; a living boss DOUBLES
+    the harmonic rhythm — same progression, chords turning over every
+    half bar, urgency without touching tempo; a cleared wave answers
+    with a descending chord-tone cadence run (echoed, resolving onto the
+    root) that owns the melody for four steps; an enemy reaching the
+    Spire makes the pad flinch — an immediate duck recovering over a
+    second, re-owned by the next bar boundary so there's no scheduling
+    fight. With tonal SFX quantized to the live key (#79) and the score
+    now listening back, combat and music are one instrument played from
+    both ends. 175 unit tests, 32 e2e specs.
+
 80. *(playtest feedback)* **Audio liveness is probed, never assumed** —
     the sound button claimed 🔊 from load, but browsers gate audio behind
     a user gesture (and disagree about which events count, whether

@@ -203,6 +203,7 @@ export default function App() {
   useEffect(() => {
     session.setOnEvents((events, s) => {
       sfx.handleEvents(events)
+      music.handleEvents(events)
       handleHaptics(events)
       for (const e of events) {
         if (e.type === 'run_ended') {
@@ -241,7 +242,7 @@ export default function App() {
     return () => {
       session.setOnEvents(null)
     }
-  }, [session, sfx])
+  }, [session, sfx, music])
 
   const beginNextRun = (seed?: string) => {
     // Daily runs always play the seed's rolled map — the whole point is that
