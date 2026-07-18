@@ -1618,6 +1618,24 @@ function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.lineWidth = 1
         break
       }
+      case 'coin': {
+        // A gold coin on a lobbed arc (mint payout → treasury corner), or a
+        // bounce-in-place glint where an elite fell. Spin via ellipse squash.
+        if (!fx.from || !fx.to) break
+        const x = px(fx.from.x + (fx.to.x - fx.from.x) * age)
+        const y = px(fx.from.y + (fx.to.y - fx.from.y) * age) - Math.sin(age * Math.PI) * 16
+        const squash = Math.abs(Math.sin(age * 9))
+        ctx.globalAlpha = fade
+        glow(ctx, x, y, 6, '#e0af68', 0.4 * fade)
+        ctx.fillStyle = '#e5c07b'
+        ellipse(ctx, x, y, 3, 1 + 2 * squash)
+        ctx.fill()
+        ctx.strokeStyle = '#8a6a2a'
+        ellipse(ctx, x, y, 3, 1 + 2 * squash)
+        ctx.stroke()
+        ctx.globalAlpha = 1
+        break
+      }
       case 'tracer': {
         // Sniper round: hot line that collapses toward the target, slug at the tip.
         if (!fx.from || !fx.to) break

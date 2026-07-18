@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+189. *(active-play package, 2/7)* **The payout is physical** — mint
+    income now rains actual coins: gold sprites arc from the paying
+    mint toward the treasury corner (staggered, spinning via ellipse
+    squash), elite kills pop a coin glint where they fell, and a
+    bright chord-snapped chink sounds the payout. All render/audio
+    layer, suppressed above 3× like other per-hit juice — money you
+    can watch accumulate is half of what makes 1× worth sitting at.
+    210 unit tests, 49 e2e specs.
+
 188. *(marathon II, iteration 100 — and onward)* **Veterancy** — the
     marathon's hundredth lands the first piece of the user-directed
     active-play package (make 1x worth playing and watching; all

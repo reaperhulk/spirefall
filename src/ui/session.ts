@@ -28,6 +28,7 @@ export interface VisualEffect {
     | 'arc' // tesla: jagged lightning
     | 'flash' // muzzle flash at the firing tower
     | 'burst' // death particles
+    | 'coin' // gold: arcs from a mint payout / glints where an elite fell
   from?: Vec
   to?: Vec
   at?: Vec
@@ -236,6 +237,10 @@ export class GameSession {
           stampDecal(`${this.state.biome}:${this.state.mapId}`, this.state.seed, e.at, enemyColor(e.enemy))
           if (this.speed <= 3) {
             this.effects.push({ kind: 'burst', at: e.at, color: enemyColor(e.enemy), t0: now, dur: 380 })
+            // Rich kills glint — a coin pops where an elite fell.
+            if (e.bounty >= 3) {
+              this.effects.push({ kind: 'coin', from: e.at, to: e.at, t0: now, dur: 500 })
+            }
             this.effects.push({
               kind: 'float',
               at: e.at,
@@ -360,9 +365,20 @@ export class GameSession {
             })
           }
           break
-        case 'mint_income':
+        case 'mint_income': {
           this.effects.push({ kind: 'float', at: { x: 12_000, y: 1_000 }, text: `Mint +${e.amount}`, color: '#e5c07b', t0: now, dur: 900 })
+          // The payout is PHYSICAL: coins arc from the mint toward the
+          // treasury corner. Money you can watch accumulate is half of what
+          // makes 1x worth sitting at.
+          const mint = this.state.towers.find((t) => t.id === e.id)
+          if (mint && this.speed <= 3) {
+            const coins = Math.min(6, 2 + Math.floor(e.amount / 25))
+            for (let i = 0; i < coins; i++) {
+              this.effects.push({ kind: 'coin', from: cellCenter(mint.cell), to: { x: 900, y: 600 }, t0: now + i * 80, dur: 700 })
+            }
+          }
           break
+        }
         case 'enemy_reached_spire':
           this.effects.push({ kind: 'spire_hit', t0: now, dur: 350 })
           break

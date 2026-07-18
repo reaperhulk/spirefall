@@ -32,6 +32,7 @@ type SoundKind =
   | 'shot_sniper'
   | 'shot_lance'
   | 'ramp_capped'
+  | 'coin'
   | 'kill'
   | 'spire_hit'
   | 'wave_cleared'
@@ -119,6 +120,11 @@ const SOUNDS: Record<SoundKind, Note[]> = {
     { freq: 700, dur: 0.08, type: 'pluck', gain: 0.05 },
     { freq: 1050, dur: 0.08, type: 'pluck', gain: 0.05 },
     { freq: 1575, dur: 0.22, type: 'pluck', gain: 0.055 },
+  ],
+  // Coin: a bright little chink — the mint paying out, physically.
+  coin: [
+    { freq: 1320, dur: 0.06, type: 'pluck', gain: 0.035 },
+    { freq: 1980, dur: 0.09, type: 'sine', gain: 0.012, at: 0.02, pure: true },
   ],
   // Kill: metallic clink over a body thud — a "chunk", not a chirp.
   kill: [
@@ -229,6 +235,7 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
   cataclysm: 800,
   bulwark: 400,
   ramp_capped: 600,
+  coin: 120,
 }
 const DEFAULT_MIN_GAP = 140
 
@@ -269,6 +276,7 @@ function panFromX(xMillicells: number): number {
 // phrases of the score. Everything else tonal snaps to the wider scale so
 // rapid fire gets melodic variety without leaving the key.
 const CHORD_SNAPPED: ReadonlySet<SoundKind> = new Set([
+  'coin',
   'kill',
   'ramp_capped',
   'wave_cleared',
@@ -447,6 +455,9 @@ export class Sfx {
           break
         case 'ramp_capped':
           this.play('ramp_capped', panFromX((e.cell.cx + 0.5) * 1000))
+          break
+        case 'mint_income':
+          this.play('coin')
           break
         default:
           break
