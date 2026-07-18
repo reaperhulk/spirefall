@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+159. *(marathon II, iteration 71)* **Endless bosses get the regalia**
+    — boss4/5/6 fell through to the generic walker body and read like
+    fat brutes; all six bosses now wear the crown/aura/breathing-core
+    treatment in their roster colors. Airborne royalty (Stormcaller,
+    Zephyrhost) additionally flap wing ellipses (reduced-motion
+    skips), and the ground-shadow check now reads the FLYING flag
+    from data instead of hardcoding 'flier' — Stormcaller had been
+    casting a grounded shadow since wave 30 shipped. 195 unit tests,
+    47 e2e specs.
+
 158. *(marathon II, iteration 70)* **Block-70 boundary** — 70 of 100.
     The 61–69 arc: endless verified under choice (20k sweep), SW
     cache hygiene, codex tally, the cataclysm-gate integration audit

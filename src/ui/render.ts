@@ -1157,9 +1157,10 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
     const popAge = (wallNow - firstSeen.get(e.id)!) / 220
     const pop = popAge < 1 && !settings.reducedMotion ? 0.4 + 0.6 * easeOutBack(popAge) : 1
 
-    // Ground shadow anchors every walker to the field (fliers draw their own,
-    // smaller and offset; phased wraiths cast none — nothing there to cast it).
-    if (e.type !== 'flier' && !(e.type === 'wraith' && e.phased)) {
+    // Ground shadow anchors every walker to the field (airborne enemies —
+    // fliers, Stormcaller, Zephyrhost — draw their own, smaller and offset;
+    // phased wraiths cast none — nothing there to cast it).
+    if (!ENEMIES[e.type].flying && !(e.type === 'wraith' && e.phased)) {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.32)'
       ellipse(ctx, x, y + r * 0.55, r * 0.95 * pop, r * 0.32 * pop)
       ctx.fill()
@@ -1323,9 +1324,25 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
       }
       case 'boss':
       case 'boss2':
-      case 'boss3': {
-        // The Spirebreaker: rotating spike crown, breathing core, aura.
+      case 'boss3':
+      case 'boss4':
+      case 'boss5':
+      case 'boss6': {
+        // Every boss wears the regalia: rotating spike crown, breathing
+        // core, aura — in its own roster color. (The endless tier used to
+        // fall through to the generic walker body and read like a fat brute.)
         const breathe = 1 + 0.05 * Math.sin(phase * 0.5)
+        if (ENEMIES[e.type].flying && !settings.reducedMotion) {
+          // Airborne royalty: flapping wing ellipses behind the crown.
+          const flap = Math.sin(phase * 1.6) * 0.5
+          ctx.fillStyle = color
+          ctx.globalAlpha = 0.4
+          ellipse(ctx, -r * 0.9, -r * 0.2, r * 0.85, r * (0.35 + flap * 0.25))
+          ctx.fill()
+          ellipse(ctx, r * 0.9, -r * 0.2, r * 0.85, r * (0.35 + flap * 0.25))
+          ctx.fill()
+          ctx.globalAlpha = 1
+        }
         ctx.strokeStyle = color
         ctx.globalAlpha = 0.35
         circle(ctx, 0, 0, r + 5 + Math.sin(t0 * 0.08) * 2)
