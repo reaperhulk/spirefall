@@ -346,9 +346,10 @@ export function CodexModal({
 
           {tab === 'relics' && (
             <>
-              <p className="codex-trait">
+              <p className="codex-trait" data-testid="codex-relic-count">
                 Every {RELIC_WAVE_INTERVAL} waves the Spire offers {RELIC_OFFER_SIZE} relics — pick one, or skip for
-                gold. Relics you hold this run are marked ✦.
+                gold. Relics you hold this run are marked ✦ ({state.relics.length} of{' '}
+                {Object.keys(RELICS).length} held).
               </p>
               {(['legendary', 'rare', 'common'] as const).map((rarity) => (
                 <div key={rarity}>

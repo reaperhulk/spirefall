@@ -52,6 +52,11 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+151. *(marathon II, iteration 63)* **Relic tally in the Codex** — the
+    relics tab now states "N of 30 held" for the current run beside
+    the ✦ legend. Small, but it turns the tab into a live collection
+    readout instead of a static list. 195 unit tests, 44 e2e specs.
+
 150. *(marathon II, iteration 62)* **Service-worker hygiene** — the
     PWA's update story was audited sound (network-first navigations +
     skipWaiting: new builds land on next load), but every old build's
