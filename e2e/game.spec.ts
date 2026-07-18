@@ -295,6 +295,15 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
   })
   await expect(page.getByTestId('phase-mark-boss4')).toBeVisible()
   await expect(page.getByTestId('phase-mark-boss4')).toHaveAttribute('title', /Phasing/)
+
+  // Deep endless: wave 59's report shows Zephyrhost flying — the ✈ is the
+  // one warning that a mazeless air armada is coming.
+  await page.evaluate(() => {
+    window.__harness.getState().wave = 59
+    window.__harness.fastForward(1)
+  })
+  await expect(page.getByTestId('preview-unit-boss6')).toBeVisible()
+  await expect(page.getByTestId('preview-unit-boss6').locator('.air-mark')).toBeVisible()
   expect(errors).toEqual([])
 })
 

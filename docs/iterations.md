@@ -52,6 +52,11 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+143. *(marathon II, iteration 55)* **Zephyrhost scouted** — the boss-
+    preview e2e now sweeps wave 59: the report shows the new boss
+    with its ✈ mark, the one warning that a mazeless air armada is
+    inbound. 195 unit tests, 44 e2e specs.
+
 142. *(marathon II, iteration 54)* **The narrator learns endless** —
     Cataclysm offers ("choose your doom: Surge or Ironclad") and
     strikes ("the world hardens: Surge") now reach the aria-live
