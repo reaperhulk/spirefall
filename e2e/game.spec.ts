@@ -169,12 +169,15 @@ test('a defended wave plays out: enemies die, bounties arrive, build phase retur
   await clickCell(page, 5, 5)
   await clickCell(page, 5, 7)
   await page.getByTestId('start-wave').click()
+  // The invisible narrator announces the wave for screen readers.
+  await expect(page.getByTestId('sr-status')).toContainText('Wave 1 started')
   await page.evaluate(() => window.__harness.fastForward(120))
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
   expect(snap.wave).toBe(1)
   expect(snap.kills).toBeGreaterThan(5) // a horde died out there
   expect(snap.spireHp).toBeGreaterThanOrEqual(8) // a defended spire stays near-intact
+  await expect(page.getByTestId('sr-status')).toContainText('Wave cleared')
 
   // Mid-run stats: the S key opens live analytics with a sparks estimate.
   await page.keyboard.press('s')

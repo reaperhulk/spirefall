@@ -163,6 +163,8 @@ export default function App() {
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
+  // Screen-reader narration of major beats (aria-live, visually hidden).
+  const [srMessage, setSrMessage] = useState('')
   const [dailyBest, setDailyBest] = useState<DailyBest | null>(() => loadDailyBest())
   const [mapPref, setMapPref] = useState<string>(() => loadMapPref())
   const mapPrefRef = useRef(mapPref)
@@ -219,6 +221,25 @@ export default function App() {
       sfx.handleEvents(events)
       music.handleEvents(events)
       handleHaptics(events)
+      // Screen-reader narration: major beats only, one polite message per
+      // batch — a per-kill feed would drown the reader in a horde game.
+      for (const e of events) {
+        if (e.type === 'wave_started') {
+          setSrMessage(`Wave ${e.wave} started — ${e.spawnCount} enemies${e.affix ? `, ${AFFIXES[e.affix].name} affix` : ''}.`)
+        } else if (e.type === 'wave_cleared') {
+          setSrMessage(`Wave cleared. Spire at ${s.spireHp} of ${s.spireMaxHp} HP, ${s.gold} gold.`)
+        } else if (e.type === 'enemy_reached_spire') {
+          setSrMessage(`The Spire takes ${e.damage} damage — ${e.spireHp} HP left.`)
+        } else if (e.type === 'victory_achieved') {
+          setSrMessage('Victory — the cycle breaks. The Spire stands.')
+        } else if (e.type === 'run_ended') {
+          setSrMessage(
+            e.outcome === 'victory'
+              ? `Run over: victory at wave ${e.wavesCleared}, ${e.sparks} sparks earned.`
+              : `Run over: the Spire falls after wave ${e.wavesCleared}, ${e.sparks} sparks earned.`,
+          )
+        }
+      }
       // A replay is a spectator: it must never settle meta again, prompt
       // for victory, or touch the save — the run already happened.
       if (session.replaying) return
@@ -865,6 +886,10 @@ export default function App() {
         </div>
       </header>
 
+      {/* Invisible narrator: screen readers hear the run's major beats. */}
+      <div className="sr-only" role="status" aria-live="polite" data-testid="sr-status">
+        {srMessage}
+      </div>
       {hint && (
         <div className="hint-banner" data-testid="hint">
           <span>{hint}</span>

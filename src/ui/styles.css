@@ -1453,6 +1453,19 @@ button.preview-unit:hover {
   font-weight: 700;
 }
 
+/* Visually hidden, but real to assistive tech. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Run loadout chips: relics picked and cataclysms endured. */
 .loadout-row {
   display: flex;

@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+125. *(marathon II, iteration 37)* **The invisible narrator** — screen
+    readers heard nothing from a canvas game. A visually-hidden
+    `role="status"` aria-live region now narrates the major beats:
+    wave started (count + affix), wave cleared (spire HP + gold),
+    spire hits, victory, and run over — one polite message per event
+    batch, never per-kill spam. E2e asserts the wave-1 announce and
+    the clear line. 193 unit tests, 43 e2e specs.
+
 124. *(marathon II, iteration 36)* **Shortcuts list truthfulness** —
     the settings shortcut grid predated the beacon and bulwark: it
     said 1–6 (there are 7 towers) and Q/W/E (there are 4 abilities).
