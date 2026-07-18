@@ -624,8 +624,30 @@ function drawBossBar(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef
   ctx.font = 'bold 10px ui-monospace, monospace'
   ctx.textAlign = 'center'
   ctx.fillStyle = '#e8ecf5'
-  ctx.fillText(`${ENEMIES[boss.type].name.toUpperCase()} — ${boss.hp}/${boss.maxHp}`, w / 2, y + 7)
+  const label =
+    boss.mechActiveTicks > 0 && ENEMIES[boss.type].mech?.kind === 'carapace'
+      ? `${ENEMIES[boss.type].name.toUpperCase()} — CARAPACE UP — ${boss.hp}/${boss.maxHp}`
+      : `${ENEMIES[boss.type].name.toUpperCase()} — ${boss.hp}/${boss.maxHp}`
+  ctx.fillText(label, w / 2, y + 7)
   ctx.textAlign = 'left'
+}
+
+// The carapace window on the boss body: a hard, bright shell ring. Reads at
+// a glance as "hitting this is pointless right now" — and its disappearance
+// as the shatter.
+export function drawBossMechRing(ctx: CanvasRenderingContext2D, e: Enemy, x: number, y: number, r: number): void {
+  if (e.mechActiveTicks <= 0 || ENEMIES[e.type].mech?.kind !== 'carapace') return
+  glow(ctx, x, y, r * 2.2, '#ffd7f0', 0.5)
+  ctx.strokeStyle = '#ffd7f0'
+  ctx.lineWidth = 2.5
+  ctx.beginPath()
+  ctx.arc(x, y, r + 4, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.strokeStyle = 'rgba(255, 0, 124, 0.7)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.arc(x, y, r + 7, 0, Math.PI * 2)
+  ctx.stroke()
 }
 
 // Animation clock: sim time (ticks) plus the interpolation fraction, so
@@ -1306,6 +1328,7 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
         ctx.globalAlpha = 1
       }
     }
+    drawBossMechRing(ctx, e, x, y, r)
     // Defense stats are worn openly: ⛨N = shield (hits ≤ N bounce),
     // ▣N = armor (every hit loses N, min 1 lands).
     if (e.shield > 0 || e.armor > 0) {

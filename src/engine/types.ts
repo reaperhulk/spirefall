@@ -112,6 +112,8 @@ export interface Enemy {
   burnTicks: number // Cinder Shells: ticks of burn remaining
   burnPerTick: number // Cinder Shells: hp lost per burning tick (ignores armor)
   overcharge: number // Storm Coils: stacked tesla hits on this enemy
+  mechCooldown: number // bosses: ticks until the signature mechanic triggers
+  mechActiveTicks: number // bosses: ticks the mechanic stays active (carapace)
   targetCell: CellPos | null // next waypoint; null = needs (re)pathing (unused by fliers)
 }
 
@@ -206,6 +208,8 @@ export type GameEvent =
   | { type: 'wave_cleared'; wave: number; goldAwarded: number }
   | { type: 'gold_interest'; amount: number; gold: number }
   | { type: 'vents_erupted'; cells: number[]; seared: number }
+  | { type: 'boss_carapace'; id: number }
+  | { type: 'boss_gale'; id: number; hastened: number }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

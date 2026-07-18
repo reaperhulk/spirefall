@@ -33,6 +33,14 @@ export interface EnemyDef {
   phasing?: { visibleTicks: number; hiddenTicks: number } // wraiths flicker out of reach
   heal?: { everyTicks: number; amount: number; radius: number } // healer pulse (amount scales with hp curve)
   splitInto?: { type: EnemyType; count: number } // spawned at death position
+  // Boss signature mechanics — the tension peak of every 10th wave is an
+  // ENCOUNTER, not a stat check. Each has explicit counterplay:
+  // - carapace: periodic damage-immunity window (hits cap at 1) that a
+  //   single heavy hit (>= CARAPACE_BREAK_DAMAGE) shatters instantly.
+  //   Cannons and snipers answer; chip waits it out.
+  // - gale: periodically hastens every OTHER enemy — but slows override
+  //   haste, so frost coverage cancels the storm.
+  mech?: { kind: 'carapace' | 'gale'; everyTicks: number; durationTicks: number }
 }
 
 // Horde profile: individually weak, numerous. Costs are ~half the old values
@@ -50,9 +58,9 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   splitling: { name: 'Shard', hp: 13, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
   wraith: { name: 'Wraith', hp: 35, speed: 88, cost: 11, pack: 2, spacing: 12, bounty: 2, damage: 2, shield: 0, unlockWave: 12, phasing: { visibleTicks: 60, hiddenTicks: 45 } },
   carrier: { name: 'Broodmother', hp: 80, speed: 40, cost: 30, pack: 1, spacing: 26, bounty: 8, damage: 4, shield: 3, armor: 1, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 140 } },
-  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, armor: 1, unlockWave: 10, elite: true },
-  boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, armor: 1, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 } },
-  boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, armor: 1, unlockWave: 30, elite: true, flying: true },
+  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, armor: 1, unlockWave: 10, elite: true, mech: { kind: 'carapace', everyTicks: 240, durationTicks: 60 } },
+  boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, armor: 1, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 }, brood: { type: 'splitling', count: 2, everyTicks: 180 } },
+  boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, armor: 1, unlockWave: 30, elite: true, flying: true, mech: { kind: 'gale', everyTicks: 210, durationTicks: 45 } },
 }
 
 // Boss waves rotate through the roster: 10 → Spirebreaker (tank),
@@ -331,6 +339,11 @@ export const DEADEYE_EXECUTE_PCT = 15 // execute threshold, % of max HP
 export const GOLDEN_LEDGER_PCT = 10 // % of banked gold paid on wave clear
 export const GOLDEN_LEDGER_CAP = 60 // interest ceiling per wave
 export const PRISM_LENS_CRIT_PCT = 10 // crit chance inside a beacon aura
+
+// Boss mechanics.
+export const CARAPACE_BREAK_DAMAGE = 40 // a single hit this heavy shatters the carapace
+export const GALE_SPEED_PCT = 140 // gale-hastened enemies move at this % (slows override)
+export const GALE_HASTE_TICKS = 45
 
 export const CRIT_BASE_DAMAGE_PCT = 200 // a crit deals this % of normal damage
 export const CRIT_RELIC_CHANCE_PCT = 10 // keen_sights

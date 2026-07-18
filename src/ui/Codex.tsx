@@ -69,6 +69,12 @@ function enemyTraits(type: EnemyType, def: EnemyDef): string[] {
   if (def.elite) traits.push(`Elite — Snipers deal +${SNIPER_ELITE_BONUS_PCT}% damage to it`)
   if ((def.shield ?? 0) > 0) traits.push(`Shield ${def.shield} — hits dealing ${def.shield} or less bounce off entirely (scales with waves)`)
   if ((def.armor ?? 0) > 0) traits.push('Armored — every hit loses flat damage from the midgame on; rapid fire suffers most')
+  if (def.mech?.kind === 'carapace')
+    traits.push(
+      'Carapace — periodically raises a shell that caps every hit at 1 damage. A single heavy blow (40+) shatters it instantly: cannons and snipers answer, chip waits it out',
+    )
+  if (def.mech?.kind === 'gale')
+    traits.push('Gale Surge — periodically hastens the whole horde. Slows override the haste: frost coverage cancels the storm')
   if (type === 'splitling') traits.push('Only appears when an Amalgam dies')
   if (type.startsWith('boss')) traits.push(`Boss — leads every ${BOSS_WAVE_INTERVAL}th wave (the roster rotates)`)
   return traits

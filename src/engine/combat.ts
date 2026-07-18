@@ -2,6 +2,8 @@ import type { MapDef } from '../data/maps'
 import {
   ABILITIES,
   ARROW_AIR_BONUS_PCT,
+  CARAPACE_BREAK_DAMAGE,
+  GALE_SPEED_PCT,
   CINDER_BURN_PCT,
   CINDER_BURN_TICKS,
   DEADEYE_EXECUTE_PCT,
@@ -110,6 +112,18 @@ export function effectiveCritDamagePct(state: RunState): number {
 
 export function applyHit(enemy: Enemy, damage: number, pierceShield = false): number {
   if (!pierceShield && damage <= enemy.shield) return 0 // shieldbearers ignore weak hits entirely
+  // Spirebreaker's carapace: while raised, everything lands for 1 — except
+  // a single heavy blow (>= CARAPACE_BREAK_DAMAGE), which SHATTERS it and
+  // lands in full. Heavy hitters answer the window; chip waits it out.
+  if (enemy.mechActiveTicks > 0 && ENEMIES[enemy.type].mech?.kind === 'carapace') {
+    if (damage >= CARAPACE_BREAK_DAMAGE) {
+      enemy.mechActiveTicks = 0 // shattered
+    } else {
+      const chip = Math.min(enemy.hp, 1)
+      enemy.hp -= chip
+      return chip
+    }
+  }
   // Armor: flat reduction per hit, min 1 always lands. Chip damage bleeds a
   // large fraction to it; heavy shells barely notice — the midgame
   // composition pressure that shields (a late threshold) never provided.
@@ -590,6 +604,36 @@ export function tickStatuses(state: RunState): void {
 
 // Carriers hatch broods of lesser enemies at their own position while alive.
 // Children get fresh (highest) ids, so appending preserves spawn order.
+// Boss signature mechanics: tick the timers, trigger the windows. Carapace
+// raises a break-or-wait immunity window; gale hastens every OTHER enemy —
+// unless it is already slowed (applySlow keeps the strongest factor, so
+// frost coverage cancels the storm outright).
+export function bossMechanics(state: RunState, events: GameEvent[]): void {
+  for (const boss of state.enemies) {
+    const mech = ENEMIES[boss.type].mech
+    if (!mech || boss.hp <= 0) continue
+    if (boss.mechActiveTicks > 0) boss.mechActiveTicks -= 1
+    if (boss.mechCooldown > 0) {
+      boss.mechCooldown -= 1
+      continue
+    }
+    boss.mechCooldown = mech.everyTicks
+    if (mech.kind === 'carapace') {
+      boss.mechActiveTicks = mech.durationTicks
+      events.push({ type: 'boss_carapace', id: boss.id })
+    } else {
+      let hastened = 0
+      for (const e of state.enemies) {
+        if (e.id === boss.id || e.hp <= 0 || e.slowTicks > 0) continue
+        e.slowFactor = GALE_SPEED_PCT
+        e.slowTicks = mech.durationTicks
+        hastened += 1
+      }
+      events.push({ type: 'boss_gale', id: boss.id, hastened })
+    }
+  }
+}
+
 export function carrierBroods(state: RunState, events: GameEvent[]): void {
   const children: Enemy[] = []
   for (const carrier of state.enemies) {
@@ -625,6 +669,8 @@ export function carrierBroods(state: RunState, events: GameEvent[]): void {
         burnTicks: 0,
         burnPerTick: 0,
         overcharge: 0,
+        mechCooldown: 0,
+        mechActiveTicks: 0,
         targetCell: null,
       })
       events.push({ type: 'enemy_spawned', id, enemy: brood.type })
@@ -741,6 +787,8 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
           burnTicks: 0,
           burnPerTick: 0,
           overcharge: 0,
+          mechCooldown: 0,
+          mechActiveTicks: 0,
           targetCell: null,
         })
         events.push({ type: 'enemy_spawned', id, enemy: split.type })

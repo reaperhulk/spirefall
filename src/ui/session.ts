@@ -241,6 +241,20 @@ export class GameSession {
             })
           }
           break
+        case 'boss_carapace': {
+          const boss = this.state.enemies.find((en) => en.id === e.id)
+          if (boss) {
+            this.effects.push({ kind: 'float', at: { ...boss.pos }, text: 'CARAPACE', color: '#ffd7f0', t0: now, dur: 900 })
+          }
+          break
+        }
+        case 'boss_gale': {
+          const caster = this.state.enemies.find((en) => en.id === e.id)
+          if (caster) {
+            this.effects.push({ kind: 'float', at: { ...caster.pos }, text: 'GALE SURGE', color: '#ffc777', t0: now, dur: 900 })
+          }
+          break
+        }
         case 'vents_erupted': {
           // Orange bursts at every fissure — the eruption is readable even
           // at speed. Suppressed above 3x like other per-hit effects.

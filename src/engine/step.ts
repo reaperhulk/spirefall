@@ -34,6 +34,7 @@ import {
   WAVE_CLEAR_KNIT_HP,
 } from '../data/content'
 import {
+  bossMechanics,
   carrierBroods,
   castAbility,
   collectDead,
@@ -91,6 +92,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
       endRun(s, events)
     } else {
       enemyAuras(s, events)
+      bossMechanics(s, events)
       carrierBroods(s, events)
       towersFire(s, map, field, events)
       collectDead(s, events)
@@ -431,6 +433,8 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       burnTicks: 0,
       burnPerTick: 0,
       overcharge: 0,
+      mechCooldown: def.mech ? def.mech.everyTicks : 0,
+      mechActiveTicks: 0,
       broodCooldown: def.brood ? def.brood.everyTicks : 0,
       phased: false,
       phaseCooldown: def.phasing ? def.phasing.visibleTicks : 0,

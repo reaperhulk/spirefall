@@ -38,6 +38,23 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+70. *(five-item program, 2/5)* **Boss encounters** — every 10th wave is an
+    encounter with counterplay, not a stat check. Spirebreaker: Carapace —
+    every 8s a 2s shell caps all hits at 1 damage, but a single heavy blow
+    (40+) shatters it instantly and lands full (cannons/snipers answer;
+    chip waits). Gravemind: births 2 bounty-less splitlings every 6s while
+    alive (pure data — rides the carrier brood machinery) on top of its
+    split-on-death. Stormcaller: Gale Surge every 7s hastens the whole
+    horde to 140% — but slows OVERRIDE haste, so frost coverage cancels
+    the storm outright. Boss bar announces CARAPACE UP; the shell draws a
+    bright ring on the body; floats + FM clang / wind-whoosh sounds; codex
+    documents each mechanic and its answer. Boss waves already land on
+    relic-offer waves (10/20/30 are multiples of 5), so the reward anchor
+    exists for free. Goldens: HASH-ONLY diff — reference outcomes did not
+    move (the bot's tier-2 cannons break carapaces naturally); biome
+    envelope + fuzz containment pass unchanged. 161 unit tests (4 new
+    exact-arithmetic boss tests), 28 e2e specs.
+
 69. *(five-item program, 1/5)* **Biome balance: measured, verified, pinned**
     — reference measurements across all four biomes: mid meta (3000 sparks)
     lands 11–14 waves everywhere (the features' upsides and their costs

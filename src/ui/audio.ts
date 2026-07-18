@@ -35,6 +35,8 @@ type SoundKind =
   | 'frost_nova'
   | 'gold_rush'
   | 'bulwark'
+  | 'carapace'
+  | 'gale'
 
 // Four synthesis voices, because plain oscillators sound like programmer
 // art no matter how they're layered:
@@ -162,6 +164,15 @@ const SOUNDS: Record<SoundKind, Note[]> = {
     { freq: 1975, dur: 0.07, type: 'fm', gain: 0.045, ratio: 3.0, index: 1 },
     { freq: 2349, dur: 0.13, type: 'fm', gain: 0.05, ratio: 3.0, index: 1 },
   ],
+  // Carapace: iron shell slamming shut — dissonant FM clang.
+  carapace: [
+    { freq: 220, dur: 0.35, type: 'fm', gain: 0.055, ratio: 1.93, index: 6, indexEnd: 0.4, at: 0 },
+    { freq: 2400, dur: 0.03, type: 'noise', gain: 0.03, q: 1.5, at: 0 },
+  ],
+  // Gale: a rising wind whoosh.
+  gale: [
+    { freq: 700, dur: 0.45, type: 'noise', gain: 0.04, q: 1.2, sweep: 2.4, at: 0, attack: 0.08 },
+  ],
   // Bulwark: a real FM gong — inharmonic partials that bloom then settle.
   bulwark: [
     { freq: 98, dur: 1.0, type: 'fm', gain: 0.07, ratio: 1.4, index: 5, indexEnd: 0.3, at: 0 },
@@ -188,6 +199,8 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
   shot_sniper: 120,
   kill: 90,
   boss: 800,
+  carapace: 400,
+  gale: 400,
   cataclysm: 800,
   bulwark: 400,
 }
@@ -210,6 +223,8 @@ const REVERB_SEND: Partial<Record<SoundKind, number>> = {
   place: 0.06,
   boss: 0.18,
   cataclysm: 0.28,
+  carapace: 0.16,
+  gale: 0.2,
   meteor: 0.2,
   frost_nova: 0.22,
   gold_rush: 0.16,
@@ -310,6 +325,12 @@ export class Sfx {
           break
         case 'cataclysm_struck':
           this.play('cataclysm')
+          break
+        case 'boss_carapace':
+          this.play('carapace')
+          break
+        case 'boss_gale':
+          this.play('gale')
           break
         default:
           break
