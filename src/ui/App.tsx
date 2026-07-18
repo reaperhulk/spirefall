@@ -34,7 +34,7 @@ import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { sameCell } from '../engine/grid'
 import { BIOME_IDS, BIOMES, type BiomeId } from '../data/biomes'
 import type { MetaUpgradeId } from '../data/metaTree'
-import type { AbilityId, CataclysmId, CellPos, EnemyType, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
+import type { AbilityId, CataclysmId, CellPos, EnemyType, RunState, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
 import { Sfx } from './audio'
 import { Music } from './music'
 import { CodexModal } from './Codex'
@@ -45,7 +45,7 @@ import { RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModa
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
 import { clearSave, loadSave, persistSave } from './save'
-import { GameSession } from './session'
+import { GameSession, type LoggedCommand } from './session'
 
 function newSeed(runs: number): string {
   return `run-${runs + 1}-${Math.random().toString(36).slice(2, 8)}`
@@ -266,6 +266,26 @@ export default function App() {
     sessionRef.current = live
     setSession(live)
     setWatching(false)
+  }
+  // A pasted v2 replay (from anyone) carries its own tick-0 state, so it
+  // spectates without touching this account's meta or save.
+  const watchImported = (text: string): boolean => {
+    try {
+      const data = JSON.parse(text) as { v?: number; initial?: RunState; log?: LoggedCommand[] }
+      if (data.v !== 2 || !data.initial || !Array.isArray(data.log)) return false
+      if (typeof data.initial.seed !== 'string' || data.initial.tick !== 0) return false
+      const replay = new GameSession(data.initial)
+      replay.replayScript = data.log.map((c) => ({ tick: c.tick, command: c.command }))
+      replay.setSpeed(2)
+      if (!sessionRef.current.replaying) liveSessionRef.current = sessionRef.current
+      sessionRef.current = replay
+      setSession(replay)
+      setWatching(true)
+      setShowSettings(false)
+      return true
+    } catch {
+      return false
+    }
   }
 
   const beginNextRun = (seed?: string) => {
@@ -1147,10 +1167,13 @@ export default function App() {
           meta={meta}
           onWatchReplay={watchReplay}
           replay={() =>
+            // v2 embeds the tick-0 state, so ANY account can reconstruct and
+            // watch this exact run (Settings → Shared replay). The meta
+            // snapshot rides along for bug-report context only.
             JSON.stringify({
-              v: 1,
+              v: 2,
               seed: session.state.seed,
-              map: session.state.mapId,
+              initial: session.initial,
               upgrades: meta.upgrades,
               emberUpgrades: meta.emberUpgrades,
               log: session.commandLog,
@@ -1195,6 +1218,7 @@ export default function App() {
           onReducedMotion={(v) => setUiSettings({ ...updateSettings({ reducedMotion: v }) })}
           onHaptics={(v) => setUiSettings({ ...updateSettings({ haptics: v }) })}
           onColorAssist={(v) => setUiSettings({ ...updateSettings({ colorAssist: v }) })}
+          onWatchReplay={watchImported}
           onClose={() => setShowSettings(false)}
         />
       )}

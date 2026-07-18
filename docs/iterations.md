@@ -38,6 +38,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+> **Marathon II backlog** (revised every iteration): shareable replays ✓;
+> boss roster +2; Crucible named tiers; wave-preview boss-mech warnings;
+> relic codex tab; run-history sparkline; new affixes; new trials;
+> achievement toasts; low-end render perf pass; continuous re-planning
+> from playtests and fuzz hunts.
+
+89. *(marathon II, iteration 1)* **Shareable replays** — the replay
+    export is now v2: it embeds the run's tick-0 RunState alongside the
+    command log, so ANY account can reconstruct the exact run without
+    sharing meta state. Settings gains a "Shared replay" section: paste
+    any copied replay JSON → ▶ Watch — a spectator session that never
+    touches the local meta or save; exit returns to whatever the player
+    was doing, mid-run included (the live session freezes while parked).
+    Malformed pastes fail softly with a hint. E2e extends the replay
+    spec: copy a defeated run's v2 JSON, start a fresh run, import,
+    watch to completion — identical wave/kills/spire-HP triple — then
+    exit back to the untouched fresh run. 183 unit tests, 33 e2e specs.
+
 88. *(program 3/4)* **Watchable replays** — the deterministic engine
     makes this nearly free, so now it's a feature: every session pins
     its tick-0 state, and `replaySession()` spawns a spectator session

@@ -290,6 +290,38 @@ test('watch replay: the last run replays deterministically to the same outcome',
   // Exit restores the ended live session and its run-over screen.
   await page.getByTestId('exit-replay').click()
   await expect(page.getByTestId('run-over')).toBeVisible()
+
+  // SHARED replays: copy this run's v2 JSON, move on to a fresh run, then
+  // import and watch it — it must land on the same outcome again.
+  await page.getByTestId('copy-replay').click()
+  const shared = await page.getByTestId('replay-json').inputValue()
+  expect(JSON.parse(shared).v).toBe(2)
+  await page.getByTestId('tab-next').click()
+  await page.getByTestId('next-run').click()
+  await expect(page.getByTestId('run-over')).not.toBeVisible()
+
+  await page.keyboard.press('?')
+  await expect(page.getByTestId('settings-modal')).toBeVisible()
+  await page.getByTestId('replay-import').fill(shared)
+  await page.getByTestId('watch-imported').click()
+  await expect(page.getByTestId('replay-banner')).toBeVisible()
+  await page.evaluate(() => {
+    for (let i = 0; i < 40 && window.__harness.snapshot().phase !== 'defeat'; i++) {
+      window.__harness.fastForward(300)
+    }
+  })
+  const imported = await page.evaluate(() => {
+    const s = window.__harness.snapshot()
+    return { wave: s.wave, kills: s.kills, spireHp: s.spireHp }
+  })
+  expect(imported).toEqual(original)
+  // Exit returns to the LIVE fresh run, unharmed by the spectated defeat
+  // (build phase, wave 0, no towers — a few idle ticks are fine).
+  await page.getByTestId('exit-replay').click()
+  const live = await page.evaluate(() => window.__harness.snapshot())
+  expect(live.phase).toBe('build')
+  expect(live.wave).toBe(0)
+  expect(live.towers).toBe(0)
   expect(errors).toEqual([])
 })
 

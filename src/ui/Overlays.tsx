@@ -529,6 +529,7 @@ export function SettingsModal({
   onReducedMotion,
   onHaptics,
   onColorAssist,
+  onWatchReplay,
   onClose,
 }: {
   meta: MetaState
@@ -542,10 +543,13 @@ export function SettingsModal({
   onReducedMotion: (v: boolean) => void
   onHaptics: (v: boolean) => void
   onColorAssist: (v: boolean) => void
+  onWatchReplay: (text: string) => boolean
   onClose: () => void
 }) {
   const [transferCode, setTransferCode] = useState('')
   const [importFailed, setImportFailed] = useState(false)
+  const [replayCode, setReplayCode] = useState('')
+  const [replayFailed, setReplayFailed] = useState(false)
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
@@ -695,6 +699,37 @@ export function SettingsModal({
             That code didn't parse as a Spirefall save.
           </p>
         )}
+        <h3>Shared replay</h3>
+        <p className="replay-hint">
+          Paste a copied replay (run-over → Copy replay) — anyone's — and watch that exact run live.
+        </p>
+        <textarea
+          className="transfer-code"
+          data-testid="replay-import"
+          placeholder="Paste a replay JSON here."
+          value={replayCode}
+          onChange={(e) => {
+            setReplayCode(e.target.value)
+            setReplayFailed(false)
+          }}
+        />
+        <div className="transfer-row">
+          <button
+            className="ghost-btn"
+            data-testid="watch-imported"
+            onClick={() => {
+              if (!replayCode.trim()) return
+              if (!onWatchReplay(replayCode)) setReplayFailed(true)
+            }}
+          >
+            ▶ Watch replay
+          </button>
+          {replayFailed && (
+            <span className="transfer-error" data-testid="replay-import-failed">
+              That didn't parse as a v2 Spirefall replay.
+            </span>
+          )}
+        </div>
         <h3>Keyboard shortcuts</h3>
         <div className="shortcuts-grid">
           {SHORTCUTS.map(([keys, what]) => (
