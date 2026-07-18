@@ -43,6 +43,9 @@ export interface PolicyGenome {
   // Execute doctrine: true = finish every ready wounded enemy (the
   // attention-free ceiling). Absent/false = never.
   executeReady?: boolean
+  // Beam doctrine: 'lead' = hose the enemy nearest the spire, perfectly
+  // aimed every tick, venting on overheat. Absent/'never' = untouched.
+  beamPolicy?: 'never' | 'lead'
 }
 
 const OVERCHARGE_POLICIES = ['never', 'boss', 'ready'] as const
@@ -129,6 +132,8 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
   r = boons.rng
   const exec = draw(r, 0, 1)
   r = exec.rng
+  const beam = draw(r, 0, 1)
+  r = beam.rng
   return {
     genome: {
       ratio,
@@ -151,6 +156,7 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
       overchargePolicy: oc.value,
       boonPriority: boons.value,
       executeReady: exec.value === 1,
+      beamPolicy: beam.value === 1 ? 'lead' : 'never',
     },
     rng: r,
   }
@@ -164,7 +170,7 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
   const count = draw(r, 1, 3)
   r = count.rng
   for (let i = 0; i < count.value; i++) {
-    const which = draw(r, 0, 13)
+    const which = draw(r, 0, 14)
     r = which.rng
     switch (which.value) {
       case 0: {
@@ -271,6 +277,10 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
         g.executeReady = !(g.executeReady ?? false)
         break
       }
+      case 14: {
+        g.beamPolicy = (g.beamPolicy ?? 'never') === 'never' ? 'lead' : 'never'
+        break
+      }
     }
   }
   return { genome: g, rng: r }
@@ -339,6 +349,16 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
           (e) => e.hp > 0 && !e.phased && e.hp * 100 <= e.maxHp * EXECUTE_THRESHOLD_PCT,
         )
         if (wounded) acts.push({ type: 'execute_enemy', id: wounded.id })
+      }
+      if (genome.beamPolicy === 'lead') {
+        const targets = state.enemies.filter((e) => e.hp > 0 && !e.phased)
+        if (state.beamOverheated || targets.length === 0) {
+          if (state.beamTarget !== null) acts.push({ type: 'set_beam', target: null })
+        } else {
+          // Spires sit on the right edge: the enemy deepest along x leads.
+          const lead = targets.reduce((a, b) => (a.pos.x >= b.pos.x ? a : b))
+          acts.push({ type: 'set_beam', target: { x: lead.pos.x, y: lead.pos.y } })
+        }
       }
       return acts
     }

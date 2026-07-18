@@ -86,6 +86,13 @@ describe('determinism', () => {
       }),
       fc.record({ type: fc.constant('execute_enemy' as const), id: fc.integer({ min: 0, max: 400 }) }),
       fc.record({
+        type: fc.constant('set_beam' as const),
+        target: fc.oneof(
+          fc.constant(null),
+          fc.record({ x: fc.integer({ min: -2000, max: 30_000 }), y: fc.integer({ min: -2000, max: 20_000 }) }),
+        ) as fc.Arbitrary<null>,
+      }),
+      fc.record({
         type: fc.constant('set_targeting' as const),
         id: fc.integer({ min: 0, max: 50 }),
         targeting: fc.constantFrom('first', 'last', 'strongest', 'nearest') as fc.Arbitrary<'first'>,

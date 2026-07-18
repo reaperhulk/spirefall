@@ -6,6 +6,10 @@ import {
   BLIZZARD_SPLASH_TICKS_PCT,
   BREAKER_DAMAGE_PCT,
   CAPACITOR_DAMAGE_PCT,
+  BEAM_COOL_PER_TICK,
+  BEAM_DAMAGE_PER_TICK,
+  BEAM_HEAT_MAX,
+  BEAM_RADIUS,
   BOON_BOUNTY_GOLD,
   BOON_DAMAGE_PCT,
   BOON_SLOW_PCT,
@@ -877,6 +881,40 @@ export function enemyAuras(state: RunState, events: GameEvent[]): void {
     healer.healCooldown = heal.everyTicks
     if (healed.length > 0) events.push({ type: 'enemy_healed', healer: healer.id, targets: healed, amount })
   }
+}
+
+// The Spire beam: the player's own hand. Aimed = heating (a hose that's on
+// is hot whether or not it bites); overheat locks it until fully vented.
+// The bite goes through applyHit unmodified — armor taxes it, shields
+// block it, phased wraiths are beyond it. Kills collect like any other.
+export function beamFire(state: RunState, events: GameEvent[]): void {
+  const venting = state.beamTarget === null || state.beamOverheated
+  if (venting) {
+    if (state.beamHeat > 0) {
+      state.beamHeat = Math.max(0, state.beamHeat - BEAM_COOL_PER_TICK)
+      if (state.beamHeat === 0) state.beamOverheated = false
+    }
+    return
+  }
+  state.beamHeat += 1
+  if (state.beamHeat >= BEAM_HEAT_MAX) {
+    state.beamHeat = BEAM_HEAT_MAX
+    state.beamOverheated = true
+    events.push({ type: 'beam_overheated' })
+    return
+  }
+  const rSq = BEAM_RADIUS * BEAM_RADIUS
+  let best: Enemy | null = null
+  let bestD = Infinity
+  for (const e of state.enemies) {
+    if (e.hp <= 0 || e.phased) continue
+    const d = distSq(e.pos, state.beamTarget!)
+    if (d <= rSq && d < bestD) {
+      bestD = d
+      best = e
+    }
+  }
+  if (best) applyHit(best, BEAM_DAMAGE_PER_TICK)
 }
 
 export function collectDead(state: RunState, events: GameEvent[]): void {

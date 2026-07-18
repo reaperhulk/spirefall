@@ -41,6 +41,7 @@ import {
   WAVE_CLEAR_KNIT_HP,
 } from '../data/content'
 import {
+  beamFire,
   bossMechanics,
   carrierBroods,
   castAbility,
@@ -102,6 +103,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
       bossMechanics(s, events)
       carrierBroods(s, events)
       towersFire(s, map, field, events)
+      beamFire(s, events)
       collectDead(s, events)
       checkWaveEnd(s, events)
     }
@@ -237,6 +239,18 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.activeBoon = command.boon
       s.boonOffer = null
       events.push({ type: 'boon_chosen', boon: command.boon })
+      return
+    }
+
+    case 'set_beam': {
+      // Aiming is free-form: on with a target, off with null. Clamped so a
+      // wild pointer can't serialize an off-map aim point.
+      s.beamTarget = command.target
+        ? {
+            x: Math.max(0, Math.min(map.width * 1000, command.target.x)),
+            y: Math.max(0, Math.min(map.height * 1000, command.target.y)),
+          }
+        : null
       return
     }
 

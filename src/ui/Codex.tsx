@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import {
   AA_TOWER_LIST,
   ABILITIES,
+  BEAM_DAMAGE_PER_TICK,
+  BEAM_HEAT_MAX,
   COMBO_HASTE_THRESHOLD,
   COMBO_WINDOW_TICKS,
   EXECUTE_COOLDOWN_TICKS,
@@ -154,6 +156,10 @@ const MECHANICS: MechanicEntry[] = [
   {
     title: 'Repair',
     body: `Repair mends up to ${REPAIR_MAX_PER_CAST} HP per cast and the price per HP climbs each wave. While a wave is live, repair crews manage only ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''}; they recover when it clears. The Spire also knits ${WAVE_CLEAR_KNIT_HP} HP on its own after every cleared wave.`,
+  },
+  {
+    title: 'The Spire beam',
+    body: `Hold B to fire a thin ray you steer with the cursor — the ninth tower is your own hand. It bites for ${BEAM_DAMAGE_PER_TICK} per tick at the aim point: armor taxes it to the bone and any shield blocks it outright, so it's a pressure hose for chaff, not a cannon. ${BEAM_HEAT_MAX / 30}s of fire overheats it, and an overheated beam stays locked until FULLY vented — burst, vent, burst.`,
   },
   {
     title: 'Execute windows',

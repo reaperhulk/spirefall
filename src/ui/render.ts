@@ -1,5 +1,6 @@
 import {
   ABILITIES,
+  BEAM_HEAT_MAX,
   ENEMIES,
   EXECUTE_THRESHOLD_PCT,
   LANCE_MAX_STACKS,
@@ -597,10 +598,35 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
   drawEnemies(ctx, session)
+  drawBeam(ctx, session, map)
   drawEffects(ctx, session)
   drawAtmosphere(ctx, session, map, theme)
   drawPlacementGhost(ctx, session, ui, map)
   drawBossBar(ctx, state, map)
+}
+
+// The Spire beam: a steered ray from the spire to the aim point, its color
+// riding the heat (cool cyan → angry orange). Purely a view of serialized
+// state — beamTarget/beamHeat — so replays show the hand that steered it.
+function drawBeam(ctx: CanvasRenderingContext2D, session: GameSession, map: MapDef): void {
+  const state = session.state
+  if (state.beamTarget === null || state.beamOverheated || state.phase !== 'wave') return
+  const from = cellCenter(map.spire)
+  const heat = state.beamHeat / BEAM_HEAT_MAX
+  const color = heat < 0.5 ? '#7dcfff' : heat < 0.8 ? '#e0af68' : '#ff7a3c'
+  const t = animTime(session)
+  ctx.save()
+  ctx.strokeStyle = color
+  ctx.globalAlpha = 0.55 + 0.2 * Math.sin(t * 0.6)
+  ctx.lineWidth = 2 + heat * 1.5
+  ctx.beginPath()
+  ctx.moveTo(px(from.x), px(from.y))
+  ctx.lineTo(px(state.beamTarget.x), px(state.beamTarget.y))
+  ctx.stroke()
+  ctx.globalAlpha = 1
+  ctx.lineWidth = 1
+  ctx.restore()
+  glow(ctx, px(state.beamTarget.x), px(state.beamTarget.y), 10 + heat * 6, color, 0.5)
 }
 
 // The room's mood tracks the game's state: slow fog banks drift over the

@@ -9,6 +9,7 @@ import {
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   relicSkipGold,
+  BEAM_HEAT_MAX,
   BOONS,
   COMBO_HASTE_THRESHOLD,
   EXECUTE_THRESHOLD_PCT,
@@ -42,7 +43,7 @@ import { getRunMap } from '../engine/mapgen'
 import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
 import type { EmberUpgradeId } from '../data/emberTree'
 import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
-import { sameCell } from '../engine/grid'
+import { cellCenter, sameCell } from '../engine/grid'
 import { BIOME_IDS, BIOMES, type BiomeId } from '../data/biomes'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { AbilityId, CataclysmId, CellPos, EnemyType, RunState, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
@@ -215,6 +216,7 @@ export default function App() {
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
+  const beamHeldRef = useRef(false)
   // Screen-reader narration of major beats (aria-live, visually hidden).
   const [srMessage, setSrMessage] = useState('')
   // In-app confirmation (replaces window.confirm — see ConfirmModal).
@@ -652,6 +654,13 @@ export default function App() {
         setMuted(sfx.toggleMute())
         return
       }
+      if (e.key.toLowerCase() === 'b' && !e.repeat) {
+        // Hold B to fire the Spire beam at the cursor; release to vent.
+        beamHeldRef.current = true
+        const hover = hoverRef.current
+        if (hover) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(hover) })
+        return
+      }
       if (e.key === '-' || e.key === '=' || e.key === '+') {
         const idx = Math.max(0, SPEEDS.indexOf(sessionRef.current.speed))
         const next = e.key === '-' ? Math.max(0, idx - 1) : Math.min(SPEEDS.length - 1, idx + 1)
@@ -681,9 +690,18 @@ export default function App() {
         }
       }
     }
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'b') {
+        beamHeldRef.current = false
+        sessionRef.current.dispatch({ type: 'set_beam', target: null })
+      }
+    }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-
+    window.addEventListener('keyup', onKeyUp)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keyup', onKeyUp)
+    }
   }, [summary, sfx])
 
   const renderUi: RenderUiState = {
@@ -863,6 +881,23 @@ export default function App() {
               <span
                 className="combo-drain"
                 style={{ width: `${Math.round((state.comboTicks / COMBO_WINDOW_TICKS) * 100)}%` }}
+              />
+            </span>
+          )}
+          {(state.beamHeat > 0 || state.beamTarget !== null) && (
+            <span
+              className={`hud-beam${state.beamOverheated ? ' overheated' : ''}`}
+              data-testid="beam-heat"
+              title={
+                state.beamOverheated
+                  ? 'Beam OVERHEATED — venting; it unlocks when fully cool'
+                  : 'Spire beam heat — hold B to fire at the cursor; overheat locks it until vented'
+              }
+            >
+              🔆
+              <span
+                className="beam-heat-bar"
+                style={{ width: `${Math.round((state.beamHeat / BEAM_HEAT_MAX) * 100)}%` }}
               />
             </span>
           )}
@@ -1078,6 +1113,8 @@ export default function App() {
           onCellClick={handleCellClick}
           onHover={(c) => {
             hoverRef.current = c
+            // A held beam follows the cursor cell by cell.
+            if (beamHeldRef.current && c) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(c) })
             const tower = c ? sessionRef.current.state.towers.find((t) => sameCell(t.cell, c)) : undefined
             setHoveredTowerId((cur) => (tower ? tower.id : null) === cur ? cur : (tower ? tower.id : null))
           }}

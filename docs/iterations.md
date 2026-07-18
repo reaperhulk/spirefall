@@ -52,6 +52,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+194. *(active-play package, 7/7)* **The Spire beam** — hold B and the
+    ninth tower is your own hand: a thin steered ray (cursor-follow,
+    cell by cell) biting 1/tick at the aim point. Armor taxes it to
+    the bone, any shield blocks it outright, phased wraiths are
+    beyond it — a pressure hose for chaff, not a cannon. 4s of fire
+    overheats it and an overheated beam stays LOCKED until fully
+    vented: burst, vent, burst. `set_beam` command (targets clamped
+    to the board), beamTarget/beamHeat/beamOverheated serialized so
+    replays show the hand that steered (goldens stateHash-only),
+    heat-colored ray render + HUD heat bar (red when locked),
+    beam_overheated event, codex + shortcut entries, fuzzer
+    beamPolicy gene probing the perfectly-aimed ceiling, determinism
+    coverage, e2e drives the real hold-B path. Beam kills book like
+    any other — bounty, combo, tallies. 232 unit tests, 53 e2e
+    specs. The package the brainstorm promised is complete: hands
+    busy (overcharge, execute, beam), brain busy (boons), eyes busy
+    (veterancy, coins, combo) — seven reasons 1× beats 10×.
+
 193. *(active-play package, 6/7)* **Execute windows** — an enemy at
     ≤15% health wears a pulsing gold ring while the blade is ready:
     click it (mid-wave, unarmed) to finish it instantly, banking its

@@ -1010,6 +1010,25 @@ button.preview-unit:hover {
   opacity: 0.7;
 }
 
+/* Spire-beam heat: a filling bar under the sun glyph; red when locked. */
+.hud-beam {
+  position: relative;
+  padding: 0 6px 2px 2px;
+}
+
+.hud-beam .beam-heat-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: #7dcfff;
+  transition: width 90ms linear;
+}
+
+.hud-beam.overheated .beam-heat-bar {
+  background: #db4b4b;
+}
+
 /* Combo streak badge: electric amber with a draining window bar underneath —
    the bar IS the tension. */
 .hud-combo {

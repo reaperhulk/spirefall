@@ -174,6 +174,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.activeBoon ??= null
         data.run.rng.boons ??= deriveStream(data.run.seed, 'boons')
         data.run.executeCd ??= 0
+        data.run.beamTarget ??= null
+        data.run.beamHeat ??= 0
+        data.run.beamOverheated ??= false
       }
       return data
     }

@@ -178,6 +178,9 @@ export interface RunState {
   boonOffer: BoonId[] | null // build phase: two single-wave perks; skipping is free
   activeBoon: BoonId | null // the perk blessing the current wave (cleared at wave end)
   executeCd: number // global execute-window cooldown (ticks, wave-time only)
+  beamTarget: Vec | null // where the player is steering the spire beam (null = off)
+  beamHeat: number // 0..BEAM_HEAT_MAX; firing heats, idling vents
+  beamOverheated: boolean // maxed heat locks the beam until fully vented
   availableTowers: TowerType[]
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
@@ -210,6 +213,7 @@ export type Command =
   | { type: 'overcharge_tower'; id: number }
   | { type: 'choose_boon'; boon: BoonId }
   | { type: 'execute_enemy'; id: number }
+  | { type: 'set_beam'; target: Vec | null }
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
@@ -244,6 +248,7 @@ export type GameEvent =
   | { type: 'tower_overcharged'; id: number; cell: CellPos }
   | { type: 'boon_chosen'; boon: BoonId }
   | { type: 'enemy_executed'; id: number; at: Vec; bonus: number }
+  | { type: 'beam_overheated' }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

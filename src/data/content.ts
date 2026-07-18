@@ -410,6 +410,17 @@ export const AA_TOWER_NAMES = Object.values(TOWERS)
   .filter((d) => d.hitsAir && !d.support)
   .map((d) => d.name)
 export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
+// The Spire beam: a weak continuous ray YOU steer (hold B / the beam
+// toggle), with a heat bar. The ninth tower is your own hand — but it's a
+// pressure hose, not a cannon: 1 damage per tick means armor taxes it to
+// the bone and any shield blocks it outright. Overheat locks it until
+// fully vented, so it's a rhythm (burst, vent, burst), not a laser you
+// leave parked on the path.
+export const BEAM_DAMAGE_PER_TICK = 1
+export const BEAM_RADIUS = 800 // millicells — how close to the aim point it bites
+export const BEAM_HEAT_MAX = 120 // 4s of continuous fire
+export const BEAM_COOL_PER_TICK = 2 // a full vent takes 2s
+
 // Execute windows: an enemy below the threshold is "wounded" — click it to
 // finish it instantly for its bounty AGAIN as a bonus. One global cooldown
 // gates the blade, so it's a stream of small aimed decisions, not a hose.

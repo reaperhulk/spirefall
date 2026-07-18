@@ -29,6 +29,7 @@ export function cloneRun(s: RunState): RunState {
     relicOffer: s.relicOffer ? [...s.relicOffer] : null,
     cataclysmOffer: s.cataclysmOffer ? [...s.cataclysmOffer] : null,
     boonOffer: s.boonOffer ? [...s.boonOffer] : null,
+    beamTarget: s.beamTarget ? { ...s.beamTarget } : null,
     availableTowers: [...s.availableTowers],
     mods: { ...s.mods },
   }

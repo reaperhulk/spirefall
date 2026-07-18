@@ -281,6 +281,27 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
+test('the spire beam: hold B to steer it, release to vent', async ({ page }) => {
+  const errors = await boot(page, 'e2e-beam')
+  await page.evaluate(() => {
+    window.__harness.dispatch({ type: 'start_wave' })
+    window.__harness.fastForward(3)
+  })
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().enemies.length)).toBeGreaterThan(0)
+  // Aim at the board center and hold B.
+  const canvas = page.locator('canvas').first()
+  const box = (await canvas.boundingBox())!
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await page.keyboard.down('b')
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamTarget !== null)).toBe(true)
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamHeat)).toBeGreaterThan(0)
+  // Release: the beam goes dark and the heat vents to zero.
+  await page.keyboard.up('b')
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamTarget === null)).toBe(true)
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().beamHeat)).toBe(0)
+  expect(errors).toEqual([])
+})
+
 test('execute windows: clicking a wounded enemy finishes it for a bonus', async ({ page }) => {
   const errors = await boot(page, 'e2e-execute')
   await page.evaluate(() => {
