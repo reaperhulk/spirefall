@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+100. *(marathon II, iteration 12)* **Phasing tell in the scouting
+    report** — wraiths and Veilwarden flicker untargetable, punishing
+    burst comps, and the preview never warned. Phasing types now wear a
+    ◌ mark with the hidden-window duration (from live data) and the
+    counter ("sustained fire beats burst") — completing the preview's
+    threat vocabulary: ✈ air, ▣ armor, 🛡/🌀 boss mechs, ◌ phase. E2e
+    extends the boss-preview spec to wave 39/Veilwarden. 191 unit
+    tests, 34 e2e specs.
+
 99. *(marathon II, iteration 11)* **Biome fuzzing finds the maze farm;
     geometry kills it; a counter-experiment fails honestly** — fuzzBuilds
     gained a `biome` option (FUZZ_BIOME env) because the evolutionary

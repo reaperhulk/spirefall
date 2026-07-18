@@ -836,6 +836,15 @@ export default function App() {
                         ▣
                       </span>
                     )}
+                    {ENEMIES[type].phasing && (
+                      <span
+                        className="phase-mark"
+                        data-testid={`phase-mark-${type}`}
+                        title={`Phasing — flickers untargetable for ${Math.round(ENEMIES[type].phasing.hiddenTicks / 30)}s stretches. Sustained fire beats burst; nothing hits what isn't there.`}
+                      >
+                        ◌
+                      </span>
+                    )}
                     {ENEMIES[type].mech && (
                       <span
                         className="mech-mark"

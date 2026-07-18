@@ -256,6 +256,14 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
   await expect(page.getByTestId('preview-unit-boss')).toBeVisible()
   await expect(page.getByTestId('mech-mark-boss')).toBeVisible()
   await expect(page.getByTestId('mech-mark-boss')).toHaveAttribute('title', /Carapace/)
+
+  // And the endless-tier phaser: wave 39's preview scouts Veilwarden.
+  await page.evaluate(() => {
+    window.__harness.getState().wave = 39
+    window.__harness.fastForward(1)
+  })
+  await expect(page.getByTestId('phase-mark-boss4')).toBeVisible()
+  await expect(page.getByTestId('phase-mark-boss4')).toHaveAttribute('title', /Phasing/)
   expect(errors).toEqual([])
 })
 
