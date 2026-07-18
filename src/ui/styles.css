@@ -149,6 +149,29 @@ button:disabled {
   min-width: 60px;
 }
 
+/* Sound not yet proven live (browsers gate audio behind a gesture): the
+   button breathes gently until the probe confirms the clock is running. */
+.sound-pending {
+  animation: sound-pending-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sound-pending-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-pending {
+    animation: none;
+    opacity: 0.65;
+  }
+}
+
 .speed-controls {
   display: flex;
   gap: 2px;

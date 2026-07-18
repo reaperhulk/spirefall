@@ -52,6 +52,7 @@ declare global {
       getSpeed: () => number
       getReplay: () => { seed: string; log: unknown[] }
       audioState: () => string
+      audioLive: () => boolean
       reset: () => void
     }
   }
@@ -626,6 +627,8 @@ test.describe('mobile viewport', () => {
     const errors = await boot(page, 'e2e-mobile-audio')
     await page.getByTestId('shop-arrow').tap()
     await expect.poll(() => page.evaluate(() => window.__harness.audioState())).toBe('running')
+    // Not just claimed — PROBED: the audio clock was observed advancing.
+    await expect.poll(() => page.evaluate(() => window.__harness.audioLive())).toBe(true)
     expect(errors).toEqual([])
   })
 
@@ -647,6 +650,28 @@ test.describe('mobile viewport', () => {
     expect(box!.x + box!.width).toBeLessThanOrEqual(375)
     expect(errors).toEqual([])
   })
+})
+
+test('sound button reflects PROBED audio state: pending on load, live after a gesture, mute intent honored', async ({
+  page,
+}) => {
+  const errors = await boot(page, 'e2e-audio-state')
+  // No gesture has happened (boot drives the page via evaluate) — the
+  // button must not claim working audio it cannot have.
+  await expect(page.getByTestId('mute')).toHaveText('🔈')
+  expect(await page.evaluate(() => window.__harness.audioLive())).toBe(false)
+
+  // Clicking the pending button means "I want sound": the click unlocks the
+  // context and the probe flips the icon — it must NOT mute instead.
+  await page.getByTestId('mute').click()
+  await expect(page.getByTestId('mute')).toHaveText('🔊')
+  await expect.poll(() => page.evaluate(() => window.__harness.audioLive())).toBe(true)
+
+  // Live now: the same button is a plain mute toggle again.
+  await page.getByTestId('mute').click()
+  await expect(page.getByTestId('mute')).toHaveText('🔇')
+  await expect(page.getByTestId('mute')).toHaveAttribute('aria-pressed', 'true')
+  expect(errors).toEqual([])
 })
 
 test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refund', async ({ page }) => {

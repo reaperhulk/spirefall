@@ -282,6 +282,9 @@ export class Sfx {
   private recentCount = 0
   private recentWindow = 0
   private reviveGeneration = 0
+  private probeGeneration = 0
+  private liveFlag = false
+  private statusListeners = new Set<() => void>()
   muted: boolean
   // The score (music.ts) publishes its live key here; null = no music yet,
   // sounds play at their design pitch.
@@ -326,6 +329,42 @@ export class Sfx {
 
   currentNoiseBuffer(): AudioBuffer | null {
     return this.noiseBuffer
+  }
+
+  // Has audio been OBSERVED working? Browsers gate audio behind a user
+  // gesture — and disagree about which events count, whether resume()'s
+  // promise ever settles, and whether a 'running' context is actually
+  // progressing. So this is never assumed: it flips true only after a
+  // probe sees the clock advance, and drops if the context dies later.
+  // The UI renders sound state from this, not from hope.
+  get live(): boolean {
+    return this.liveFlag
+  }
+
+  // Subscribe to liveness changes; returns the unsubscribe.
+  onStatusChange(cb: () => void): () => void {
+    this.statusListeners.add(cb)
+    return () => this.statusListeners.delete(cb)
+  }
+
+  private setLive(v: boolean): void {
+    if (this.liveFlag === v) return
+    this.liveFlag = v
+    for (const cb of this.statusListeners) cb()
+  }
+
+  // Ground truth, browser-agnostic: a context that is 'running' AND whose
+  // currentTime advances is rendering audio. (resume() resolving is not
+  // proof — Safari can leave a 'running' zombie; some browsers never
+  // settle the promise at all.) One probe per attempt; a later attempt
+  // supersedes an in-flight one.
+  private probe(ctx: AudioContext): void {
+    const gen = ++this.probeGeneration
+    const t0 = ctx.currentTime
+    setTimeout(() => {
+      if (gen !== this.probeGeneration || this.ctx !== ctx) return
+      this.setLive(ctx.state === 'running' && ctx.currentTime > t0)
+    }, 200)
   }
 
   toggleMute(): boolean {
@@ -405,16 +444,21 @@ export class Sfx {
       }
     }
     const ctx = this.ctx
-    if (ctx.state === 'running') return
+    if (ctx.state === 'running') {
+      if (!this.liveFlag) this.probe(ctx)
+      return
+    }
     // 'suspended' (and Safari's 'interrupted') contexts usually revive on
     // resume() — but after app switches, mobile browsers sometimes leave a
     // zombie that never resumes (or resumes mute). A resume issued from a
     // REAL user gesture must take; if it hasn't shortly after, scrap the
     // context and build a fresh one, which the same gesture authorizes.
+    // The probe (not the promise) decides whether audio is actually live.
     void ctx
       .resume()
       .then(() => this.prime(ctx))
       .catch(() => {})
+    this.probe(ctx)
     if (fromGesture) {
       const gen = ++this.reviveGeneration
       setTimeout(() => {
@@ -436,6 +480,15 @@ export class Sfx {
   // overlapping shots duck each other instead of clipping the output. Also
   // pre-renders the shared white-noise buffer the percussion voices loop.
   private buildChain(ctx: AudioContext): void {
+    // Track this context's fate: probe when it (re)starts running, demote
+    // liveness the moment it stops — the sound button must never claim
+    // audio that isn't rendering.
+    ctx.onstatechange = () => {
+      if (this.ctx !== ctx) return
+      if (ctx.state === 'running') this.probe(ctx)
+      else this.setLive(false)
+    }
+    this.probe(ctx)
     const comp = ctx.createDynamicsCompressor()
     comp.threshold.value = -18
     comp.knee.value = 24

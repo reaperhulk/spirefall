@@ -38,6 +38,24 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+80. *(playtest feedback)* **Audio liveness is probed, never assumed** —
+    the sound button claimed 🔊 from load, but browsers gate audio behind
+    a user gesture (and disagree about which events count, whether
+    resume()'s promise ever settles, and whether a 'running' context is
+    actually rendering). Sfx now keeps a PROBED `live` flag: true only
+    after a probe observes ctx.state === 'running' AND currentTime
+    advancing 200ms later — the only browser-agnostic ground truth — and
+    it drops on statechange if the context dies later. The button has
+    three honest states: 🔇 muted, 🔈 pending (gently pulsing; title
+    explains sound starts on first tap), 🔊 live. Clicking the pending
+    button means "I want sound" — the click itself unlocks, and it does
+    NOT flip to mute; pressing M always mutes (someone racing to silence
+    the page must win). React side uses useSyncExternalStore over an
+    Sfx subscription. `__harness.audioLive()` exposes the probe; e2e
+    covers pending-on-load → live-after-gesture → mute, and the mobile
+    unlock test now asserts probed liveness, not just claimed state.
+    175 unit tests, 32 e2e specs.
+
 79. *(playtest feedback)* **SFX ring in the score's key** — the sound
     effects and the music lived in unrelated tonal worlds. Now the score
     publishes its live tonality (scale + the chord sounding right now, as

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ABILITIES,
   AFFIXES,
@@ -168,6 +168,12 @@ export default function App() {
     }
   })
   const [sfx] = useState(() => new Sfx())
+  // Audio is never assumed working: browsers gate it behind a gesture (and
+  // disagree on which), so the sound button renders from PROBED liveness.
+  const audioLive = useSyncExternalStore(
+    useCallback((cb: () => void) => sfx.onStatusChange(cb), [sfx]),
+    () => sfx.live,
+  )
   const [music] = useState(() => new Music(sfx))
   const [muted, setMuted] = useState(() => sfx.muted)
 
@@ -293,6 +299,7 @@ export default function App() {
       getSession: () => sessionRef.current,
       getMeta: () => metaRef.current,
       audioState: () => sfx.currentContext()?.state ?? 'none',
+      audioLive: () => sfx.live,
       newRun: (seed) => beginNextRun(seed),
       buyMeta,
       reset: () => {
@@ -602,14 +609,25 @@ export default function App() {
             </span>
           )}
           <button
-            className="ghost-btn"
+            className={`ghost-btn${!muted && !audioLive ? ' sound-pending' : ''}`}
             data-testid="mute"
-            aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+            aria-label={muted ? 'Unmute sound' : audioLive ? 'Mute sound' : 'Enable sound'}
             aria-pressed={muted}
-            title={`${muted ? 'Unmute' : 'Mute'} sound (M)`}
-            onClick={() => setMuted(sfx.toggleMute())}
+            title={
+              muted
+                ? 'Unmute sound (M)'
+                : audioLive
+                  ? 'Mute sound (M)'
+                  : 'Sound starts with your first tap or key press'
+            }
+            onClick={() => {
+              // Pending + click = "I want sound": the click itself unlocks
+              // the context (the probe flips the icon) — don't mute instead.
+              if (!muted && !audioLive) return
+              setMuted(sfx.toggleMute())
+            }}
           >
-            {muted ? '🔇' : '🔊'}
+            {muted ? '🔇' : audioLive ? '🔊' : '🔈'}
           </button>
           <div className="speed-controls" role="group" aria-label="Game speed" title="Keys − and = step speed down/up">
             {SPEEDS.map((n) => (
