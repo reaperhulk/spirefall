@@ -44,6 +44,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+98. *(marathon II, iteration 10)* **Render-perf measurement pass** —
+    frame-time probes in headless Chromium at deviceScaleFactor 2:
+    steady state and a REAL mid-game combat scene (wave 9, 14 towers
+    firing with projectiles + live music, rich-meta pilot) both hold
+    60fps — p50 16.7ms (vsync-locked), p95 17.9ms, p99 23.5ms; no
+    missed-frame pattern anywhere measured. Honest gap: a true
+    60+-enemy horde scene couldn't be staged through supported commands
+    (wave-state surgery produces empty/refused waves; a strong pilot
+    melts the field) — if that scene ever needs measuring, add a
+    debug-only harness spawn hook first. No code change; measurement
+    only. 190 unit tests, 34 e2e specs.
+
 97. *(marathon II, iteration 9)* **Achievements catch up with the
     game** — the 17-achievement list predated specs, trials, and the
     Crucible. Four new one-shots: COMMITTED (three specialized towers
