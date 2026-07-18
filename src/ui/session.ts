@@ -55,6 +55,13 @@ const TOWER_BEAM_COLORS: Record<string, string> = {
 export class GameSession {
   state: RunState
   prev: RunState // one tick behind, for render interpolation
+  // The run's tick-0 state, kept so the run can be REPLAYED: determinism
+  // means initial state + command log reproduces every moment exactly.
+  readonly initial: RunState
+  // Non-null = this session is a spectator: commands come from the script,
+  // player dispatches are ignored, and App suppresses meta/save effects.
+  replayScript: LoggedCommand[] | null = null
+  private scriptIndex = 0
   speed = 1
   effects: VisualEffect[] = []
   commandLog: LoggedCommand[] = []
@@ -80,13 +87,30 @@ export class GameSession {
   constructor(initial: RunState) {
     this.state = initial
     this.prev = initial
+    // RunState is plain JSON by architectural contract — a cheap deep copy
+    // pins tick 0 against later mutation-by-reference.
+    this.initial = JSON.parse(JSON.stringify(initial)) as RunState
   }
 
   get terminal(): boolean {
     return this.state.phase === 'defeat' || this.state.phase === 'victory'
   }
 
+  get replaying(): boolean {
+    return this.replayScript !== null
+  }
+
+  // A spectator session that replays this run from tick 0: same initial
+  // state, same commands at the same ticks — the deterministic engine does
+  // the rest. The caller drives it like any session (speed, fastForward).
+  replaySession(): GameSession {
+    const replay = new GameSession(JSON.parse(JSON.stringify(this.initial)) as RunState)
+    replay.replayScript = this.commandLog.map((c) => ({ tick: c.tick, command: c.command }))
+    return replay
+  }
+
   dispatch(command: Command): void {
+    if (this.replayScript) return // spectators don't get to change history
     this.queue.push(command)
   }
 
@@ -142,8 +166,19 @@ export class GameSession {
   getVersion = (): number => this.version
 
   private stepOnce(): void {
-    const commands = this.queue.splice(0)
-    for (const command of commands) this.commandLog.push({ tick: this.state.tick, command })
+    let commands: Command[]
+    if (this.replayScript) {
+      // Replay: feed the recorded commands at exactly the ticks they were
+      // logged (the log stamps the pre-step tick, matched here the same way).
+      commands = []
+      while (this.scriptIndex < this.replayScript.length && this.replayScript[this.scriptIndex]!.tick === this.state.tick) {
+        commands.push(this.replayScript[this.scriptIndex]!.command)
+        this.scriptIndex += 1
+      }
+    } else {
+      commands = this.queue.splice(0)
+      for (const command of commands) this.commandLog.push({ tick: this.state.tick, command })
+    }
     const result = step(this.state, commands)
     this.prev = this.state
     this.state = result.state

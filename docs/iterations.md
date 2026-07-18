@@ -38,6 +38,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+88. *(program 3/4)* **Watchable replays** — the deterministic engine
+    makes this nearly free, so now it's a feature: every session pins
+    its tick-0 state, and `replaySession()` spawns a spectator session
+    that feeds the recorded command log back at the exact ticks it was
+    logged. "▶ Watch replay" on the run-over Result tab swaps the ended
+    session for the spectator (parked and restored on exit); a fixed
+    banner marks the mode; player dispatches are ignored ("history
+    cannot be changed") and App suppresses meta settlement, victory
+    prompts, and saves for replaying sessions — the run already
+    happened. Speed controls still work for scrubbing. E2e proves the
+    contract: a real defeated run, replayed to completion, lands on the
+    IDENTICAL wave/kills/spire-HP triple, spectator inputs no-op, and
+    exit restores the run-over screen. 183 unit tests, 33 e2e specs.
+
 87. *(program 2/4)* **Run-over screen: three tabs instead of one long
     scroll** — the loop's most-visited screen had accreted run stats,
     the share card, three share/replay buttons, the entire Spire Tree,

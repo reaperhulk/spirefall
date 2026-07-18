@@ -205,6 +205,9 @@ export default function App() {
       sfx.handleEvents(events)
       music.handleEvents(events)
       handleHaptics(events)
+      // A replay is a spectator: it must never settle meta again, prompt
+      // for victory, or touch the save — the run already happened.
+      if (session.replaying) return
       for (const e of events) {
         if (e.type === 'run_ended') {
           if (s.seed === dailySeed()) {
@@ -243,6 +246,27 @@ export default function App() {
       session.setOnEvents(null)
     }
   }, [session, sfx, music])
+
+  // Watch the last run: determinism makes the recorded command log a full
+  // replay. The live (ended) session is parked and restored on exit.
+  const liveSessionRef = useRef<GameSession | null>(null)
+  const [watching, setWatching] = useState(false)
+  const watchReplay = () => {
+    const replay = sessionRef.current.replaySession()
+    replay.setSpeed(2) // comfortable spectator pace; speed controls still work
+    liveSessionRef.current = sessionRef.current
+    sessionRef.current = replay
+    setSession(replay)
+    setWatching(true)
+  }
+  const exitReplay = () => {
+    const live = liveSessionRef.current
+    if (!live) return
+    liveSessionRef.current = null
+    sessionRef.current = live
+    setSession(live)
+    setWatching(false)
+  }
 
   const beginNextRun = (seed?: string) => {
     // Daily runs always play the seed's rolled map — the whole point is that
@@ -1106,10 +1130,22 @@ export default function App() {
           onReroll={() => session.dispatch({ type: 'reroll_relic' })}
         />
       )}
-      {summary && (
+      {watching && (
+        <div className="replay-banner" data-testid="replay-banner">
+          <span>
+            ▶ REPLAY — watching your last run{session.terminal ? ' · finished' : ''}. Speed controls work; inputs
+            don't.
+          </span>
+          <button className="ghost-btn" data-testid="exit-replay" onClick={exitReplay}>
+            Exit replay
+          </button>
+        </div>
+      )}
+      {summary && !watching && (
         <RunOverOverlay
           summary={summary}
           meta={meta}
+          onWatchReplay={watchReplay}
           replay={() =>
             JSON.stringify({
               v: 1,

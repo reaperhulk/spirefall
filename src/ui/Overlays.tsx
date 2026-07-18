@@ -239,6 +239,7 @@ export function RunOverOverlay({
   summary,
   meta,
   replay,
+  onWatchReplay,
   mapPref,
   onMapPref,
   trialPref,
@@ -251,6 +252,7 @@ export function RunOverOverlay({
   summary: RunSummary
   meta: MetaState
   replay: () => string
+  onWatchReplay: () => void
   mapPref: string
   onMapPref: (v: string) => void
   trialPref: string
@@ -362,6 +364,14 @@ export function RunOverOverlay({
         </p>
         <div ref={cardHost} className="run-card-host" />
         <div className="replay-row">
+          <button
+            className="ghost-btn"
+            data-testid="watch-replay"
+            title="Re-watch this exact run — same seed, same commands, live."
+            onClick={onWatchReplay}
+          >
+            ▶ Watch replay
+          </button>
           <button className="ghost-btn" data-testid="copy-card" onClick={copyCard}>
             {shared === 'card' ? 'Card copied ✓' : '📸 Copy run card'}
           </button>

@@ -245,6 +245,54 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
+test('watch replay: the last run replays deterministically to the same outcome', async ({ page }) => {
+  const errors = await boot(page, 'e2e-replay-watch')
+  // A short real run: two towers, waves until the spire falls.
+  await page.getByTestId('shop-arrow').click()
+  for (const [cx, cy] of await findBuildCells(page, 2)) await clickCell(page, cx, cy)
+  await page.evaluate(() => {
+    const send = () => {
+      const s = window.__harness.getState()
+      if (s.phase === 'build') window.__harness.dispatch({ type: 'start_wave' })
+      window.__harness.fastForward(300)
+      if (window.__harness.snapshot().phase !== 'defeat') send()
+    }
+    send()
+  })
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  const original = await page.evaluate(() => {
+    const s = window.__harness.snapshot()
+    return { wave: s.wave, kills: s.kills, spireHp: s.spireHp }
+  })
+
+  // Watch: the overlay yields to the spectator banner and the battlefield
+  // restarts from tick 0.
+  await page.getByTestId('watch-replay').click()
+  await expect(page.getByTestId('replay-banner')).toBeVisible()
+  await expect(page.getByTestId('run-over')).not.toBeVisible()
+  expect((await page.evaluate(() => window.__harness.snapshot())).tick).toBe(0)
+
+  // Spectator inputs are ignored — history cannot be changed.
+  await page.evaluate(() => window.__harness.dispatch({ type: 'repair_spire' }))
+
+  // Race the replay to its end: determinism demands the SAME outcome.
+  await page.evaluate(() => {
+    for (let i = 0; i < 40 && window.__harness.snapshot().phase !== 'defeat'; i++) {
+      window.__harness.fastForward(300)
+    }
+  })
+  const replayed = await page.evaluate(() => {
+    const s = window.__harness.snapshot()
+    return { wave: s.wave, kills: s.kills, spireHp: s.spireHp }
+  })
+  expect(replayed).toEqual(original)
+
+  // Exit restores the ended live session and its run-over screen.
+  await page.getByTestId('exit-replay').click()
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  expect(errors).toEqual([])
+})
+
 test('relic offers appear in the UI and apply on click', async ({ page }) => {
   const errors = await boot(page, 'e2e-relic-a')
   // Actually play: each build phase, buy/upgrade arrows, then send the wave —

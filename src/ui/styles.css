@@ -1080,6 +1080,25 @@ button.preview-unit:hover {
   color: #8a93ad;
 }
 
+/* Spectator banner while a replay of the last run is playing. */
+.replay-banner {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(16, 21, 31, 0.95);
+  border: 1px solid #e5c07b;
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #e5c07b;
+  font-size: 13px;
+  max-width: calc(100% - 24px);
+}
+
 /* Run-over tabs: Result | Spire Tree | Next Run. One job per view. */
 .tab-bar {
   display: flex;
