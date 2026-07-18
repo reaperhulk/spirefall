@@ -20,14 +20,21 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 > - **Transformative relics**: a rare/legendary tier that changes how a tower
 >   plays (ricochet, burn, detonate-on-slowed-death, ramping tesla, executes,
 >   interest, crit auras).
-> - **Boss encounters**: carapace break-windows, mid-life broods, gale surges —
->   each with explicit counterplay; every 10th wave.
+> - **Boss encounters**: carapace break-windows, mid-life broods, gale surges,
+>   endless-tier phasing (Veilwarden) and horde-mending (Blightmother) — each
+>   with explicit counterplay; every 10th wave, 5-boss cycle.
 > - **The Crucible**: post-victory escalation — each cycle victory hardens the
->   next run (+10% HP) and sweetens it (+15% sparks, +1 ember at ascension).
+>   next run (+10% HP) and sweetens it (+15% sparks, +1 ember at ascension);
+>   rank milestones add NAMED tiers (Seething/Ironbound/Unrelenting texture).
+> - **Replays** (`session.replaySession()`): determinism as a feature — watch
+>   your last run, paste anyone's v2 replay JSON, or open a ?replay= link;
+>   spectator sessions never touch meta or saves.
 > - **The Codex** (`src/ui/Codex.tsx`): in-game reference rendered from the same
 >   data objects the engine reads; quotes EFFECTIVE numbers via engine helpers.
-> - **Generative score** (`src/ui/music.ts`): biome-keyed, intensity-driven,
->   zero assets, UI-layer only.
+> - **Generative score** (`src/ui/music.ts`): biome-keyed two-progression
+>   32-bar form, intensity- and event-driven (boss vamps, defeat collapse,
+>   victory bloom), zero assets, UI-layer only; tonal SFX quantize to the
+>   score's live key (`src/ui/tonality.ts`).
 > - **Run cards + endless milestones**: shareable canvas cards with ?seed=
 >   challenge links; cataclysm-depth and biome-mastery achievements.
 > Balance discipline throughout: the envelope re-derives when the curve moves

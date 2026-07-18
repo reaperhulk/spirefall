@@ -52,6 +52,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+110. *(marathon II, iteration 22)* **PLAN.md shipped-systems index
+    refreshed** — the index now covers the Marathon II systems: the
+    5-boss cycle with endless-tier mechanics, named Crucible tiers, the
+    full replay stack (watch/paste/link), the two-progression 32-bar
+    score with event gestures, and SFX key-quantization. Docs-only.
+
+109. *(marathon II, iteration 21)* **Biome hunts deepened; tablet audit
+    clean** — three more background hunts: frostfen 5k (best 21, no
+    findings), highlands 5k (best 22, no findings), and the emberwaste
+    8k RE-hunt against the slag-heap geometry — 72 fresh evolutionary
+    runs, zero findings, best 21 waves where the pre-fix hunt broke the
+    curve at 24. The geometry fix holds against new search pressure,
+    not just the pinned genome. Tablet audit at 768×1024 and 1024×768:
+    zero overflow offenders on main/run-over/codex surfaces — verified
+    clean, nothing to fix. 191 unit tests, 35 e2e specs.
+
 108. *(marathon II, iteration 20)* **Replay banner narrates** — the
     spectator banner now carries the live wave number and, when the
     replay ends, the outcome ("over — the Spire stood/fell") instead of
