@@ -37,15 +37,15 @@ npm run dev     # then open http://localhost:5173
 - **Fall**: the Spire has 10 HP and every enemy hits differently — first runs die
   in minutes. Sparks buy the Spire Tree (12 nodes); victories unlock Ascension,
   which burns the tree for Embers and permanent Ember Tree upgrades (7 nodes).
-  Twenty achievements pay bounties along the way, and mid-run stats live on S.
+  Achievements (21 and counting) pay bounties along the way; mid-run stats live on S.
 - **Push**: clear wave 24 to break the cycle, then dare the endless — every 5th
   wave past victory strikes a permanent, stacking Cataclysm. Win again and the
   **Crucible** hardens each subsequent run for bonus sparks and embers.
 - **Vary it**: battlefields GENERATE per run across 4 biomes (marsh, lava vents,
   mesas — each biome fights differently and unlocks up the meta ladder), take an
   opt-in Trial for bonus sparks (Glass Spire, Swift Horde, Iron Horde, Famine,
-  No Mercy), race the shared **Daily** seed (📅, with day streaks), or share any
-  run as a link with `?seed=<anything>`.
+  No Mercy, Blackout), race the shared **Daily** seed (📅, with day streaks),
+  or share any run as a link with `?seed=<anything>`.
 
 Progress saves to localStorage automatically, mid-run included; export/import
 codes move it between devices. Installable as a PWA with offline support. Every
@@ -84,8 +84,8 @@ the repository (Settings → Pages → Source: GitHub Actions).
 
 **Post-M6, in continuous iteration.** Playable game with 7 tower types (each
 with two tier-3 specializations), 15 enemy types across a 5-boss cycle, wave
-affixes, 30 relics with rarity/reroll/pity, four abilities, five Trials, endless
-Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 20
+affixes, 30 relics with rarity/reroll/pity, four abilities, six Trials, endless
+Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 21
 achievements, daily runs with streaks, generated battlefields across 4 biomes, a
 generative biome-keyed score with key-matched SFX, watchable/shareable replays,
 saves with transfer codes, PWA install, deep links, and a full test harness

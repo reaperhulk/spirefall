@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+133. *(marathon II, iteration 45)* **Docs stay honest** — the Blackout
+    additions immediately dated the README (trial list, achievement
+    count, trial count); corrected, and the achievement figure now
+    reads "21 and counting" so routine content additions stop rotting
+    the sentence. Codex needed nothing: its trial entry renders from
+    TRIAL_IDS. 194 unit tests, 43 e2e specs.
+
 132. *(marathon II, iteration 44)* **Eyes Shut** — 21st achievement:
     win under Blackout (350✦), sitting beside Unbroken in the trial-
     mastery family. Predicate test pins earn/miss. 194 unit tests,
