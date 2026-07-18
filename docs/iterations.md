@@ -38,6 +38,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+69. *(five-item program, 1/5)* **Biome balance: measured, verified, pinned**
+    — reference measurements across all four biomes: mid meta (3000 sparks)
+    lands 11–14 waves everywhere (the features' upsides and their costs
+    nearly cancel at the reference floor); deep meta (20k) wins 3-of-4
+    seeds on verdant/frostfen and 2-of-4 on emberwaste/highlands — the
+    late-unlock biomes correctly a touch harder. Property numbers ship
+    as-is on the evidence. Two new standing guards: a biome envelope in
+    balance.test (each biome within ±4 waves of verdant at mid meta; a
+    deep tree must still win on every biome) and biome containment in
+    fuzz.test (both pinned near-exploit genomes must stay defeated at 8k
+    on frostfen/emberwaste/highlands — the features are all
+    player-favorable in isolation; this pins that no known comp converts
+    one into a cheap win). 157 unit tests.
+
 68. *(post-marathon, design)* **Biomes: generated battlefields** — maps are
     no longer fixed layouts: every run generates a fresh structure from its
     seed inside its biome's rules. Four biomes, unlocking across the meta

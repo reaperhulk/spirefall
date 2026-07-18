@@ -119,6 +119,29 @@ describe('balance envelope', () => {
     for (const h of history) expect(h.sparks).toBeGreaterThan(0)
   }, 300_000)
 
+  it('biome envelope: every biome plays inside the verdant band', () => {
+    // Measured at introduction (mid meta 3000: all biomes 11–14 waves;
+    // deep meta 20k: verdant/frostfen 3-of-4 wins, emberwaste/highlands
+    // 2-of-4 — late biomes correctly a touch harder). This pins the SHAPE:
+    // no biome drifts far from the verdant reference at mid meta, and the
+    // deep tree still wins on every biome somewhere.
+    const meta = richMeta(3000)
+    const verdant = ['alpha', 'beta'].map((seed) => autoplay(createRun(meta, seed, 'verdant'), BOTS.balanced, 800_000).state.wavesCleared)
+    for (const biome of ['frostfen', 'emberwaste', 'highlands'] as const) {
+      ;['alpha', 'beta'].forEach((seed, i) => {
+        const waves = autoplay(createRun(meta, seed, biome), BOTS.balanced, 800_000).state.wavesCleared
+        expect(Math.abs(waves - verdant[i]!), `${biome}/${seed} drifted from verdant`).toBeLessThanOrEqual(4)
+      })
+    }
+    const deep = richMeta(20_000)
+    for (const biome of ['frostfen', 'emberwaste', 'highlands'] as const) {
+      const won = ['alpha', 'beta'].some(
+        (seed) => autoplay(createRun(deep, seed, biome), BOTS.balanced, 800_000).state.phase === 'victory',
+      )
+      expect(won, `a deep tree must still win on ${biome}`).toBe(true)
+    }
+  }, 600_000)
+
   it('a longer career eventually breaks the cycle — after a real grind', () => {
     // 22 runs, not 18: the transformative tier diluted the relic pool (30
     // relics, several comp-dependent), which stretched the reference bot's

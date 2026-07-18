@@ -122,6 +122,20 @@ describe('build fuzzer', () => {
     }
   }, 600_000)
 
+  it('pinned genomes stay contained on the feature biomes', () => {
+    // The biome features are all player-favorable in isolation (free slow,
+    // free damage, +range high ground). This pins that neither known
+    // near-exploit comp converts any of them into a cheap win.
+    for (const genome of [HONED_ALLIN, BOUNTY_ECONOMY]) {
+      const bot = makePolicyBot(genome)
+      for (const biome of ['frostfen', 'emberwaste', 'highlands'] as const) {
+        const meta = spendSparks({ ...createMeta(), sparks: 8000 }, genome.metaPriority)
+        const { state } = autoplay(createRun(meta, 'alpha', biome), bot, 120_000)
+        expect(state.phase, `${biome} @ 8000`).toBe('defeat')
+      }
+    }
+  }, 600_000)
+
   it('sweep finds no curve-breaking build (deep mode: npm run fuzz:builds)', () => {
     const result = fuzzBuilds({
       fuzzSeed: process.env['FUZZ_SEED'] ?? 'ci-sweep',
