@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+177. *(marathon II, iteration 89)* **The price shows its goods** — the
+    Upgrade button quoted a cost with no word on what it bought; the
+    panel described only the tower you already had. A green preview
+    line above the button now states the next tier's delta straight
+    from the tower table: damage, fire rate, range, plus the stats
+    that only some towers move (splash, chain count, slow depth), and
+    yield/aura phrasing for the support pair. A visible line, not a
+    hover tooltip — touch players were the ones flying blindest.
+    E2e pins the tier-2 arrow preview text. 203 unit tests, 49 e2e
+    specs.
+
 176. *(marathon II, iteration 88)* **Rematch** — the run-over screen
     could share the battlefield you just lost (challenge link, run
     card: "think you can go deeper?") but couldn't refight it — the

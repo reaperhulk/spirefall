@@ -981,6 +981,13 @@ button.preview-unit:hover {
   color: #a9b1d6;
 }
 
+/* What the next tier buys — sits directly above the Upgrade button so the
+   price always has its goods next to it (visible on touch too, where the
+   old-style hover tooltip never fires). */
+.tower-panel .upgrade-preview {
+  color: #9ece6a;
+}
+
 /* Keyboard hint chips. */
 .key-hint {
   font-family: inherit;

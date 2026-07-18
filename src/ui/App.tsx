@@ -93,6 +93,29 @@ function towerRole(type: TowerType): string {
   if (type === 'lance') return 'hits ground & air ✈ · ramps +15%/hit on a held target'
   return 'ground only — cannot hit fliers'
 }
+
+// What the next tier actually buys, shown on the Upgrade button. Base
+// stats only — relic/aura percentages multiply both sides equally, so
+// the base delta is the honest one.
+function upgradeDelta(type: TowerType, tier: 1 | 2): string {
+  const a = towerTier(type, tier)
+  const b = towerTier(type, (tier + 1) as 2 | 3)
+  if (type === 'mint') return `Yield ⛀${a.mintYield} → ⛀${b.mintYield} per cleared wave`
+  if (type === 'beacon') return `Aura +${a.auraPct}% → +${b.auraPct}% damage`
+  const parts = [
+    `DMG ${a.damage} → ${b.damage}`,
+    `${(30 / a.cooldown).toFixed(1)} → ${(30 / b.cooldown).toFixed(1)} shots/s`,
+    `range ${(a.range / 1000).toFixed(1)} → ${(b.range / 1000).toFixed(1)}`,
+  ]
+  if (a.splashRadius !== undefined && a.splashRadius !== b.splashRadius) {
+    parts.push(`splash ${((b.splashRadius ?? 0) / 1000).toFixed(1)}`)
+  }
+  if (a.chain !== undefined && a.chain !== b.chain) parts.push(`chains ${a.chain} → ${b.chain}`)
+  if (a.slowFactor !== undefined && a.slowFactor !== b.slowFactor) {
+    parts.push(`slows to ${b.slowFactor}% speed`)
+  }
+  return parts.join(' · ')
+}
 const ABILITY_KEYS: AbilityId[] = ['meteor', 'frost_nova', 'gold_rush', 'bulwark']
 const TARGETING_OPTIONS: Targeting[] = ['first', 'last', 'strongest', 'weakest', 'nearest', 'elites']
 
@@ -1108,6 +1131,10 @@ export default function App() {
               </select>
             </label>
             {selectedTower.tier < 3 ? (
+              <>
+              <p className="upgrade-preview" data-testid="upgrade-preview">
+                Next: {upgradeDelta(selectedTower.type, selectedTower.tier as 1 | 2)}
+              </p>
               <button
                 className="primary-btn"
                 data-testid="upgrade-tower"
@@ -1117,6 +1144,7 @@ export default function App() {
                 Upgrade (⛀ {towerTier(selectedTower.type, (selectedTower.tier + 1) as 2 | 3).cost}){' '}
                 <kbd className="key-hint">U</kbd>
               </button>
+              </>
             ) : (
               <>
                 {selectedTower.spec === null &&

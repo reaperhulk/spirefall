@@ -170,6 +170,11 @@ test('placing a tower via real shop + canvas clicks spends gold', async ({ page 
   await clickCell(page, 7, 5)
   await expect(page.getByTestId('tower-panel')).toBeVisible()
   await expect(page.getByTestId('upgrade-tower')).toBeDisabled()
+  // The price shows its goods: the preview states the tier-2 arrow delta
+  // straight from the tower table (7→15 dmg, 2.0→2.5 shots/s, 2.8→3.2 range).
+  await expect(page.getByTestId('upgrade-preview')).toHaveText(
+    'Next: DMG 7 → 15 · 2.0 → 2.5 shots/s · range 2.8 → 3.2',
+  )
   expect(errors).toEqual([])
 })
 
