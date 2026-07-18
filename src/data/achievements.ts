@@ -131,4 +131,32 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     sparks: 0, // the embers are the reward
     earned: (_run, meta) => meta.ascensions > 0,
   },
+  {
+    id: 'committed',
+    name: 'Committed',
+    description: 'Field three specialized (tier-3 path) towers in one run.',
+    sparks: 150,
+    earned: (run) => run.towers.filter((t) => t.spec !== null).length >= 3,
+  },
+  {
+    id: 'unbroken',
+    name: 'Unbroken',
+    description: 'Win under the No Mercy trial — the Spire never repaired.',
+    sparks: 400,
+    earned: (run) => run.victoryClaimed && run.trials.includes('no_mercy'),
+  },
+  {
+    id: 'crucible_3',
+    name: 'Thrice-Forged',
+    description: 'Win at Crucible rank 3 or higher.',
+    sparks: 350,
+    earned: (run) => run.victoryClaimed && run.crucible >= 3,
+  },
+  {
+    id: 'perfect_cycle',
+    name: 'Not One Stone',
+    description: 'Win with the Spire at full health.',
+    sparks: 300,
+    earned: (run) => run.victoryClaimed && run.spireHp >= run.spireMaxHp,
+  },
 ]

@@ -44,6 +44,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+97. *(marathon II, iteration 9)* **Achievements catch up with the
+    game** — the 17-achievement list predated specs, trials, and the
+    Crucible. Four new one-shots: COMMITTED (three specialized towers
+    in one run, 150✦), UNBROKEN (win under No Mercy, 400✦),
+    THRICE-FORGED (win at Crucible rank 3+, 350✦), NOT ONE STONE (win
+    with the Spire untouched, 300✦) — each rewarding mastery of a
+    shipped system, surfaced through the existing run-over unlock chips
+    and codex-free settle path. Predicate tests pin all four earn/
+    don't-earn boundaries. 190 unit tests, 34 e2e specs.
+
 96. *(marathon II, iteration 8)* **Named Crucible tiers** — repeat
     victories used to change one number (+10% HP/rank); now rank
     milestones change the horde's TEXTURE, cumulatively: rank 2

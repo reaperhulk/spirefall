@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { CataclysmId } from '../types'
+import { ACHIEVEMENTS } from '../../data/achievements'
+import type { CataclysmId, RunState } from '../types'
 import {
   META_CRIT_CHANCE_PCT_PER_LEVEL,
   META_SPIRE_HP_PER_LEVEL,
@@ -204,6 +205,21 @@ describe('settleRun', () => {
   it('refuses to settle a live run', () => {
     const run = createRun(createMeta(), 'live')
     expect(() => settleRun(createMeta(), run)).toThrow()
+  })
+
+  it('new-system achievements: specs, No Mercy, Crucible rank, perfect victory', () => {
+    const base = createRun(createMeta(), 'ach-preds')
+    const meta = createMeta()
+    const find = (id: string) => ACHIEVEMENTS.find((a) => a.id === id)!
+    const tower = (spec: string | null) => ({ spec }) as unknown as RunState['towers'][number]
+    expect(find('committed').earned({ ...base, towers: [tower('volley'), tower('mortar'), tower('permafrost')] }, meta)).toBe(true)
+    expect(find('committed').earned({ ...base, towers: [tower('volley'), tower(null)] }, meta)).toBe(false)
+    expect(find('unbroken').earned({ ...base, victoryClaimed: true, trials: ['no_mercy'] }, meta)).toBe(true)
+    expect(find('unbroken').earned({ ...base, victoryClaimed: true }, meta)).toBe(false)
+    expect(find('crucible_3').earned({ ...base, victoryClaimed: true, crucible: 3 }, meta)).toBe(true)
+    expect(find('crucible_3').earned({ ...base, victoryClaimed: true, crucible: 2 }, meta)).toBe(false)
+    expect(find('perfect_cycle').earned({ ...base, victoryClaimed: true, spireHp: base.spireMaxHp }, meta)).toBe(true)
+    expect(find('perfect_cycle').earned({ ...base, victoryClaimed: true, spireHp: base.spireMaxHp - 1 }, meta)).toBe(false)
   })
 })
 
