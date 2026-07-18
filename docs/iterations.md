@@ -38,6 +38,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+76. *(mobile playtest fix)* **Silent phones: audio never unlocked on touch** —
+    the autoplay-unlock listeners were `pointerdown` + `keydown`, but a
+    TOUCH pointerdown does not grant user activation (only mouse pointerdown
+    does; touch grants on pointerup/touchend/click). So on phones the
+    AudioContext was created unauthorized, sat `suspended`, and every
+    resume — including the scrap-and-rebuild fallback — was equally
+    unauthorized, forever. Desktop mice masked the bug completely. The
+    revive listener set now covers pointerdown/pointerup/touchend/click/
+    keydown, so the first real tap authorizes the context. Second iOS
+    killer fixed in the same pass: Safari mutes Web Audio while the ringer
+    switch is on silent unless the page declares a `playback` audio
+    session (16.4+) — set best-effort at Sfx construction; the in-app mute
+    button still rules. `__harness.audioState()` now exposes the context
+    state for on-device debugging, and a mobile e2e pins that a touch tap
+    drives it to `running`. 170 unit tests, 31 e2e specs.
+
 75. *(mobile playtest fixes)* **Long-press selection + run-over overflow** —
     two phone bugs from live play: (1) holding to aim a tower placement
     started a browser TEXT SELECTION when the finger didn't move — the app

@@ -20,7 +20,6 @@ declare global {
         biome: string
         crucible: number
         gold: number
-        gold: number
         towers: { id: number; tier: number; spec: string | null; cell: { cx: number; cy: number } }[]
         enemies: unknown[]
         relicOffer: unknown[] | null
@@ -52,6 +51,7 @@ declare global {
       setSpeed: (n: number) => void
       getSpeed: () => number
       getReplay: () => { seed: string; log: unknown[] }
+      audioState: () => string
       reset: () => void
     }
   }
@@ -616,6 +616,16 @@ test.describe('mobile viewport', () => {
     // With the sheet gone, the shop is interactive again.
     await page.getByTestId('shop-cannon').tap()
     await expect(page.getByTestId('shop-cannon')).toHaveClass(/selected/)
+    expect(errors).toEqual([])
+  })
+
+  test('a touch tap unlocks the audio context', async ({ page }) => {
+    // Touch grants user activation on pointerup/touchend — NOT pointerdown
+    // (which only counts for mouse). This pins the unlock listeners against
+    // regressing to a desktop-only set that leaves phones silent.
+    const errors = await boot(page, 'e2e-mobile-audio')
+    await page.getByTestId('shop-arrow').tap()
+    await expect.poll(() => page.evaluate(() => window.__harness.audioState())).toBe('running')
     expect(errors).toEqual([])
   })
 

@@ -269,9 +269,25 @@ export class Sfx {
     // The listeners stay attached for the whole session so every gesture is
     // a chance to create OR revive the context; a one-shot unlock would
     // leave a later-suspended context dead until reload.
+    //
+    // Which events actually grant activation differs by input: a MOUSE
+    // pointerdown counts, but a TOUCH pointerdown does not — touch grants
+    // on pointerup/touchend/click. pointerdown alone left phones silent.
     const revive = () => this.ensureRunning(true)
     window.addEventListener('pointerdown', revive)
+    window.addEventListener('pointerup', revive)
+    window.addEventListener('touchend', revive, { passive: true })
+    window.addEventListener('click', revive)
     window.addEventListener('keydown', revive)
+    // iOS mutes Web Audio while the ringer switch is on silent unless the
+    // page declares itself a playback app (Safari 16.4+). A game's audio
+    // should behave like game audio; the in-app mute button still rules.
+    try {
+      const nav = navigator as Navigator & { audioSession?: { type: string } }
+      if (nav.audioSession) nav.audioSession.type = 'playback'
+    } catch {
+      // best-effort — older Safari simply keeps the OS default
+    }
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') this.ensureRunning(false)
     })

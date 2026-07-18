@@ -10,6 +10,7 @@ import type { GameSession, LoggedCommand } from './session'
 export interface HarnessApi {
   getSession: () => GameSession
   getMeta: () => MetaState
+  audioState: () => string
   newRun: (seed?: string) => void
   buyMeta: (id: MetaUpgradeId) => void
   reset: () => void
@@ -27,6 +28,9 @@ export interface GameHarness {
     spire: { cx: number; cy: number }
     buildable: boolean[]
   }
+  // AudioContext state ('none' before first gesture) — for on-device
+  // debugging of autoplay-unlock issues and the e2e unlock assertion.
+  audioState: () => string
   dispatch: (command: Command) => void
   setSpeed: (n: number) => void
   getSpeed: () => number
@@ -72,6 +76,7 @@ export function installHarness(api: HarnessApi): void {
       )
       return { width: map.width, height: map.height, spawn: { ...map.spawn }, spire: { ...map.spire }, buildable }
     },
+    audioState: api.audioState,
     dispatch: (command) => api.getSession().dispatch(command),
     setSpeed: (n) => {
       api.getSession().speed = Math.max(0, Math.min(100, n))

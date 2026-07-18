@@ -292,6 +292,7 @@ export default function App() {
     installHarness({
       getSession: () => sessionRef.current,
       getMeta: () => metaRef.current,
+      audioState: () => sfx.currentContext()?.state ?? 'none',
       newRun: (seed) => beginNextRun(seed),
       buyMeta,
       reset: () => {
@@ -299,8 +300,8 @@ export default function App() {
         window.location.reload()
       },
     })
-     
-  }, [])
+
+  }, [sfx])
 
   const handleCellClick = (cell: CellPos) => {
     // Touch taps arrive with a synthetic hover that no mouseleave ever
