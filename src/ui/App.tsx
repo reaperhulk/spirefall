@@ -1018,29 +1018,35 @@ export default function App() {
         />
       )}
 
-      {/* Wave boons: a decision every thirty seconds, never a gate. The
-          strip only exists while there's a choice to make (or a blessing
-          to show); Space keeps working — skipping is free. */}
-      {!summary && state.phase === 'build' && state.boonOffer !== null && (
-        <div className="boon-strip" data-testid="boon-offer">
-          <span className="boon-label">Next wave boon —</span>
-          {state.boonOffer.map((b) => (
-            <button
-              key={b}
-              className="ghost-btn boon-btn"
-              data-testid={`boon-${b}`}
-              title={BOONS[b].description}
-              onClick={() => session.dispatch({ type: 'choose_boon', boon: b })}
-            >
-              {BOONS[b].name}
-            </button>
-          ))}
-          <span className="boon-skip">or start the wave without one</span>
-        </div>
-      )}
-      {!summary && state.activeBoon !== null && (
-        <div className="boon-strip active" data-testid="boon-active" title={BOONS[state.activeBoon].description}>
-          ✦ {BOONS[state.activeBoon].name} — {BOONS[state.activeBoon].description}
+      {/* Wave boons: a decision every thirty seconds, never a gate — and
+          like the scouting strip above, this one STAYS MOUNTED through
+          build and wave at a fixed height, because appearing/vanishing
+          per phase would shift the playfield every single wave. */}
+      {!summary && (state.phase === 'build' || state.phase === 'wave') && (
+        <div className={`boon-strip${state.activeBoon !== null ? ' active' : ''}`}>
+          {state.phase === 'build' && state.boonOffer !== null ? (
+            <span className="boon-row" data-testid="boon-offer">
+              <span className="boon-label">Next wave boon —</span>
+              {state.boonOffer.map((b) => (
+                <button
+                  key={b}
+                  className="ghost-btn boon-btn"
+                  data-testid={`boon-${b}`}
+                  title={BOONS[b].description}
+                  onClick={() => session.dispatch({ type: 'choose_boon', boon: b })}
+                >
+                  {BOONS[b].name}
+                </button>
+              ))}
+              <span className="boon-skip">or start the wave without one</span>
+            </span>
+          ) : state.activeBoon !== null ? (
+            <span data-testid="boon-active" title={BOONS[state.activeBoon].description}>
+              ✦ {BOONS[state.activeBoon].name} — {BOONS[state.activeBoon].description}
+            </span>
+          ) : (
+            <span className="boon-skip">{state.phase === 'wave' ? 'no blessing this wave' : ' '}</span>
+          )}
         </div>
       )}
 

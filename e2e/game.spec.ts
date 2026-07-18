@@ -299,9 +299,10 @@ test('wave boons: pick one, it blesses exactly one wave, skipping is free', asyn
   await expect.poll(async () => page.evaluate(() => window.__harness.snapshot().phase)).toBe('build')
   expect(await page.evaluate(() => window.__harness.getState().activeBoon)).toBeNull()
   await expect(page.getByTestId('boon-offer')).toBeVisible()
-  // Starting unchosen forfeits — no strip mid-wave, no blessing.
+  // Starting unchosen forfeits — no strip mid-wave, no blessing. The
+  // dispatch lands on the next sim tick, so poll rather than race it.
   await page.evaluate(() => window.__harness.dispatch({ type: 'start_wave' }))
-  expect(await page.evaluate(() => window.__harness.getState().boonOffer)).toBeNull()
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().boonOffer)).toBeNull()
   expect(await page.evaluate(() => window.__harness.getState().activeBoon)).toBeNull()
   expect(errors).toEqual([])
 })
@@ -316,7 +317,10 @@ test('overcharge: the panel button arms the next shot and the recharge gates it'
   await expect(page.getByTestId('tower-panel')).toBeVisible()
   await expect(page.getByTestId('overcharge-tower')).toHaveText(/Overcharge/)
   await page.getByTestId('overcharge-tower').click()
-  expect(await page.evaluate(() => window.__harness.getState().towers[0]!.overcharged)).toBe(true)
+  // The dispatch lands on the next sim tick — poll, don't race it.
+  await expect
+    .poll(async () => page.evaluate(() => window.__harness.getState().towers[0]!.overcharged === true))
+    .toBe(true)
   await expect(page.getByTestId('overcharge-tower')).toBeDisabled()
   // The armed shot spends the charge and starts the personal recharge.
   await page.evaluate(() => {
