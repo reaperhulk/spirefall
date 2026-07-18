@@ -913,6 +913,11 @@ button.preview-unit:hover {
   color: #a8b0c8;
 }
 
+/* Boss-mechanic warning in the wave preview (carapace shield / gale spiral). */
+.mech-mark {
+  margin-left: 4px;
+}
+
 .tower-air-note {
   font-size: 12px;
   color: #a9b1d6;

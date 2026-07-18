@@ -245,6 +245,20 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
+test('wave preview warns about the coming boss mechanic', async ({ page }) => {
+  const errors = await boot(page, 'e2e-boss-preview')
+  // Jump the schedule to wave 9's build phase: the preview now scouts the
+  // wave-10 boss (Spirebreaker, carapace) and must warn about the shell.
+  await page.evaluate(() => {
+    window.__harness.getState().wave = 9
+    window.__harness.fastForward(1) // one tick republishes the preview
+  })
+  await expect(page.getByTestId('preview-unit-boss')).toBeVisible()
+  await expect(page.getByTestId('mech-mark-boss')).toBeVisible()
+  await expect(page.getByTestId('mech-mark-boss')).toHaveAttribute('title', /Carapace/)
+  expect(errors).toEqual([])
+})
+
 test('watch replay: the last run replays deterministically to the same outcome', async ({ page }) => {
   const errors = await boot(page, 'e2e-replay-watch')
   // A short real run: two towers, waves until the spire falls.

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import {
   ABILITIES,
   AFFIXES,
+  CARAPACE_BREAK_DAMAGE,
   specForTower,
   TOWER_SPECS,
   CATACLYSMS,
@@ -809,11 +810,13 @@ export default function App() {
                 </span>
               )}
               {(Object.entries(preview.counts) as [keyof typeof ENEMIES, number][])
-                .sort(([ta, a], [tb, b]) => (ta === 'boss' ? -1 : tb === 'boss' ? 1 : b - a || ta.localeCompare(tb)))
+                .sort(([ta, a], [tb, b]) =>
+                  ta.startsWith('boss') ? -1 : tb.startsWith('boss') ? 1 : b - a || ta.localeCompare(tb),
+                )
                 .map(([type, n]) => (
                   <button
                     key={type}
-                    className={`preview-unit${type === 'boss' ? ' boss' : ''}`}
+                    className={`preview-unit${type.startsWith('boss') ? ' boss' : ''}`}
                     data-testid={`preview-unit-${type}`}
                     title={`${ENEMIES[type].name} — tap for the Codex entry`}
                     onClick={() => {
@@ -826,6 +829,19 @@ export default function App() {
                     {(ENEMIES[type].armor ?? 0) > 0 && (
                       <span className="armor-mark" title="Armored — every hit loses flat damage. Rapid fire suffers; heavy shells barely notice.">
                         ▣
+                      </span>
+                    )}
+                    {ENEMIES[type].mech && (
+                      <span
+                        className="mech-mark"
+                        data-testid={`mech-mark-${type}`}
+                        title={
+                          ENEMIES[type].mech.kind === 'carapace'
+                            ? `Carapace — periodically shells up: every hit is capped at 1 damage unless a single hit deals ${CARAPACE_BREAK_DAMAGE}+, which shatters the shell. Bring heavy shots.`
+                            : 'Gale — periodically hastens the whole horde. Any slow cancels the haste; bring frost.'
+                        }
+                      >
+                        {ENEMIES[type].mech.kind === 'carapace' ? '🛡' : '🌀'}
                       </span>
                     )}
                   </button>

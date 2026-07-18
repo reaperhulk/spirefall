@@ -44,6 +44,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+90. *(marathon II, iteration 2)* **The scouting report warns about boss
+    mechanics** — the wave preview listed the boss as just another unit;
+    the carapace/gale surprise landed mid-fight. Boss chips now carry a
+    mech mark (🛡 carapace / 🌀 gale) whose tooltip explains the counter
+    ("every hit capped at 1 unless a single hit deals 40+ — bring heavy
+    shots" / "hastes the horde — any slow cancels it; bring frost"), the
+    numbers sourced from the live constants. Also fixed: the preview's
+    boss-first sort and highlight only matched the FIRST boss ('boss'),
+    so Gravemind and Stormcaller sorted as commons — now any boss type.
+    E2e pins the wave-9 preview showing the carapace warning. 183 unit
+    tests, 34 e2e specs.
+
 89. *(marathon II, iteration 1)* **Shareable replays** — the replay
     export is now v2: it embeds the run's tick-0 RunState alongside the
     command log, so ANY account can reconstruct the exact run without
