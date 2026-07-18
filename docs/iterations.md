@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+127. *(marathon II, iteration 39)* **Mid-run loadout parity** — the S
+    stats modal answered "how's it going" but not "what am I playing":
+    the relic/cataclysm chip rows from the Result tab are now a shared
+    `LoadoutChips` component rendered in both places (dedup, not
+    copy-paste). 194 unit tests, 43 e2e specs.
+
 126. *(marathon II, iteration 38)* **Emberbound Crews proven safe** —
     the node raises the exact cap that killed the repair-tank exploit,
     so prove it stayed dead: the pinned Honed-Arsenal all-in genome

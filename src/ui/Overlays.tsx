@@ -202,6 +202,37 @@ function ShareBars({ title, entries, color }: { title: string; entries: [string,
 
 // Live mid-run analytics: the run-over screen's numbers, available while the
 // run still breathes. Read-only view over the live state — no dispatch.
+// The run's loadout, shared by the mid-run stats modal and the run-over
+// Result tab: relics in pick order, cataclysms aggregated (×n on repeats).
+function LoadoutChips({ relics, cataclysms }: { relics: RelicId[]; cataclysms: RunState['cataclysms'] }) {
+  return (
+    <>
+      {relics.length > 0 && (
+        <div className="loadout-row" data-testid="summary-relics">
+          {relics.map((r) => (
+            <span key={r} className={`loadout-chip rarity-${RELICS[r].rarity}`} title={RELICS[r].description}>
+              {RELICS[r].name}
+            </span>
+          ))}
+        </div>
+      )}
+      {cataclysms.length > 0 && (
+        <div className="loadout-row" data-testid="summary-cataclysms">
+          {[...new Set(cataclysms)].map((c) => {
+            const n = cataclysms.filter((x) => x === c).length
+            return (
+              <span key={c} className="loadout-chip cataclysm" title={CATACLYSMS[c].description}>
+                ✸ {CATACLYSMS[c].name}
+                {n > 1 ? ` ×${n}` : ''}
+              </span>
+            )
+          })}
+        </div>
+      )}
+    </>
+  )
+}
+
 export function RunStatsModal({ state, onClose }: { state: RunState; onClose: () => void }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -214,6 +245,7 @@ export function RunStatsModal({ state, onClose }: { state: RunState; onClose: ()
         {state.trials.length > 0 && (
           <p className="run-summary">{state.trials.map((t) => `⚔ ${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}% ✦)`).join(' · ')}</p>
         )}
+        <LoadoutChips relics={state.relics} cataclysms={state.cataclysms} />
         {state.hpByWave.length >= 2 && <HpSparkline hp={state.hpByWave} />}
         <div className="run-analytics">
           <ShareBars
@@ -362,30 +394,7 @@ export function RunOverOverlay({
             {summary.trials.map((t) => `⚔ ${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}% ✦)`).join(' · ')}
           </p>
         )}
-        {summary.relics.length > 0 && (
-          // The build that carried (or didn't): every relic picked, in order.
-          <div className="loadout-row" data-testid="summary-relics">
-            {summary.relics.map((r) => (
-              <span key={r} className={`loadout-chip rarity-${RELICS[r].rarity}`} title={RELICS[r].description}>
-                {RELICS[r].name}
-              </span>
-            ))}
-          </div>
-        )}
-        {summary.cataclysms.length > 0 && (
-          // Endless scars, aggregated: the same Cataclysm can strike twice.
-          <div className="loadout-row" data-testid="summary-cataclysms">
-            {[...new Set(summary.cataclysms)].map((c) => {
-              const n = summary.cataclysms.filter((x) => x === c).length
-              return (
-                <span key={c} className="loadout-chip cataclysm" title={CATACLYSMS[c].description}>
-                  ✸ {CATACLYSMS[c].name}
-                  {n > 1 ? ` ×${n}` : ''}
-                </span>
-              )
-            })}
-          </div>
-        )}
+        <LoadoutChips relics={summary.relics} cataclysms={summary.cataclysms} />
         {summary.unlocked.length > 0 && (
           <div className="unlocks" data-testid="unlocks">
             {summary.unlocked.map((a) => (
