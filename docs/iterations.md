@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+180. *(marathon II, iteration 92)* **The contracts get their tests** —
+    the boundary backlog's engine-hardening item. The m4 air test now
+    pins the FULL eight-tower hitsAir roster (a ninth tower must
+    declare its stance) plus `AA_TOWER_NAMES` equality; a new
+    support-towers test parks brutes on a mint and a beacon for 90
+    ticks and asserts zero shots, zero damage — the `support` flag is
+    the single source of never-fires. Combat's misleading candidate
+    names renamed (`aliveAir` held everyone): `aliveAll` /
+    `aliveGrounded`. Behavior-identical; goldens untouched. 204 unit
+    tests, 49 e2e specs.
+
 179. *(marathon II, iteration 91)* **PLAN's shipped index catches up**
     — the design contract's index owed three entries: Rematch (exact
     ruleset from the RunSummary, meta still applies), and a new

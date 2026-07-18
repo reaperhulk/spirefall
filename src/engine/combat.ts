@@ -345,12 +345,12 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
   // Candidate lists are computed ONCE per tick and shared by every tower —
   // with a full board this kills ~2 array allocations per tower per tick.
   // Phased wraiths are untargetable by towers (abilities still hit them).
-  const aliveAir: Enemy[] = []
-  const aliveGround: Enemy[] = []
+  const aliveAll: Enemy[] = [] // everyone — what an air-capable tower sees
+  const aliveGrounded: Enemy[] = [] // fliers excluded — a ground-only tower's world
   for (const e of state.enemies) {
     if (e.hp <= 0 || e.phased) continue
-    aliveAir.push(e)
-    if (!ENEMIES[e.type].flying) aliveGround.push(e)
+    aliveAll.push(e)
+    if (!ENEMIES[e.type].flying) aliveGrounded.push(e)
   }
 
   for (const tower of state.towers) {
@@ -368,7 +368,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       range = Math.floor((range * MESA_RANGE_PCT) / 100)
     }
     const rangeSq = range * range
-    const alive = hitsAir ? aliveAir : aliveGround
+    const alive = hitsAir ? aliveAll : aliveGrounded
     const target = selectTarget(tower, alive, map, field, rangeSq)
     if (target === null) continue
 

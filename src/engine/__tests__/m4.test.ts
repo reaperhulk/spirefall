@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AFFIX_FIRST_WAVE, ENEMIES, TOWERS } from '../../data/content'
+import { AA_TOWER_NAMES, AFFIX_FIRST_WAVE, ENEMIES, TOWERS } from '../../data/content'
 import { buildCandidates } from '../../harness/bots'
 import { cellCenter, distSq } from '../grid'
 import { getRunMap } from '../mapgen'
@@ -65,10 +65,19 @@ describe('fliers', () => {
   })
 
   it('ground-only towers cannot touch them; air towers can', () => {
-    expect(TOWERS.cannon.hitsAir).toBe(false)
-    expect(TOWERS.frost.hitsAir).toBe(false)
-    expect(TOWERS.arrow.hitsAir).toBe(true)
-    expect(TOWERS.sniper.hitsAir).toBe(true)
+    // The FULL roster, pinned — a ninth tower must declare its air stance
+    // here, and the derived UI roster must match the flags exactly.
+    expect(Object.fromEntries(Object.entries(TOWERS).map(([t, d]) => [t, d.hitsAir]))).toEqual({
+      arrow: true,
+      cannon: false,
+      frost: false,
+      tesla: true,
+      sniper: true,
+      mint: false,
+      lance: true,
+      beacon: false,
+    })
+    expect(AA_TOWER_NAMES).toEqual(['Arrow', 'Tesla', 'Sniper', 'Lance'])
 
     // A flier parked inside cannon range takes no cannon fire.
     let s = { ...freshRun(), gold: 10_000 }
@@ -78,6 +87,24 @@ describe('fliers', () => {
     for (let i = 0; i < 60; i++) s = step(s, []).state
     // It may have flown onward or reached the spire, but it was never shot.
     expect(s.towers[0]!.damageDealt).toBe(0)
+  })
+})
+
+describe('support towers', () => {
+  it('never fire, even with a target parked in range', () => {
+    // The `support` flag is the single source of the never-fires rule —
+    // combat skips on it and the derived AA roster excludes on it.
+    expect(Object.entries(TOWERS).filter(([, d]) => d.support).map(([t]) => t)).toEqual(['mint', 'beacon'])
+    let s = { ...freshRun(), gold: 10_000 }
+    const spots = buildCandidates(s).slice(0, 2)
+    s = step(s, [{ type: 'place_tower', tower: 'mint', cell: spots[0]! }]).state
+    s = step(s, [{ type: 'place_tower', tower: 'beacon', cell: spots[1]! }]).state
+    for (const spot of spots) s = makeEnemy(s, { type: 'brute', pos: cellCenter(spot), hp: 5000, maxHp: 5000 })
+    for (let i = 0; i < 90; i++) s = step(s, []).state
+    for (const tower of s.towers) {
+      expect(tower.shots).toBe(0)
+      expect(tower.damageDealt).toBe(0)
+    }
   })
 })
 
