@@ -249,6 +249,26 @@ describe('the Lance: ramp on a held target', () => {
     expect(ACHIEVEMENTS.find((a) => a.id === 'unwavering')!.earned(s, createMeta())).toBe(true)
   })
 
+  it('topping out fires ramp_capped once per climb, not once per capped shot', () => {
+    const mark = enemy({ id: 1, hp: 500_000, maxHp: 500_000 })
+    const s = battle([tower('lance', null)], [mark])
+    let caps = 0
+    for (let i = 0; i < LANCE_MAX_STACKS + 4; i++) {
+      s.towers[0]!.cooldown = 0
+      caps += fire(s).filter((e) => e.type === 'ramp_capped').length
+    }
+    expect(s.towers[0]!.rampStacks).toBe(LANCE_MAX_STACKS)
+    expect(caps).toBe(1)
+    // A fresh climb on a new mark can cap — and announce — again.
+    s.towers[0]!.rampTarget = 999
+    let recaps = 0
+    for (let i = 0; i < LANCE_MAX_STACKS + 2; i++) {
+      s.towers[0]!.cooldown = 0
+      recaps += fire(s).filter((e) => e.type === 'ramp_capped').length
+    }
+    expect(recaps).toBe(1)
+  })
+
   it('the deepest climb survives a reset — the tally is run-lifetime', () => {
     const a = enemy({ id: 1, hp: 200_000, maxHp: 200_000 })
     const b = enemy({ id: 2, hp: 100_000, maxHp: 100_000, pos: cellCenter({ cx: 6, cy: 6 }) })

@@ -296,6 +296,16 @@ export class GameSession {
           }
           break
         }
+        case 'ramp_capped':
+          this.effects.push({
+            kind: 'float',
+            at: cellCenter(e.cell),
+            text: '×10 HELD',
+            color: '#f7768e',
+            t0: now,
+            dur: 1000,
+          })
+          break
         case 'boss_carapace': {
           const boss = this.state.enemies.find((en) => en.id === e.id)
           if (boss) {

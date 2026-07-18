@@ -227,6 +227,7 @@ export type GameEvent =
   | { type: 'vents_erupted'; cells: number[]; seared: number }
   | { type: 'boss_carapace'; id: number }
   | { type: 'boss_gale'; id: number; hastened: number }
+  | { type: 'ramp_capped'; id: number; cell: CellPos } // a lance's climb hit LANCE_MAX_STACKS
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

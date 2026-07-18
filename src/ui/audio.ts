@@ -31,6 +31,7 @@ type SoundKind =
   | 'shot_tesla'
   | 'shot_sniper'
   | 'shot_lance'
+  | 'ramp_capped'
   | 'kill'
   | 'spire_hit'
   | 'wave_cleared'
@@ -111,6 +112,13 @@ const SOUNDS: Record<SoundKind, Note[]> = {
   shot_lance: [
     { freq: 900, dur: 0.09, type: 'pluck', gain: 0.045, at: 0 },
     { freq: 1400, dur: 0.1, type: 'sine', gain: 0.014, sweep: 1.35, at: 0.015, pure: true },
+  ],
+  // Ramp capped: the climb tops out — three quick plucks up the ladder,
+  // the shot_lance voice arriving where it was always promising to go.
+  ramp_capped: [
+    { freq: 700, dur: 0.08, type: 'pluck', gain: 0.05 },
+    { freq: 1050, dur: 0.08, type: 'pluck', gain: 0.05 },
+    { freq: 1575, dur: 0.22, type: 'pluck', gain: 0.055 },
   ],
   // Kill: metallic clink over a body thud — a "chunk", not a chirp.
   kill: [
@@ -220,6 +228,7 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
   gale: 400,
   cataclysm: 800,
   bulwark: 400,
+  ramp_capped: 600,
 }
 const DEFAULT_MIN_GAP = 140
 
@@ -246,6 +255,7 @@ const REVERB_SEND: Partial<Record<SoundKind, number>> = {
   frost_nova: 0.22,
   gold_rush: 0.16,
   bulwark: 0.3,
+  ramp_capped: 0.18,
 }
 
 // Millicell x-position -> stereo pan. The battlefield runs left (portal) to
@@ -260,6 +270,7 @@ function panFromX(xMillicells: number): number {
 // rapid fire gets melodic variety without leaving the key.
 const CHORD_SNAPPED: ReadonlySet<SoundKind> = new Set([
   'kill',
+  'ramp_capped',
   'wave_cleared',
   'victory',
   'relic',
@@ -433,6 +444,9 @@ export class Sfx {
           break
         case 'boss_gale':
           this.play('gale')
+          break
+        case 'ramp_capped':
+          this.play('ramp_capped', panFromX((e.cell.cx + 0.5) * 1000))
           break
         default:
           break

@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+185. *(marathon II, iteration 97)* **The cap announces itself** — new
+    `ramp_capped` GameEvent fires the moment a lance's climb tops out
+    (once per climb, not once per capped shot — tested, including the
+    re-climb after a reset). The UI answers with a "×10 HELD" float
+    over the tower and a three-pluck rising stinger in the shot_lance
+    voice, chord-snapped to the live key and panned to the tower's
+    cell. Unwavering's trigger is now legible in play. Goldens
+    untouched (no named bot builds lances). 206 unit tests, 49 e2e
+    specs.
+
 184. *(marathon II, iteration 96)* **Unwavering** — 23rd achievement:
     ride a lance's climb to the ×10 cap without letting go of the
     mark (250✦). New run-lifetime `maxRampStacks` tally in RunState,
