@@ -1015,7 +1015,7 @@ export default function App() {
               {TOWERS[hoveredTower.type].name} · T{hoveredTower.tier}
               {hoveredTower.enhance > 0 && ` +${hoveredTower.enhance}`}
             </strong>
-            {hoveredTower.type === 'mint' || hoveredTower.type === 'beacon' ? (
+            {TOWERS[hoveredTower.type].support ? (
               <span>
                 {hoveredTower.type === 'beacon'
                   ? `+${towerTier('beacon', hoveredTower.tier).auraPct}% damage to towers in range`
@@ -1034,7 +1034,7 @@ export default function App() {
                 )
               })()
             )}
-            {hoveredTower.type !== 'mint' && hoveredTower.type !== 'beacon' && (
+            {!TOWERS[hoveredTower.type].support && (
               <span>
                 {towerRole(hoveredTower.type)}
                 {critChance > 0 && ` · ${critChance}% crit ×${(effectiveCritDamagePct(state) / 100).toFixed(1)}`}
@@ -1063,7 +1063,7 @@ export default function App() {
               {selectedTower.spec !== null && ` · ${specForTower(selectedTower.type, selectedTower.spec)?.name ?? ''}`}
               {selectedTower.enhance > 0 && ` +${selectedTower.enhance}`}
             </h3>
-            {selectedTower.type === 'mint' || selectedTower.type === 'beacon' ? (
+            {TOWERS[selectedTower.type].support ? (
               <p>
                 {selectedTower.type === 'beacon'
                   ? `+${towerTier('beacon', selectedTower.tier).auraPct}% damage to towers in range`
@@ -1105,7 +1105,7 @@ export default function App() {
             <p data-testid="tower-stats">
               {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
             </p>
-            {selectedTower.type !== 'mint' && selectedTower.type !== 'beacon' && (
+            {!TOWERS[selectedTower.type].support && (
               <p className="tower-air-note">
                 {towerRole(selectedTower.type)}
                 {critChance > 0 && ` · ${critChance}% crit`}

@@ -101,7 +101,7 @@ function specialProgression(type: TowerType): string | null {
   if (a.mintYield) return `Pays ⛀ ${a.mintYield} → ${b.mintYield} → ${c.mintYield} every cleared wave`
   if (a.auraPct) return `Aura: +${a.auraPct}% → +${b.auraPct}% → +${c.auraPct}% damage to towers in range`
   if (type === 'lance')
-    return `Ramp: +${LANCE_RAMP_PCT}% per consecutive hit on one target (cap ${LANCE_MAX_STACKS}); switching resets`
+    return `Ramp: +${LANCE_RAMP_PCT}% per consecutive hit on one target (cap ${LANCE_MAX_STACKS}); switching resets — the rose dial around the tower is the climb`
   return null
 }
 
@@ -113,7 +113,7 @@ const TOWER_NOTES: Partial<Record<TowerType, string>> = {
   sniper: `Executes elites (+${SNIPER_ELITE_BONUS_PCT}% to them) and its heavy single shots punch through shields and armor.`,
   mint: 'Never attacks — pays gold every cleared wave. An investment against future waves.',
   beacon: 'Never attacks — boosts towers in range. Auras do NOT stack: a tower takes only the strongest beacon.',
-  lance: 'Commits to one mark: every consecutive hit lands harder. It ships aimed at the Strongest — let it duel the boss; against hordes it keeps starting over.',
+  lance: 'Commits to one mark: every consecutive hit lands harder. It ships aimed at the Strongest — let it duel the boss; against hordes it keeps starting over. Watch the rose dial fill around the tower: full is ×10, and the tether names its mark.',
 }
 
 interface MechanicEntry {

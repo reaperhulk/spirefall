@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+182. *(marathon II, iteration 94)* **The dial gets documented, the
+    sweep finishes** — the codex lance prose and ramp progression
+    line now name the new battlefield tell (full dial = ×10, the
+    tether names the mark), and the last four hardcoded mint/beacon
+    type checks in the App tower panels became `TOWERS[type].support`
+    reads — the flag introduced in iteration 87 is now the ONLY
+    spelling of "support tower" outside per-type prose. 204 unit
+    tests, 49 e2e specs.
+
 181. *(marathon II, iteration 93)* **The ramp reads on the field** —
     the lance's whole identity is the climb, but the only place you
     could watch it was the tower panel. Render-only tell in the
