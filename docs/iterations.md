@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+181. *(marathon II, iteration 93)* **The ramp reads on the field** —
+    the lance's whole identity is the climb, but the only place you
+    could watch it was the tower panel. Render-only tell in the
+    spec-identity tradition: a rose charge dial fills around the
+    tower as stacks rise (burning glow at the ×10 cap), and a tether
+    to the held mark thickens with the climb — both drawn from the
+    same serialized `rampStacks`/`rampTarget` the engine keeps, so
+    the tell can't lie, and both vanish the instant the climb resets.
+    204 unit tests, 49 e2e specs.
+
 180. *(marathon II, iteration 92)* **The contracts get their tests** —
     the boundary backlog's engine-hardening item. The m4 air test now
     pins the FULL eight-tower hitsAir roster (a ninth tower must

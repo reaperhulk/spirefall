@@ -1,4 +1,4 @@
-import { ABILITIES, ENEMIES, towerTier } from '../data/content'
+import { ABILITIES, ENEMIES, LANCE_MAX_STACKS, towerTier } from '../data/content'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
@@ -1052,6 +1052,34 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
       }
     }
     ctx.restore()
+
+    // The lance's ramp reads on the battlefield, not just in the panel: a
+    // rose charge dial fills around the tower as stacks climb, and a tether
+    // thickens toward the held mark. Both drop the instant the climb resets
+    // — the same state the engine keeps, so the tell can't lie.
+    if (t.type === 'lance' && (t.rampStacks ?? 0) > 0) {
+      const stacks = t.rampStacks ?? 0
+      const frac = Math.min(1, stacks / LANCE_MAX_STACKS)
+      const mark = state.enemies.find((e) => e.id === t.rampTarget && e.hp > 0)
+      if (mark && !mark.phased) {
+        ctx.strokeStyle = color
+        ctx.globalAlpha = 0.16 + 0.3 * frac
+        ctx.lineWidth = 0.5 + 1.5 * frac
+        ctx.beginPath()
+        ctx.moveTo(cx, cy)
+        ctx.lineTo(px(mark.pos.x), px(mark.pos.y))
+        ctx.stroke()
+      }
+      ctx.strokeStyle = color
+      ctx.globalAlpha = 0.85
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + frac * 2 * Math.PI)
+      ctx.stroke()
+      ctx.globalAlpha = 1
+      ctx.lineWidth = 1
+      if (frac >= 1) glow(ctx, cx, cy, 16, color, 0.3) // full climb burns
+    }
 
     // Tier pips + enhancement badge, on top of everything.
     ctx.fillStyle = color
