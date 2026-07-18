@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+184. *(marathon II, iteration 96)* **Unwavering** — 23rd achievement:
+    ride a lance's climb to the ×10 cap without letting go of the
+    mark (250✦). New run-lifetime `maxRampStacks` tally in RunState,
+    booked where combat books the climb, surviving both the tower's
+    own resets and its sale — tests prove the cap earns it, a
+    4-stack reset run doesn't, and the tally outlives the reset.
+    Save migration backfills 0. Goldens regenerated: stateHash-only
+    across all four fixtures (the new serialized field; no bot
+    builds lances), waves/kills/events identical — the repairCasts
+    precedent. README count 22 → 23. 205 unit tests, 49 e2e specs.
+
 183. *(marathon II, iteration 95)* **The hunt gets a schedule** — the
     deep evolutionary fuzz only ran when someone remembered to run
     it. New `fuzz.yml` workflow: Mondays 06:00 UTC (plus manual

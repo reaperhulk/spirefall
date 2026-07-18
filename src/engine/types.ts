@@ -183,6 +183,7 @@ export interface RunState {
   crucible: number
   damageByTower: Partial<Record<TowerType, number>> // run-lifetime, survives sales
   killsByEnemy: Partial<Record<EnemyType, number>> // run-lifetime tally
+  maxRampStacks: number // deepest lance climb this run (achievement: Unwavering)
   hpByWave: number[] // spire HP sampled at each wave clear, in clear order
   repairsThisWave: number // mid-wave repair casts used (capped; resets each wave)
   victoryClaimed: boolean // wave VICTORY_WAVE cleared; endless continues after

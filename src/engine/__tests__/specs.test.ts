@@ -14,6 +14,7 @@ import {
   TOWER_SPECS,
   VOLLEY_PCT,
 } from '../../data/content'
+import { ACHIEVEMENTS } from '../../data/achievements'
 import { applyHit, damageBreakdown, effectiveTowerCooldown, effectiveTowerRange, tickStatuses, towersFire } from '../combat'
 import { blockedGrid, cellCenter, distanceField } from '../grid'
 import { getRunMap } from '../mapgen'
@@ -242,6 +243,24 @@ describe('the Lance: ramp on a held target', () => {
     volley(s, 1)
     expect(before - s.enemies[0]!.hp).toBe(capped)
     expect(s.towers[0]!.rampStacks).toBe(LANCE_MAX_STACKS)
+    // The run remembers the deepest climb (Unwavering) — and keeps it even
+    // after the tower's own stacks reset.
+    expect(s.maxRampStacks).toBe(LANCE_MAX_STACKS)
+    expect(ACHIEVEMENTS.find((a) => a.id === 'unwavering')!.earned(s, createMeta())).toBe(true)
+  })
+
+  it('the deepest climb survives a reset — the tally is run-lifetime', () => {
+    const a = enemy({ id: 1, hp: 200_000, maxHp: 200_000 })
+    const b = enemy({ id: 2, hp: 100_000, maxHp: 100_000, pos: cellCenter({ cx: 6, cy: 6 }) })
+    const s = battle([tower('lance', null, { targeting: 'strongest' })], [a, b])
+    volley(s, 5)
+    expect(s.maxRampStacks).toBe(4)
+    a.hp = 0
+    s.towers[0]!.cooldown = 0
+    fire(s)
+    expect(s.towers[0]!.rampStacks).toBe(0)
+    expect(s.maxRampStacks).toBe(4)
+    expect(ACHIEVEMENTS.find((a2) => a2.id === 'unwavering')!.earned(s, createMeta())).toBe(false)
   })
 
   it('switching targets resets the climb to zero', () => {

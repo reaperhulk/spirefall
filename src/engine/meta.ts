@@ -226,6 +226,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     hpByWave: [],
     repairsThisWave: 0,
     killsByEnemy: {},
+    maxRampStacks: 0,
     victoryClaimed: false,
     mods: {
       damagePct:

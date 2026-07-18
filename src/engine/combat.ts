@@ -389,6 +389,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     if (tower.type === 'lance') {
       if (tower.rampTarget === target.id) {
         tower.rampStacks = Math.min(LANCE_MAX_STACKS, (tower.rampStacks ?? 0) + 1)
+        if (tower.rampStacks > state.maxRampStacks) state.maxRampStacks = tower.rampStacks
       } else {
         tower.rampTarget = target.id
         // Duelist's Oath: the climb never starts from nothing.

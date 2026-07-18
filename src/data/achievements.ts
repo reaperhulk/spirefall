@@ -1,4 +1,5 @@
 import { BIOME_IDS } from './biomes'
+import { LANCE_MAX_STACKS } from './content'
 import type { MetaState, RunState } from '../engine/types'
 
 // Achievements: one-shot goals checked when a run settles. Pure predicates
@@ -156,6 +157,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
       if (lance <= 0) return false
       return Object.entries(run.damageByTower).every(([type, dmg]) => type === 'lance' || dmg < lance)
     },
+  },
+  {
+    id: 'unwavering',
+    name: 'Unwavering',
+    description: `Ride a lance's climb all the way to the ×${LANCE_MAX_STACKS} cap without letting go of the mark.`,
+    sparks: 250,
+    earned: (run) => run.maxRampStacks >= LANCE_MAX_STACKS,
   },
   {
     id: 'in_the_dark',
