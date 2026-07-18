@@ -44,6 +44,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+96. *(marathon II, iteration 8)* **Named Crucible tiers** — repeat
+    victories used to change one number (+10% HP/rank); now rank
+    milestones change the horde's TEXTURE, cumulatively: rank 2
+    SEETHING (+5% speed), rank 4 IRONBOUND (+1 armor on every enemy),
+    rank 6 UNRELENTING (+5% speed again). Data-driven
+    (CRUCIBLE_TIERS + crucibleTiersAt), applied in the spawn pipeline;
+    the HUD badge names the highest tier and its tooltip itemizes all
+    active ones, and the next-run summary on the run-over screen spells
+    out what the horde will bring. Goldens untouched — tiers begin at
+    rank 2, which no golden run reaches. Engine test pins the speed and
+    armor math at ranks 0/2/4 and the tier table itself. 189 unit
+    tests, 34 e2e specs.
+
 95. *(marathon II, iteration 7)* **Shielded affix — and the dilution
     lesson** — new wave affix: every enemy raises a small flat shield
     (AFFIX_SHIELD_BONUS 4; sniper-pierceable, heavy-shot-breakable —

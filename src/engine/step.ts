@@ -18,6 +18,7 @@ import {
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
   CRUCIBLE_HP_PCT_PER_RANK,
+  crucibleTiersAt,
   GOLDEN_LEDGER_CAP,
   GOLDEN_LEDGER_PCT,
   CRUCIBLE_SPARK_PCT_PER_RANK,
@@ -418,7 +419,13 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
           100,
       ),
     )
-    const speed = Math.floor((Math.floor((def.speed * affixSpeedPct(s.activeAffix) * surge) / 10_000) * swift) / 100)
+    let speed = Math.floor((Math.floor((def.speed * affixSpeedPct(s.activeAffix) * surge) / 10_000) * swift) / 100)
+    // Named Crucible tiers: texture on top of the flat HP ramp.
+    let crucibleArmor = 0
+    for (const tier of crucibleTiersAt(s.crucible)) {
+      speed = Math.floor((speed * tier.speedPct) / 100)
+      crucibleArmor += tier.armorBonus
+    }
     // Shields grow at HALF the HP curve's rate. A static shield is trivia
     // once damage multipliers stack; full-rate scaling walls out even heavy
     // shells at a sharp cliff. Half-rate keeps the composition check honest:
@@ -437,7 +444,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
     // knife's edge), ~1 point by wave 8, a third of every arrow by the late
     // teens while heavy shells barely notice. Gradual midgame composition
     // pressure, never an early-game cliff; min 1 damage always lands.
-    const armor = def.armor ? Math.floor((def.armor * Math.max(0, s.hpScalePct - 100)) / 100) : 0
+    const armor = (def.armor ? Math.floor((def.armor * Math.max(0, s.hpScalePct - 100)) / 100) : 0) + crucibleArmor
     const id = s.nextEntityId
     s.nextEntityId += 1
     s.enemies.push({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AFFIX_SHIELD_BONUS, ENEMIES, ENHANCE_COST_GROWTH_PCT, RELIC_IDS, RELIC_PITY_WAVE, RELICS, relicSkipGold, TOWERS } from '../../data/content'
+import { AFFIX_SHIELD_BONUS, crucibleTiersAt, ENEMIES, ENHANCE_COST_GROWTH_PCT, RELIC_IDS, RELIC_PITY_WAVE, RELICS, relicSkipGold, TOWERS } from '../../data/content'
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
@@ -555,6 +555,23 @@ describe('cataclysms', () => {
     const trialSparks = computeSparks({ ...progressed, trials: ['glass_spire'] })
     expect(trialSparks).toBe(Math.floor(((10 * 15 + 10) * 140) / 100))
     expect(trialSparks).toBeGreaterThan(plainSparks)
+  })
+
+  it('Crucible named tiers: rank milestones add speed and armor texture', () => {
+    const spawnAt = (crucible: number) => {
+      let s = cloneRun({ ...freshRun(`crucible-tier-${crucible}`), crucible })
+      s = step(s, [{ type: 'start_wave' }]).state
+      s = stepUntil(s, (st) => st.enemies.length > 0, 300)
+      return s.enemies[0]!
+    }
+    const plain = spawnAt(0)
+    const seething = spawnAt(2) // Seething: +5% speed
+    const ironbound = spawnAt(4) // + Ironbound: +1 armor on everyone
+    expect(seething.speed).toBe(Math.floor((plain.speed * 105) / 100))
+    expect(seething.armor).toBe(plain.armor)
+    expect(ironbound.armor).toBe(plain.armor + 1)
+    expect(crucibleTiersAt(6).map((t) => t.name)).toEqual(['Seething', 'Ironbound', 'Unrelenting'])
+    expect(crucibleTiersAt(1)).toEqual([])
   })
 
   it('Shielded affix: every spawn raises the flat bonus shield', () => {

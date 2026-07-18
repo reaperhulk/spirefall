@@ -12,6 +12,7 @@ import {
   relicSkipGold,
   CRUCIBLE_HP_PCT_PER_RANK,
   CRUCIBLE_SPARK_PCT_PER_RANK,
+  crucibleTiersAt,
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
   repairCostPerHp,
@@ -575,9 +576,13 @@ export default function App() {
           <span
             className="trial-badge crucible-badge"
             data-testid="crucible"
-            title={`The Crucible: ${state.crucible} ${state.crucible === 1 ? 'victory' : 'victories'} this cycle — enemies +${CRUCIBLE_HP_PCT_PER_RANK * state.crucible}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * state.crucible}%. Ascend to reset.`}
+            title={`The Crucible: ${state.crucible} ${state.crucible === 1 ? 'victory' : 'victories'} this cycle — enemies +${CRUCIBLE_HP_PCT_PER_RANK * state.crucible}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * state.crucible}%${crucibleTiersAt(state.crucible)
+              .map((t) => `; ${t.name}: ${t.description}`)
+              .join('')}. Ascend to reset.`}
           >
             🔥 Crucible {'I'.repeat(Math.min(state.crucible, 3))}{state.crucible > 3 ? `×${state.crucible}` : ''}
+            {crucibleTiersAt(state.crucible).length > 0 &&
+              ` · ${crucibleTiersAt(state.crucible)[crucibleTiersAt(state.crucible).length - 1]!.name}`}
           </span>
         )}
         {state.trials.length > 0 && (

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { drawRunCard, challengeLink } from './runCard'
-import { CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
+import { CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
 import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
@@ -465,6 +465,9 @@ export function RunOverOverlay({
             >
               🔥 Next run: Crucible {meta.cycleVictories} — enemies +{CRUCIBLE_HP_PCT_PER_RANK * meta.cycleVictories}%
               HP, Sparks +{CRUCIBLE_SPARK_PCT_PER_RANK * meta.cycleVictories}%
+              {crucibleTiersAt(meta.cycleVictories)
+                .map((t) => ` · ${t.name} (${t.description})`)
+                .join('')}
             </span>
           )}
           <button className="primary-btn" onClick={onNextRun} data-testid="next-run">

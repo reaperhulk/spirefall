@@ -486,6 +486,28 @@ export const TRIAL_IRON_HP_PCT = 125
 // creation (RunState.crucible).
 export const CRUCIBLE_HP_PCT_PER_RANK = 10
 export const CRUCIBLE_SPARK_PCT_PER_RANK = 15
+
+// Named Crucible tiers: rank milestones change the horde's TEXTURE, not
+// just its HP number. Cumulative — a rank-4 run carries Seething AND
+// Ironbound. Applied in the spawn pipeline; the HUD badge and next-run
+// summary name the highest tier reached.
+export interface CrucibleTier {
+  rank: number
+  name: string
+  description: string
+  speedPct: number // multiplies enemy speed
+  armorBonus: number // flat armor on every enemy
+}
+
+export const CRUCIBLE_TIERS: CrucibleTier[] = [
+  { rank: 2, name: 'Seething', description: 'the horde moves 5% faster', speedPct: 105, armorBonus: 0 },
+  { rank: 4, name: 'Ironbound', description: 'every enemy gains +1 armor', speedPct: 100, armorBonus: 1 },
+  { rank: 6, name: 'Unrelenting', description: 'the horde moves 5% faster still', speedPct: 105, armorBonus: 0 },
+]
+
+export function crucibleTiersAt(rank: number): CrucibleTier[] {
+  return CRUCIBLE_TIERS.filter((t) => rank >= t.rank)
+}
 export const TRIAL_SWIFT_SPEED_PCT = 115
 export const TRIAL_FAMINE_GOLD_PCT = -25
 
