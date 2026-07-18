@@ -172,6 +172,7 @@ button:disabled {
   }
 }
 
+
 .speed-controls {
   display: flex;
   gap: 2px;
@@ -1500,4 +1501,30 @@ button.preview-unit:hover {
 .ghost-btn.auto-on {
   border-color: #9ece6a;
   color: #9ece6a;
+}
+
+/* Small phones: tab rows tighten so every tab fits at 320px. The
+   overflow-x safety lives ONLY here — at desktop widths a scrollable tab
+   strip becomes a nested scroll container that hijacks scroll-into-view. */
+@media (max-width: 360px) {
+  .tab {
+    padding: 8px 7px;
+    font-size: 13px;
+  }
+
+  .tab-bar {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .codex-tabs {
+    gap: 3px;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .codex-tab {
+    padding: 5px 7px;
+    font-size: 12px;
+  }
 }

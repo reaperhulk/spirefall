@@ -52,6 +52,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+102. *(marathon II, iteration 14)* **320px small-phone audit** — an
+    offender sweep at 320×568 (every element's bounding box vs the
+    viewport) found two overflows: the run-over tab bar (~342px) and
+    the codex's four tabs (~373px). Fixed with a ≤360px media block —
+    tighter paddings/font, and overflow-x safety scoped INSIDE the
+    media query only, because a first attempt with a base-rule
+    scrollable tab strip created a nested scroll container that
+    hijacked scroll-into-view at desktop widths (the loop e2e caught it:
+    the tab row stuck above the modal's viewport, unclickable). Also
+    re-learned the stylesheet's cascade trap the hard way: the media
+    block only wins from the END of the file. Re-audit: zero offenders
+    on main screen, all three run-over tabs, codex, settings at 320px.
+    191 unit tests, 34 e2e specs.
+
 101. *(marathon II, iteration 13)* **Compressed transfer codes** — save
     codes were raw base64 JSON; v2 codes gzip through CompressionStream
     first (prefix "SF2:", ~4× shorter — friendlier to paste anywhere)
