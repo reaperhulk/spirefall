@@ -477,6 +477,37 @@ export function RunOverOverlay({
   )
 }
 
+// Career at a glance: one bar per recent run (chronological, newest right),
+// height = waves cleared, gold = victory. The climb IS the progression.
+function RunHistorySpark({ history }: { history: MetaState['history'] }) {
+  const runs = history.slice(0, 20).reverse() // stored newest-first
+  const w = 240
+  const h = 44
+  const max = Math.max(...runs.map((r) => r.wavesCleared), 1)
+  const bw = Math.max(3, Math.floor(w / runs.length) - 2)
+  return (
+    <div className="hp-spark" data-testid="history-spark" title="Waves cleared per run, oldest to newest — gold bars are victories">
+      <h4>Last {runs.length} runs</h4>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        {runs.map((r, i) => {
+          const bh = Math.max(2, (r.wavesCleared / max) * (h - 6))
+          return (
+            <rect
+              key={i}
+              x={i * (bw + 2) + 1}
+              y={h - 2 - bh}
+              width={bw}
+              height={bh}
+              rx={1}
+              fill={r.outcome === 'victory' ? '#e5c07b' : '#3d59a1'}
+            />
+          )
+        })}
+      </svg>
+    </div>
+  )
+}
+
 // The run's health timeline: one sample per cleared wave. Dips show exactly
 // which waves drew blood; the knit heal shows as slow recovery.
 function HpSparkline({ hp }: { hp: number[] }) {
@@ -643,6 +674,7 @@ export function SettingsModal({
             </span>
           ))}
         </div>
+        {meta.history.length > 1 && <RunHistorySpark history={meta.history} />}
         {meta.history.length > 0 && (
           <table className="history-table">
             <tbody>

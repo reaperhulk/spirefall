@@ -44,6 +44,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+93. *(marathon II, iteration 5)* **Career sparkline** — meta.history
+    powered only an 8-row table; the actual shape of a player's career
+    (am I getting deeper?) was invisible. Settings now leads its Run
+    history section with a bar sparkline of the last 20 runs,
+    chronological, height = waves cleared, victories in gold — the
+    climb IS the progression, and a plateau is a prompt to change
+    strategy. Renders only once there are 2+ runs. E2e extends the
+    give-up spec: after a second finished run the spark shows exactly
+    two bars. 186 unit tests, 34 e2e specs.
+
 92. *(marathon II, iteration 4)* **Relic codex** — 30 relics existed
     nowhere outside the ten-second draft moment; planning a build around
     Cinder Shells or Golden Ledger meant memorizing offers. The codex

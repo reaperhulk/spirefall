@@ -449,6 +449,13 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   const snap = await page.evaluate(() => window.__harness.snapshot())
   expect(snap.phase).toBe('build')
   expect(snap.runs).toBe(1)
+
+  // A second finished run makes the career sparkline appear in Settings.
+  await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  await page.keyboard.press('?')
+  await expect(page.getByTestId('history-spark')).toBeVisible()
+  expect(await page.locator('[data-testid="history-spark"] rect').count()).toBe(2)
   expect(errors).toEqual([])
 })
 
