@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+167. *(marathon II, iteration 79)* **The lance gets its voice and its
+    dart** — launch-gap audit found the lance firing SILENTLY (the
+    per-type shot map predates it) and drawing the generic fallback
+    beam in white (missing from the beam-color map — as was sniper's
+    entry, incidentally). Now: a taut string-snap with a rising ring
+    (the thrust, and the promise the next lands harder), a fast rose
+    tracer, and per-kind throttle. 201 unit tests, 48 e2e specs.
+
 166. *(marathon II, iteration 78)* **Counts stay honest** — README
     relic counts to 31 (the codex tally self-corrects — it reads the
     data). Debt check after the lance arc: App.tsx 1401 (fine),

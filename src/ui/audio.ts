@@ -30,6 +30,7 @@ type SoundKind =
   | 'shot_frost'
   | 'shot_tesla'
   | 'shot_sniper'
+  | 'shot_lance'
   | 'kill'
   | 'spire_hit'
   | 'wave_cleared'
@@ -104,6 +105,12 @@ const SOUNDS: Record<SoundKind, Note[]> = {
   shot_sniper: [
     { freq: 3200, dur: 0.06, type: 'noise', gain: 0.055, q: 0.8, sweep: 0.35, at: 0 },
     { freq: 1900, dur: 0.22, type: 'sine', gain: 0.013, sweep: 0.18, at: 0.02, pure: true },
+  ],
+  // Lance: a taut string-snap with a rising ring — the thrust, and the
+  // promise that the next one lands harder.
+  shot_lance: [
+    { freq: 900, dur: 0.09, type: 'pluck', gain: 0.045, at: 0 },
+    { freq: 1400, dur: 0.1, type: 'sine', gain: 0.014, sweep: 1.35, at: 0.015, pure: true },
   ],
   // Kill: metallic clink over a body thud — a "chunk", not a chirp.
   kill: [
@@ -195,6 +202,7 @@ const SHOT_BY_TOWER: Partial<Record<TowerType, SoundKind>> = {
   frost: 'shot_frost',
   tesla: 'shot_tesla',
   sniper: 'shot_sniper',
+  lance: 'shot_lance',
   // mint/beacon never fire projectiles
 }
 
@@ -203,6 +211,7 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
   shot_arrow: 70,
   shot_frost: 90,
   shot_tesla: 90,
+  shot_lance: 80,
   shot_cannon: 120,
   shot_sniper: 120,
   kill: 90,

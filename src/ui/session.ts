@@ -50,6 +50,8 @@ const TOWER_BEAM_COLORS: Record<string, string> = {
   cannon: '#e0af68',
   frost: '#7dcfff',
   tesla: '#bb9af7',
+  sniper: '#73daca',
+  lance: '#f7768e',
 }
 
 export class GameSession {
@@ -211,6 +213,10 @@ export class GameSession {
             }
             case 'sniper':
               this.effects.push({ kind: 'tracer', from: e.from, to: e.to, color, crit: e.crit, t0: now, dur: 160 })
+              break
+            case 'lance':
+              // A thrust reads as a fast tracer in the lance's rose.
+              this.effects.push({ kind: 'tracer', from: e.from, to: e.to, color, crit: e.crit, t0: now, dur: 110 })
               break
             case 'tesla':
               this.effects.push({ kind: 'arc', from: e.from, to: e.to, color, crit: e.crit, t0: now, dur: 140 })
