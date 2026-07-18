@@ -1484,18 +1484,20 @@ test('victory: an honest win dresses the screen in gold and names the first triu
   expect(errors).toEqual([])
 })
 
-test('the pilot generalizes: a maxed account reaches deep waves on frostfen marsh', async ({ page }) => {
-  // Same pilot, different world: frostfen's marsh forbids building on soft
-  // ground, so the picket line must thread real terrain. The goal here is
-  // REACH (well past the fresh-account wall), not victory — the win stays
-  // pinned to the tuned verdant seed; this proves the machinery isn't
-  // verdant-shaped.
-  const errors = await boot(page, 'e2e-frost-reach')
-  await page.evaluate(() => localStorage.setItem('spirefall-map', 'frostfen'))
-  await page.reload()
-  await page.waitForSelector('[data-testid="playfield"]')
-  const end = await page.evaluate(MAXED_PILOT, 'e2e-frost-reach')
-  expect((await page.evaluate(() => window.__harness.getState().biome))).toBe('frostfen')
-  expect(end.wave, JSON.stringify(end)).toBeGreaterThanOrEqual(15)
-  expect(errors).toEqual([])
-})
+// Same pilot, different worlds: each feature biome bends the rules (marsh
+// forbids soft ground, slag heaps break the field, mesas add buildable high
+// ground). The goal is REACH (well past the fresh-account wall), not victory
+// — the win stays pinned to the tuned verdant seed; these prove the
+// machinery isn't verdant-shaped.
+for (const biome of ['frostfen', 'emberwaste', 'highlands'] as const) {
+  test(`the pilot generalizes: a maxed account reaches deep waves on ${biome}`, async ({ page }) => {
+    const errors = await boot(page, `e2e-${biome}-reach`)
+    await page.evaluate((b) => localStorage.setItem('spirefall-map', b), biome)
+    await page.reload()
+    await page.waitForSelector('[data-testid="playfield"]')
+    const end = await page.evaluate(MAXED_PILOT, `e2e-${biome}-reach`)
+    expect(await page.evaluate(() => window.__harness.getState().biome)).toBe(biome)
+    expect(end.wave, JSON.stringify(end)).toBeGreaterThanOrEqual(15)
+    expect(errors).toEqual([])
+  })
+}

@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+157. *(marathon II, iteration 69)* **Full biome coverage for the
+    pilot** — the frostfen reach spec became a three-biome matrix
+    (frostfen marsh, emberwaste slag, highlands mesas), each booting
+    a maxed account through real commands to wave 15+. All three
+    passed first try. The e2e suite now exercises every biome's
+    terrain rules through the UI, not just headlessly. 195 unit
+    tests, 47 e2e specs.
+
 156. *(marathon II, iteration 68)* **The pilot generalizes** — the
     maxed-account pilot was extracted verbatim into a shared
     MAXED_PILOT function (the tuned verdant win passes bit-for-bit
