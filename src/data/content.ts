@@ -65,11 +65,17 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   // ride the wraith-phasing and healer machinery the engine already has.
   boss4: { name: 'Veilwarden', hp: 560, speed: 44, cost: 0, pack: 1, spacing: 0, bounty: 55, damage: 10, shield: 0, armor: 2, unlockWave: 40, elite: true, phasing: { visibleTicks: 120, hiddenTicks: 50 } },
   boss5: { name: 'Blightmother', hp: 620, speed: 38, cost: 0, pack: 1, spacing: 0, bounty: 60, damage: 12, shield: 4, armor: 1, unlockWave: 50, elite: true, heal: { everyTicks: 80, amount: 10, radius: 2400 } },
+  // Deep-endless (wave 60 in the cycle): an airborne carrier — it soars over
+  // every maze and broods FLIERS, so wave 60 is an air armada that only
+  // anti-air depth answers. Pure data on existing machinery (flying + brood).
+  boss6: { name: 'Zephyrhost', hp: 680, speed: 47, cost: 0, pack: 1, spacing: 0, bounty: 65, damage: 12, shield: 5, armor: 1, unlockWave: 60, elite: true, flying: true, brood: { type: 'flier', count: 2, everyTicks: 200 } },
 }
 
-// Boss waves rotate through the roster: 10 → Spirebreaker (tank),
-// 20 → Gravemind (splits on death), 30 → Stormcaller (flies) — and repeat.
-export const BOSS_ROSTER: EnemyType[] = ['boss', 'boss2', 'boss3', 'boss4', 'boss5']
+// Boss waves rotate through the roster: 10 → Spirebreaker (carapace tank),
+// 20 → Gravemind (splits on death), 30 → Stormcaller (flying gale),
+// 40 → Veilwarden (phasing), 50 → Blightmother (horde-mender),
+// 60 → Zephyrhost (airborne carrier) — and around again.
+export const BOSS_ROSTER: EnemyType[] = ['boss', 'boss2', 'boss3', 'boss4', 'boss5', 'boss6']
 
 // ---------------------------------------------------------------------------
 // Towers

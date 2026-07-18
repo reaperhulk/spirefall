@@ -25,6 +25,7 @@ export type EnemyType =
   | 'boss3'
   | 'boss4'
   | 'boss5'
+  | 'boss6'
 export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush' | 'bulwark'
 export type RelicId =
   | 'piercing_arrows'

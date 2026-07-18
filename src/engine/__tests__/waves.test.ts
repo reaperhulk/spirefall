@@ -89,7 +89,8 @@ describe('boss roster', () => {
     expect(bossOf(30)).toBe('boss3')
     expect(bossOf(40)).toBe('boss4') // endless tier begins
     expect(bossOf(50)).toBe('boss5')
-    expect(bossOf(60)).toBe('boss') // and around again
+    expect(bossOf(60)).toBe('boss6') // the deep-endless air armada
+    expect(bossOf(70)).toBe('boss') // and around again
   })
 
 

@@ -92,10 +92,23 @@ describe('Stormcaller gale', () => {
 })
 
 describe('endless-tier bosses (Veilwarden, Blightmother)', () => {
-  it('the roster cycles into them at waves 40 and 50', () => {
+  it('the roster cycles into them at waves 40, 50, and 60', () => {
     const rng = deriveStream('boss-roster', 'waves')
     expect(generateWave(rng, 40, 10_000).spawns.some((sp) => sp.type === 'boss4')).toBe(true)
     expect(generateWave(rng, 50, 12_000).spawns.some((sp) => sp.type === 'boss5')).toBe(true)
+    expect(generateWave(rng, 60, 14_000).spawns.some((sp) => sp.type === 'boss6')).toBe(true)
+    // Waves 10–50 keep their exact bosses: the roster only GREW.
+    expect(generateWave(rng, 10, 400).spawns[0]!.type).toBe('boss')
+  })
+
+  it('Zephyrhost is an airborne carrier: it flies and broods fliers', () => {
+    expect(ENEMIES.boss6.flying).toBe(true)
+    expect(ENEMIES.boss6.brood).toMatchObject({ type: 'flier' })
+    const host = enemy({ id: 1, type: 'boss6', broodCooldown: 0 })
+    const s = waveState([host])
+    carrierBroods(s, [])
+    // The brood hatched: two fliers joined the armada.
+    expect(s.enemies.filter((e) => e.type === 'flier')).toHaveLength(ENEMIES.boss6.brood!.count)
   })
 
   it('Veilwarden flickers on the wraith machinery', () => {

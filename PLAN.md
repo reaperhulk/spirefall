@@ -22,7 +22,7 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 >   interest, crit auras).
 > - **Boss encounters**: carapace break-windows, mid-life broods, gale surges,
 >   endless-tier phasing (Veilwarden) and horde-mending (Blightmother) — each
->   with explicit counterplay; every 10th wave, 5-boss cycle.
+>   with explicit counterplay; every 10th wave, 6-boss cycle (Zephyrhost's air armada at 60).
 > - **The Crucible**: post-victory escalation — each cycle victory hardens the
 >   next run (+10% HP) and sweetens it (+15% sparks, +1 ember at ascension);
 >   rank milestones add NAMED tiers (Seething/Ironbound/Unrelenting texture).

@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+141. *(marathon II, iteration 53)* **Zephyrhost** — sixth boss, wave
+    60 in the cycle: an airborne carrier that soars over every maze
+    and broods FLIERS, so deep endless faces an air armada only
+    anti-air depth answers. Pure data on existing machinery (flying +
+    brood — the boss4/5 precedent). Waves 10–50 keep their exact
+    bosses (the roster only grew), so goldens stand untouched —
+    verified, not regenerated. Roster tests extended to 60/70;
+    a unit test proves the brood hatches fliers. 195 unit tests,
+    44 e2e specs.
+
 140. *(marathon II, iteration 52)* **The ascension motif** — burning
     the entire Spire Tree was musically silent (ascension is a meta
     act; no engine event reaches the score). `music.ascendMotif()`

@@ -83,7 +83,7 @@ the repository (Settings → Pages → Source: GitHub Actions).
 ## Status
 
 **Post-M6, in continuous iteration.** Playable game with 7 tower types (each
-with two tier-3 specializations), 15 enemy types across a 5-boss cycle, wave
+with two tier-3 specializations), 16 enemy types across a 6-boss cycle, wave
 affixes, 30 relics with rarity/reroll/pity, four abilities, six Trials, endless
 Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 21
 achievements, daily runs with streaks, generated battlefields across 4 biomes, a
