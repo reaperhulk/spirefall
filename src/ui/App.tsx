@@ -1199,8 +1199,9 @@ export default function App() {
       {watching && (
         <div className="replay-banner" data-testid="replay-banner">
           <span>
-            ▶ REPLAY — watching your last run{session.terminal ? ' · finished' : ''}. Speed controls work; inputs
-            don't.
+            ▶ REPLAY · wave {state.wave}
+            {session.terminal ? ` · over — ${state.phase === 'victory' ? 'the Spire stood' : 'the Spire fell'}` : ''} —
+            speed controls work; inputs don't.
           </span>
           <button className="ghost-btn" data-testid="exit-replay" onClick={exitReplay}>
             Exit replay

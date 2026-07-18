@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+108. *(marathon II, iteration 20)* **Replay banner narrates** — the
+    spectator banner now carries the live wave number and, when the
+    replay ends, the outcome ("over — the Spire stood/fell") instead of
+    a bare "finished". Twenty iterations into Marathon II: 4 confidence
+    programs (breadth axes, victory hunts, biome hunts + maze fix +
+    2 failed-experiment reversions, perf closure), 6 features (tabs,
+    replays ×3 forms, phrase pools, crucible tiers), 5 content adds
+    (bosses, trial, affix, achievements, relic codex), 5 UX/polish
+    passes. 191 unit tests, 35 e2e specs.
+
 107. *(marathon II, iteration 19)* **Replay links** — the replay stack
     completes: "⏯ Copy replay link" gzips the v2 payload (tick-0 state
     + command log) into a base64url `?replay=` parameter; anyone who
