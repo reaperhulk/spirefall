@@ -362,11 +362,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const def = towerTier(tower.type, tower.tier)
     const hitsAir = TOWERS[tower.type].hitsAir
     const origin = cellCenter(tower.cell)
-    let range = effectiveTowerRange(state, tower.type, tower.tier, tower.spec)
-    // Highlands: a tower on a mesa overlooks the field.
-    if (map.mesa.length > 0 && map.mesa[cellIndex(map, tower.cell)]) {
-      range = Math.floor((range * MESA_RANGE_PCT) / 100)
-    }
+    const range = towerRangeOnBoard(state, map, tower)
     const rangeSq = range * range
     const alive = hitsAir ? aliveAll : aliveGrounded
     const target = selectTarget(tower, alive, map, field, rangeSq)
@@ -689,6 +685,19 @@ export function effectiveTowerRange(state: RunState, type: TowerType, tier: 1 | 
   let base = towerTier(type, tier).range
   if (spec === 'longbow') base = Math.floor((base * LONGBOW_RANGE_PCT) / 100)
   return state.relics.includes('longsight') ? Math.floor((base * LONGSIGHT_RANGE_PCT) / 100) : base
+}
+
+// The single source of a PLACED tower's true targeting radius on this board —
+// spec, relics, and mesa terrain included. towersFire fires with this and
+// the UI draws its range rings and tooltips from it, so the circle players
+// see is exactly the circle the engine rolls. (Beacons are the exception
+// everywhere: their aura reach is raw tier range by design — beaconAuraPct.)
+export function towerRangeOnBoard(state: RunState, map: MapDef, tower: Tower): number {
+  let range = effectiveTowerRange(state, tower.type, tower.tier, tower.spec)
+  if (map.mesa.length > 0 && map.mesa[cellIndex(map, tower.cell)]) {
+    range = Math.floor((range * MESA_RANGE_PCT) / 100)
+  }
+  return range
 }
 
 // ---------------------------------------------------------------------------

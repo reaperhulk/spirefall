@@ -52,6 +52,21 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+187. *(marathon II, iteration 99)* **The circle is the truth** — user
+    report: hover sometimes shows wrong data; range rings suspect.
+    Confirmed, three sites: the hover tooltip dropped the spec from
+    its cooldown call (wrong rate/DPS on Mortar towers) and quoted
+    raw tier range; the selected-tower ring drew raw range, ignoring
+    Longsight, Longbow, AND the mesa bonus (on highlands two same-
+    type towers genuinely have different radii — the rings lied);
+    the placement ghost ring ignored Longsight and the hovered
+    cell's mesa. Fix in the derived-truth pattern: one exported
+    `towerRangeOnBoard(state, map, tower)` — spec + relic + mesa,
+    the exact towersFire math, now THE radius for combat, ring,
+    ghost, and tooltip alike (beacons stay raw by design, matching
+    beaconAuraPct). Unit test walks the whole stack: raw → Longbow →
+    Longsight → mesa. 209 unit tests, 49 e2e specs.
+
 186. *(marathon II, iteration 98)* **The hunt catches one on day one**
     — dispatched the new weekly Deep fuzz workflow live: all four
     biome jobs FAILED with a breaking find — a broad tier-3

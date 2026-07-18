@@ -7,15 +7,19 @@ import {
   LANCE_MAX_STACKS,
   LANCE_RAMP_PCT,
   LATTICE_EXTRA_CHAIN,
+  LONGBOW_RANGE_PCT,
+  LONGSIGHT_RANGE_PCT,
   MOMENTUM_RAMP_PCT,
   MORTAR_COOLDOWN_PCT,
   MORTAR_DAMAGE_PCT,
   PERMAFROST_BONUS_PCT,
   TOWER_SPECS,
+  towerTier,
   VOLLEY_PCT,
 } from '../../data/content'
+import { MESA_RANGE_PCT } from '../../data/biomes'
 import { ACHIEVEMENTS } from '../../data/achievements'
-import { applyHit, damageBreakdown, effectiveTowerCooldown, effectiveTowerRange, tickStatuses, towersFire } from '../combat'
+import { applyHit, damageBreakdown, effectiveTowerCooldown, effectiveTowerRange, tickStatuses, towerRangeOnBoard, towersFire } from '../combat'
 import { blockedGrid, cellCenter, distanceField } from '../grid'
 import { getRunMap } from '../mapgen'
 import { createMeta, createRun } from '../meta'
@@ -86,6 +90,27 @@ function fire(s: RunState): GameEvent[] {
   towersFire(s, map, distanceField(map, blockedGrid(map, s.towers)), events)
   return events
 }
+
+describe('towerRangeOnBoard: the ring is the engine', () => {
+  it('folds spec, Longsight, and mesa into one radius', () => {
+    const s = battle([tower('sniper', null)], [])
+    const map = getRunMap(s)
+    const raw = towerTier('sniper', 3).range
+    expect(towerRangeOnBoard(s, map, s.towers[0]!)).toBe(raw)
+    // Longbow spec stretches it…
+    s.towers[0]!.spec = 'longbow'
+    const bowed = Math.floor((raw * LONGBOW_RANGE_PCT) / 100)
+    expect(towerRangeOnBoard(s, map, s.towers[0]!)).toBe(bowed)
+    // …Longsight multiplies on top…
+    s.relics.push('longsight')
+    const sighted = Math.floor((bowed * LONGSIGHT_RANGE_PCT) / 100)
+    expect(towerRangeOnBoard(s, map, s.towers[0]!)).toBe(sighted)
+    // …and a mesa underfoot multiplies again — the exact towersFire math.
+    const mesa: boolean[] = Array(map.width * map.height).fill(false)
+    mesa[s.towers[0]!.cell.cy * map.width + s.towers[0]!.cell.cx] = true
+    expect(towerRangeOnBoard(s, { ...map, mesa }, s.towers[0]!)).toBe(Math.floor((sighted * MESA_RANGE_PCT) / 100))
+  })
+})
 
 describe('specialize_tower command', () => {
   it('validates tier, ownership, uniqueness, and gold', () => {

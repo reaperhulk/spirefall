@@ -28,7 +28,9 @@ import {
   effectiveCritChancePct,
   effectiveCritDamagePct,
   effectiveTowerCooldown,
+  towerRangeOnBoard,
 } from '../engine/combat'
+import { getRunMap } from '../engine/mapgen'
 import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
 import type { EmberUpgradeId } from '../data/emberTree'
 import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
@@ -1024,12 +1026,16 @@ export default function App() {
             ) : (
               (() => {
                 const b = damageBreakdown(state, hoveredTower)
-                const rate = 30 / effectiveTowerCooldown(state, hoveredTower.type, hoveredTower.tier)
+                // Spec rides along and range is the board's own radius
+                // (Longsight, Longbow, mesa) — the tooltip must quote the
+                // numbers the engine rolls, same contract as the panel.
+                const rate = 30 / effectiveTowerCooldown(state, hoveredTower.type, hoveredTower.tier, hoveredTower.spec)
+                const range = towerRangeOnBoard(state, getRunMap(state), hoveredTower)
                 return (
                   <span>
                     {b.effective} dmg{b.parts.length > 0 && ` (${b.base} base +${b.totalPct - 100}%)`} ·{' '}
                     {rate.toFixed(1)}/s · ≈{Math.round(b.effective * rate)} DPS ·{' '}
-                    {(towerTier(hoveredTower.type, hoveredTower.tier).range / 1000).toFixed(1)} range
+                    {(range / 1000).toFixed(1)} range
                   </span>
                 )
               })()

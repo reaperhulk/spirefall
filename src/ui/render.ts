@@ -2,7 +2,9 @@ import { ABILITIES, ENEMIES, LANCE_MAX_STACKS, towerTier } from '../data/content
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
-import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, pathFrom } from '../engine/grid'
+import { blockedGrid, canPlaceTower, cellCenter, cellIndex, distanceField, distSq, pathFrom } from '../engine/grid'
+import { effectiveTowerRange, towerRangeOnBoard } from '../engine/combat'
+import { MESA_RANGE_PCT } from '../data/biomes'
 import { getRunMap } from '../engine/mapgen'
 import type { AbilityId, CellPos, Enemy, RunState, TowerType, Vec } from '../engine/types'
 import type { GameSession } from './session'
@@ -1095,10 +1097,13 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
     if (ui.selectedTowerId === t.id) {
       const def = towerTier(t.type, t.tier)
       const center = cellCenter(t.cell)
+      // The ring is the engine's OWN radius — spec, Longsight, and mesa
+      // included (beacons excepted: their aura reach is raw by design).
+      const ringRange = t.type === 'beacon' ? def.range : towerRangeOnBoard(state, getRunMap(state), t)
       ctx.fillStyle = COLORS.range
       ctx.strokeStyle = COLORS.rangeEdge
       ctx.beginPath()
-      ctx.arc(px(center.x), px(center.y), px(def.range), 0, Math.PI * 2)
+      ctx.arc(px(center.x), px(center.y), px(ringRange), 0, Math.PI * 2)
       ctx.fill()
       ctx.stroke()
 
@@ -1800,11 +1805,17 @@ function drawPlacementGhost(
     const ok = canPlaceTower(session.state, map, c).ok
     ctx.fillStyle = ok ? COLORS.ghostOk : COLORS.ghostBad
     ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
-    const def = towerTier(ui.shopSelection, 1)
+    // The ghost ring is the radius the tower would ACTUALLY get here —
+    // Longsight and this very cell's mesa bonus included.
+    let ghostRange = effectiveTowerRange(session.state, ui.shopSelection, 1)
+    if (ui.shopSelection !== 'beacon' && map.mesa.length > 0 && map.mesa[cellIndex(map, c)]) {
+      ghostRange = Math.floor((ghostRange * MESA_RANGE_PCT) / 100)
+    }
+    if (ui.shopSelection === 'beacon') ghostRange = towerTier('beacon', 1).range
     const center = cellCenter(c)
     ctx.strokeStyle = COLORS.rangeEdge
     ctx.beginPath()
-    ctx.arc(px(center.x), px(center.y), px(def.range), 0, Math.PI * 2)
+    ctx.arc(px(center.x), px(center.y), px(ghostRange), 0, Math.PI * 2)
     ctx.stroke()
 
     // Preview how enemies would re-route around the new tower BEFORE buying:
