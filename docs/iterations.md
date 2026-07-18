@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+153. *(marathon II, iteration 65)* **Space respects it too** — the
+    Space shortcut had the same pre-offer blind spot as auto-advance:
+    it now skips dispatching start_wave while a relic or cataclysm
+    choice is pending, keeping the command log (and every replay)
+    free of rejection noise. 195 unit tests, 44 e2e specs.
+
 152. *(marathon II, iteration 64)* **Auto-advance respects the doom
     gate** — the auto-start timer predates cataclysm offers: with ▶▶
     on, it would fire start_wave into the gate every 1.2s, spamming

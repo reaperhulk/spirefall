@@ -509,8 +509,12 @@ export default function App() {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       if (e.key === ' ') {
         e.preventDefault()
+        const s = sessionRef.current.state
         if (summary) beginNextRun()
-        else if (sessionRef.current.state.phase === 'build') sessionRef.current.dispatch({ type: 'start_wave' })
+        else if (s.phase === 'build' && s.relicOffer === null && s.cataclysmOffer === null)
+          // A pending choice modal owns the moment — Space shouldn't queue
+          // rejected start_waves into the log behind it.
+          sessionRef.current.dispatch({ type: 'start_wave' })
         return
       }
       if (e.key === '?') {
