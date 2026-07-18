@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+121. *(marathon II, iteration 33)* **Repair budget truthfulness +
+    PLAN refresh** — the repair button computed its cap from the base
+    constant, so an Emberbound Crews account would see "crews spent"
+    with casts still in the bank; it now derives from the run's real
+    cap (`base + mods.repairCasts`) and the tooltip counts casts left
+    mid-wave. PLAN.md shipped-systems index caught up (loadout
+    summaries, victory identity, fourth pinned genome Ember-Maze).
+    193 unit tests, 42 e2e specs.
+
 120. *(marathon II, iteration 32)* **Share & stats polish** — the
     career sparkline's bars now carry native SVG tooltips (outcome,
     wave, biome, crucible, sparks per hover — the wave-30 history

@@ -35,12 +35,17 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 >   32-bar form, intensity- and event-driven (boss vamps, defeat collapse,
 >   victory bloom), zero assets, UI-layer only; tonal SFX quantize to the
 >   score's live key (`src/ui/tonality.ts`).
-> - **Run cards + endless milestones**: shareable canvas cards with ?seed=
->   challenge links; cataclysm-depth and biome-mastery achievements.
+> - **Run cards + endless milestones**: shareable canvas cards (damage profile
+>   + relic loadout) with ?seed= challenge links; cataclysm-depth and
+>   biome-mastery achievements. Run summaries carry the full loadout (relics,
+>   cataclysms) and history remembers where each run happened.
+> - **Victory identity**: the win is scored (bloom + crucible motif), dressed
+>   (gold modal, rising embers, first-win callout), and proven — the e2e suite
+>   pilots a real maxed account through all 24 waves with real commands.
 > Balance discipline throughout: the envelope re-derives when the curve moves
 > intentionally, and every fuzzer-found exploit is tuned away then pinned as a
-> permanent regression genome (three to date: Honed-Arsenal, Bounty-Banner,
-> Mortar-Blizzard).
+> permanent regression genome (four to date: Honed-Arsenal, Bounty-Banner,
+> Mortar-Blizzard, Ember-Maze).
 
 ---
 

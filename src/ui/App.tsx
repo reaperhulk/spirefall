@@ -536,7 +536,10 @@ export default function App() {
   // Repair is a gold trade, not a freebie — surface exactly what a click buys.
   const repairPerHp = repairCostPerHp(state.wave)
   const repairHp = Math.min(REPAIR_MAX_PER_CAST, state.spireMaxHp - state.spireHp, Math.floor(state.gold / repairPerHp))
-  const repairsExhausted = state.phase === 'wave' && state.repairsThisWave >= REPAIR_CASTS_PER_WAVE
+  // Emberbound Crews raises the mid-wave cap — the button must count the
+  // run's REAL budget, not the base constant.
+  const repairCap = REPAIR_CASTS_PER_WAVE + state.mods.repairCasts
+  const repairsExhausted = state.phase === 'wave' && state.repairsThisWave >= repairCap
 
   // Scouting report: deterministic preview of what start_wave will field.
   const preview = state.phase === 'build' && !summary ? previewNextWave(state) : null
@@ -660,8 +663,8 @@ export default function App() {
               state.spireHp >= state.spireMaxHp
                 ? 'The Spire is at full health'
                 : repairsExhausted
-                  ? `Repair crews are spent — ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''} per wave under fire. They recover when the wave clears.`
-                  : `Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs each wave; max ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''} while a wave is live (R)`
+                  ? `Repair crews are spent — ${repairCap} cast${repairCap > 1 ? 's' : ''} per wave under fire. They recover when the wave clears.`
+                  : `Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs each wave; max ${repairCap} cast${repairCap > 1 ? 's' : ''} while a wave is live${state.phase === 'wave' ? ` (${repairCap - state.repairsThisWave} left)` : ''} (R)`
             }
             onClick={() => session.dispatch({ type: 'repair_spire' })}
           >
