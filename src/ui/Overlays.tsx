@@ -607,8 +607,10 @@ function HpSparkline({ hp }: { hp: number[] }) {
 }
 
 const SHORTCUTS: [string, string][] = [
-  ['1–6', 'Arm a tower for placement'],
-  ['Q / W / E', 'Cast Meteor / Frost Nova / Gold Rush'],
+  ['1–7', 'Arm a tower for placement'],
+  ['Q / W / E / F', 'Cast Meteor / Frost Nova / Gold Rush / Bulwark'],
+  ['↑ ↓ ← →', 'Steer the placement cursor while armed'],
+  ['Enter', 'Place / cast at the cursor'],
   ['Space', 'Start the next wave (or begin the next run)'],
   ['U', 'Upgrade / enhance the selected tower'],
   ['X', 'Sell the selected tower'],

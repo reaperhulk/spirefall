@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+124. *(marathon II, iteration 36)* **Shortcuts list truthfulness** —
+    the settings shortcut grid predated the beacon and bulwark: it
+    said 1–6 (there are 7 towers) and Q/W/E (there are 4 abilities).
+    Fixed, and the new aiming keys (arrows + Enter) are documented in
+    the same grid. 193 unit tests, 43 e2e specs.
+
 123. *(marathon II, iteration 35)* **Keyboard-only builds** — placement
     required a pointer; now arming a tower or ability lets the arrow
     keys steer the SAME grid cursor the mouse drives (`hoverRef`, so
