@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+146. *(marathon II, iteration 58)* **Split marks too** — the sibling
+    gap: Amalgam and Gravemind split on death, equally unwarned. A ✂
+    mark now flags split-on-death units with count and child type in
+    the tooltip. E2e checks Gravemind at wave 19 wears BOTH marks
+    (splits and broods). 195 unit tests, 44 e2e specs.
+
 145. *(marathon II, iteration 57)* **Spawner marks in the report** —
     carriers, Gravemind, and Zephyrhost birth enemies while alive and
     the scouting report never warned. A 🐣 mark now flags every brood

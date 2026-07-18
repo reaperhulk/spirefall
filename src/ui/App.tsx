@@ -981,6 +981,15 @@ export default function App() {
                         ◌
                       </span>
                     )}
+                    {ENEMIES[type].splitInto && (
+                      <span
+                        className="brood-mark"
+                        data-testid={`split-mark-${type}`}
+                        title={`Splits on death into ${ENEMIES[type].splitInto.count} ${ENEMIES[ENEMIES[type].splitInto.type].name}s — the kill is not the end of it.`}
+                      >
+                        ✂
+                      </span>
+                    )}
                     {ENEMIES[type].brood && (
                       <span
                         className="brood-mark"

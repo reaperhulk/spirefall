@@ -288,6 +288,15 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
   await expect(page.getByTestId('mech-mark-boss')).toBeVisible()
   await expect(page.getByTestId('mech-mark-boss')).toHaveAttribute('title', /Carapace/)
 
+  // Gravemind at wave 19: the report warns it splits on death AND broods.
+  await page.evaluate(() => {
+    window.__harness.getState().wave = 19
+    window.__harness.fastForward(1)
+  })
+  await expect(page.getByTestId('split-mark-boss2')).toBeVisible()
+  await expect(page.getByTestId('split-mark-boss2')).toHaveAttribute('title', /Splits on death/)
+  await expect(page.getByTestId('brood-mark-boss2')).toBeVisible()
+
   // And the endless-tier phaser: wave 39's preview scouts Veilwarden.
   await page.evaluate(() => {
     window.__harness.getState().wave = 39
