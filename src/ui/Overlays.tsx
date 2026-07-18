@@ -339,6 +339,7 @@ export function RunOverOverlay({
   onBuyEmber,
   onAscend,
   onNextRun,
+  onRematch,
   reducedMotion,
 }: {
   summary: RunSummary
@@ -354,6 +355,7 @@ export function RunOverOverlay({
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
   onNextRun: () => void
+  onRematch: () => void
   reducedMotion: boolean
 }) {
   const victory = summary.outcome === 'victory'
@@ -606,6 +608,16 @@ export function RunOverOverlay({
           )}
           <button className="primary-btn" onClick={onNextRun} data-testid="next-run">
             Begin next run
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={onRematch}
+            data-testid="rematch"
+            title={`Refight the exact battlefield that ${
+              victory ? 'you just conquered' : 'just beat you'
+            } — same layout, same waves${summary.trials.length > 0 ? ', same trials' : ''}. Spire Tree purchases still apply: same wall, stronger you.`}
+          >
+            ⚔ Rematch — same battlefield
           </button>
         </div>
         )}

@@ -367,16 +367,7 @@ export default function App() {
     })
   })
 
-  const beginNextRun = (seed?: string) => {
-    // Daily runs always play the seed's rolled map — the whole point is that
-    // everyone faces the same battlefield.
-    const isDaily = seed === dailySeed()
-    const pref = mapPrefRef.current
-    const biomeOverride = !isDaily && pref !== 'random' ? (pref as BiomeId) : undefined
-    const trials = !isDaily
-      ? trialPrefRef.current.split(',').filter((t): t is TrialId => Object.prototype.hasOwnProperty.call(TRIALS, t))
-      : []
-    const run = createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), biomeOverride, trials)
+  const launchRun = (run: RunState) => {
     const next = new GameSession(run)
     // Update the ref synchronously: the dev harness (window.__harness) reads
     // sessionRef and may be driven immediately after newRun() returns —
@@ -390,6 +381,26 @@ export default function App() {
     setSelectedTowerId(null)
     setShowTree(false)
     persistSave({ version: 1, meta: metaRef.current, run })
+  }
+
+  const beginNextRun = (seed?: string) => {
+    // Daily runs always play the seed's rolled map — the whole point is that
+    // everyone faces the same battlefield.
+    const isDaily = seed === dailySeed()
+    const pref = mapPrefRef.current
+    const biomeOverride = !isDaily && pref !== 'random' ? (pref as BiomeId) : undefined
+    const trials = !isDaily
+      ? trialPrefRef.current.split(',').filter((t): t is TrialId => Object.prototype.hasOwnProperty.call(TRIALS, t))
+      : []
+    launchRun(createRun(metaRef.current, seed ?? newSeed(metaRef.current.runs), biomeOverride, trials))
+  }
+
+  // Rematch: the exact battlefield the ended run fought — same seed, same
+  // biome, same trials — ignoring the Next Run pickers. Meta still applies,
+  // so a rematch after spending sparks IS the rogue-lite promise: same
+  // wall, stronger you.
+  const beginRematch = (s: RunSummary) => {
+    launchRun(createRun(metaRef.current, s.seed, s.biome, s.trials))
   }
 
   const buyMeta = (id: MetaUpgradeId) => {
@@ -1318,6 +1329,7 @@ export default function App() {
           onBuyEmber={buyEmber}
           onAscend={doAscend}
           onNextRun={() => beginNextRun()}
+          onRematch={() => beginRematch(summary)}
           reducedMotion={uiSettings.reducedMotion}
           mapPref={mapPref}
           onMapPref={(v) => {

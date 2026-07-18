@@ -52,6 +52,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+176. *(marathon II, iteration 88)* **Rematch** — the run-over screen
+    could share the battlefield you just lost (challenge link, run
+    card: "think you can go deeper?") but couldn't refight it — the
+    Next Run tab always rolls fresh. One click now relaunches the
+    exact ruleset from the RunSummary (same seed, same biome, same
+    trials — the pickers are ignored), while Spire Tree purchases
+    still apply: same wall, stronger you — the rogue-lite promise in
+    one button. `beginNextRun` refactored around a shared `launchRun`;
+    e2e proves the rematch replays the seed from wave 0 AND that
+    "Begin next run" still rolls fresh afterward; the viewport matrix
+    now checks the button fits at every size. 203 unit tests, 49 e2e
+    specs.
+
 175. *(marathon II, iteration 87)* **The roster can't rot again** —
     iteration 86 fixed three stale anti-air strings by hand; this one
     makes the class of bug impossible. `AA_TOWER_NAMES`/`AA_TOWER_LIST`

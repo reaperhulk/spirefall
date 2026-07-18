@@ -276,6 +276,34 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
+test('rematch: one click refights the exact battlefield, next run still rolls fresh', async ({ page }) => {
+  const errors = await boot(page, 'e2e-rematch')
+  const first = await page.evaluate(() => {
+    const s = window.__harness.getState()
+    return { seed: s.seed, biome: s.biome }
+  })
+  await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  await page.getByTestId('tab-next').click()
+  await page.getByTestId('rematch').click()
+  await expect(page.getByTestId('run-over')).not.toBeVisible()
+  const again = await page.evaluate(() => {
+    const s = window.__harness.getState()
+    return { seed: s.seed, biome: s.biome, wave: s.wave, phase: window.__harness.snapshot().phase }
+  })
+  expect(again.seed).toBe(first.seed) // the SAME battlefield —
+  expect(again.biome).toBe(first.biome)
+  expect(again.wave).toBe(0) // — fought fresh from wave zero.
+  expect(again.phase).toBe('build')
+  // The rematch must not sticky the seed: Begin next run still rolls new.
+  await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  await page.getByTestId('tab-next').click()
+  await page.getByTestId('next-run').click()
+  expect(await page.evaluate(() => window.__harness.getState().seed)).not.toBe(first.seed)
+  expect(errors).toEqual([])
+})
+
 test('wave preview warns about the coming boss mechanic', async ({ page }) => {
   const errors = await boot(page, 'e2e-boss-preview')
   // Jump the schedule to wave 9's build phase: the preview now scouts the
@@ -808,7 +836,7 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
 
       // Next Run is the interactive tab: its pickers and the launch button
       // must sit fully on screen or the player literally cannot start a run.
-      for (const id of ['map-select', 'trial-select', 'next-run']) {
+      for (const id of ['map-select', 'trial-select', 'next-run', 'rematch']) {
         const box = await page.getByTestId(id).boundingBox()
         expect(box, `${id} not rendered`).not.toBeNull()
         expect(box!.x, `${id} clipped left`).toBeGreaterThanOrEqual(-0.5)
