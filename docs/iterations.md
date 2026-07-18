@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+172. *(marathon II, iteration 84)* **Remote CI audit** — every
+    completed main-branch run is green through the Duelist commit
+    (the whole Lance arc verified remotely); iterations 82–83 in
+    flight running suites that passed locally. 202 unit tests, 48
+    e2e specs.
+
 171. *(marathon II, iteration 83)* **The pin roster, stated** — PLAN's
     balance-discipline note counted four pinned genomes; the roster
     is six (…+ Lance-Rush, Ember-Choke), and the note now also names
