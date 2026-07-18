@@ -11,6 +11,7 @@ import {
   relicSkipGold,
   BOONS,
   COMBO_HASTE_THRESHOLD,
+  EXECUTE_THRESHOLD_PCT,
   COMBO_WINDOW_TICKS,
   OVERCHARGE_COOLDOWN_TICKS,
   OVERCHARGE_DAMAGE_PCT,
@@ -500,6 +501,25 @@ export default function App() {
       }
       session.dispatch({ type: 'place_tower', tower: shopSelection, cell })
       return // stay armed for multi-placement
+    }
+    // Execute window: mid-wave, unarmed, clicking a cell holding a wounded
+    // enemy finishes it (the render marks them with a gold ring while the
+    // blade is ready). Towers still win the click if one shares the cell.
+    if (!tower && state.phase === 'wave' && state.executeCd === 0) {
+      const wounded = state.enemies
+        .filter(
+          (e) =>
+            e.hp > 0 &&
+            !e.phased &&
+            e.hp * 100 <= e.maxHp * EXECUTE_THRESHOLD_PCT &&
+            Math.floor(e.pos.x / 1000) === cell.cx &&
+            Math.floor(e.pos.y / 1000) === cell.cy,
+        )
+        .sort((a, b) => a.hp - b.hp)[0]
+      if (wounded) {
+        session.dispatch({ type: 'execute_enemy', id: wounded.id })
+        return
+      }
     }
     setSelectedTowerId(tower ? tower.id : null)
   }

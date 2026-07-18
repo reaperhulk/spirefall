@@ -225,6 +225,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     // opening bell. Skipping is always free; start_wave never gates on it.
     boonOffer: firstBoons.offer,
     activeBoon: null,
+    executeCd: 0,
     availableTowers,
     activeAffix: null,
     cataclysms: [],

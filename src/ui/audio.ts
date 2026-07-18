@@ -35,6 +35,7 @@ type SoundKind =
   | 'coin'
   | 'combo'
   | 'overcharge'
+  | 'execute'
   | 'kill'
   | 'spire_hit'
   | 'wave_cleared'
@@ -132,6 +133,12 @@ const SOUNDS: Record<SoundKind, Note[]> = {
   overcharge: [
     { freq: 500, dur: 0.16, type: 'sine', gain: 0.03, sweep: 2.6, pure: true },
     { freq: 2200, dur: 0.08, type: 'noise', gain: 0.015, q: 5, sweep: 1.4, at: 0.04 },
+  ],
+  // Execute: a heavy blade-fall — deeper and final compared to a kill.
+  execute: [
+    { freq: 130, dur: 0.16, type: 'sine', gain: 0.06, sweep: 0.45, pure: true, attack: 0.002 },
+    { freq: 2600, dur: 0.05, type: 'noise', gain: 0.04, q: 1.2, sweep: 0.3, at: 0 },
+    { freq: 660, dur: 0.12, type: 'fm', gain: 0.04, ratio: 2.756, index: 4, at: 0.02 },
   ],
   // Combo milestone: two quick FM bells a fifth apart — momentum, audibly.
   combo: [
@@ -250,6 +257,7 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
   coin: 120,
   combo: 500,
   overcharge: 150,
+  execute: 200,
 }
 const DEFAULT_MIN_GAP = 140
 
@@ -482,6 +490,9 @@ export class Sfx {
           break
         case 'boon_chosen':
           this.play('relic') // same glass bell — a blessing accepted
+          break
+        case 'enemy_executed':
+          this.play('execute', panFromX(e.at.x))
           break
         default:
           break

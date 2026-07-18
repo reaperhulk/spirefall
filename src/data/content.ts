@@ -410,6 +410,14 @@ export const AA_TOWER_NAMES = Object.values(TOWERS)
   .filter((d) => d.hitsAir && !d.support)
   .map((d) => d.name)
 export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
+// Execute windows: an enemy below the threshold is "wounded" — click it to
+// finish it instantly for its bounty AGAIN as a bonus. One global cooldown
+// gates the blade, so it's a stream of small aimed decisions, not a hose.
+// Skill-clicker layer: ignorable at 10x, lucrative at 1x.
+export const EXECUTE_THRESHOLD_PCT = 15 // wounded = at or below this % of max HP
+export const EXECUTE_COOLDOWN_TICKS = 60 // 2s between executions
+export const EXECUTE_BONUS_PCT = 100 // bonus = the enemy's base bounty again
+
 // Wave boons: every build phase offers two single-wave perks — pick one or
 // just start the wave (skipping is always free; the offer never gates).
 // Wave-scoped by design: a decision every thirty seconds with zero power

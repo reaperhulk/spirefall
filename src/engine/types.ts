@@ -177,6 +177,7 @@ export interface RunState {
   cataclysmOffer: CataclysmId[] | null // endless: two dooms offered, pick one (gates start_wave)
   boonOffer: BoonId[] | null // build phase: two single-wave perks; skipping is free
   activeBoon: BoonId | null // the perk blessing the current wave (cleared at wave end)
+  executeCd: number // global execute-window cooldown (ticks, wave-time only)
   availableTowers: TowerType[]
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
@@ -208,6 +209,7 @@ export type Command =
   | { type: 'sell_tower'; id: number }
   | { type: 'overcharge_tower'; id: number }
   | { type: 'choose_boon'; boon: BoonId }
+  | { type: 'execute_enemy'; id: number }
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
@@ -241,6 +243,7 @@ export type GameEvent =
   | { type: 'combo_milestone'; combo: number } // every COMBO_MILESTONE unbroken kills
   | { type: 'tower_overcharged'; id: number; cell: CellPos }
   | { type: 'boon_chosen'; boon: BoonId }
+  | { type: 'enemy_executed'; id: number; at: Vec; bonus: number }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

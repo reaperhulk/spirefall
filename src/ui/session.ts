@@ -301,6 +301,17 @@ export class GameSession {
           }
           break
         }
+        case 'enemy_executed':
+          this.effects.push({
+            kind: 'float',
+            at: { ...e.at },
+            text: `EXECUTED +${e.bonus}`,
+            color: '#e0af68',
+            t0: now,
+            dur: 900,
+          })
+          this.effects.push({ kind: 'burst', at: { ...e.at }, color: '#e0af68', t0: now, dur: 420 })
+          break
         case 'combo_milestone':
           this.effects.push({
             kind: 'float',

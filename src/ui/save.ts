@@ -173,6 +173,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.boonOffer ??= null
         data.run.activeBoon ??= null
         data.run.rng.boons ??= deriveStream(data.run.seed, 'boons')
+        data.run.executeCd ??= 0
       }
       return data
     }

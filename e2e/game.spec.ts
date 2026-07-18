@@ -281,6 +281,29 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
+test('execute windows: clicking a wounded enemy finishes it for a bonus', async ({ page }) => {
+  const errors = await boot(page, 'e2e-execute')
+  await page.evaluate(() => {
+    window.__harness.dispatch({ type: 'start_wave' })
+    window.__harness.fastForward(3)
+  })
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().enemies.length)).toBeGreaterThan(0)
+  // Wound the lead runner and nail it in place (state surgery is legal).
+  const mark = await page.evaluate(() => {
+    const s = window.__harness.getState()
+    const e = s.enemies[0]!
+    e.hp = 1
+    e.speed = 0
+    return { cx: Math.floor(e.pos.x / 1000), cy: Math.floor(e.pos.y / 1000), id: e.id, gold: s.gold }
+  })
+  await clickCell(page, mark.cx, mark.cy)
+  // The blade falls: enemy gone, bonus banked, cooldown running.
+  await expect.poll(async () => page.evaluate(() => window.__harness.getState().executeCd)).toBeGreaterThan(0)
+  expect(await page.evaluate((id) => window.__harness.getState().enemies.some((e) => e.id === id), mark.id)).toBe(false)
+  expect(await page.evaluate(() => window.__harness.getState().gold)).toBeGreaterThan(mark.gold)
+  expect(errors).toEqual([])
+})
+
 test('wave boons: pick one, it blesses exactly one wave, skipping is free', async ({ page }) => {
   const errors = await boot(page, 'e2e-boons')
   await expect(page.getByTestId('boon-offer')).toBeVisible()

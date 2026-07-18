@@ -1,4 +1,12 @@
-import { ABILITIES, ENEMIES, LANCE_MAX_STACKS, towerTier, VETERANCY_TIERS, veterancyStars } from '../data/content'
+import {
+  ABILITIES,
+  ENEMIES,
+  EXECUTE_THRESHOLD_PCT,
+  LANCE_MAX_STACKS,
+  towerTier,
+  VETERANCY_TIERS,
+  veterancyStars,
+} from '../data/content'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
@@ -1207,6 +1215,7 @@ function roundRect(
 // fast-forward), each offset by id so packs don't march in lockstep.
 function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void {
   const t0 = animTime(session)
+  const state = session.state
   const alpha = session.alpha
   const prevById = new Map<number, Enemy>()
   for (const p of session.prev.enemies) prevById.set(p.id, p)
@@ -1536,6 +1545,23 @@ function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession): void 
       ctx.fillRect(x - r, y - r - 6, bw, 3)
       ctx.fillStyle = frac > 0.5 ? COLORS.hpFill : frac > 0.25 ? '#e0af68' : '#db4b4b'
       ctx.fillRect(x - r, y - r - 6, bw * frac, 3)
+    }
+
+    // Execute window: while the blade is ready, a wounded enemy wears a
+    // pulsing gold ring — click it to finish it. Ring gone = blade cooling.
+    if (
+      state.executeCd === 0 &&
+      !e.phased &&
+      e.hp > 0 &&
+      e.hp * 100 <= e.maxHp * EXECUTE_THRESHOLD_PCT
+    ) {
+      ctx.strokeStyle = '#e0af68'
+      ctx.globalAlpha = 0.55 + 0.3 * Math.sin(t0 * 0.3)
+      ctx.setLineDash([3, 3])
+      circle(ctx, x, y, r + 4)
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.globalAlpha = 1
     }
   }
 }

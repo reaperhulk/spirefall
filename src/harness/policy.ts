@@ -1,7 +1,7 @@
 import type { MetaUpgradeId } from '../data/metaTree'
 import { META_TREE } from '../data/metaTree'
 import { nextInt, type Rng } from '../engine/rng'
-import { BOON_IDS, type BoonId, TOWERS } from '../data/content'
+import { BOON_IDS, type BoonId, EXECUTE_THRESHOLD_PCT, TOWERS } from '../data/content'
 import type { RelicId, RunState, Targeting, TowerType } from '../engine/types'
 import { type Bot, type BuildKnobs, buildActions, RELIC_PRIORITY, waveActions } from './bots'
 import { PLACEMENT_STRATEGIES, type PlacementStrategy } from './placement'
@@ -40,6 +40,9 @@ export interface PolicyGenome {
   overchargePolicy?: 'never' | 'boss' | 'ready'
   // Boon doctrine: preference ranking over BOON_IDS; absent = always skip.
   boonPriority?: BoonId[]
+  // Execute doctrine: true = finish every ready wounded enemy (the
+  // attention-free ceiling). Absent/false = never.
+  executeReady?: boolean
 }
 
 const OVERCHARGE_POLICIES = ['never', 'boss', 'ready'] as const
@@ -124,6 +127,8 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
   r = oc.rng
   const boons = shuffled(r, BOON_IDS)
   r = boons.rng
+  const exec = draw(r, 0, 1)
+  r = exec.rng
   return {
     genome: {
       ratio,
@@ -145,6 +150,7 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
       targetingByType,
       overchargePolicy: oc.value,
       boonPriority: boons.value,
+      executeReady: exec.value === 1,
     },
     rng: r,
   }
@@ -158,7 +164,7 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
   const count = draw(r, 1, 3)
   r = count.rng
   for (let i = 0; i < count.value; i++) {
-    const which = draw(r, 0, 12)
+    const which = draw(r, 0, 13)
     r = which.rng
     switch (which.value) {
       case 0: {
@@ -261,6 +267,10 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
         g.boonPriority = b.value
         break
       }
+      case 13: {
+        g.executeReady = !(g.executeReady ?? false)
+        break
+      }
     }
   }
   return { genome: g, rng: r }
@@ -323,6 +333,12 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
           if (TOWERS[t.type].support || t.overcharged || (t.overchargeCd ?? 0) > 0) continue
           acts.push({ type: 'overcharge_tower', id: t.id })
         }
+      }
+      if (genome.executeReady && state.executeCd === 0) {
+        const wounded = state.enemies.find(
+          (e) => e.hp > 0 && !e.phased && e.hp * 100 <= e.maxHp * EXECUTE_THRESHOLD_PCT,
+        )
+        if (wounded) acts.push({ type: 'execute_enemy', id: wounded.id })
       }
       return acts
     }

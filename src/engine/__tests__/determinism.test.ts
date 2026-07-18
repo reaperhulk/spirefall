@@ -84,6 +84,7 @@ describe('determinism', () => {
         type: fc.constant('choose_boon' as const),
         boon: fc.constantFrom('sharpened', 'swift', 'frosted', 'bounty') as fc.Arbitrary<'sharpened'>,
       }),
+      fc.record({ type: fc.constant('execute_enemy' as const), id: fc.integer({ min: 0, max: 400 }) }),
       fc.record({
         type: fc.constant('set_targeting' as const),
         id: fc.integer({ min: 0, max: 50 }),

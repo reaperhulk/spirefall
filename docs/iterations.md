@@ -52,6 +52,21 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+193. *(active-play package, 6/7)* **Execute windows** — an enemy at
+    ≤15% health wears a pulsing gold ring while the blade is ready:
+    click it (mid-wave, unarmed) to finish it instantly, banking its
+    base bounty AGAIN as a bonus. One global 2s cooldown makes it a
+    stream of small aimed decisions, not a hose; phased wraiths are
+    beyond reach; towers win the click if one shares the cell. The
+    kill books through collectDead like any other (bounty, combo,
+    tallies) — the bonus is the aimed hand's cut. New `execute_enemy`
+    command + `executeCd` in RunState (goldens stateHash-only),
+    blade-fall sound, EXECUTED float + gold burst, codex entry,
+    fuzzer executeReady gene + mutation axis (attention-free
+    ceiling). E2e wounds a live runner by surgery and clicks it dead.
+    Suites verified by real exit codes now. 228 unit tests, 52 e2e
+    specs.
+
 192. *(active-play package, 5/7)* **Wave boons** — every build phase
     offers two single-wave blessings (Sharpened Steel +15% damage,
     Swift Sigils +1 ability recovery/tick, Hoarfrost Wind 10% slower

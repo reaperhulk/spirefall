@@ -9,6 +9,9 @@ import {
   ENEMIES,
   enhanceCost,
   COMBO_WINDOW_TICKS,
+  EXECUTE_BONUS_PCT,
+  EXECUTE_COOLDOWN_TICKS,
+  EXECUTE_THRESHOLD_PCT,
   hpGrowthPct,
   RELIC_IDS,
   DEEP_POCKETS_GOLD_PCT,
@@ -110,6 +113,8 @@ export function step(state: RunState, commands: Command[]): StepResult {
     s.comboTicks -= 1
     if (s.comboTicks === 0) s.combo = 0
   }
+  // The execute blade recovers on wave time, like everything active.
+  if (s.phase === 'wave' && s.executeCd > 0) s.executeCd -= 1
 
   tickStatuses(s)
   return { state: s, events }
@@ -232,6 +237,23 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.activeBoon = command.boon
       s.boonOffer = null
       events.push({ type: 'boon_chosen', boon: command.boon })
+      return
+    }
+
+    case 'execute_enemy': {
+      if (s.phase !== 'wave') return reject(command, 'nothing to execute outside a wave', events)
+      if (s.executeCd > 0) return reject(command, 'the blade is not ready', events)
+      const enemy = s.enemies.find((e) => e.id === command.id)
+      if (!enemy || enemy.hp <= 0) return reject(command, 'no such enemy', events)
+      if (enemy.phased) return reject(command, 'nothing hits what is not there', events)
+      if (enemy.hp * 100 > enemy.maxHp * EXECUTE_THRESHOLD_PCT) return reject(command, 'not wounded enough', events)
+      // The finish: hp to zero — collectDead books the kill exactly like any
+      // other (bounty, combo, tallies) — plus the bonus for the aimed hand.
+      const bonus = Math.floor((ENEMIES[enemy.type].bounty * EXECUTE_BONUS_PCT) / 100)
+      enemy.hp = 0
+      s.gold += bonus
+      s.executeCd = EXECUTE_COOLDOWN_TICKS
+      events.push({ type: 'enemy_executed', id: enemy.id, at: { ...enemy.pos }, bonus })
       return
     }
 

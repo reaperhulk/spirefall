@@ -4,6 +4,8 @@ import {
   ABILITIES,
   COMBO_HASTE_THRESHOLD,
   COMBO_WINDOW_TICKS,
+  EXECUTE_COOLDOWN_TICKS,
+  EXECUTE_THRESHOLD_PCT,
   OVERCHARGE_COOLDOWN_TICKS,
   OVERCHARGE_DAMAGE_PCT,
   AFFIXES,
@@ -152,6 +154,10 @@ const MECHANICS: MechanicEntry[] = [
   {
     title: 'Repair',
     body: `Repair mends up to ${REPAIR_MAX_PER_CAST} HP per cast and the price per HP climbs each wave. While a wave is live, repair crews manage only ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''}; they recover when it clears. The Spire also knits ${WAVE_CLEAR_KNIT_HP} HP on its own after every cleared wave.`,
+  },
+  {
+    title: 'Execute windows',
+    body: `An enemy at or below ${EXECUTE_THRESHOLD_PCT}% health wears a pulsing gold ring — click it to finish it instantly and pocket its base bounty AGAIN as a bonus. One blade, ${EXECUTE_COOLDOWN_TICKS / 30}s between falls; phased wraiths are beyond its reach. Ignorable at 10×, lucrative at 1×.`,
   },
   {
     title: 'Wave boons',
