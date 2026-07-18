@@ -237,9 +237,20 @@ export class GameSession {
           stampDecal(`${this.state.biome}:${this.state.mapId}`, this.state.seed, e.at, enemyColor(e.enemy))
           if (this.speed <= 3) {
             this.effects.push({ kind: 'burst', at: e.at, color: enemyColor(e.enemy), t0: now, dur: 380 })
-            // Rich kills glint — a coin pops where an elite fell.
-            if (e.bounty >= 3) {
-              this.effects.push({ kind: 'coin', from: e.at, to: e.at, t0: now, dur: 500 })
+            // Every kill showers its bounty as coins — a golden-angle
+            // scatter with a little hop, richer kills raining more. The
+            // money you earn is money you SEE hit the ground.
+            const coins = Math.min(5, 1 + Math.floor(e.bounty / 2))
+            for (let i = 0; i < coins; i++) {
+              const a = i * 2.399963 + (e.at.x % 7)
+              const r = 450 + (i % 3) * 250
+              this.effects.push({
+                kind: 'coin',
+                from: { ...e.at },
+                to: { x: e.at.x + Math.round(Math.cos(a) * r), y: e.at.y + Math.round(Math.sin(a) * r) },
+                t0: now + i * 40,
+                dur: 550,
+              })
             }
             this.effects.push({
               kind: 'float',

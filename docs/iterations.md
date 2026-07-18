@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+197. *(active-play, coin shower — user feedback)* **Deaths rain
+    gold** — the coin economy piece only glinted a single coin on
+    elite kills; ordinary deaths paid invisibly. Now EVERY kill
+    showers its bounty: 1–5 coins (scaling with bounty) scatter from
+    the death point on a golden-angle spread with the lobbed-hop
+    coin renderer, staggered 40ms apart — deterministic (position-
+    seeded angles, no randomness), suppressed above 3× speed like
+    every per-kill effect. Mint payouts keep their arc to the
+    treasury. Render-only; goldens untouched. 233 unit tests, 53
+    e2e specs.
+
 196. *(active-play package, beam rework — user feedback)* **The line
     you see burns, the button tells the time, the thumb is a first-
     class hand** — three reported confusions, three fixes. (1) The
