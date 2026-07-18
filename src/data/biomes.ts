@@ -51,10 +51,10 @@ export const BIOMES: Record<BiomeId, BiomeDef> = {
   emberwaste: {
     name: 'Ember Waste',
     description:
-      'Scorched ground riven with fissures that erupt every few seconds, searing ground enemies near them. Sparse cover — the land fights, but it will not maze.',
+      'Scorched ground riven with fissures that erupt every few seconds, searing ground enemies near them. Slag heaps break the open ground — the land fights, and it will not be walled.',
     unlockHint: 'Win a run',
-    rockClusters: [1, 3],
-    rockClusterSize: [2, 4],
+    rockClusters: [4, 7],
+    rockClusterSize: [2, 5],
     marshBlobs: [0, 0],
     marshBlobSize: [0, 0],
     mesaClusters: [0, 0],

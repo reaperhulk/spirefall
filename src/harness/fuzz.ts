@@ -1,3 +1,4 @@
+import type { BiomeId } from '../data/biomes'
 import { createMeta, createRun } from '../engine/meta'
 import { deriveStream } from '../engine/rng'
 import type { MetaState, TowerType } from '../engine/types'
@@ -41,6 +42,10 @@ export interface FuzzOptions {
   seeds: string[]
   population: number
   generations: number
+  // Battlefield to hunt on. Default verdant — but feature biomes have their
+  // own exploit surface (marsh choke points, mesa range, vent damage), so
+  // deep hunts should sweep them too (FUZZ_BIOME env in the CI test).
+  biome?: BiomeId | undefined
 }
 
 export interface FuzzResult {
@@ -82,10 +87,10 @@ function metaFor(budget: number, priority: PolicyGenome['metaPriority']): MetaSt
   return spendSparks({ ...createMeta(), sparks: budget }, priority)
 }
 
-function evaluate(genome: PolicyGenome, budget: number, seeds: string[]): EvalOutcome[] {
+function evaluate(genome: PolicyGenome, budget: number, seeds: string[], biome?: BiomeId): EvalOutcome[] {
   const bot = makePolicyBot(genome)
   return seeds.map((seed) => {
-    const { state } = autoplay(createRun(metaFor(budget, genome.metaPriority), seed), bot, MAX_TICKS)
+    const { state } = autoplay(createRun(metaFor(budget, genome.metaPriority), seed, biome), bot, MAX_TICKS)
     return {
       wavesCleared: state.wavesCleared,
       outcome: state.phase === 'victory' ? ('victory' as const) : ('defeat' as const),
@@ -137,7 +142,7 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
   for (const budget of opts.budgets) {
     for (const seed of opts.seeds) {
       const meta = budget <= 0 ? createMeta() : spendSparks({ ...createMeta(), sparks: budget }, DEFAULT_BUY_PRIORITY)
-      const { state } = autoplay(createRun(meta, seed), BOTS.balanced, MAX_TICKS)
+      const { state } = autoplay(createRun(meta, seed, opts.biome), BOTS.balanced, MAX_TICKS)
       reference.set(`${budget}:${seed}`, state.wavesCleared)
     }
   }
@@ -177,7 +182,7 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
 
     for (let gen = 0; gen < opts.generations; gen++) {
       for (const member of population) {
-        const runs = evaluate(member.genome, budget, opts.seeds)
+        const runs = evaluate(member.genome, budget, opts.seeds, opts.biome)
         evaluated += runs.length
         member.score = record(member.genome, budget, runs)
         const key = archetype(member.genome)

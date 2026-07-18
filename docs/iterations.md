@@ -38,11 +38,41 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
-> **Marathon II backlog** (revised every iteration): shareable replays ✓;
-> boss roster +2; Crucible named tiers; wave-preview boss-mech warnings;
-> relic codex tab; run-history sparkline; new affixes; new trials;
-> achievement toasts; low-end render perf pass; continuous re-planning
-> from playtests and fuzz hunts.
+> **Marathon II backlog** (re-derived at iteration 10; revised every
+> iteration): fuzz sweeps on non-verdant biomes (the evolutionary search
+> only ever plays verdant — feature-biome exploits are unsearched);
+> music phrase pools (two progressions per biome, ~90s form); phasing
+> tell in the wave preview (wraiths/Veilwarden punish burst comps
+> unannounced); save-code compression via CompressionStream (shorter
+> codes, enables replay URLs); debug spawn hook + true horde perf
+> measurement; 320px small-phone audit; beacon/mint identity polish;
+> App.tsx/styles.css size check & split.
+> Completed 1–10: shareable replays, boss-mech preview warnings,
+> endless bosses ×2, relic codex, career sparkline, No Mercy trial,
+> Shielded affix (+ dilution lesson + mortar trim), named Crucible
+> tiers, 4 new achievements, render-perf measurement.
+
+99. *(marathon II, iteration 11)* **Biome fuzzing finds the maze farm;
+    geometry kills it; a counter-experiment fails honestly** — fuzzBuilds
+    gained a `biome` option (FUZZ_BIOME env) because the evolutionary
+    search had only ever played verdant. The FIRST emberwaste hunt (60
+    runs) found a breaking 8k victory: a mazeLengthen sniper/arrow comp
+    stretching the natural 26-cell walk to 54 on the old "sparse cover"
+    open field. Ablations: pathAdjacent-on-ember loses, maze-on-verdant
+    loses, vents ZEROED still wins — pure geometry, vents innocent (an
+    early vent-damage haircut was reverted as unjustified). Fix that
+    held: slag heaps — emberwaste rockClusters [1,3] → [4,7] breaks long
+    serpentines (same build now caps ~34 path; defeat @ 23/22), identity
+    reworded "the land fights, and it will not be walled". EXPERIMENT
+    THAT FAILED: a maze→flier wave bias ("the sky answers the maze") —
+    reverted after it backfired twice: incidental path-adjacent stretch
+    (~148%) reshuffled every baseline, and worse, air-heavy waves are a
+    GIFT to anti-air comps — two old pinned genomes started WINNING at
+    5k on gamma because the "punishment" fed them budget-inefficient
+    fliers. Lesson logged: a counter-mechanic must be a threat to the
+    comp it counters, not a comp-shift. EMBER_MAZE pinned as the fourth
+    regression genome (defeat on ember alpha+gamma @ 8k). Goldens
+    untouched. 191 unit tests, 34 e2e specs.
 
 98. *(marathon II, iteration 10)* **Render-perf measurement pass** —
     frame-time probes in headless Chromium at deviceScaleFactor 2:

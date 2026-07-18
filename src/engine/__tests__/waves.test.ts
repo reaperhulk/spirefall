@@ -77,8 +77,8 @@ describe('wave generation', () => {
 
 describe('boss roster', () => {
   it('boss waves rotate through the roster deterministically', () => {
-    const rng = deriveStream('boss-rotation', 'waves')
     const bossOf = (wave: number) => {
+      const rng = deriveStream(`boss-${wave}`, 'waves')
       const gen = generateWave(rng, wave, 5000)
       const bosses = gen.spawns.filter((s) => s.type.startsWith('boss'))
       expect(bosses.length, `wave ${wave}`).toBe(1)
@@ -91,4 +91,6 @@ describe('boss roster', () => {
     expect(bossOf(50)).toBe('boss5')
     expect(bossOf(60)).toBe('boss') // and around again
   })
+
+
 })

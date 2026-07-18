@@ -180,6 +180,53 @@ describe('build fuzzer', () => {
     }
   }, 300_000)
 
+  // Fourth pinned find (2026-07, the first BIOME hunt): a mazeLengthen
+  // sniper/arrow comp on Ember Waste. The old "sparse cover" emberwaste was
+  // an open field — exactly what an unconstrained serpentine loves — and 21
+  // towers stretched the natural 26-cell walk to 54, winning at 8k on
+  // alpha. Killed by slag-heap geometry (rockClusters [1,3] → [4,7] breaks
+  // long serpentines; the same build now caps near path 34) with the
+  // maze→flier bias standing guard against low-anti-air maze comps
+  // everywhere. This pin holds both.
+  const EMBER_MAZE: PolicyGenome = {
+    ratio: { arrow: 7, cannon: 3, frost: 3, tesla: 0, sniper: 8, mint: 5, beacon: 6 },
+    earlyType: 'arrow',
+    upgradeAtTowers: 9,
+    targetBase: 2,
+    targetPerWave: 2,
+    targetMax: 21,
+    enhanceStrategy: 'cheapest',
+    repairDeficit: 1,
+    repairMinGold: 210,
+    waveRepairPct: 30,
+    specChoice: 1,
+    relicPriority: [
+      'last_stand', 'overcharge', 'deep_pockets', 'cinder_shells', 'prism_lens', 'echo_chamber',
+      'ricochet_strings', 'overclock', 'shatter', 'stoneskin', 'quickdraw', 'golden_touch',
+      'executioners_seal', 'keen_sights', 'deadeye_sigil', 'soul_harvest', 'piercing_arrows',
+      'shatterheart', 'storm_coils', 'colossus', 'field_medicine', 'winters_grip', 'glass_cannon',
+      'bounty_banner', 'golden_ledger', 'mint_condition', 'spark_siphon', 'longsight',
+      'fortune_idol', 'heavy_powder',
+    ],
+    metaPriority: [
+      'gold_income', 'tower_damage', 'spark_gain', 'crit_chance', 'unlock_tesla', 'wave_skip',
+      'spire_hp', 'starting_gold', 'unlock_mint', 'unlock_bulwark', 'unlock_beacon', 'unlock_gold_rush',
+    ],
+    placement: 'mazeLengthen',
+    specByType: { arrow: 0, cannon: 1, frost: 0, tesla: 0, sniper: 0, mint: 0, beacon: 0 },
+    enhanceFocus: 'focus',
+    targetingByType: { arrow: 'weakest', cannon: 'strongest', frost: 'first', sniper: 'elites', mint: 'first', beacon: 'nearest' },
+  }
+
+  it('pinned find: the Ember Waste maze comp stays contained', () => {
+    const bot = makePolicyBot(EMBER_MAZE)
+    for (const seed of ['alpha', 'gamma']) {
+      const meta = spendSparks({ ...createMeta(), sparks: 8000 }, EMBER_MAZE.metaPriority)
+      const { state } = autoplay(createRun(meta, seed, 'emberwaste'), bot, 120_000)
+      expect(state.phase, `emberwaste ${seed} @ 8000 sparks`).toBe('defeat')
+    }
+  }, 300_000)
+
   it('pinned genomes stay contained on the feature biomes', () => {
     // The biome features are all player-favorable in isolation (free slow,
     // free damage, +range high ground). This pins that neither known
@@ -195,12 +242,15 @@ describe('build fuzzer', () => {
   }, 600_000)
 
   it('sweep finds no curve-breaking build (deep mode: npm run fuzz:builds)', () => {
+    const biome = process.env['FUZZ_BIOME'] as import('../../data/biomes').BiomeId | undefined
+    if (biome) console.log(`fuzz sweep biome: ${biome}`)
     const result = fuzzBuilds({
       fuzzSeed: process.env['FUZZ_SEED'] ?? 'ci-sweep',
       budgets: (process.env['FUZZ_BUDGETS'] ?? '8000').split(',').map(Number),
       seeds: (process.env['FUZZ_SEEDS'] ?? 'alpha,gamma').split(','),
       population: Number(process.env['FUZZ_POP'] ?? 6),
       generations: Number(process.env['FUZZ_GENS'] ?? 2),
+      biome,
     })
     for (const f of result.findings) {
       console.log(
