@@ -164,7 +164,10 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
         enhance: 0,
         cell: { ...command.cell },
         cooldown: 0,
-        targeting: 'first',
+        // The lance's whole identity is holding one mark — 'first' would
+        // bounce its ramp off every fresh spawn. It ships aimed at the
+        // strongest; everything else keeps the classic default.
+        targeting: command.tower === 'lance' ? 'strongest' : 'first',
         kills: 0,
         damageDealt: 0,
         shots: 0,

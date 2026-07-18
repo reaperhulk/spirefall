@@ -277,6 +277,17 @@ describe('the Lance: ramp on a held target', () => {
     expect(pierced.hp).toBe(1000 - 30) // Skewer ignores the wall
   })
 
+  it("a placed lance defaults to Strongest targeting — 'first' would bounce the ramp", () => {
+    const s = createRun(createMeta(), 'lance-default')
+    s.gold = 1000
+    s.availableTowers.push('lance')
+    const cell = { cx: 3, cy: 3 }
+    const placedLance = step(s, [{ type: 'place_tower', tower: 'lance', cell }]).state
+    expect(placedLance.towers[0]!.targeting).toBe('strongest')
+    const placedArrow = step(s, [{ type: 'place_tower', tower: 'arrow', cell }]).state
+    expect(placedArrow.towers[0]!.targeting).toBe('first')
+  })
+
   it("Duelist's Oath keeps half the ramp across a switch", () => {
     const a = enemy({ id: 1, hp: 200_000, maxHp: 200_000 })
     const b = enemy({ id: 2, hp: 100_000, maxHp: 100_000, pos: cellCenter({ cx: 6, cy: 6 }) })

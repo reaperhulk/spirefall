@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+173. *(marathon II, iteration 85)* **The lance ships aimed right** —
+    the codex told players to set Strongest targeting; the tower
+    spawned on 'first', bouncing its ramp off every fresh runner. A
+    placed lance now defaults to Strongest (everything else keeps the
+    classic default). Goldens hold — no named bot builds lances; the
+    pins set lance targeting explicitly. 203 unit tests, 48 e2e
+    specs.
+
 172. *(marathon II, iteration 84)* **Remote CI audit** — every
     completed main-branch run is green through the Duelist commit
     (the whole Lance arc verified remotely); iterations 82–83 in
