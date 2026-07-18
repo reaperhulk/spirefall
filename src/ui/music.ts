@@ -3,14 +3,18 @@ import type { RunState } from '../engine/types'
 import type { Sfx } from './audio'
 import { settings } from './settings'
 
-// Generative score — zero assets, same philosophy as the SFX stack. Three
-// layers over a lookahead scheduler: a slow two-voice drone pad, a sparse
-// pentatonic/modal arpeggio, and a bass-plus-hat pulse that only wakes when
-// the fight heats up. INTENSITY is derived from live game state (phase,
-// horde size, boss presence, spire health) and eased, so the score swells
-// into a wave and exhales when it clears. Each biome owns a mode and
-// register; the run seed transposes the key, so no two runs sit on the same
-// root but a given run is musically consistent.
+// Generative score — zero assets, same philosophy as the SFX stack. The
+// music is built on actual harmonic motion, not a drone: a per-biome chord
+// PROGRESSION advances every bar, the pad voices glide between chords and
+// breathe (swell on the downbeat, relax through the bar), a bass line walks
+// the chord roots, and a melody plays seeded rhythm patterns whose notes
+// land on chord tones on strong beats and walk the scale between them,
+// echoed through a tempo-synced feedback delay. INTENSITY is derived from
+// live game state (phase, horde size, boss presence, spire health) and
+// eased, so the score thickens into a wave and exhales when it clears.
+// Each biome owns a mode, register, and progression; the run seed
+// transposes the key and salts the rhythm patterns, so no two runs sit on
+// the same root but a given run is musically consistent.
 //
 // UI-layer module: Math.random is fine here (humanization), and the sim
 // never sees any of it. The score rides the Sfx's AudioContext so the
@@ -31,6 +35,16 @@ const BIOME_ROOT: Record<BiomeId, number> = {
   highlands: 50, // D3
 }
 
+// Chord progressions as scale-degree roots, one chord per bar. Chords are
+// stacked in SCALE space (every other degree), which yields proper triads
+// on the 7-note mode and open quartal colors on the pentatonics.
+const BIOME_PROGRESSION: Record<BiomeId, number[]> = {
+  verdant: [0, 3, 4, 1], // I – V – vi – ii: warm, keeps turning over
+  frostfen: [0, 2, 4, 3], // minor drift that never quite resolves
+  emberwaste: [0, 1, 0, 3], // the phrygian b2 lean — menace, release, menace
+  highlands: [0, 5, 3, 4], // I – vi – IV – V over mixolydian
+}
+
 const midiHz = (m: number): number => 440 * Math.pow(2, (m - 69) / 12)
 
 function hashSeed(seed: string): number {
@@ -43,20 +57,35 @@ function hashSeed(seed: string): number {
 }
 
 const BEAT = 60 / 88 / 2 // 88 BPM, eighth-note grid
+const STEPS_PER_BAR = 8
+
+// One-bar rhythm masks for the melody. Which mask a bar uses rotates with
+// the bar index salted by the run seed, so phrases repeat enough to feel
+// composed but not enough to loop obviously.
+const RHYTHMS: number[][] = [
+  [1, 0, 0, 0, 1, 0, 1, 0],
+  [1, 0, 1, 0, 0, 0, 1, 0],
+  [0, 0, 1, 0, 1, 0, 0, 1],
+  [1, 0, 0, 1, 0, 1, 0, 0],
+  [1, 0, 1, 1, 0, 0, 1, 0],
+  [0, 1, 0, 0, 1, 0, 1, 1],
+]
 
 export class Music {
   private sfx: Sfx
   private getState: (() => RunState) | null = null
   private boundCtx: AudioContext | null = null
   private bus: GainNode | null = null
+  private echoSend: GainNode | null = null
   private padOsc: OscillatorNode[] = []
   private padGain: GainNode | null = null
   private padFilter: BiquadFilterNode | null = null
   private nextNoteAt = 0
-  private stepIndex = 0
+  private totalStep = 0
+  private melodyPos = 0 // scale-space index (degree + octave·scale-length)
   private intensity = 0.15
+  private padLevel = 0
   private timer: ReturnType<typeof setInterval> | null = null
-  private lastKey = ''
 
   constructor(sfx: Sfx) {
     this.sfx = sfx
@@ -70,7 +99,7 @@ export class Music {
     }
   }
 
-  // Rebind to the Sfx's (possibly recreated) context and rebuild the pad.
+  // Rebind to the Sfx's (possibly recreated) context and rebuild the graph.
   private ensureGraph(): AudioContext | null {
     const ctx = this.sfx.currentContext()
     if (!ctx || ctx.state !== 'running') return null
@@ -95,15 +124,30 @@ export class Music {
     this.padGain.gain.value = 0
     this.padFilter.connect(this.padGain)
     this.padGain.connect(this.bus)
+    // Tempo-synced feedback echo for the melody: dotted-eighth repeats,
+    // low-passed so the tails sit behind the dry notes instead of on them.
+    this.echoSend = ctx.createGain()
+    this.echoSend.gain.value = 0.4
+    const delay = ctx.createDelay(2)
+    delay.delayTime.value = BEAT * 3
+    const damp = ctx.createBiquadFilter()
+    damp.type = 'lowpass'
+    damp.frequency.value = 2400
+    const feedback = ctx.createGain()
+    feedback.gain.value = 0.35
+    this.echoSend.connect(delay)
+    delay.connect(damp)
+    damp.connect(feedback)
+    feedback.connect(delay)
+    damp.connect(this.bus)
     this.nextNoteAt = ctx.currentTime + 0.1
-    this.lastKey = '' // force pad retune
     return ctx
   }
 
   private tick(): void {
     const ctx = this.ensureGraph()
     const state = this.getState?.()
-    if (!ctx || !state || !this.bus || !this.padGain || !this.padFilter) return
+    if (!ctx || !state || !this.bus) return
 
     // Master music level: player slider × mute, eased so changes glide.
     const muted = this.sfx.muted || settings.musicVolume <= 0
@@ -122,78 +166,133 @@ export class Music {
     }
     if (over) target = 0.05
     this.intensity += (target - this.intensity) * 0.12
+    // The pad's resting level; the per-bar swell breathes around it.
+    this.padLevel = 0.2 + this.intensity * 0.15
 
-    // Key: biome mode + seed transpose. Retune the pad when it changes.
+    // Key: biome mode + seed transpose; seed also salts the rhythm rotation.
     const biome: BiomeId = BIOME_IDS.includes(state.biome) ? state.biome : 'verdant'
-    const transpose = hashSeed(state.seed) % 12
-    const root = BIOME_ROOT[biome] + transpose
+    const seedHash = hashSeed(state.seed)
+    const root = BIOME_ROOT[biome] + (seedHash % 12)
     const scale = BIOME_SCALE[biome]
-    const key = `${biome}:${transpose}`
-    if (key !== this.lastKey) {
-      this.lastKey = key
-      this.retunePad(ctx, root)
-    }
-    this.padGain.gain.setTargetAtTime(0.5 + this.intensity * 0.3, ctx.currentTime, 1.2)
-    this.padFilter.frequency.setTargetAtTime(400 + this.intensity * 1400, ctx.currentTime, 0.8)
+    const prog = BIOME_PROGRESSION[biome]
 
     // Schedule the eighth-note grid up to 0.6s ahead.
     while (this.nextNoteAt < ctx.currentTime + 0.6) {
-      this.scheduleStep(ctx, this.nextNoteAt, root, scale, bossAlive)
+      this.scheduleStep(ctx, this.nextNoteAt, root, scale, prog, (seedHash >>> 4) % RHYTHMS.length, bossAlive)
       this.nextNoteAt += BEAT
-      this.stepIndex = (this.stepIndex + 1) % 16
+      this.totalStep += 1
     }
   }
 
-  private retunePad(ctx: AudioContext, root: number): void {
-    if (!this.padFilter) return
-    this.padOsc.forEach((o) => {
-      try {
-        o.stop()
-      } catch {
-        // already stopped
-      }
-    })
-    this.padOsc = []
-    for (const [offset, detune] of [
-      [0, -4],
-      [7, 4],
-    ] as const) {
-      const osc = ctx.createOscillator()
-      osc.type = 'sawtooth'
-      osc.frequency.value = midiHz(root + offset)
-      osc.detune.value = detune
-      osc.connect(this.padFilter)
-      osc.start()
-      this.padOsc.push(osc)
+  private scheduleStep(
+    ctx: AudioContext,
+    at: number,
+    root: number,
+    scale: number[],
+    prog: number[],
+    rhythmSalt: number,
+    bossAlive: boolean,
+  ): void {
+    if (!this.bus || !this.padGain || !this.padFilter) return
+    const len = scale.length
+    const bar = Math.floor(this.totalStep / STEPS_PER_BAR)
+    const step = this.totalStep % STEPS_PER_BAR
+    const chordDegree = prog[bar % prog.length]!
+    // A chord tone, stacked in scale space: k=0 root, k=1 "third", k=2 "fifth".
+    const tone = (deg: number, k: number): number => {
+      const off = deg + 2 * k
+      return root + scale[off % len]! + 12 * Math.floor(off / len)
     }
-  }
 
-  private scheduleStep(ctx: AudioContext, at: number, root: number, scale: number[], bossAlive: boolean): void {
-    if (!this.bus) return
-    const step = this.stepIndex
-
-    // Bass: the root on each bar, once the fight is real.
-    if (step % 8 === 0 && this.intensity > 0.3) {
-      this.blip(ctx, at, midiHz(root - 12), 0.5, 'sine', 0.5)
+    if (step === 0) {
+      // Chord change: glide the pad voices to the new chord, swell the level
+      // on the downbeat and relax through the bar (breathing, not droning),
+      // and let the filter bloom open then settle.
+      this.tunePad(ctx, at, [tone(chordDegree, 0), tone(chordDegree, 1), tone(chordDegree, 2)])
+      this.padGain.gain.setTargetAtTime(this.padLevel, at, 0.3)
+      this.padGain.gain.setTargetAtTime(this.padLevel * 0.65, at + BEAT * 4, 0.9)
+      this.padFilter.frequency.setTargetAtTime(700 + this.intensity * 1600, at, 0.06)
+      this.padFilter.frequency.setTargetAtTime(380 + this.intensity * 1100, at + 0.5, 0.9)
     }
-    // Kick: boss heartbeat on the half-bar.
-    if (bossAlive && step % 4 === 0) {
+
+    // Bass: the chord root anchors every downbeat (triangle, not sine — the
+    // upper harmonics keep it audible on phone speakers), the chord's fifth
+    // answers mid-bar once the fight warms, and at full boil it pulses.
+    if (step === 0) {
+      this.blip(ctx, at, midiHz(tone(chordDegree, 0)), 0.6, 'triangle', 0.35 + this.intensity * 0.3)
+    } else if (step === 4 && this.intensity > 0.3) {
+      this.blip(ctx, at, midiHz(tone(chordDegree, 1)), 0.45, 'triangle', 0.4)
+    } else if (step % 2 === 0 && this.intensity > 0.65) {
+      this.blip(ctx, at, midiHz(tone(chordDegree, 0)), 0.2, 'triangle', 0.3)
+    }
+
+    // Kick: boss heartbeat on the half-bar; desperate waves earn a downbeat.
+    if ((bossAlive && step % 4 === 0) || (this.intensity > 0.7 && step === 0)) {
       this.kick(ctx, at)
     }
     // Hat: offbeat air at high intensity.
     if (this.intensity > 0.55 && step % 2 === 1 && Math.random() < 0.8) {
       this.hat(ctx, at)
     }
-    // Arp: sparse melodic sparks — denser as the horde thickens.
-    const density = 0.12 + this.intensity * 0.45
-    if (Math.random() < density) {
-      const degree = scale[Math.floor(Math.random() * scale.length)]!
-      const octave = 12 * (1 + Math.floor(Math.random() * 2))
-      this.blip(ctx, at, midiHz(root + degree + octave), 0.28, 'triangle', 0.35)
+
+    // Melody: a seeded rhythm pattern per bar. Strong beats pull toward
+    // chord tones an octave above the pad; passing notes walk the scale.
+    // Intensity thins or thickens the line by dropping pattern hits.
+    const mask = RHYTHMS[(bar + rhythmSalt) % RHYTHMS.length]!
+    if (mask[step] === 1 && Math.random() < 0.35 + this.intensity * 0.55) {
+      if (step % 4 === 0 || Math.random() < 0.35) {
+        const targetPos = chordDegree + 2 * Math.floor(Math.random() * 3) + len
+        const drift = Math.max(-2, Math.min(2, targetPos - this.melodyPos))
+        this.melodyPos += drift
+      } else {
+        this.melodyPos += Math.random() < 0.5 ? -1 : 1
+      }
+      this.melodyPos = Math.max(len, Math.min(3 * len - 1, this.melodyPos))
+      const note = root + scale[this.melodyPos % len]! + 12 * Math.floor(this.melodyPos / len)
+      const humanize = (Math.random() - 0.5) * 0.01
+      this.blip(ctx, at + humanize, midiHz(note), 0.3, 'triangle', 0.4 + Math.random() * 0.15, true)
     }
   }
 
-  private blip(ctx: AudioContext, at: number, freq: number, dur: number, type: OscillatorType, vol: number): void {
+  // Glide the sustained pad voices to a new chord; build them on first use
+  // (or after a context rebuild). Slight per-voice detune keeps it wide.
+  private tunePad(ctx: AudioContext, at: number, midis: number[]): void {
+    if (!this.padFilter) return
+    if (this.padOsc.length !== midis.length) {
+      this.padOsc.forEach((o) => {
+        try {
+          o.stop()
+        } catch {
+          // already stopped
+        }
+      })
+      this.padOsc = []
+      const detunes = [-4, 3, -2]
+      midis.forEach((m, i) => {
+        const osc = ctx.createOscillator()
+        osc.type = 'sawtooth'
+        osc.frequency.value = midiHz(m)
+        osc.detune.value = detunes[i % detunes.length]!
+        osc.connect(this.padFilter!)
+        osc.start()
+        this.padOsc.push(osc)
+      })
+      return
+    }
+    midis.forEach((m, i) => {
+      this.padOsc[i]!.frequency.setTargetAtTime(midiHz(m), at, 0.08)
+    })
+  }
+
+  private blip(
+    ctx: AudioContext,
+    at: number,
+    freq: number,
+    dur: number,
+    type: OscillatorType,
+    vol: number,
+    echo = false,
+  ): void {
     if (!this.bus) return
     const osc = ctx.createOscillator()
     osc.type = type
@@ -204,6 +303,7 @@ export class Music {
     g.gain.exponentialRampToValueAtTime(0.0001, at + dur)
     osc.connect(g)
     g.connect(this.bus)
+    if (echo && this.echoSend) g.connect(this.echoSend)
     osc.start(at)
     osc.stop(at + dur + 0.05)
   }

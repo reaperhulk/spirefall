@@ -38,6 +38,27 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+77. *(playtest feedback)* **The score is music now, not a drone** — the old
+    generative music held one root+fifth pad chord forever; everything
+    melodic hid behind intensity gates and low random densities, so calm
+    play was literally a sustained filtered sawtooth (measured: ONE
+    spectral peak, ZERO peak transitions in 11s). Rebuilt around harmonic
+    motion: each biome owns a chord PROGRESSION (verdant I–V–vi–ii,
+    frostfen unresolved minor drift, emberwaste leaning on the phrygian
+    b2, highlands I–vi–IV–V) advancing every bar; the pad voices glide
+    between chords, swell on the downbeat and relax through the bar, and
+    the filter blooms per change; a triangle bass walks the chord roots
+    (audible on phone speakers, unlike a sine sub); the melody plays
+    seeded one-bar rhythm patterns — chord tones on strong beats, scale
+    walks between — through a tempo-synced dotted-eighth feedback echo.
+    Intensity still breathes the whole thing wider in combat. Verified by
+    tapping the audio graph with an AnalyserNode in headless Chromium:
+    old = 1 peak / 0 transitions, new = 6 peaks / 16 transitions with
+    clear onsets. Fallout: a signed-shift rhythm salt went negative for
+    half of all seeds and crashed the scheduler every step — caught by
+    the e2e console-error nets, fixed with an unsigned shift. 170 unit
+    tests, 31 e2e specs.
+
 76. *(mobile playtest fix)* **Silent phones: audio never unlocked on touch** —
     the autoplay-unlock listeners were `pointerdown` + `keydown`, but a
     TOUCH pointerdown does not grant user activation (only mouse pointerdown
