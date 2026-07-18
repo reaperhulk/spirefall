@@ -1259,6 +1259,7 @@ export default function App() {
           onBuyEmber={buyEmber}
           onAscend={doAscend}
           onNextRun={() => beginNextRun()}
+          reducedMotion={uiSettings.reducedMotion}
           mapPref={mapPref}
           onMapPref={(v) => {
             setMapPref(v)

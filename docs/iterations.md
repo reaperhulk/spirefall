@@ -52,6 +52,23 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+116. *(marathon II, iteration 28)* **Victory celebration** — the win
+    screen was the defeat screen with different words. Victory now
+    wears gold: glowing modal border, shimmering title, ember motes
+    rising up the backdrop (deterministic stagger, killed by reduced
+    motion in both the app setting and the media query — the override
+    block sits at the END of styles.css, cascade trap respected), and
+    an account's first-ever win gets a named callout. Verified by the
+    suite's first HONEST victory e2e: a maxed account (real buyMeta
+    purchases) piloted through all 24 waves with real commands. The
+    pilot took six defeats to teach — mid-path killboxes get rerouted
+    around by open-field mazing, spire-mouth boxes leak every survivor
+    into the walls, and the winning shape (picket line flanking the
+    gate row) still needed abilities (meteor/nova/bulwark), mid-wave
+    repairs, and tier-3 specs (Permafrost brittle) to clear wave 24.
+    `getMapInfo()` now also exposes the live enemy walk for pilots.
+    191 unit tests, 42 e2e specs.
+
 115. *(marathon II, iteration 27)* **Run-over tabs join the viewport
     matrix** — the six-viewport layout matrix predates the tabbed
     run-over screen, so only one phone size ever swept the tabs (the

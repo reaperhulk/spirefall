@@ -1,7 +1,7 @@
 import { ENEMIES } from '../data/content'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { Command, Enemy, MetaState, RunState } from '../engine/types'
-import { cellCenter } from '../engine/grid'
+import { blockedGrid, cellCenter, distanceField, pathFrom } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
 import type { GameSession, LoggedCommand } from './session'
 
@@ -30,6 +30,9 @@ export interface GameHarness {
     spawn: { cx: number; cy: number }
     spire: { cx: number; cy: number }
     buildable: boolean[]
+    // The walk enemies take RIGHT NOW (current towers block) — lets test
+    // pilots place towers that actually cover the route on generated maps.
+    path: { cx: number; cy: number }[]
   }
   // AudioContext state ('none' before first gesture) — for on-device
   // debugging of autoplay-unlock issues and the e2e unlock assertion.
@@ -75,7 +78,8 @@ export function installHarness(api: HarnessApi): void {
     getState: () => api.getSession().state,
     getMeta: () => api.getMeta(),
     getMapInfo: () => {
-      const map = getRunMap(api.getSession().state)
+      const state = api.getSession().state
+      const map = getRunMap(state)
       const buildable = map.rocks.map(
         (rock, i) =>
           !rock &&
@@ -83,7 +87,8 @@ export function installHarness(api: HarnessApi): void {
           !(i === map.spawn.cy * map.width + map.spawn.cx) &&
           !(i === map.spire.cy * map.width + map.spire.cx),
       )
-      return { width: map.width, height: map.height, spawn: { ...map.spawn }, spire: { ...map.spire }, buildable }
+      const path = pathFrom(map, distanceField(map, blockedGrid(map, state.towers)), map.spawn).map((c) => ({ ...c }))
+      return { width: map.width, height: map.height, spawn: { ...map.spawn }, spire: { ...map.spire }, buildable, path }
     },
     audioState: api.audioState,
     audioLive: api.audioLive,

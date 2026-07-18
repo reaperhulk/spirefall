@@ -23,6 +23,9 @@ declare global {
         towers: { id: number; tier: number; spec: string | null; cell: { cx: number; cy: number } }[]
         enemies: unknown[]
         relicOffer: unknown[] | null
+        victoryClaimed: boolean
+        spireHp: number
+        spireMaxHp: number
       }
       snapshot: () => {
         tick: number
@@ -46,6 +49,7 @@ declare global {
         spawn: { cx: number; cy: number }
         spire: { cx: number; cy: number }
         buildable: boolean[]
+        path: { cx: number; cy: number }[]
       }
       buyMeta: (id: string) => void
       setSpeed: (n: number) => void
@@ -1133,5 +1137,202 @@ test('tier-3 specialization: the panel offers both paths, the pick sticks', asyn
   await expect(page.getByTestId('tower-panel')).toContainText('Volley')
   await expect(page.getByTestId('spec-volley')).not.toBeVisible() // committed
   expect(await page.evaluate(() => window.__harness.getState().towers[0]!.spec)).toBe('volley')
+  expect(errors).toEqual([])
+})
+
+test('victory: an honest win dresses the screen in gold and names the first triumph', async ({ page }) => {
+  const errors = await boot(page, 'e2e-victory')
+  await page.locator('.hint-close').click()
+
+  // A real victory, fast: max the account through the actual purchase path
+  // (a granted spark hoard, then buyMeta over every node — Ashen Road skips
+  // to wave 11), then a simple pilot playing only real commands: build a
+  // kill box, take every relic, finish tier 3s, send waves. Deterministic
+  // seed → deterministic outcome.
+  const end = await page.evaluate(() => {
+    const h = window.__harness
+    h.getMeta().sparks = 1_000_000
+    // No Ashen Road: skipping ahead lands a tier-1 scatter in front of
+    // late-wave HP scale. Ramping from wave 1 lets the kill box compound.
+    const ids = [
+      'starting_gold', 'spire_hp', 'tower_damage', 'crit_chance', 'gold_income', 'spark_gain',
+      'unlock_tesla', 'unlock_mint', 'unlock_beacon', 'unlock_gold_rush', 'unlock_bulwark',
+    ]
+    for (let pass = 0; pass < 25; pass++) for (const id of ids) h.buyMeta(id)
+    h.newRun('e2e-victory')
+
+    // Place hugging the LIVE walk (getMapInfo().path accounts for towers):
+    // the generated route rarely follows the spawn row, so a fixed-row
+    // scatter guards grass while the horde marches elsewhere. Cells the
+    // engine rejects (e.g. the placement would seal the path) get banned so
+    // the pilot moves on instead of retrying the same illegal cell forever.
+    // Placement, learned the hard way (each alternative below was measured,
+    // not theorized): a dense killbox anywhere mid-path gets REROUTED around
+    // (open-field mazing works against the builder too), and a spire-mouth
+    // box leaks every survivor straight into the walls. What wins here is a
+    // PICKET LINE: towers spread along the long straight flanking the gate
+    // row, layering attrition over the whole walk without ever bending it.
+    const banned = new Set<string>()
+    const cells: [number, number][] = []
+    {
+      const info = h.getMapInfo()
+      for (let cx = 1; cx < info.width - 1 && cells.length < 14; cx++) {
+        for (const dy of [-1, 1, -2, 2]) {
+          const cy = info.spawn.cy + dy
+          if (cy < 0 || cy >= info.height) continue
+          if (info.buildable[cy * info.width + cx] && !cells.some(([x]) => x === cx)) {
+            cells.push([cx, cy])
+            break
+          }
+        }
+      }
+    }
+    const nextBuildCell = (): { cx: number; cy: number } | null => {
+      const used = new Set(h.getState().towers.map((t) => `${t.cell.cx},${t.cell.cy}`))
+      for (const [cx, cy] of cells) {
+        const key = `${cx},${cy}`
+        if (!used.has(key) && !banned.has(key)) return { cx, cy }
+      }
+      return null
+    }
+    // Frost (slow) and beacon (aura amplifier) are force multipliers a pure
+    // DPS line lacks — they're what push the line over the wave-24 hump.
+    const types = ['arrow', 'tesla', 'cannon', 'arrow', 'frost', 'beacon', 'sniper', 'tesla', 'cannon', 'arrow', 'frost', 'tesla', 'cannon', 'arrow']
+    let lastGold = -1 // whiff detector: a build action that moved no gold means "stop shopping, send the wave"
+    for (let guard = 0; guard < 1500; guard++) {
+      const s = h.getState()
+      if (s.phase === 'victory' || s.phase === 'defeat') break
+      if (s.relicOffer && s.relicOffer.length > 0) {
+        h.dispatch({ type: 'choose_relic', relic: s.relicOffer[0] })
+        h.fastForward(0.2)
+        continue
+      }
+      if (s.phase !== 'build') {
+        // Fight with everything: meteor + frost nova on the lead pack every
+        // time they're off cooldown (rejects are harmless), and Bulwark's 5s
+        // of spire invulnerability once the leaks start landing — that's the
+        // difference at the wave-23/24 hump.
+        const es = s.enemies as { pos: { x: number; y: number } }[]
+        if (es.length > 3) {
+          const lead = es.reduce((a, b) => (b.pos.x > a.pos.x ? b : a))
+          const cell = { cx: Math.floor(lead.pos.x / 1000), cy: Math.floor(lead.pos.y / 1000) }
+          h.dispatch({ type: 'cast_ability', ability: 'meteor', cell })
+          h.dispatch({ type: 'cast_ability', ability: 'frost_nova', cell })
+        }
+        if (s.spireHp < s.spireMaxHp) {
+          h.dispatch({ type: 'cast_ability', ability: 'bulwark', cell: { cx: 0, cy: 0 } })
+        }
+        if (s.spireHp <= s.spireMaxHp - 8 && s.gold >= 1500) {
+          // The crews manage two patches even under fire — spend the war
+          // chest on walls while the towers grind the flood down.
+          h.dispatch({ type: 'repair_spire' })
+        }
+        h.fastForward(4)
+        continue
+      }
+      if (s.victoryClaimed) {
+        h.dispatch({ type: 'abandon_run' }) // the "End run" path: bank the win
+        h.fastForward(0.2)
+        continue
+      }
+      if (s.gold === lastGold) {
+        lastGold = -1
+        h.dispatch({ type: 'start_wave' })
+        h.fastForward(1)
+        continue
+      }
+      // A small core first, then depth over breadth (focused tier 3s carry
+      // mid-waves where a tier-1 scatter dies), then breadth, then repairs
+      // and enhancement sinks.
+      const upgradeTarget = s.towers.filter((t) => t.tier < 3).sort((a, b) => b.tier - a.tier)[0]
+      const wantPlace =
+        (s.towers.length < 4 && s.gold >= 200) || (!upgradeTarget && s.towers.length < types.length && s.gold >= 400)
+      const cand = wantPlace ? nextBuildCell() : null
+      if (cand) {
+        h.dispatch({ type: 'place_tower', tower: types[s.towers.length % types.length], cell: cand })
+        h.fastForward(0.2)
+        if (h.getState().towers.length === s.towers.length) banned.add(`${cand.cx},${cand.cy}`)
+        continue
+      }
+      if (upgradeTarget && s.gold >= 600) {
+        lastGold = s.gold
+        h.dispatch({ type: 'upgrade_tower', id: upgradeTarget.id })
+        h.fastForward(0.2)
+        continue
+      }
+      // Tier 3s then commit to specs — Permafrost's brittle (+25% damage
+      // taken) multiplies the whole line; Volley/Mortar/Lattice clear hordes.
+      const SPECS: Record<string, string> = {
+        arrow: 'volley',
+        cannon: 'mortar',
+        frost: 'permafrost',
+        tesla: 'lattice',
+        sniper: 'overpen',
+      }
+      const specTarget = s.towers.find(
+        (t) => t.tier >= 3 && t.spec === null && SPECS[(t as unknown as { type: string }).type] !== undefined,
+      )
+      if (specTarget && s.gold >= 300) {
+        lastGold = s.gold
+        h.dispatch({
+          type: 'specialize_tower',
+          id: specTarget.id,
+          spec: SPECS[(specTarget as unknown as { type: string }).type],
+        })
+        h.fastForward(0.2)
+        continue
+      }
+      if (s.spireHp < s.spireMaxHp && s.gold >= 800) {
+        // Patch the walls between waves — long-run attrition is what kills
+        // an otherwise winning kill box.
+        lastGold = s.gold
+        h.dispatch({ type: 'repair_spire' })
+        h.fastForward(0.2)
+        continue
+      }
+      if (s.gold >= 2500 && s.towers.length > 0) {
+        // Everything tier 3 and rich: pour the surplus into enhancements.
+        lastGold = s.gold
+        const sink = [...s.towers].sort(
+          (a, b) => (a as unknown as { enhance: number }).enhance - (b as unknown as { enhance: number }).enhance,
+        )[0]!
+        h.dispatch({ type: 'upgrade_tower', id: sink.id })
+        h.fastForward(0.2)
+        continue
+      }
+      lastGold = -1
+      h.dispatch({ type: 'start_wave' })
+      h.fastForward(1)
+    }
+    const s = h.getState()
+    return {
+      phase: s.phase,
+      wave: (s as unknown as { wave: number }).wave,
+      towers: s.towers
+        .map((t) => `${(t as unknown as { type: string }).type}${t.tier}@${t.cell.cx},${t.cell.cy}`)
+        .join(' '),
+      gold: s.gold,
+      spireHp: s.spireHp,
+      path: h
+        .getMapInfo()
+        .path.map((p) => `${p.cx},${p.cy}`)
+        .join(' '),
+    }
+  })
+  expect(end, JSON.stringify(end)).toMatchObject({ phase: 'victory' })
+
+  // The win must LOOK different from a loss: gold modal, rising embers, and
+  // — on an account's very first victory — the named callout.
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  await expect(page.locator('.modal.run-over.victory')).toBeVisible()
+  await expect(page.locator('.modal.run-over h2')).toHaveText('THE SPIRE STANDS')
+  await expect(page.getByTestId('victory-embers')).toBeVisible()
+  await expect(page.getByTestId('first-victory')).toBeVisible()
+
+  // Reduced motion kills the ember layer entirely — it's decoration.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(page.getByTestId('victory-embers')).not.toBeVisible()
+  await expect(page.locator('.modal.run-over.victory')).toBeVisible() // the gold stays
+
   expect(errors).toEqual([])
 })

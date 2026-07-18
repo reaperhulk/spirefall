@@ -1448,6 +1448,105 @@ button.preview-unit:hover {
   font-weight: 700;
 }
 
+/* Victory celebration: the win screen must LOOK different from a loss. */
+.modal.run-over.victory {
+  border-color: #e5c07b;
+  box-shadow:
+    0 0 0 1px rgba(229, 192, 123, 0.35),
+    0 0 42px rgba(229, 192, 123, 0.22),
+    0 12px 48px rgba(0, 0, 0, 0.6);
+}
+
+.modal.run-over.victory h2 {
+  color: #f2d9a0;
+  text-shadow: 0 0 18px rgba(229, 192, 123, 0.55);
+  animation: victory-title 2.6s ease-in-out infinite;
+}
+
+@keyframes victory-title {
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(229, 192, 123, 0.35);
+  }
+  50% {
+    text-shadow: 0 0 26px rgba(229, 192, 123, 0.75);
+  }
+}
+
+.first-victory {
+  margin: 2px 0 0;
+  color: #e5c07b;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Ember motes drifting up the backdrop, behind the modal. */
+.victory-embers {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.vember {
+  position: absolute;
+  bottom: -12px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #e5c07b;
+  box-shadow: 0 0 8px 2px rgba(229, 192, 123, 0.55);
+  opacity: 0;
+  animation-name: ember-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.vember.big {
+  width: 8px;
+  height: 8px;
+  background: #f2d9a0;
+  animation-name: ember-rise-drift;
+}
+
+@keyframes ember-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-105vh);
+    opacity: 0;
+  }
+}
+
+@keyframes ember-rise-drift {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(18px, -52vh);
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-10px, -105vh);
+    opacity: 0;
+  }
+}
+
 /* First-run hints. */
 .hint-banner {
   display: flex;
@@ -1533,5 +1632,17 @@ button.preview-unit:hover {
   .codex-tab {
     padding: 5px 7px;
     font-size: 12px;
+  }
+}
+
+/* Must sit at the END of the file: same specificity as the base rules above,
+   so source order is what makes these overrides win. */
+@media (prefers-reduced-motion: reduce) {
+  .victory-embers {
+    display: none;
+  }
+
+  .modal.run-over.victory h2 {
+    animation: none;
   }
 }

@@ -249,6 +249,7 @@ export function RunOverOverlay({
   onBuyEmber,
   onAscend,
   onNextRun,
+  reducedMotion,
 }: {
   summary: RunSummary
   meta: MetaState
@@ -263,6 +264,7 @@ export function RunOverOverlay({
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
   onNextRun: () => void
+  reducedMotion: boolean
 }) {
   const victory = summary.outcome === 'victory'
   // The screen carries three jobs — reading the result, spending sparks,
@@ -297,8 +299,32 @@ export function RunOverOverlay({
   }
   return (
     <div className="modal-backdrop" data-testid="run-over">
-      <div className="modal run-over" role="dialog" aria-modal="true" aria-label="Run over">
+      {victory && !reducedMotion && (
+        // Rising embers behind the modal — a win must LOOK different from a
+        // loss, not just read different. Deterministic stagger (golden-ratio
+        // spread), no randomness; suppressed by the reduced-motion setting
+        // here and by prefers-reduced-motion in CSS.
+        <div className="victory-embers" aria-hidden="true" data-testid="victory-embers">
+          {Array.from({ length: 18 }, (_, i) => (
+            <span
+              key={i}
+              className={`vember ${i % 3 === 0 ? 'big' : ''}`}
+              style={{
+                left: `${(i * 61.8) % 100}%`,
+                animationDelay: `${((i * 53) % 400) / 100}s`,
+                animationDuration: `${5 + (i % 5) * 0.9}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+      <div className={`modal run-over${victory ? ' victory' : ''}`} role="dialog" aria-modal="true" aria-label="Run over">
         <h2>{victory ? 'THE SPIRE STANDS' : 'THE SPIRE FALLS'}</h2>
+        {victory && meta.victories === 1 && (
+          <p className="first-victory" data-testid="first-victory">
+            🏆 First victory. Every collapse before this one was practice.
+          </p>
+        )}
         <p className="run-summary">
           {summary.wavesCleared} waves cleared · {summary.kills} kills ·{' '}
           <strong data-testid="sparks-earned">✦ {summary.sparks} sparks</strong> earned
