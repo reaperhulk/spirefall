@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+154. *(marathon II, iteration 66)* **WavePreview extracted** — the
+    mechanic-mark sweep grew the scouting strip into a ~120-line
+    subsystem inside App.tsx; it now lives in `WavePreview.tsx` with
+    the contract stated at the top (every enemy mechanic must have a
+    visible tell — the marks e2e enforces it). App.tsx 1402 lines,
+    comfortably back under the split threshold. Pure move: all 44
+    e2e specs (including every mark assertion) pass untouched. 195
+    unit tests, 44 e2e specs.
+
 153. *(marathon II, iteration 65)* **Space respects it too** — the
     Space shortcut had the same pre-offer blind spot as auto-advance:
     it now skips dispatching start_wave while a relic or cataclysm
