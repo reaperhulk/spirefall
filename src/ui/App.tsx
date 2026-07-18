@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ABILITIES,
   AFFIXES,
+  specForTower,
+  TOWER_SPECS,
   CATACLYSMS,
   ENEMIES,
   ENHANCE_DAMAGE_PCT,
@@ -845,6 +847,7 @@ export default function App() {
             </button>
             <h3>
               {TOWERS[selectedTower.type].name} · Tier {selectedTower.tier}
+              {selectedTower.spec !== null && ` · ${specForTower(selectedTower.type, selectedTower.spec)?.name ?? ''}`}
               {selectedTower.enhance > 0 && ` +${selectedTower.enhance}`}
             </h3>
             {selectedTower.type === 'mint' || selectedTower.type === 'beacon' ? (
@@ -853,7 +856,7 @@ export default function App() {
               (() => {
                 const b = damageBreakdown(state, selectedTower)
                 const baseCd = towerTier(selectedTower.type, selectedTower.tier).cooldown
-                const cd = effectiveTowerCooldown(state, selectedTower.type, selectedTower.tier)
+                const cd = effectiveTowerCooldown(state, selectedTower.type, selectedTower.tier, selectedTower.spec)
                 const rate = 30 / cd
                 const ratePct = cd < baseCd ? Math.round((baseCd / cd - 1) * 100) : 0
                 return (
@@ -916,6 +919,20 @@ export default function App() {
                 <kbd className="key-hint">U</kbd>
               </button>
             ) : (
+              <>
+                {selectedTower.spec === null &&
+                  (TOWER_SPECS[selectedTower.type] ?? []).map((sp) => (
+                    <button
+                      key={sp.id}
+                      className="ghost-btn spec-btn"
+                      data-testid={`spec-${sp.id}`}
+                      title={sp.description}
+                      disabled={state.gold < sp.cost}
+                      onClick={() => session.dispatch({ type: 'specialize_tower', id: selectedTower.id, spec: sp.id })}
+                    >
+                      ★ {sp.name} (⛀ {sp.cost})
+                    </button>
+                  ))}
               <button
                 className="primary-btn"
                 data-testid="upgrade-tower"
@@ -925,6 +942,7 @@ export default function App() {
               >
                 Enhance (⛀ {enhanceCost(selectedTower.type, selectedTower.enhance)}) <kbd className="key-hint">U</kbd>
               </button>
+              </>
             )}
             <button
               className="ghost-btn"

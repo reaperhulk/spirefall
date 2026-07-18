@@ -30,6 +30,7 @@ function enemy(overrides: Partial<Enemy> & { id: number }): Enemy {
     overcharge: 0,
     mechCooldown: 0,
     mechActiveTicks: 0,
+    brittleTicks: 0,
     targetCell: null,
     ...overrides,
   }

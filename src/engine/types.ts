@@ -1,4 +1,5 @@
 import type { BiomeId } from '../data/biomes'
+import type { TowerSpecId } from '../data/content'
 import type { Rng } from './rng'
 
 // RunState is the entire simulation. It must stay plain JSON data: no classes,
@@ -83,6 +84,7 @@ export interface Tower {
   id: number
   type: TowerType
   tier: 1 | 2 | 3
+  spec: TowerSpecId | null // tier-3 path commitment; null until chosen
   enhance: number // post-tier-3 levels: +damage %, unbounded
   cell: CellPos
   cooldown: number // ticks until it can fire again
@@ -114,6 +116,7 @@ export interface Enemy {
   overcharge: number // Storm Coils: stacked tesla hits on this enemy
   mechCooldown: number // bosses: ticks until the signature mechanic triggers
   mechActiveTicks: number // bosses: ticks the mechanic stays active (carapace)
+  brittleTicks: number // Permafrost: +25% damage taken while > 0
   targetCell: CellPos | null // next waypoint; null = needs (re)pathing (unused by fliers)
 }
 
@@ -183,6 +186,7 @@ export type Command =
   | { type: 'repair_spire' }
   | { type: 'place_tower'; tower: TowerType; cell: CellPos }
   | { type: 'upgrade_tower'; id: number }
+  | { type: 'specialize_tower'; id: number; spec: TowerSpecId }
   | { type: 'sell_tower'; id: number }
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
@@ -204,6 +208,7 @@ export type GameEvent =
   | { type: 'cataclysm_struck'; cataclysm: CataclysmId; wave: number }
   | { type: 'tower_sold'; id: number; refund: number }
   | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[]; crit: boolean }
+  | { type: 'tower_specialized'; id: number; spec: TowerSpecId; cost: number }
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }
   | { type: 'wave_cleared'; wave: number; goldAwarded: number }
   | { type: 'gold_interest'; amount: number; gold: number }

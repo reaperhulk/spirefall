@@ -39,6 +39,7 @@ function enemy(overrides: Partial<Enemy> & { id: number }): Enemy {
     overcharge: 0,
     mechCooldown: 0,
     mechActiveTicks: 0,
+    brittleTicks: 0,
     targetCell: null,
     ...overrides,
   }
@@ -49,6 +50,7 @@ function tower(type: TowerType, overrides: Partial<Tower> = {}): Tower {
     id: 100,
     type,
     tier: 1,
+    spec: null,
     enhance: 0,
     cell: { cx: 5, cy: 5 },
     cooldown: 0,

@@ -241,6 +241,20 @@ export class GameSession {
             })
           }
           break
+        case 'tower_specialized': {
+          const tower = this.state.towers.find((t) => t.id === e.id)
+          if (tower) {
+            this.effects.push({
+              kind: 'float',
+              at: cellCenter(tower.cell),
+              text: `★ ${e.spec.toUpperCase()}`,
+              color: '#e0af68',
+              t0: now,
+              dur: 1100,
+            })
+          }
+          break
+        }
         case 'boss_carapace': {
           const boss = this.state.enemies.find((en) => en.id === e.id)
           if (boss) {

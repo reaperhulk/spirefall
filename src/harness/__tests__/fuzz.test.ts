@@ -54,6 +54,7 @@ describe('build fuzzer', () => {
     repairDeficit: 2,
     repairMinGold: 180,
     waveRepairPct: 30,
+    specChoice: 0,
     relicPriority: [
       'longsight', 'piercing_arrows', 'stoneskin', 'overclock', 'keen_sights', 'fortune_idol',
       'executioners_seal', 'glass_cannon', 'overcharge', 'colossus', 'quickdraw', 'deep_pockets',
@@ -96,6 +97,7 @@ describe('build fuzzer', () => {
     repairDeficit: 2,
     repairMinGold: 170,
     waveRepairPct: 70,
+    specChoice: 1,
     relicPriority: [
       'bounty_banner', 'glass_cannon', 'echo_chamber', 'last_stand', 'deep_pockets', 'stoneskin',
       'spark_siphon', 'soul_harvest', 'colossus', 'fortune_idol', 'shatter', 'keen_sights',
@@ -121,6 +123,45 @@ describe('build fuzzer', () => {
       expect(play(8000, seed).phase, `${seed} @ 8000`).toBe('defeat')
     }
   }, 600_000)
+
+  // Third pinned find (2026-07, the specialization hunt): a cannon-8/frost-7
+  // comp riding Mortar + Blizzard — massed blizzard frosts perma-slowed the
+  // whole field while widened mortar shells cleared it, winning at 8k on
+  // gamma. Killed by the blizzard splash-duration haircut (50%) and the
+  // mortar damage trim (140 -> 125). This pin holds that line.
+  const MORTAR_BLIZZARD: PolicyGenome = {
+    ratio: { arrow: 1, cannon: 8, frost: 7, tesla: 3, sniper: 4, mint: 3, beacon: 1 },
+    earlyType: 'arrow',
+    upgradeAtTowers: 7,
+    targetBase: 7,
+    targetPerWave: 2,
+    targetMax: 12,
+    enhanceStrategy: 'tesla',
+    repairDeficit: 4,
+    repairMinGold: 360,
+    waveRepairPct: 40,
+    specChoice: 0,
+    relicPriority: [
+      'glass_cannon', 'prism_lens', 'echo_chamber', 'quickdraw', 'shatter', 'heavy_powder',
+      'soul_harvest', 'ricochet_strings', 'deadeye_sigil', 'deep_pockets', 'keen_sights', 'colossus',
+      'fortune_idol', 'golden_ledger', 'last_stand', 'cinder_shells', 'bounty_banner', 'storm_coils',
+      'winters_grip', 'mint_condition', 'overcharge', 'shatterheart', 'overclock', 'spark_siphon',
+      'executioners_seal', 'golden_touch', 'field_medicine', 'longsight', 'piercing_arrows', 'stoneskin',
+    ],
+    metaPriority: [
+      'tower_damage', 'unlock_gold_rush', 'gold_income', 'crit_chance', 'unlock_tesla', 'spire_hp',
+      'starting_gold', 'wave_skip', 'unlock_mint', 'unlock_beacon', 'spark_gain', 'unlock_bulwark',
+    ],
+  }
+
+  it('pinned find: the Mortar-Blizzard lockdown comp stays contained', () => {
+    const bot = makePolicyBot(MORTAR_BLIZZARD)
+    for (const seed of ['alpha', 'gamma']) {
+      const meta = spendSparks({ ...createMeta(), sparks: 8000 }, MORTAR_BLIZZARD.metaPriority)
+      const { state } = autoplay(createRun(meta, seed), bot, 120_000)
+      expect(state.phase, `${seed} @ 8000 sparks`).toBe('defeat')
+    }
+  }, 300_000)
 
   it('pinned genomes stay contained on the feature biomes', () => {
     // The biome features are all player-favorable in isolation (free slow,

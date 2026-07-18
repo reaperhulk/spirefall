@@ -96,6 +96,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
           // Pre-`shots` saves: infer "has acted" so old towers don't all
           // become free full refunds.
           t.shots ??= t.damageDealt > 0 || t.kills > 0 ? 1 : 0
+          t.spec ??= null
         }
         for (const e of data.run.enemies) {
           e.armor ??= 0
@@ -108,6 +109,7 @@ function migrate(parsed: { version?: number }): SaveData | null {
           e.overcharge ??= 0
           e.mechCooldown ??= 0
           e.mechActiveTicks ??= 0
+          e.brittleTicks ??= 0
         }
         data.run.activeAffix ??= null
         data.run.victoryClaimed ??= false

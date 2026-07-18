@@ -1,4 +1,4 @@
-import { enhanceCost, towerTier, TOWERS } from '../data/content'
+import { enhanceCost, TOWER_SPECS, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
 import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, inBounds, pathFrom, sameCell } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
@@ -134,6 +134,7 @@ function pickBuildType(state: RunState): TowerType {
 // defaults; the build fuzzer (src/harness/fuzz.ts) searches over them.
 export interface BuildKnobs {
   upgradeAtTowers: number // start tier-upgrading once this many towers exist
+  specChoice: 0 | 1 // which tier-3 path each tower takes (index into TOWER_SPECS)
   targetBase: number // desired tower count = base + perWave·wave, capped
   targetPerWave: number
   targetMax: number
@@ -145,6 +146,7 @@ export interface BuildKnobs {
 
 export const DEFAULT_KNOBS: BuildKnobs = {
   upgradeAtTowers: 6,
+  specChoice: 0,
   targetBase: 4,
   targetPerWave: 1,
   targetMax: 24,
@@ -189,6 +191,15 @@ export function buildActions(
     }
   }
   if (upgrade !== null) return [{ type: 'upgrade_tower', id: upgrade.id }]
+
+  // Tier-3 towers commit to a path once the gold is there.
+  for (const t of state.towers) {
+    if (t.tier !== 3 || t.spec !== null) continue
+    const options = TOWER_SPECS[t.type]
+    if (!options) continue
+    const pick = options[knobs.specChoice]!
+    if (state.gold >= pick.cost) return [{ type: 'specialize_tower', id: t.id, spec: pick.id }]
+  }
 
   // Patch the spire up between waves before banking gold.
   if (state.spireHp <= state.spireMaxHp - knobs.repairDeficit && state.gold >= knobs.repairMinGold) {

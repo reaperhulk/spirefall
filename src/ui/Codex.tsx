@@ -16,6 +16,7 @@ import {
   REPAIR_MAX_PER_CAST,
   SELL_REFUND_PCT,
   SNIPER_ELITE_BONUS_PCT,
+  TOWER_SPECS,
   TOWERS,
   TRIALS,
   VICTORY_WAVE,
@@ -314,6 +315,11 @@ export function CodexModal({
                       </tbody>
                     </table>
                     {specialProgression(type) && <p className="codex-trait">{specialProgression(type)}</p>}
+                    {TOWER_SPECS[type]?.map((sp) => (
+                      <p key={sp.id} className="codex-trait">
+                        <strong>T3 · {sp.name}</strong> (⛀ {sp.cost}) — {sp.description}
+                      </p>
+                    ))}
                     {TOWER_NOTES[type] && <p className="codex-trait">{TOWER_NOTES[type]}</p>}
                   </div>
                 )

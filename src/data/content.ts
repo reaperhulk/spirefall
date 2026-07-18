@@ -159,6 +159,77 @@ export const TOWERS: Record<TowerType, TowerDef> = {
 // (Stacking turns beacon farms into the dominant strategy — by design, one
 // good beacon placement is worth exactly one bonus.)
 
+// ---------------------------------------------------------------------------
+// Tier-3 specializations: at tier 3, each combat tower commits to one of two
+// paths — a one-time purchase that changes HOW it fights, not just numbers.
+// Composes multiplicatively with relics and biomes: build identity becomes
+// something you steer. Mint and Beacon keep their economy/support identity.
+
+export type TowerSpecId =
+  | 'volley'
+  | 'longbow'
+  | 'mortar'
+  | 'breaker'
+  | 'blizzard'
+  | 'permafrost'
+  | 'lattice'
+  | 'capacitor'
+  | 'executor'
+  | 'overpen'
+
+export interface TowerSpecDef {
+  id: TowerSpecId
+  name: string
+  description: string
+  cost: number
+}
+
+export const TOWER_SPECS: Partial<Record<TowerType, [TowerSpecDef, TowerSpecDef]>> = {
+  arrow: [
+    { id: 'volley', name: 'Volley', description: 'Each shot strikes up to 2 extra enemies near the target for 60%.', cost: 120 },
+    { id: 'longbow', name: 'Longbow', description: '+30% range, and shots pierce shields outright.', cost: 120 },
+  ],
+  cannon: [
+    { id: 'mortar', name: 'Mortar', description: '+60% splash radius and +25% damage — but 60% slower.', cost: 180 },
+    { id: 'breaker', name: 'Breaker', description: 'No splash: the whole charge hits one target for +80% damage.', cost: 180 },
+  ],
+  frost: [
+    { id: 'blizzard', name: 'Blizzard', description: 'The slow lands on every enemy within 0.9 cells of the target.', cost: 130 },
+    { id: 'permafrost', name: 'Permafrost', description: 'Its slow makes enemies BRITTLE: +25% damage taken from all sources.', cost: 130 },
+  ],
+  tesla: [
+    { id: 'lattice', name: 'Arc Lattice', description: 'Chains reach 3 further enemies.', cost: 200 },
+    { id: 'capacitor', name: 'Capacitor', description: 'Every 4th shot discharges for triple damage.', cost: 200 },
+  ],
+  sniper: [
+    { id: 'executor', name: 'Executor', description: 'Hits execute non-boss enemies below 10% HP.', cost: 250 },
+    { id: 'overpen', name: 'Overpenetration', description: 'The slug carries through: one more enemy near the target takes full damage.', cost: 250 },
+  ],
+}
+
+export const VOLLEY_EXTRA_TARGETS = 2
+export const VOLLEY_PCT = 60
+export const LONGBOW_RANGE_PCT = 130
+export const MORTAR_SPLASH_PCT = 160
+export const MORTAR_DAMAGE_PCT = 125
+export const MORTAR_COOLDOWN_PCT = 160
+export const BREAKER_DAMAGE_PCT = 180
+export const BLIZZARD_RADIUS = 900
+// Splash victims get HALF the slow duration: a chill, not a lock. Full-field
+// permanent slows out of massed blizzard frosts carried a fuzzer win at 8k
+// (mortar+blizzard, 2026-07) — the primary target still gets the full slow.
+export const BLIZZARD_SPLASH_TICKS_PCT = 50
+export const PERMAFROST_BONUS_PCT = 25
+export const LATTICE_EXTRA_CHAIN = 3
+export const CAPACITOR_EVERY_SHOTS = 4
+export const CAPACITOR_DAMAGE_PCT = 300
+export const EXECUTOR_THRESHOLD_PCT = 10
+export const OVERPEN_RANGE = 1200
+
+export function specForTower(type: TowerType, spec: TowerSpecId): TowerSpecDef | null {
+  return TOWER_SPECS[type]?.find((sp) => sp.id === spec) ?? null
+}
+
 export const SELL_REFUND_PCT = 70
 export const TESLA_CHAIN_RANGE = 1400 // millicells between chain hops
 

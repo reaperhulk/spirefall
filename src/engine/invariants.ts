@@ -1,5 +1,6 @@
 import { REPAIR_CASTS_PER_WAVE } from '../data/content'
-import { getMap, cellIndex, inBounds, sameCell } from './grid'
+import { cellIndex, inBounds, sameCell } from './grid'
+import { getRunMap } from './mapgen'
 import type { Rng } from './rng'
 import type { RunState } from './types'
 
@@ -8,7 +9,7 @@ import type { RunState } from './types'
 // inputs; the harness can also run them after every tick in dev builds.
 export function assertInvariants(state: RunState): void {
   assertFiniteNumbers(state, 'state')
-  const map = getMap(state.mapId)
+  const map = getRunMap(state)
 
   check(Number.isInteger(state.tick) && state.tick >= 0, `tick must be a non-negative integer, got ${state.tick}`)
   check(Number.isInteger(state.wave) && state.wave >= 0, `wave must be a non-negative integer, got ${state.wave}`)
@@ -46,6 +47,7 @@ export function assertInvariants(state: RunState): void {
     check(t.id < state.nextEntityId, `tower id ${t.id} >= nextEntityId`)
     check(inBounds(map, t.cell), `tower ${t.id} out of bounds`)
     check(!map.rocks[cellIndex(map, t.cell)], `tower ${t.id} on a rock`)
+    check(!map.marsh[cellIndex(map, t.cell)], `tower ${t.id} on marsh`)
     check(!sameCell(t.cell, map.spawn) && !sameCell(t.cell, map.spire), `tower ${t.id} on gate/spire`)
     check(t.cooldown >= 0 && Number.isInteger(t.cooldown), `tower ${t.id} negative cooldown`)
     check(t.tier >= 1 && t.tier <= 3, `tower ${t.id} bad tier ${t.tier}`)

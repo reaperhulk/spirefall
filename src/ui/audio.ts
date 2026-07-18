@@ -324,6 +324,9 @@ export class Sfx {
         case 'relic_chosen':
           if (e.relic !== null) this.play('relic')
           break
+        case 'tower_specialized':
+          this.play('relic') // a commitment chime — same glass bell as a relic
+          break
         case 'tower_placed':
           this.play('place', panFromX((e.cell.cx + 0.5) * 1000))
           break

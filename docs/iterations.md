@@ -38,6 +38,28 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+73. *(five-item program, 5/5)* **Tier-3 specializations** — at tier 3,
+    every combat tower commits to one of two paths (a one-time purchase;
+    Mint/Beacon keep their economy identity): Arrow → Volley (2 extra
+    targets at 60%) or Longbow (+30% range, pierces shields); Cannon →
+    Mortar (+60% splash, +25% dmg, 60% slower) or Breaker (no splash,
+    +80% single-target); Frost → Blizzard (slow splashes 0.9 cells at
+    HALF duration) or Permafrost (its slow makes victims BRITTLE: +25%
+    damage from ALL sources); Tesla → Arc Lattice (+3 chain) or Capacitor
+    (every 4th shot ×3); Sniper → Executor (execute <10%) or
+    Overpenetration (slug carries into one more enemy at full weight).
+    Panel offers both paths at tier 3 with a commitment chime + float;
+    codex lists them per tower; reference bot buys its preferred path and
+    the fuzz genome LEARNS the choice (specChoice gene). The fuzzer
+    immediately earned its keep: a cannon-8/frost-7 Mortar+Blizzard comp
+    perma-slowed the field into an 8k win — killed by the blizzard
+    splash-duration haircut (50%) + mortar trim (140→125), and pinned as
+    the third permanent regression genome. Also fixed en route: the
+    invariant checker still validated towers against the FIXED map
+    registry (latent since the biome pivot — caught by the hostile
+    property test rolling a cell that is rock on old map 0). Goldens:
+    hash-only. 169 unit tests, 29 e2e specs.
+
 72. *(five-item program, 4/5)* **Endless milestones + shareable run cards**
     — the long tail gets goals and the game gets its only backend-less
     social loop. Four achievements: Into the Dark / Storm-Sworn /

@@ -41,6 +41,7 @@ function makeEnemy(state: RunState, overrides: Partial<Enemy> & { type: Enemy['t
     overcharge: 0,
     mechCooldown: 0,
     mechActiveTicks: 0,
+    brittleTicks: 0,
     targetCell: null,
     ...overrides,
   }

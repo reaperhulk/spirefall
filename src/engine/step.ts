@@ -1,5 +1,6 @@
 import {
   ABILITIES,
+  specForTower,
   BASE_WAVE_BUDGET,
   BOSS_WAVE_INTERVAL,
   CATACLYSM_IDS,
@@ -155,6 +156,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
         id,
         type: command.tower,
         tier: 1,
+        spec: null,
         enhance: 0,
         cell: { ...command.cell },
         cooldown: 0,
@@ -187,6 +189,20 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.gold -= cost
       tower.tier = nextTier
       events.push({ type: 'tower_upgraded', id: tower.id, tier: nextTier })
+      return
+    }
+
+    case 'specialize_tower': {
+      const tower = s.towers.find((t) => t.id === command.id)
+      if (!tower) return reject(command, 'no such tower', events)
+      if (tower.tier < 3) return reject(command, 'specializations open at tier 3', events)
+      if (tower.spec !== null) return reject(command, 'already specialized', events)
+      const def = specForTower(tower.type, command.spec)
+      if (!def) return reject(command, 'unknown specialization for this tower', events)
+      if (s.gold < def.cost) return reject(command, 'not enough gold', events)
+      s.gold -= def.cost
+      tower.spec = def.id
+      events.push({ type: 'tower_specialized', id: tower.id, spec: def.id, cost: def.cost })
       return
     }
 
@@ -435,6 +451,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
       overcharge: 0,
       mechCooldown: def.mech ? def.mech.everyTicks : 0,
       mechActiveTicks: 0,
+      brittleTicks: 0,
       broodCooldown: def.brood ? def.brood.everyTicks : 0,
       phased: false,
       phaseCooldown: def.phasing ? def.phasing.visibleTicks : 0,

@@ -20,7 +20,8 @@ declare global {
         biome: string
         crucible: number
         gold: number
-        towers: { id: number; tier: number; cell: { cx: number; cy: number } }[]
+        gold: number
+        towers: { id: number; tier: number; spec: string | null; cell: { cx: number; cy: number } }[]
         enemies: unknown[]
         relicOffer: unknown[] | null
       }
@@ -857,5 +858,37 @@ test('the Crucible: cycle victories harden the next run and surface in the HUD',
   await expect(page.getByTestId('crucible')).toContainText('Crucible II')
   await expect(page.getByTestId('open-tree')).toContainText('🔥')
   expect(await page.evaluate(() => window.__harness.getState().crucible)).toBe(2)
+  expect(errors).toEqual([])
+})
+
+test('tier-3 specialization: the panel offers both paths, the pick sticks', async ({ page }) => {
+  const errors = await boot(page, 'e2e-wave')
+  await page.locator('.hint-close').click()
+  const [[cx, cy]] = await findBuildCells(page, 1)
+  await page.evaluate(
+    ([x, y]) => {
+      const h = window.__harness
+      h.getState().gold = 5000
+      h.dispatch({ type: 'place_tower', tower: 'arrow', cell: { cx: x, cy: y } })
+    },
+    [cx, cy] as const,
+  )
+  await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
+  await page.evaluate(() => {
+    const h = window.__harness
+    const id = h.getState().towers[0]!.id
+    h.dispatch({ type: 'upgrade_tower', id })
+    h.dispatch({ type: 'upgrade_tower', id })
+  })
+  await expect.poll(async () => await page.evaluate(() => window.__harness.getState().towers[0]!.tier)).toBe(3)
+
+  await clickCell(page, cx!, cy!)
+  await expect(page.getByTestId('tower-panel')).toBeVisible()
+  await expect(page.getByTestId('spec-volley')).toBeVisible()
+  await expect(page.getByTestId('spec-longbow')).toBeVisible()
+  await page.getByTestId('spec-volley').click()
+  await expect(page.getByTestId('tower-panel')).toContainText('Volley')
+  await expect(page.getByTestId('spec-volley')).not.toBeVisible() // committed
+  expect(await page.evaluate(() => window.__harness.getState().towers[0]!.spec)).toBe('volley')
   expect(errors).toEqual([])
 })

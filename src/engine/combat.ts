@@ -2,6 +2,21 @@ import type { MapDef } from '../data/maps'
 import {
   ABILITIES,
   ARROW_AIR_BONUS_PCT,
+  BLIZZARD_RADIUS,
+  BLIZZARD_SPLASH_TICKS_PCT,
+  BREAKER_DAMAGE_PCT,
+  CAPACITOR_DAMAGE_PCT,
+  CAPACITOR_EVERY_SHOTS,
+  EXECUTOR_THRESHOLD_PCT,
+  LATTICE_EXTRA_CHAIN,
+  LONGBOW_RANGE_PCT,
+  MORTAR_COOLDOWN_PCT,
+  MORTAR_DAMAGE_PCT,
+  MORTAR_SPLASH_PCT,
+  OVERPEN_RANGE,
+  PERMAFROST_BONUS_PCT,
+  VOLLEY_EXTRA_TARGETS,
+  VOLLEY_PCT,
   CARAPACE_BREAK_DAMAGE,
   GALE_SPEED_PCT,
   CINDER_BURN_PCT,
@@ -39,6 +54,7 @@ import {
 import { MARSH_SPEED_PCT, MESA_RANGE_PCT } from '../data/biomes'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
 import { nextInt } from './rng'
+import type { TowerSpecId } from '../data/content'
 import type { AbilityId, CellPos, Enemy, GameEvent, RelicId, RunState, Tower, TowerType } from './types'
 import { scaledHp } from './waves'
 
@@ -111,6 +127,9 @@ export function effectiveCritDamagePct(state: RunState): number {
 }
 
 export function applyHit(enemy: Enemy, damage: number, pierceShield = false): number {
+  // Permafrost brittleness amplifies EVERYTHING — the hit is judged (and
+  // dealt) at its amplified weight.
+  if (enemy.brittleTicks > 0) damage = Math.floor((damage * (100 + PERMAFROST_BONUS_PCT)) / 100)
   if (!pierceShield && damage <= enemy.shield) return 0 // shieldbearers ignore weak hits entirely
   // Spirebreaker's carapace: while raised, everything lands for 1 — except
   // a single heavy blow (>= CARAPACE_BREAK_DAMAGE), which SHATTERS it and
@@ -329,7 +348,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const def = towerTier(tower.type, tower.tier)
     const hitsAir = TOWERS[tower.type].hitsAir
     const origin = cellCenter(tower.cell)
-    let range = effectiveTowerRange(state, tower.type, tower.tier)
+    let range = effectiveTowerRange(state, tower.type, tower.tier, tower.spec)
     // Highlands: a tower on a mesa overlooks the field.
     if (map.mesa.length > 0 && map.mesa[cellIndex(map, tower.cell)]) {
       range = Math.floor((range * MESA_RANGE_PCT) / 100)
@@ -340,7 +359,13 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     if (target === null) continue
 
     const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance + beaconAuraPct(state, tower)
-    const baseDamage = Math.floor((def.damage * pct) / 100)
+    let baseDamage = Math.floor((def.damage * pct) / 100)
+    if (tower.spec === 'mortar') baseDamage = Math.floor((baseDamage * MORTAR_DAMAGE_PCT) / 100)
+    else if (tower.spec === 'breaker') baseDamage = Math.floor((baseDamage * BREAKER_DAMAGE_PCT) / 100)
+    // Capacitor: a deterministic burst cycle — every 4th shot discharges.
+    else if (tower.spec === 'capacitor' && (tower.shots + 1) % CAPACITOR_EVERY_SHOTS === 0) {
+      baseDamage = Math.floor((baseDamage * CAPACITOR_DAMAGE_PCT) / 100)
+    }
 
     // One crit roll per shot: a critical cannon shell crits its whole splash,
     // a critical tesla arc crits the whole chain.
@@ -360,7 +385,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // bonuses (arrow vs air, sniper vs elites) apply on top of crits.
     // Shields judge a shot by its HONEST (pre-crit) weight: a lucky crit
     // never slips a light shot through — piercing or heavy hits only.
-    const pierceShield = tower.type === 'sniper'
+    const pierceShield = tower.type === 'sniper' || tower.spec === 'longbow'
     const shatter = state.relics.includes('shatter')
     const stormCoils = tower.type === 'tesla' && state.relics.includes('storm_coils')
     const cinder = tower.type === 'cannon' && state.relics.includes('cinder_shells')
@@ -393,6 +418,26 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     switch (tower.type) {
       case 'arrow': {
         hit(target)
+        // Volley: the shot strikes extra enemies near the target at reduced
+        // weight (nearest-first, ties to the older spawn).
+        if (tower.spec === 'volley') {
+          const rangeSq2 = RICOCHET_RANGE * RICOCHET_RANGE
+          for (let extra = 0; extra < VOLLEY_EXTRA_TARGETS; extra++) {
+            let next: Enemy | null = null
+            let nextDist = 0
+            for (const e of alive) {
+              if (e.hp <= 0 || e.id === target.id || hitIds.includes(e.id)) continue
+              const d = distSq(target.pos, e.pos)
+              if (d <= rangeSq2 && (next === null || d < nextDist || (d === nextDist && e.id < next.id))) {
+                next = e
+                nextDist = d
+              }
+            }
+            if (next === null) break
+            hit(next, VOLLEY_PCT)
+            hitIds.push(next.id)
+          }
+        }
         // Ricochet Strings: the shot bounces to the nearest other enemy in
         // reach of the impact (nearest, ties to the older spawn — the same
         // deterministic rule tesla chains use).
@@ -417,12 +462,34 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       }
       case 'sniper': {
         hit(target)
-        // Deadeye Sigil: a wounded regular is a dead regular. Bosses shrug.
+        // Overpenetration: the slug carries into one more enemy at full weight.
+        if (tower.spec === 'overpen') {
+          const rangeSq2 = OVERPEN_RANGE * OVERPEN_RANGE
+          let next: Enemy | null = null
+          let nextDist = 0
+          for (const e of alive) {
+            if (e.hp <= 0 || e.id === target.id) continue
+            const d = distSq(target.pos, e.pos)
+            if (d <= rangeSq2 && (next === null || d < nextDist || (d === nextDist && e.id < next.id))) {
+              next = e
+              nextDist = d
+            }
+          }
+          if (next !== null) {
+            hit(next)
+            hitIds.push(next.id)
+          }
+        }
+        // Executor: the spec's own execute — a lower bar than Deadeye's.
+        const executeAt = Math.max(
+          tower.spec === 'executor' ? EXECUTOR_THRESHOLD_PCT : 0,
+          state.relics.includes('deadeye_sigil') ? DEADEYE_EXECUTE_PCT : 0,
+        )
         if (
-          state.relics.includes('deadeye_sigil') &&
+          executeAt > 0 &&
           target.hp > 0 &&
           !target.type.startsWith('boss') &&
-          target.hp * 100 <= target.maxHp * DEADEYE_EXECUTE_PCT
+          target.hp * 100 <= target.maxHp * executeAt
         ) {
           const executed = target.hp
           target.hp = 0
@@ -433,7 +500,12 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
         break
       }
       case 'cannon': {
+        if (tower.spec === 'breaker') {
+          hit(target) // the whole charge, one target
+          break
+        }
         let radius = def.splashRadius!
+        if (tower.spec === 'mortar') radius = Math.floor((radius * MORTAR_SPLASH_PCT) / 100)
         if (state.relics.includes('heavy_powder')) radius = Math.floor((radius * 130) / 100)
         const radiusSq = radius * radius
         for (const e of alive) {
@@ -448,10 +520,23 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       case 'frost': {
         hit(target)
         applySlow(target, def.slowFactor!, def.slowTicks!, state)
+        if (tower.spec === 'permafrost') target.brittleTicks = Math.max(target.brittleTicks, def.slowTicks!)
+        // Blizzard: the cold lands on everyone near the impact — at half
+        // duration. A chill, not a lock: massed blizzards perma-freezing the
+        // whole field carried a fuzzer win before this haircut.
+        if (tower.spec === 'blizzard') {
+          const radiusSq = BLIZZARD_RADIUS * BLIZZARD_RADIUS
+          const splashTicks = Math.max(1, Math.floor((def.slowTicks! * BLIZZARD_SPLASH_TICKS_PCT) / 100))
+          for (const e of alive) {
+            if (e.hp <= 0 || e.id === target.id) continue
+            if (distSq(target.pos, e.pos) <= radiusSq) applySlow(e, def.slowFactor!, splashTicks, state)
+          }
+        }
         break
       }
       case 'tesla': {
         let chain = def.chain!
+        if (tower.spec === 'lattice') chain += LATTICE_EXTRA_CHAIN
         if (state.relics.includes('overcharge')) chain += 2
         if (state.relics.includes('echo_chamber')) chain += 1
         const chainRange = state.relics.includes('echo_chamber')
@@ -480,7 +565,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       }
     }
 
-    tower.cooldown = effectiveTowerCooldown(state, tower.type, tower.tier)
+    tower.cooldown = effectiveTowerCooldown(state, tower.type, tower.tier, tower.spec)
     tower.shots += 1
     events.push({
       type: 'tower_fired',
@@ -546,16 +631,18 @@ export function effectiveAbilityCooldown(state: RunState, ability: AbilityId): n
 // Ticks between shots for a tower of this type/tier — Quickdraw included.
 // Same single-source-of-truth deal: towersFire reloads with this, and the
 // tower panel's fire rate is computed from it.
-export function effectiveTowerCooldown(state: RunState, type: TowerType, tier: 1 | 2 | 3): number {
-  const base = towerTier(type, tier).cooldown
+export function effectiveTowerCooldown(state: RunState, type: TowerType, tier: 1 | 2 | 3, spec: TowerSpecId | null = null): number {
+  let base = towerTier(type, tier).cooldown
+  if (spec === 'mortar') base = Math.floor((base * MORTAR_COOLDOWN_PCT) / 100)
   return state.relics.includes('quickdraw') ? Math.max(3, Math.floor((base * QUICKDRAW_COOLDOWN_PCT) / 100)) : base
 }
 
 // Targeting range for a tower of this type/tier — Longsight included. Used
 // by towersFire and by every UI surface that quotes a range, so the numbers
 // players read are the numbers the engine rolls.
-export function effectiveTowerRange(state: RunState, type: TowerType, tier: 1 | 2 | 3): number {
-  const base = towerTier(type, tier).range
+export function effectiveTowerRange(state: RunState, type: TowerType, tier: 1 | 2 | 3, spec: TowerSpecId | null = null): number {
+  let base = towerTier(type, tier).range
+  if (spec === 'longbow') base = Math.floor((base * LONGBOW_RANGE_PCT) / 100)
   return state.relics.includes('longsight') ? Math.floor((base * LONGSIGHT_RANGE_PCT) / 100) : base
 }
 
@@ -573,6 +660,7 @@ export function tickStatuses(state: RunState): void {
       if (dealt > 0) state.damageByTower.cannon = (state.damageByTower.cannon ?? 0) + dealt
       if (e.burnTicks === 0) e.burnPerTick = 0
     }
+    if (e.brittleTicks > 0) e.brittleTicks -= 1
     if (e.slowTicks > 0) {
       e.slowTicks -= 1
       if (e.slowTicks === 0) e.slowFactor = 100
@@ -671,6 +759,7 @@ export function carrierBroods(state: RunState, events: GameEvent[]): void {
         overcharge: 0,
         mechCooldown: 0,
         mechActiveTicks: 0,
+        brittleTicks: 0,
         targetCell: null,
       })
       events.push({ type: 'enemy_spawned', id, enemy: brood.type })
@@ -789,6 +878,7 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
           overcharge: 0,
           mechCooldown: 0,
           mechActiveTicks: 0,
+          brittleTicks: 0,
           targetCell: null,
         })
         events.push({ type: 'enemy_spawned', id, enemy: split.type })

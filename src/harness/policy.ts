@@ -22,6 +22,7 @@ export interface PolicyGenome {
   repairDeficit: number
   repairMinGold: number
   waveRepairPct: number // 0 disables mid-wave repairs
+  specChoice: 0 | 1 // tier-3 path preference (index into TOWER_SPECS)
   relicPriority: RelicId[]
   metaPriority: MetaUpgradeId[] // spark spending order between runs
 }
@@ -96,6 +97,7 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
       repairDeficit: repairDeficit.value,
       repairMinGold: repairMinGold.value * 10,
       waveRepairPct: waveRepairPct.value * 10,
+      specChoice: (waveRepairPct.value % 2) as 0 | 1, // seeded, no extra draw
       relicPriority: relics.value,
       metaPriority: metas.value,
     },
@@ -146,6 +148,7 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
         const v = draw(r, 0, 7)
         r = v.rng
         g.waveRepairPct = v.value * 10
+        g.specChoice = (v.value % 2) as 0 | 1 // ride the same mutation slot
         break
       }
       case 5: {
@@ -202,6 +205,7 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
     repairDeficit: genome.repairDeficit,
     repairMinGold: genome.repairMinGold,
     enhanceStrategy: genome.enhanceStrategy,
+    specChoice: genome.specChoice ?? 0,
     relicPriority: genome.relicPriority,
   }
   return (state) => {
