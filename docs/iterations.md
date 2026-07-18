@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+179. *(marathon II, iteration 91)* **PLAN's shipped index catches up**
+    — the design contract's index owed three entries: Rematch (exact
+    ruleset from the RunSummary, meta still applies), and a new
+    "Derived UI truth" principle naming the AA_TOWER_NAMES/`support`
+    pattern and the upgrade preview — content-enumerating strings
+    derive from the data tables instead of restating them. Docs only;
+    no code, no goldens.
+
 178. *(marathon II, iteration 90)* **Block-90 boundary** — 90 of 100.
     The 81–89 arc: the Duelist achievement, the closing confidence
     matrix (576 evolutionary runs, 4 biomes × 3 budgets; Ember-Choke

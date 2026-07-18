@@ -52,6 +52,14 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 > - **Victory identity**: the win is scored (bloom + crucible motif), dressed
 >   (gold modal, rising embers, first-win callout), and proven — the e2e suite
 >   pilots a real maxed account through all 24 waves with real commands.
+> - **Rematch**: the run-over screen relaunches the ended run's exact ruleset
+>   (seed + biome + trials from the RunSummary) in one click, while meta still
+>   applies — same wall, stronger you. Begin-next-run keeps rolling fresh.
+> - **Derived UI truth**: strings that enumerate game content derive from the
+>   data tables instead of restating them — `AA_TOWER_NAMES` (hitsAir &&
+>   !support) feeds every "who can hit fliers" sentence, and the `support`
+>   flag replaces combat's hardcoded never-fires type list. The upgrade
+>   button previews the next tier's actual stat deltas from the tower table.
 > Balance discipline throughout: the envelope re-derives when the curve moves
 > intentionally, and every fuzzer-found exploit or corner is investigated
 > (ablation before blame) then pinned as a permanent regression genome — six
