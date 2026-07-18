@@ -190,6 +190,8 @@ describe('settleRun', () => {
       killsByEnemy: { runner: 40 },
       hpByWave: [],
       trials: [],
+      relics: [],
+      cataclysms: [],
       unlocked: [{ id: 'first_blood', name: 'First Blood', sparks: 25 }],
     })
     expect(meta.sparks).toBe(110)
@@ -200,6 +202,19 @@ describe('settleRun', () => {
     const again = settleRun(meta, { ...ended, seed: 'again' })
     expect(again.summary.unlocked).toEqual([])
     expect(again.summary.sparks).toBe(85)
+  })
+
+  it('carries the run loadout into the summary: relics in pick order, cataclysms in strike order', () => {
+    const run = createRun(createMeta(), 'settle-loadout')
+    const ended = {
+      ...run,
+      phase: 'defeat' as const,
+      relics: ['glass_cannon', 'piercing_arrows'] as const,
+      cataclysms: ['surge', 'surge', 'crumbling'] as const,
+    }
+    const { summary } = settleRun(createMeta(), ended as unknown as typeof run)
+    expect(summary.relics).toEqual(['glass_cannon', 'piercing_arrows'])
+    expect(summary.cataclysms).toEqual(['surge', 'surge', 'crumbling'])
   })
 
   it('refuses to settle a live run', () => {

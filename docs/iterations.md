@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+117. *(marathon II, iteration 29)* **Run loadout on the Result tab** —
+    the run-over screen tallied damage and kills but never said WHAT
+    you were playing: RunSummary now carries the run's relics (pick
+    order) and cataclysms (strike order, aggregated ×n in the UI),
+    rendered as rarity-tinted chips with descriptions in tooltips.
+    Settle test pins the carry-through; the victory e2e asserts the
+    chips render (its pilot takes every offer). 192 unit tests, 42
+    e2e specs.
+
 116. *(marathon II, iteration 28)* **Victory celebration** — the win
     screen was the defeat screen with different words. Victory now
     wears gold: glowing modal border, shimmering title, ember motes

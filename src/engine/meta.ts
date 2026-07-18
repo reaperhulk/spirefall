@@ -264,6 +264,8 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     killsByEnemy: { ...run.killsByEnemy },
     hpByWave: [...run.hpByWave],
     trials: [...run.trials],
+    relics: [...run.relics],
+    cataclysms: [...run.cataclysms],
     unlocked,
   }
   const won = run.phase === 'victory' ? 1 : 0

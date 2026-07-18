@@ -240,6 +240,8 @@ export interface RunSummary {
   killsByEnemy: Partial<Record<EnemyType, number>>
   hpByWave: number[]
   trials: TrialId[]
+  relics: RelicId[] // the build that carried (or didn't), in pick order
+  cataclysms: CataclysmId[] // endless scars endured, in strike order
   unlocked: { id: string; name: string; sparks: number }[] // achievements earned by THIS run
 }
 

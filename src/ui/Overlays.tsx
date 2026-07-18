@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { drawRunCard, challengeLink } from './runCard'
-import { CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
+import { CATACLYSMS, CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
 import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import { META_TREE, metaNodeEffect } from '../data/metaTree'
@@ -361,6 +361,30 @@ export function RunOverOverlay({
           <p className="run-summary" data-testid="summary-trials">
             {summary.trials.map((t) => `⚔ ${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}% ✦)`).join(' · ')}
           </p>
+        )}
+        {summary.relics.length > 0 && (
+          // The build that carried (or didn't): every relic picked, in order.
+          <div className="loadout-row" data-testid="summary-relics">
+            {summary.relics.map((r) => (
+              <span key={r} className={`loadout-chip rarity-${RELICS[r].rarity}`} title={RELICS[r].description}>
+                {RELICS[r].name}
+              </span>
+            ))}
+          </div>
+        )}
+        {summary.cataclysms.length > 0 && (
+          // Endless scars, aggregated: the same Cataclysm can strike twice.
+          <div className="loadout-row" data-testid="summary-cataclysms">
+            {[...new Set(summary.cataclysms)].map((c) => {
+              const n = summary.cataclysms.filter((x) => x === c).length
+              return (
+                <span key={c} className="loadout-chip cataclysm" title={CATACLYSMS[c].description}>
+                  ✸ {CATACLYSMS[c].name}
+                  {n > 1 ? ` ×${n}` : ''}
+                </span>
+              )
+            })}
+          </div>
         )}
         {summary.unlocked.length > 0 && (
           <div className="unlocks" data-testid="unlocks">

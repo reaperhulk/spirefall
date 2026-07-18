@@ -1329,6 +1329,10 @@ test('victory: an honest win dresses the screen in gold and names the first triu
   await expect(page.getByTestId('victory-embers')).toBeVisible()
   await expect(page.getByTestId('first-victory')).toBeVisible()
 
+  // The pilot took every relic offered — the Result tab must show the build
+  // that carried the run.
+  expect(await page.getByTestId('summary-relics').locator('.loadout-chip').count()).toBeGreaterThan(0)
+
   // Reduced motion kills the ember layer entirely — it's decoration.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect(page.getByTestId('victory-embers')).not.toBeVisible()

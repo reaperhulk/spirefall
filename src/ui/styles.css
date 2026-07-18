@@ -1448,6 +1448,39 @@ button.preview-unit:hover {
   font-weight: 700;
 }
 
+/* Run loadout chips: relics picked and cataclysms endured. */
+.loadout-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.loadout-chip {
+  border: 1px solid #2c3448;
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #b8c0d8;
+  background: #141a26;
+  cursor: default;
+}
+
+.loadout-chip.rarity-rare {
+  border-color: #4a6a9a;
+  color: #7dcfff;
+}
+
+.loadout-chip.rarity-legendary {
+  border-color: #9a7a3a;
+  color: #e5c07b;
+}
+
+.loadout-chip.cataclysm {
+  border-color: #5c2c34;
+  color: #ff9e64;
+}
+
 /* Victory celebration: the win screen must LOOK different from a loss. */
 .modal.run-over.victory {
   border-color: #e5c07b;
