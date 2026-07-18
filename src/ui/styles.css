@@ -1453,6 +1453,17 @@ button.preview-unit:hover {
   font-weight: 700;
 }
 
+/* In-app confirm dialog. */
+.confirm-modal {
+  max-width: 380px;
+}
+
+.confirm-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
 /* Visually hidden, but real to assistive tech. */
 .sr-only {
   position: absolute;

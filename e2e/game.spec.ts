@@ -491,8 +491,8 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   await page.getByRole('button', { name: '10×' }).click()
   expect(await page.evaluate(() => window.__harness.getSpeed())).toBe(10)
 
-  page.on('dialog', (dialog) => dialog.accept())
   await page.getByTestId('abandon-run').click()
+  await page.getByTestId('confirm-yes').click() // in-app confirm, not window.confirm
   await expect(page.getByTestId('run-over')).toBeVisible()
   // Exploit guard: giving up before clearing anything must earn NOTHING —
   // otherwise mashing "give up → next run" farms unlimited sparks.
@@ -961,10 +961,10 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
   await page.reload()
   await page.waitForSelector('[data-testid="playfield"]')
   expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(0)
-  page.on('dialog', (d) => d.accept())
   await page.getByTestId('open-settings').click()
   await page.getByTestId('transfer-code').fill(code)
   await page.getByTestId('import-save').click()
+  await page.getByTestId('confirm-yes').click() // in-app confirm, not window.confirm
   await page.waitForSelector('[data-testid="playfield"]')
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
 
@@ -972,6 +972,7 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
   await page.getByTestId('open-settings').click()
   await page.getByTestId('transfer-code').fill('not-a-save')
   await page.getByTestId('import-save').click()
+  await page.getByTestId('confirm-yes').click()
   await expect(page.getByTestId('import-failed')).toBeVisible()
   expect(errors).toEqual([])
 })
@@ -1042,8 +1043,8 @@ test('auto-advance sends the next wave by itself', async ({ page }) => {
 
 test('daily run: shared date seed, best-of-today recorded', async ({ page }) => {
   const errors = await boot(page, 'e2e-daily')
-  page.on('dialog', (d) => d.accept())
   await page.getByTestId('daily-run').click()
+  await page.getByTestId('confirm-yes').click() // in-app confirm, not window.confirm
   const today = new Date().toISOString().slice(0, 10)
   await expect.poll(async () => await page.evaluate(() => window.__harness.getReplay().seed)).toBe(`daily-${today}`)
 

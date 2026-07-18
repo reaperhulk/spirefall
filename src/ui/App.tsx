@@ -44,7 +44,7 @@ import { CodexModal } from './Codex'
 import { handleHaptics } from './haptics'
 import { GameCanvas } from './GameCanvas'
 import { installHarness } from './harness'
-import { RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
+import { ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
 import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
@@ -165,6 +165,9 @@ export default function App() {
   const hoverRef = useRef<CellPos | null>(null)
   // Screen-reader narration of major beats (aria-live, visually hidden).
   const [srMessage, setSrMessage] = useState('')
+  // In-app confirmation (replaces window.confirm — see ConfirmModal).
+  const [confirm, setConfirm] = useState<{ message: string; action: () => void } | null>(null)
+  const askConfirm = (message: string, action: () => void) => setConfirm({ message, action })
   const [dailyBest, setDailyBest] = useState<DailyBest | null>(() => loadDailyBest())
   const [mapPref, setMapPref] = useState<string>(() => loadMapPref())
   const mapPrefRef = useRef(mapPref)
@@ -381,12 +384,12 @@ export default function App() {
   const doAscend = () => {
     if (!canAscend(metaRef.current)) return
     const gain = emberGainOnAscend(metaRef.current)
-    if (!window.confirm(`Ascend for ❖ ${gain}? The Spire Tree, unlocks, and banked Sparks burn. Ember upgrades are forever.`))
-      return
-    const next = ascend(metaRef.current)
-    metaRef.current = next
-    setMeta(next)
-    persistSave({ version: 1, meta: next, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+    askConfirm(`Ascend for ❖ ${gain}? The Spire Tree, unlocks, and banked Sparks burn. Ember upgrades are forever.`, () => {
+      const next = ascend(metaRef.current)
+      metaRef.current = next
+      setMeta(next)
+      persistSave({ version: 1, meta: next, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+    })
   }
 
   // Dev/test harness on window.__game / window.__harness.
@@ -466,6 +469,7 @@ export default function App() {
         setShowStats(false)
         setShowCodex(false)
         setCodexFocus(null)
+        setConfirm(null)
         return
       }
       // Never hijack typing/selects (e.g. the targeting dropdown).
@@ -798,10 +802,11 @@ export default function App() {
                 ? `Today's shared seed — your best: wave ${dailyBest.waves}${(dailyBest.streak ?? 1) > 1 ? ` · ${dailyBest.streak}-day streak` : ''}`
                 : "Play today's shared seed — same map and waves for everyone"
             }
-            onClick={() => {
-              if (window.confirm('Start the Daily run? Your current run will be abandoned (progress-only sparks apply).'))
-                beginNextRun(dailySeed())
-            }}
+            onClick={() =>
+              askConfirm('Start the Daily run? Your current run will be abandoned (progress-only sparks apply).', () =>
+                beginNextRun(dailySeed()),
+              )
+            }
           >
             📅{dailyBest ? ` ${dailyBest.waves}` : ''}
             {(dailyBest?.streak ?? 1) > 1 && <span className="streak-mark">🔥{dailyBest!.streak}</span>}
@@ -849,11 +854,12 @@ export default function App() {
               className="ghost-btn danger btn-abandon"
               data-testid="abandon-run"
               title="End this run now — you keep the Sparks earned so far"
-              onClick={() => {
-                if (window.confirm(state.victoryClaimed ? 'End the run and bank your victory?' : 'Abandon this run? You keep the Sparks earned so far.')) {
-                  session.dispatch({ type: 'abandon_run' })
-                }
-              }}
+              onClick={() =>
+                askConfirm(
+                  state.victoryClaimed ? 'End the run and bank your victory?' : 'Abandon this run? You keep the Sparks earned so far.',
+                  () => session.dispatch({ type: 'abandon_run' }),
+                )
+              }
             >
               {state.victoryClaimed ? 'End run' : 'Give up'}
             </button>
@@ -1367,6 +1373,7 @@ export default function App() {
           onHaptics={(v) => setUiSettings({ ...updateSettings({ haptics: v }) })}
           onColorAssist={(v) => setUiSettings({ ...updateSettings({ colorAssist: v }) })}
           onWatchReplay={watchImported}
+          askConfirm={askConfirm}
           onClose={() => setShowSettings(false)}
         />
       )}
@@ -1388,10 +1395,23 @@ export default function App() {
           onBuyEmber={buyEmber}
           onAscend={doAscend}
           onClose={() => setShowTree(false)}
+          askConfirm={askConfirm}
           onHardReset={() => {
             clearSave()
             window.location.reload()
           }}
+        />
+      )}
+      {/* Rendered last: the confirm dialog must stack over every other modal. */}
+      {confirm && (
+        <ConfirmModal
+          message={confirm.message}
+          onConfirm={() => {
+            const act = confirm.action
+            setConfirm(null)
+            act()
+          }}
+          onCancel={() => setConfirm(null)}
         />
       )}
     </div>

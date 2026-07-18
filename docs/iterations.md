@@ -52,6 +52,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+129. *(marathon II, iteration 41)* **window.confirm is gone** — all
+    five native confirms (abandon/end run, daily start, ascend, save
+    import, hard reset) now flow through one in-app ConfirmModal:
+    styleable, screen-reader-announced (`role="alertdialog"`),
+    Escape-cancellable, stacked above every other modal, and no
+    longer tab-freezing in the PWA. Audited-and-covered on the way:
+    daily-done marker (the 📅 badge is already today-scoped) and the
+    Blightmother heal telegraph (engine event → green pulse effect →
+    renderer, plus SFX). Three e2e flows now click the real confirm
+    button instead of auto-accepting native dialogs. 194 unit tests,
+    43 e2e specs.
+
 128. *(marathon II, iteration 40)* **README truth pass + block-40
     boundary** — the README still described the fixed-map era: 5 maps
     (now 4 generated biomes), 23 relics (30), 13 enemies (15, 5-boss

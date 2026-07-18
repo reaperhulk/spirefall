@@ -200,8 +200,34 @@ function ShareBars({ title, entries, color }: { title: string; entries: [string,
   )
 }
 
-// Live mid-run analytics: the run-over screen's numbers, available while the
-// run still breathes. Read-only view over the live state — no dispatch.
+// In-app confirmation — window.confirm freezes the tab, looks foreign in the
+// PWA, and can't be styled or announced. One shared modal replaces it.
+export function ConfirmModal({
+  message,
+  onConfirm,
+  onCancel,
+}: {
+  message: string
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div className="modal-backdrop" onClick={onCancel} data-testid="confirm-modal">
+      <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true" aria-label="Confirm">
+        <p className="run-summary">{message}</p>
+        <div className="confirm-row">
+          <button className="primary-btn" data-testid="confirm-yes" onClick={onConfirm}>
+            Confirm
+          </button>
+          <button className="ghost-btn" data-testid="confirm-no" onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // The run's loadout, shared by the mid-run stats modal and the run-over
 // Result tab: relics in pick order, cataclysms aggregated (×n on repeats).
 function LoadoutChips({ relics, cataclysms }: { relics: RelicId[]; cataclysms: RunState['cataclysms'] }) {
@@ -233,6 +259,8 @@ function LoadoutChips({ relics, cataclysms }: { relics: RelicId[]; cataclysms: R
   )
 }
 
+// Live mid-run analytics: the run-over screen's numbers, available while the
+// run still breathes. Read-only view over the live state — no dispatch.
 export function RunStatsModal({ state, onClose }: { state: RunState; onClose: () => void }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -647,6 +675,7 @@ export function SettingsModal({
   onColorAssist,
   onWatchReplay,
   onClose,
+  askConfirm,
 }: {
   meta: MetaState
   volume: number
@@ -661,6 +690,7 @@ export function SettingsModal({
   onColorAssist: (v: boolean) => void
   onWatchReplay: (text: string) => boolean
   onClose: () => void
+  askConfirm: (message: string, action: () => void) => void
 }) {
   const [transferCode, setTransferCode] = useState('')
   const [importFailed, setImportFailed] = useState(false)
@@ -798,10 +828,11 @@ export function SettingsModal({
             data-testid="import-save"
             onClick={() => {
               if (!transferCode.trim()) return
-              if (!window.confirm('Import this code? Your current progress will be replaced.')) return
-              void importSave(transferCode).then((ok) => {
-                if (ok) window.location.reload()
-                else setImportFailed(true)
+              askConfirm('Import this code? Your current progress will be replaced.', () => {
+                void importSave(transferCode).then((ok) => {
+                  if (ok) window.location.reload()
+                  else setImportFailed(true)
+                })
               })
             }}
           >
@@ -877,6 +908,7 @@ export function SpireTreeModal({
   onBuyEmber,
   onAscend,
   onClose,
+  askConfirm,
   onHardReset,
 }: {
   meta: MetaState
@@ -884,6 +916,7 @@ export function SpireTreeModal({
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
   onClose: () => void
+  askConfirm: (message: string, action: () => void) => void
   onHardReset: () => void
 }) {
   return (
@@ -900,7 +933,7 @@ export function SpireTreeModal({
           className="ghost-btn danger"
           data-testid="hard-reset"
           onClick={() => {
-            if (window.confirm('Wipe ALL progress — every Spark and upgrade — and start over?')) onHardReset()
+            askConfirm('Wipe ALL progress — every Spark and upgrade — and start over?', onHardReset)
           }}
         >
           Hard reset (wipe all progress)
