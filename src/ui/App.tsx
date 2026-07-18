@@ -476,13 +476,16 @@ export default function App() {
   const autoStart = uiSettings.autoStart
   useEffect(() => {
     if (!autoStart || summary || victoryPrompt) return
-    if (state.phase !== 'build' || state.relicOffer !== null) return
+    // A pending relic or cataclysm choice pauses the conveyor — firing
+    // start_wave into the gate would just spam rejections into the log.
+    if (state.phase !== 'build' || state.relicOffer !== null || state.cataclysmOffer !== null) return
     const timer = setTimeout(() => {
       const s = sessionRef.current.state
-      if (s.phase === 'build' && s.relicOffer === null) sessionRef.current.dispatch({ type: 'start_wave' })
+      if (s.phase === 'build' && s.relicOffer === null && s.cataclysmOffer === null)
+        sessionRef.current.dispatch({ type: 'start_wave' })
     }, 1200)
     return () => clearTimeout(timer)
-  }, [autoStart, state.phase, state.relicOffer, state.wave, summary, victoryPrompt])
+  }, [autoStart, state.phase, state.relicOffer, state.cataclysmOffer, state.wave, summary, victoryPrompt])
 
   // Keyboard shortcuts.
   useEffect(() => {

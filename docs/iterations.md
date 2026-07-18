@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+152. *(marathon II, iteration 64)* **Auto-advance respects the doom
+    gate** — the auto-start timer predates cataclysm offers: with ▶▶
+    on, it would fire start_wave into the gate every 1.2s, spamming
+    rejections into the command log (and the replay). It now pauses
+    for a pending cataclysm exactly as it does for a relic offer.
+    Also audited: haptics already buzz on cataclysm strikes — no gap.
+    195 unit tests, 44 e2e specs.
+
 151. *(marathon II, iteration 63)* **Relic tally in the Codex** — the
     relics tab now states "N of 30 held" for the current run beside
     the ✦ legend. Small, but it turns the tab into a live collection
