@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+156. *(marathon II, iteration 68)* **The pilot generalizes** — the
+    maxed-account pilot was extracted verbatim into a shared
+    MAXED_PILOT function (the tuned verdant win passes bit-for-bit
+    after the lift), and a new spec runs it on FROSTFEN with a reach
+    goal: the picket line threads marsh terrain to wave 15+ (first
+    try — the machinery isn't verdant-shaped). Victory stays pinned
+    to the tuned seed; generalization is proven by reach. 195 unit
+    tests, 45 e2e specs.
+
 155. *(marathon II, iteration 67)* **The contract records the choice**
     — PLAN.md's shipped-systems index now carries cataclysm choice
     (new command + wave gate = architecture, not just content) and
