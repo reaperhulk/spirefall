@@ -95,6 +95,24 @@ describe('build fuzzer', () => {
     }
   }, 300_000)
 
+  // Closing-matrix find (2026-07, iteration 82): a cannon-heavy spireChoke
+  // comp surviving to wave 22 vs the 15-wave reference at 5k on emberwaste
+  // gamma. Ablation proved the lance (and Duelist's Oath) irrelevant — 22
+  // waves with or without — so this is comp + seed geometry, a WARNING-class
+  // spark-efficiency corner, not a break. The pin holds the line that
+  // matters: if this genome ever converts its depth into a WIN at these
+  // budgets, the curve has genuinely opened.
+  const EMBER_CHOKE: PolicyGenome = {"ratio":{"arrow":7,"cannon":8,"frost":2,"tesla":1,"sniper":2,"mint":2,"beacon":0,"lance":4},"earlyType":"arrow","upgradeAtTowers":5,"targetBase":6,"targetPerWave":1,"targetMax":17,"enhanceStrategy":"cheapest","repairDeficit":4,"repairMinGold":240,"waveRepairPct":10,"specChoice":1,"relicPriority":["spark_siphon","cinder_shells","colossus","golden_ledger","piercing_arrows","overcharge","ricochet_strings","shatter","deep_pockets","quickdraw","bounty_banner","longsight","winters_grip","echo_chamber","prism_lens","stoneskin","golden_touch","shatterheart","executioners_seal","deadeye_sigil","keen_sights","fortune_idol","storm_coils","glass_cannon","heavy_powder","field_medicine","last_stand","overclock","mint_condition","soul_harvest","duelists_oath"],"metaPriority":["starting_gold","tower_damage","spark_gain","unlock_beacon","unlock_lance","crit_chance","gold_income","unlock_gold_rush","wave_skip","spire_hp","unlock_mint","unlock_bulwark","unlock_tesla"],"placement":"spireChoke","specByType":{"arrow":1,"cannon":0,"frost":1,"tesla":0,"sniper":0,"mint":1,"beacon":0,"lance":1},"enhanceFocus":"focus","targetingByType":{"arrow":"strongest","cannon":"strongest","frost":"weakest","tesla":"weakest","sniper":"strongest","mint":"first","lance":"first"}} as PolicyGenome
+
+  it('closing-matrix find: the Ember-Choke depth corner never converts to a cheap win', () => {
+    const bot = makePolicyBot(EMBER_CHOKE)
+    for (const budget of [5000, 8000]) {
+      const meta = spendSparks({ ...createMeta(), sparks: budget }, EMBER_CHOKE.metaPriority)
+      const { state } = autoplay(createRun(meta, 'gamma', 'emberwaste'), bot, 150_000)
+      expect(state.phase, `emberwaste gamma @ ${budget} sparks`).toBe('defeat')
+    }
+  }, 300_000)
+
   // Emberbound Crews (2026-07) raises the mid-wave repair cap to 3 — the
   // very cap that killed this exploit. Prove the node priced out the tank:
   // the same all-in genome with MAX crews must still lose every cheap run.

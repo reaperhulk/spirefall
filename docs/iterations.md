@@ -52,6 +52,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+170. *(marathon II, iteration 82)* **The closing confidence matrix**
+    — 576 evolutionary runs across 4 biomes × 3 budgets (5k/8k/20k)
+    under the post-Lance, post-Oath world. Verdant, frostfen, and
+    highlands: clean. Emberwaste surfaced ONE warning-class find: a
+    cannon-heavy spireChoke comp surviving to wave 22 vs the 15-wave
+    reference at 5k on gamma. Ablation (the vents lesson) proved the
+    lance and the oath irrelevant — 22 waves with or without — so
+    it's comp + seed geometry: a spark-efficiency corner, not a
+    break (no win anywhere near cheap). Pinned as EMBER_CHOKE
+    holding the line that matters: this genome must never convert
+    its depth into a 5k/8k win. Sixth pinned genome. 202 unit tests,
+    48 e2e specs.
+
 169. *(marathon II, iteration 81)* **Duelist** — 22nd achievement
     (450✦): win a run in which the Lance out-damaged every other
     tower — the specialist asked to carry. Predicate tests pin the
