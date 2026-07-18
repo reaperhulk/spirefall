@@ -33,7 +33,7 @@ npm run dev     # then open http://localhost:5173
   Watch for fliers that soar over mazes, phasing wraiths, carriers that birth
   swarmlings, shieldbearers that bounce weak hits, and a different boss every
   10th wave.
-- **Choose**: every 5 waves the ruins offer a relic (30 in the pool, with
+- **Choose**: every 5 waves the ruins offer a relic (31 in the pool, with
   rarities, one paid reroll, and a pity floor past wave 15). Skipping pays gold.
 - **Fall**: the Spire has 10 HP and every enemy hits differently — first runs die
   in minutes. Sparks buy the Spire Tree (12 nodes); victories unlock Ascension,
@@ -85,7 +85,7 @@ the repository (Settings → Pages → Source: GitHub Actions).
 
 **Post-M6, in continuous iteration.** Playable game with 8 tower types (each
 with two tier-3 specializations), 16 enemy types across a 6-boss cycle, wave
-affixes, 30 relics with rarity/reroll/pity, four abilities, six Trials, endless
+affixes, 31 relics with rarity/reroll/pity, four abilities, six Trials, endless
 Cataclysms, the Crucible, the Spire Tree → Ascension → Ember Tree meta stack, 21
 achievements, daily runs with streaks, generated battlefields across 4 biomes, a
 generative biome-keyed score with key-matched SFX, watchable/shareable replays,

@@ -52,6 +52,13 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+166. *(marathon II, iteration 78)* **Counts stay honest** — README
+    relic counts to 31 (the codex tally self-corrects — it reads the
+    data). Debt check after the lance arc: App.tsx 1401 (fine),
+    render.ts 1902 (the lance body + regalia pushed it — split
+    watch: next render subsystem forces the extraction). 201 unit
+    tests, 48 e2e specs.
+
 165. *(marathon II, iteration 77)* **Duelist's Oath** — 31st relic,
     completing the build-around family (every combat tower now has
     one): lances keep HALF their ramp when switching targets. Wired
