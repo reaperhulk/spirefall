@@ -231,6 +231,8 @@ describe('settleRun', () => {
     expect(find('committed').earned({ ...base, towers: [tower('volley'), tower(null)] }, meta)).toBe(false)
     expect(find('unbroken').earned({ ...base, victoryClaimed: true, trials: ['no_mercy'] }, meta)).toBe(true)
     expect(find('unbroken').earned({ ...base, victoryClaimed: true }, meta)).toBe(false)
+    expect(find('in_the_dark').earned({ ...base, victoryClaimed: true, trials: ['blackout'] }, meta)).toBe(true)
+    expect(find('in_the_dark').earned({ ...base, victoryClaimed: true, trials: ['no_mercy'] }, meta)).toBe(false)
     expect(find('crucible_3').earned({ ...base, victoryClaimed: true, crucible: 3 }, meta)).toBe(true)
     expect(find('crucible_3').earned({ ...base, victoryClaimed: true, crucible: 2 }, meta)).toBe(false)
     expect(find('perfect_cycle').earned({ ...base, victoryClaimed: true, spireHp: base.spireMaxHp }, meta)).toBe(true)

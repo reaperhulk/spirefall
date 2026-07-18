@@ -146,6 +146,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     earned: (run) => run.victoryClaimed && run.trials.includes('no_mercy'),
   },
   {
+    id: 'in_the_dark',
+    name: 'Eyes Shut',
+    description: 'Win under the Blackout trial — every wave arrived unseen.',
+    sparks: 350,
+    earned: (run) => run.victoryClaimed && run.trials.includes('blackout'),
+  },
+  {
     id: 'crucible_3',
     name: 'Thrice-Forged',
     description: 'Win at Crucible rank 3 or higher.',
