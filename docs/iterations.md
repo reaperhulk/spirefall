@@ -52,6 +52,12 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+169. *(marathon II, iteration 81)* **Duelist** — 22nd achievement
+    (450✦): win a run in which the Lance out-damaged every other
+    tower — the specialist asked to carry. Predicate tests pin the
+    win, the out-damaged loss, and the no-lance case. 201 unit
+    tests, 48 e2e specs.
+
 168. *(marathon II, iteration 80)* **Block-80 boundary** — 80 of 100.
     The 71–79 arc was the Lance arc bracketed by render truthfulness:
     boss regalia + phased fades, then the full 8th-tower cycle (def →
