@@ -195,6 +195,8 @@ describe('mints', () => {
     const income = events.find((e) => e.type === 'mint_income')
     expect(income).toBeDefined()
     expect(income!.type === 'mint_income' && income!.amount).toBe(12)
+    // The lifetime ledger tracks exactly what was paid out.
+    expect(s.towers[0]!.earned).toBe(12)
   })
 
   it('never fire and never record kills', () => {

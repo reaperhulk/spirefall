@@ -529,6 +529,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     const amount = Math.floor((base * (100 + s.mods.goldPct + mintBonus + 10 * t.enhance)) / 100)
     s.gold += amount
     t.shots += 1 // a payout counts as "acting" — the mint no longer sells at 100%
+    t.earned = (t.earned ?? 0) + amount // lifetime ledger: is this mint paying for itself?
     events.push({ type: 'mint_income', id: t.id, amount })
   }
 

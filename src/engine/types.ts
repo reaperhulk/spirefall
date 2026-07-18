@@ -94,6 +94,7 @@ export interface Tower {
   kills: number // killing blows landed (lifetime)
   damageDealt: number // total damage dealt (lifetime)
   shots: number // shots fired (mints: payouts made); 0 = full sell refund
+  earned?: number // mints only: lifetime gold paid out (optional — backfills lazily)
 }
 
 export interface Enemy {

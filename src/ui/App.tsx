@@ -917,7 +917,11 @@ export default function App() {
               {hoveredTower.enhance > 0 && ` +${hoveredTower.enhance}`}
             </strong>
             {hoveredTower.type === 'mint' || hoveredTower.type === 'beacon' ? (
-              <span>{hoveredTower.type === 'beacon' ? `+${towerTier('beacon', hoveredTower.tier).auraPct}% damage to towers in range` : `${towerTier('mint', hoveredTower.tier).mintYield} gold / cleared wave`}</span>
+              <span>
+                {hoveredTower.type === 'beacon'
+                  ? `+${towerTier('beacon', hoveredTower.tier).auraPct}% damage to towers in range`
+                  : `${towerTier('mint', hoveredTower.tier).mintYield} gold / cleared wave · ⛀ ${hoveredTower.earned ?? 0} earned`}
+              </span>
             ) : (
               (() => {
                 const b = damageBreakdown(state, hoveredTower)
@@ -961,7 +965,11 @@ export default function App() {
               {selectedTower.enhance > 0 && ` +${selectedTower.enhance}`}
             </h3>
             {selectedTower.type === 'mint' || selectedTower.type === 'beacon' ? (
-              <p>{selectedTower.type === 'beacon' ? `+${towerTier('beacon', selectedTower.tier).auraPct}% damage to towers in range` : `${towerTier('mint', selectedTower.tier).mintYield} gold per cleared wave`}</p>
+              <p>
+                {selectedTower.type === 'beacon'
+                  ? `+${towerTier('beacon', selectedTower.tier).auraPct}% damage to towers in range`
+                  : `${towerTier('mint', selectedTower.tier).mintYield} gold per cleared wave — ⛀ ${selectedTower.earned ?? 0} earned of ⛀ ${towerInvested('mint', selectedTower.tier)} invested${(selectedTower.earned ?? 0) >= towerInvested('mint', selectedTower.tier) ? ' ✓ paid off' : ''}`}
+              </p>
             ) : (
               (() => {
                 const b = damageBreakdown(state, selectedTower)

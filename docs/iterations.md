@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+113. *(marathon II, iteration 25)* **Mint payback ledger** — a mint's
+    only question is "has it paid for itself?", and nothing answered
+    it. Towers gain an optional `earned` field written at every payout;
+    the mint's panel now reads "⛀ X earned of ⛀ Y invested ✓ paid off"
+    and the hover tooltip carries the lifetime figure. Optional field =
+    no test-literal sweeps, lazy backfill, saves unaffected. Engine
+    test pins the ledger against the payout event. 191 unit tests, 35
+    e2e specs.
+
 112. *(marathon II, iteration 24)* **The confidence matrix closes** —
     20k hunts on the three feature biomes (60 runs each): frostfen best
     19 waves, emberwaste 22, highlands 23 — zero breaking, zero
