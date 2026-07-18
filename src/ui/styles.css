@@ -1503,6 +1503,13 @@ button.preview-unit:hover {
   color: #9ece6a;
 }
 
+/* Daily streak flame on the calendar button. */
+.streak-mark {
+  margin-left: 4px;
+  font-size: 11px;
+  color: #ff9e64;
+}
+
 /* Small phones: tab rows tighten so every tab fits at 320px. The
    overflow-x safety lives ONLY here — at desktop widths a scrollable tab
    strip becomes a nested scroll container that hijacks scroll-into-view. */

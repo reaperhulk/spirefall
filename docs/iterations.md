@@ -52,6 +52,14 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+114. *(marathon II, iteration 26)* **Daily streaks** — the daily had no
+    pull toward tomorrow. Finishing a daily now extends a consecutive-
+    day streak (yesterday's chain +1; a gap resets to 1), stored in the
+    same localStorage record; the calendar button wears a 🔥N flame
+    from day two and the tooltip names the streak. UI-layer only (Date
+    stays out of the engine). E2e pins streak=1 on a fresh chain. 191
+    unit tests, 35 e2e specs.
+
 113. *(marathon II, iteration 25)* **Mint payback ledger** — a mint's
     only question is "has it paid for itself?", and nothing answered
     it. Towers gain an optional `earned` field written at every payout;

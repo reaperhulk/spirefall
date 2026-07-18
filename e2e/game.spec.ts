@@ -988,6 +988,7 @@ test('daily run: shared date seed, best-of-today recorded', async ({ page }) => 
   await expect(page.getByTestId('run-over')).toBeVisible()
   const stored = await page.evaluate(() => localStorage.getItem('spirefall-daily'))
   expect(JSON.parse(stored!).date).toBe(today)
+  expect(JSON.parse(stored!).streak).toBe(1) // first day of a fresh chain
   expect(errors).toEqual([])
 })
 

@@ -63,17 +63,22 @@ function dailySeed(): string {
 interface DailyBest {
   date: string
   waves: number
+  streak?: number // consecutive days with a finished daily
 }
 
-function loadDailyBest(): DailyBest | null {
+// The raw record survives across days — the streak chain needs yesterday.
+function loadDailyRaw(): DailyBest | null {
   try {
     const raw = localStorage.getItem('spirefall-daily')
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as DailyBest
-    return parsed.date === new Date().toISOString().slice(0, 10) ? parsed : null
+    return raw ? (JSON.parse(raw) as DailyBest) : null
   } catch {
     return null
   }
+}
+
+function loadDailyBest(): DailyBest | null {
+  const parsed = loadDailyRaw()
+  return parsed && parsed.date === new Date().toISOString().slice(0, 10) ? parsed : null
 }
 
 const TOWER_KEYS: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon']
@@ -219,9 +224,15 @@ export default function App() {
       for (const e of events) {
         if (e.type === 'run_ended') {
           if (s.seed === dailySeed()) {
-            const best = { date: new Date().toISOString().slice(0, 10), waves: s.wavesCleared }
+            const today = new Date().toISOString().slice(0, 10)
+            const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
+            const raw = loadDailyRaw()
+            // Streak: today extends yesterday's chain; a gap resets to 1.
+            const streak =
+              raw?.date === today ? (raw.streak ?? 1) : raw?.date === yesterday ? (raw.streak ?? 1) + 1 : 1
             const prior = loadDailyBest()
-            if (!prior || best.waves > prior.waves) {
+            if (!prior || s.wavesCleared > prior.waves) {
+              const best = { date: today, waves: s.wavesCleared, streak }
               try {
                 localStorage.setItem('spirefall-daily', JSON.stringify(best))
               } catch {
@@ -717,7 +728,7 @@ export default function App() {
             aria-label="Play today's daily run"
             title={
               dailyBest
-                ? `Today's shared seed — your best: wave ${dailyBest.waves}`
+                ? `Today's shared seed — your best: wave ${dailyBest.waves}${(dailyBest.streak ?? 1) > 1 ? ` · ${dailyBest.streak}-day streak` : ''}`
                 : "Play today's shared seed — same map and waves for everyone"
             }
             onClick={() => {
@@ -726,6 +737,7 @@ export default function App() {
             }}
           >
             📅{dailyBest ? ` ${dailyBest.waves}` : ''}
+            {(dailyBest?.streak ?? 1) > 1 && <span className="streak-mark">🔥{dailyBest!.streak}</span>}
           </button>
           <button
             className="ghost-btn"
