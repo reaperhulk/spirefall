@@ -2,6 +2,7 @@ import { BIOME_IDS, type BiomeId } from '../data/biomes'
 import type { RunState } from '../engine/types'
 import type { Sfx } from './audio'
 import { settings } from './settings'
+import type { Tonality } from './tonality'
 
 // Generative score — zero assets, same philosophy as the SFX stack. The
 // music is built on actual harmonic motion, not a drone: a per-biome chord
@@ -89,9 +90,14 @@ export class Music {
   private intensity = 0.15
   private padLevel = 0
   private timer: ReturnType<typeof setInterval> | null = null
+  private lastTonality: Tonality | null = null
 
   constructor(sfx: Sfx) {
     this.sfx = sfx
+    // Publish the live key so tonal sound effects ring in tune with the
+    // score (see tonality.ts). Stays at the last chord while music is
+    // muted — a fixed key still beats a clashing one.
+    sfx.tonality = () => this.lastTonality
   }
 
   attach(getState: () => RunState): void {
@@ -218,6 +224,10 @@ export class Music {
       // on the downbeat and relax through the bar (breathing, not droning),
       // and let the filter bloom open then settle.
       this.tunePad(ctx, at, [tone(chordDegree, 0), tone(chordDegree, 1), tone(chordDegree, 2)])
+      this.lastTonality = {
+        scalePCs: scale.map((s) => (root + s) % 12),
+        chordPCs: [0, 1, 2].map((k) => tone(chordDegree, k) % 12),
+      }
       const level = this.padLevel * (lift ? 1.12 : 1)
       const bright = lift ? 260 : 0
       this.padGain.gain.setTargetAtTime(level, at, 0.3)

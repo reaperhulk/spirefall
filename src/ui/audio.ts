@@ -1,6 +1,7 @@
 import { MAP_WIDTH } from '../data/maps'
 import type { GameEvent, TowerType } from '../engine/types'
 import { settings } from './settings'
+import { snapToPitchClasses, type Tonality } from './tonality'
 
 // Synthesized SFX — WebAudio oscillators + filtered noise, no assets. Every
 // tower has its own voice, abilities and cataclysms get stingers, and the
@@ -13,6 +14,13 @@ import { settings } from './settings'
 // user gesture (browser autoplay policy), sounds are throttled per kind and
 // globally so 10× speed doesn't become a wall of noise, and the mute
 // preference persists.
+//
+// The note frequencies below are DESIGN pitches. At play time every tonal
+// voice (pluck/fm/oscillator) snaps to the score's live key — melodic
+// stingers to the chord sounding right now, combat ticks to the scale —
+// so the battlefield rings in tune with the music (see tonality.ts; the
+// Music instance publishes via Sfx.tonality). Noise voices keep their
+// design center: percussion has no pitch to clash.
 
 const MUTE_KEY = 'spirefall-muted'
 
@@ -238,9 +246,23 @@ function panFromX(xMillicells: number): number {
   return Math.max(-0.8, Math.min(0.8, (frac - 0.5) * 1.3))
 }
 
+// Musical stingers land on CHORD tones — they're the sounds that read as
+// phrases of the score. Everything else tonal snaps to the wider scale so
+// rapid fire gets melodic variety without leaving the key.
+const CHORD_SNAPPED: ReadonlySet<SoundKind> = new Set([
+  'kill',
+  'wave_cleared',
+  'victory',
+  'relic',
+  'place',
+  'gold_rush',
+  'bulwark',
+])
+
 // Combat percussion gets a little random pitch drift so rapid fire doesn't
 // sound like a machine stamping the same sample. UI layer — Math.random is
-// fine here; the engine never sees it.
+// fine here; the engine never sees it. (Tonal voices skip the jitter when
+// a live key is published — detuning a quantized note defeats the point.)
 const JITTERED: ReadonlySet<SoundKind> = new Set([
   'shot_arrow',
   'shot_cannon',
@@ -261,6 +283,9 @@ export class Sfx {
   private recentWindow = 0
   private reviveGeneration = 0
   muted: boolean
+  // The score (music.ts) publishes its live key here; null = no music yet,
+  // sounds play at their design pitch.
+  tonality: (() => Tonality | null) | null = null
 
   constructor() {
     this.muted = localStorage.getItem(MUTE_KEY) === '1'
@@ -503,6 +528,7 @@ export class Sfx {
     }
 
     const base = ctx.currentTime
+    const tonal = this.tonality?.() ?? null
     const pitch = JITTERED.has(kind) ? 1 + (Math.random() * 2 - 1) * 0.04 : 1
     let chained = 0 // running offset for notes without an explicit `at`
     for (const note of SOUNDS[kind]) {
@@ -518,7 +544,14 @@ export class Sfx {
       gain.gain.linearRampToValueAtTime(scaled, at + attack)
       gain.gain.exponentialRampToValueAtTime(0.0001, at + note.dur)
       connect(gain)
-      const freq = note.freq * pitch
+      // Noise keeps its (jittered) design center — a bandpass sweep isn't a
+      // pitch. Tonal voices fall into the live key when the score has one.
+      let freq = note.freq
+      if (note.type === 'noise' || tonal === null) {
+        freq *= pitch
+      } else {
+        freq = snapToPitchClasses(freq, CHORD_SNAPPED.has(kind) ? tonal.chordPCs : tonal.scalePCs)
+      }
       if (note.type === 'pluck') {
         // Karplus-Strong: a 2-period noise burst excites a tuned feedback
         // delay; a lowpass in the loop damps it like a real string. The
@@ -530,11 +563,17 @@ export class Sfx {
         const burst = ctx.createGain()
         burst.gain.setValueAtTime(1, at)
         burst.gain.exponentialRampToValueAtTime(0.001, at + period * 2)
+        const fc = Math.min(12000, freq * 6)
         const delay = ctx.createDelay(0.05)
-        delay.delayTime.value = period
+        // The in-loop damping filter adds ~1/(2π·fc) of group delay, which
+        // rings the string ~45 cents FLAT of the commanded pitch. Arbitrary
+        // design pitches hid that; key-quantized ones can't — shorten the
+        // line by the filter delay so the pluck sounds at pitch.
+        delay.delayTime.value = Math.max(period / 2, period - 1 / (2 * Math.PI * fc))
         const damp = ctx.createBiquadFilter()
         damp.type = 'lowpass'
-        damp.frequency.value = Math.min(12000, freq * 6)
+        damp.frequency.value = fc
+        damp.Q.value = 1 // pinned: the tuning compensation above assumes it
         const fb = ctx.createGain()
         fb.gain.setValueAtTime(Math.pow(0.001, period / note.dur), at)
         src.connect(burst)

@@ -38,6 +38,26 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+79. *(playtest feedback)* **SFX ring in the score's key** — the sound
+    effects and the music lived in unrelated tonal worlds. Now the score
+    publishes its live tonality (scale + the chord sounding right now, as
+    pitch classes — `src/ui/tonality.ts`) and every TONAL sfx voice
+    (pluck/fm/oscillator) snaps to it at play time: musical stingers
+    (kill, wave cleared, relic, victory, place, gold rush, bulwark) land
+    on CHORD tones, rapid combat ticks on the wider scale, noise
+    percussion stays free (no pitch to clash). Design pitches keep their
+    register — the snap never moves a note more than a tritone. Pitch
+    jitter is skipped for quantized voices (detuning a snapped note
+    defeats the point). Found and fixed along the way: the Karplus-Strong
+    pluck rang ~45 cents FLAT of its commanded pitch (the in-loop damping
+    filter's group delay lengthens the string) — inaudible with arbitrary
+    pitches, a real clash against a quantized score; the delay line now
+    subtracts 1/(2π·fc). Verified end-to-end by hooking createDelay in
+    headless Chromium: a placed tower's pluck was commanded at exactly
+    196.00 Hz (G3, 0.0 cents off), a chord tone of the run's key. The
+    quantizer is a pure module with 5 unit tests. 175 unit tests, 31
+    e2e specs.
+
 78. *(playtest feedback)* **Longer musical form** — the 4-bar progression
     (~11s) announced its loop too fast. Progressions doubled to 8 bars as
     two real phrases (a wandering antecedent, a cadencing consequent), and
