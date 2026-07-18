@@ -25,6 +25,8 @@ import {
   TRIAL_IDS,
   TRIALS,
   VICTORY_WAVE,
+  LANCE_MAX_STACKS,
+  LANCE_RAMP_PCT,
   WAVE_CLEAR_KNIT_HP,
   type EnemyDef,
 } from '../data/content'
@@ -97,6 +99,8 @@ function specialProgression(type: TowerType): string | null {
   if (a.chain) return `Chains to ${a.chain} → ${b.chain} → ${c.chain} enemies per shot`
   if (a.mintYield) return `Pays ⛀ ${a.mintYield} → ${b.mintYield} → ${c.mintYield} every cleared wave`
   if (a.auraPct) return `Aura: +${a.auraPct}% → +${b.auraPct}% → +${c.auraPct}% damage to towers in range`
+  if (type === 'lance')
+    return `Ramp: +${LANCE_RAMP_PCT}% per consecutive hit on one target (cap ${LANCE_MAX_STACKS}); switching resets`
   return null
 }
 

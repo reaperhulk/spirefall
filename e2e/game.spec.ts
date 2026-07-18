@@ -350,11 +350,13 @@ test('watch replay: the last run replays deterministically to the same outcome',
   })
 
   // Watch: the overlay yields to the spectator banner and the battlefield
-  // restarts from tick 0.
+  // restarts from the top. (The replay plays in REAL time from the moment
+  // it mounts, so under load a few ticks may already have elapsed by the
+  // time we look — "near zero" is the honest assertion, exact zero races.)
   await page.getByTestId('watch-replay').click()
   await expect(page.getByTestId('replay-banner')).toBeVisible()
   await expect(page.getByTestId('run-over')).not.toBeVisible()
-  expect((await page.evaluate(() => window.__harness.snapshot())).tick).toBe(0)
+  expect((await page.evaluate(() => window.__harness.snapshot())).tick).toBeLessThan(60)
 
   // Spectator inputs are ignored — history cannot be changed.
   await page.evaluate(() => window.__harness.dispatch({ type: 'repair_spire' }))

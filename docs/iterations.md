@@ -52,6 +52,17 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+163. *(marathon II, iteration 75)* **Lance launch follow-through** —
+    the Codex tower table gained the ramp progression line (the one
+    per-tier special the generic fields couldn't derive), and a
+    DEEPER hunt ran with lance in the search space: 160 evolutionary
+    runs at 8k/20k, pop 10 × 4 gens, lance-dominant niches explored
+    at both budgets (killboxCluster:lance, spireChoke:lance) — zero
+    breaking or warning finds. Also fixed en route: the watch-replay
+    spec's `tick === 0` assertion raced under load (the replay plays
+    in real time from mount) — now asserts near-zero, its honest
+    intent. 200 unit tests, 48 e2e specs.
+
 162. *(marathon II, iteration 74)* **The Lance** — 8th tower, filling
     the one empty niche: sustained single-target. Consecutive hits on
     a held target join the ADDITIVE damage stack (+15%/stack, cap 10
