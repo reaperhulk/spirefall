@@ -28,6 +28,7 @@ import {
   VICTORY_WAVE,
   LANCE_MAX_STACKS,
   LANCE_RAMP_PCT,
+  VETERANCY_TIERS,
   WAVE_CLEAR_KNIT_HP,
   type EnemyDef,
 } from '../data/content'
@@ -147,6 +148,10 @@ const MECHANICS: MechanicEntry[] = [
   {
     title: 'Repair',
     body: `Repair mends up to ${REPAIR_MAX_PER_CAST} HP per cast and the price per HP climbs each wave. While a wave is live, repair crews manage only ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''}; they recover when it clears. The Spire also knits ${WAVE_CLEAR_KNIT_HP} HP on its own after every cleared wave.`,
+  },
+  {
+    title: 'Veterancy',
+    body: `Kills earn a tower its stars — ${VETERANCY_TIERS.join(', then ')} kills for the first, second, and third. Recognition only, no stat change: the stars are the run's story written on the battlefield.`,
   },
   {
     title: 'Selling & enhancing',

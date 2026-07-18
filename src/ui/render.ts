@@ -1,4 +1,4 @@
-import { ABILITIES, ENEMIES, LANCE_MAX_STACKS, towerTier } from '../data/content'
+import { ABILITIES, ENEMIES, LANCE_MAX_STACKS, towerTier, VETERANCY_TIERS, veterancyStars } from '../data/content'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
@@ -183,6 +183,21 @@ function glowSprite(color: string): HTMLCanvasElement {
   g.fillRect(0, 0, GLOW_SIZE, GLOW_SIZE)
   GLOW_SPRITES.set(color, sprite)
   return sprite
+}
+
+// A tiny five-point star, drawn point-up around (x, y).
+function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
+  ctx.beginPath()
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + (i * Math.PI) / 5
+    const rad = i % 2 === 0 ? r : r * 0.45
+    const px2 = x + Math.cos(a) * rad
+    const py2 = y + Math.sin(a) * rad
+    if (i === 0) ctx.moveTo(px2, py2)
+    else ctx.lineTo(px2, py2)
+  }
+  ctx.closePath()
+  ctx.fill()
 }
 
 function glow(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string, alpha = 1): void {
@@ -1086,6 +1101,15 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
     // Tier pips + enhancement badge, on top of everything.
     ctx.fillStyle = color
     for (let i = 0; i < t.tier; i++) ctx.fillRect(gx + 7 + i * 5, gy + CELL_PX - 9, 3, 3)
+
+    // Veterancy: kills earn stars (10/50/150) — a tower's career reads on
+    // the field, and watching a favorite grow up is half the fun of 1x.
+    const stars = veterancyStars(t.kills)
+    if (stars > 0) {
+      ctx.fillStyle = '#e0af68'
+      for (let i = 0; i < stars; i++) drawStar(ctx, gx + 7 + i * 7, gy + 8, 3)
+      if (stars >= VETERANCY_TIERS.length) glow(ctx, cx, cy, CELL_PX * 0.5, '#e0af68', 0.12)
+    }
     if (t.enhance > 0) {
       ctx.font = 'bold 9px ui-monospace, monospace'
       ctx.textAlign = 'right'

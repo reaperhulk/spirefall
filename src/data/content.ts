@@ -410,6 +410,17 @@ export const AA_TOWER_NAMES = Object.values(TOWERS)
   .filter((d) => d.hitsAir && !d.support)
   .map((d) => d.name)
 export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
+// Veterancy: kill counts at which a tower earns its stars. Render-only
+// recognition (no stat change) — but the thresholds are data so the codex
+// and the canvas can never disagree.
+export const VETERANCY_TIERS = [10, 50, 150] as const
+
+export function veterancyStars(kills: number): number {
+  let stars = 0
+  for (const need of VETERANCY_TIERS) if (kills >= need) stars++
+  return stars
+}
+
 export const RELIC_WAVE_INTERVAL = 5
 export const RELIC_OFFER_SIZE = 3
 

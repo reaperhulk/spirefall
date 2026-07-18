@@ -976,6 +976,11 @@ button.preview-unit:hover {
   font-weight: 700;
 }
 
+/* Veterancy stars in the tower panel — gold, like the canvas pips. */
+.vet-stars {
+  color: #e0af68;
+}
+
 .tower-air-note {
   font-size: 12px;
   color: #a9b1d6;

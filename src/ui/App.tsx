@@ -20,6 +20,8 @@ import {
   towerInvested,
   towerTier,
   TRIALS,
+  VETERANCY_TIERS,
+  veterancyStars,
   VICTORY_WAVE,
 } from '../data/content'
 import {
@@ -1109,6 +1111,11 @@ export default function App() {
               })()
             )}
             <p data-testid="tower-stats">
+              {veterancyStars(selectedTower.kills) > 0 && (
+                <span className="vet-stars" title={`Veterancy — stars at ${VETERANCY_TIERS.join('/')} kills`}>
+                  {'★'.repeat(veterancyStars(selectedTower.kills))}{' '}
+                </span>
+              )}
               {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
             </p>
             {!TOWERS[selectedTower.type].support && (

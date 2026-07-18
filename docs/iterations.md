@@ -52,6 +52,18 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+188. *(marathon II, iteration 100 — and onward)* **Veterancy** — the
+    marathon's hundredth lands the first piece of the user-directed
+    active-play package (make 1x worth playing and watching; all
+    brainstorm items except mid-wave-building incentives). Kills earn
+    a tower its stars — 10/50/150, data-driven (`VETERANCY_TIERS` +
+    `veterancyStars`, unit-tested) so the canvas pips, the panel's
+    gold ★s, and the new codex entry can never disagree. Recognition
+    only, no stat change: watching a favorite tower grow up is half
+    the fun of 1x. Package remaining: coin economy, combo meter,
+    overcharge tap, wave boons, execute windows, spire beam. 210
+    unit tests, 49 e2e specs.
+
 187. *(marathon II, iteration 99)* **The circle is the truth** — user
     report: hover sometimes shows wrong data; range rings suspect.
     Confirmed, three sites: the hover tooltip dropped the spec from

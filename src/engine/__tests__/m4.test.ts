@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AA_TOWER_NAMES, AFFIX_FIRST_WAVE, ENEMIES, TOWERS } from '../../data/content'
+import { AA_TOWER_NAMES, AFFIX_FIRST_WAVE, ENEMIES, TOWERS, VETERANCY_TIERS, veterancyStars } from '../../data/content'
 import { buildCandidates } from '../../harness/bots'
 import { cellCenter, distSq } from '../grid'
 import { getRunMap } from '../mapgen'
@@ -87,6 +87,19 @@ describe('fliers', () => {
     for (let i = 0; i < 60; i++) s = step(s, []).state
     // It may have flown onward or reached the spire, but it was never shot.
     expect(s.towers[0]!.damageDealt).toBe(0)
+  })
+})
+
+describe('veterancy', () => {
+  it('stars climb at the data thresholds', () => {
+    expect(VETERANCY_TIERS).toEqual([10, 50, 150])
+    expect(veterancyStars(0)).toBe(0)
+    expect(veterancyStars(9)).toBe(0)
+    expect(veterancyStars(10)).toBe(1)
+    expect(veterancyStars(49)).toBe(1)
+    expect(veterancyStars(50)).toBe(2)
+    expect(veterancyStars(150)).toBe(3)
+    expect(veterancyStars(9999)).toBe(3)
   })
 })
 
