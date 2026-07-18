@@ -301,6 +301,16 @@ export class GameSession {
           }
           break
         }
+        case 'combo_milestone':
+          this.effects.push({
+            kind: 'float',
+            at: { x: 12_000, y: 2_200 },
+            text: `⚡ ${e.combo} STREAK`,
+            color: '#e0af68',
+            t0: now,
+            dur: 1100,
+          })
+          break
         case 'ramp_capped':
           this.effects.push({
             kind: 'float',

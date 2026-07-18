@@ -227,6 +227,9 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     repairsThisWave: 0,
     killsByEnemy: {},
     maxRampStacks: 0,
+    combo: 0,
+    comboTicks: 0,
+    bestCombo: 0,
     victoryClaimed: false,
     mods: {
       damagePct:
@@ -267,6 +270,7 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     sparks: run.sparksEarned + bounty,
     damageByTower: { ...run.damageByTower },
     killsByEnemy: { ...run.killsByEnemy },
+    bestCombo: run.bestCombo,
     hpByWave: [...run.hpByWave],
     trials: [...run.trials],
     relics: [...run.relics],

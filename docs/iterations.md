@@ -52,6 +52,21 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+190. *(active-play package, 3/7)* **The combo meter** — unbroken kills
+    build a streak: 3s of mid-wave silence or any leak breaks it, the
+    build phase freezes (and wave start refreshes) the window, and
+    the run remembers its best (RunSummary + run-over + mid-run
+    stats). The reward is TEMPO, never gold: hold 25+ and ability
+    cooldowns recover at double speed. The first cut paid flat gold
+    per kill and re-broke the economy within one test run — five
+    pins/envelope tests red, the Bounty Banner lesson exactly — so
+    the reward moved off the economy entirely. HUD ⚡ badge with a
+    draining window bar (amber burn at haste), milestone floats +
+    two-bell chime every 25, codex entry. Goldens regenerated:
+    balanced-fresh 13→14 waves (more meteor casts under haste) —
+    the mechanic itself, envelope green. 216 unit tests, 49 e2e
+    specs.
+
 189. *(active-play package, 2/7)* **The payout is physical** — mint
     income now rains actual coins: gold sprites arc from the paying
     mint toward the treasury corner (staggered, spinning via ellipse

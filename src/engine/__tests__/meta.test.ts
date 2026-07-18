@@ -188,6 +188,7 @@ describe('settleRun', () => {
       sparks: 85 + 25, // +25: the First Blood achievement bounty
       damageByTower: { arrow: 900 },
       killsByEnemy: { runner: 40 },
+      bestCombo: 0,
       hpByWave: [],
       trials: [],
       relics: [],

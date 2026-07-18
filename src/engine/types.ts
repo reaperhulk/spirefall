@@ -184,6 +184,9 @@ export interface RunState {
   damageByTower: Partial<Record<TowerType, number>> // run-lifetime, survives sales
   killsByEnemy: Partial<Record<EnemyType, number>> // run-lifetime tally
   maxRampStacks: number // deepest lance climb this run (achievement: Unwavering)
+  combo: number // current unbroken-kill streak (pays a small capped bonus)
+  comboTicks: number // window remaining; 0 with a live combo = streak broken
+  bestCombo: number // longest streak this run (run-over stat)
   hpByWave: number[] // spire HP sampled at each wave clear, in clear order
   repairsThisWave: number // mid-wave repair casts used (capped; resets each wave)
   victoryClaimed: boolean // wave VICTORY_WAVE cleared; endless continues after
@@ -228,6 +231,7 @@ export type GameEvent =
   | { type: 'boss_carapace'; id: number }
   | { type: 'boss_gale'; id: number; hastened: number }
   | { type: 'ramp_capped'; id: number; cell: CellPos } // a lance's climb hit LANCE_MAX_STACKS
+  | { type: 'combo_milestone'; combo: number } // every COMBO_MILESTONE unbroken kills
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }
@@ -248,6 +252,7 @@ export interface RunSummary {
   sparks: number
   damageByTower: Partial<Record<TowerType, number>>
   killsByEnemy: Partial<Record<EnemyType, number>>
+  bestCombo: number // longest unbroken kill streak
   hpByWave: number[]
   trials: TrialId[]
   relics: RelicId[] // the build that carried (or didn't), in pick order

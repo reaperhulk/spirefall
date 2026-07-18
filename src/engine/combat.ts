@@ -6,6 +6,9 @@ import {
   BLIZZARD_SPLASH_TICKS_PCT,
   BREAKER_DAMAGE_PCT,
   CAPACITOR_DAMAGE_PCT,
+  COMBO_HASTE_THRESHOLD,
+  COMBO_MILESTONE,
+  COMBO_WINDOW_TICKS,
   LANCE_MAX_STACKS,
   LANCE_RAMP_PCT,
   MOMENTUM_RAMP_PCT,
@@ -253,6 +256,10 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
 
   if (arrived.length > 0) {
     const stoneskin = state.relics.includes('stoneskin')
+    // A leak breaks the flow: the kill streak zeroes the moment anything
+    // reaches the spire — even a bulwark-absorbed arrival.
+    state.combo = 0
+    state.comboTicks = 0
     state.enemies = state.enemies.filter((e) => {
       if (!arrived.includes(e.id)) return true
       // Bulwark: the spire absorbs arrivals entirely while the sigil burns.
@@ -735,9 +742,12 @@ export function tickStatuses(state: RunState): void {
   // cooldown-reduction pickup) were dead stats. Combat-only recovery makes
   // cooldown time a real in-fight resource at every play speed.
   if (state.phase === 'wave') {
+    // Combo haste: a held streak doubles recharge — the streak's whole
+    // reward is tempo, so keeping the mow alive cycles abilities faster.
+    const recover = state.combo >= COMBO_HASTE_THRESHOLD ? 2 : 1
     for (const key of Object.keys(state.abilities)) {
       const cd = state.abilities[key]!
-      if (cd > 0) state.abilities[key] = cd - 1
+      if (cd > 0) state.abilities[key] = Math.max(0, cd - recover)
     }
   }
   if (state.goldRushTicks > 0) state.goldRushTicks -= 1
@@ -872,6 +882,13 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
         bounty *= 2
       }
     }
+    // Combo: this kill joins the streak. The reward is tempo (ability
+    // recharge haste above the threshold), never gold — flat per-kill gold
+    // re-broke the economy the first time it was tried here.
+    state.combo += 1
+    state.comboTicks = COMBO_WINDOW_TICKS
+    if (state.combo > state.bestCombo) state.bestCombo = state.combo
+    if (state.combo % COMBO_MILESTONE === 0) events.push({ type: 'combo_milestone', combo: state.combo })
     state.gold += bounty
     state.kills += 1
     state.killsByEnemy[e.type] = (state.killsByEnemy[e.type] ?? 0) + 1

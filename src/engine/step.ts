@@ -8,6 +8,7 @@ import {
   CATACLYSM_WAVE_INTERVAL,
   ENEMIES,
   enhanceCost,
+  COMBO_WINDOW_TICKS,
   hpGrowthPct,
   RELIC_IDS,
   DEEP_POCKETS_GOLD_PCT,
@@ -103,6 +104,13 @@ export function step(state: RunState, commands: Command[]): StepResult {
     }
   }
 
+  // Combo window: silence breaks the streak — a wave-clear pause doesn't
+  // tick it down (build phase is planning time, not a dropped combo).
+  if (s.phase === 'wave' && s.comboTicks > 0) {
+    s.comboTicks -= 1
+    if (s.comboTicks === 0) s.combo = 0
+  }
+
   tickStatuses(s)
   return { state: s, events }
 }
@@ -141,6 +149,9 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.pendingSpawns = generated.spawns.map((p) => ({ type: p.type, tick: s.tick + p.tick }))
       s.phase = 'wave'
       s.repairsThisWave = 0
+      // A streak carried across the break gets a fresh window — the build
+      // pause froze it, and the opening spawns need time to reach the guns.
+      if (s.combo > 0) s.comboTicks = COMBO_WINDOW_TICKS
       events.push({ type: 'wave_started', wave, spawnCount: s.pendingSpawns.length, affix: generated.affix })
       return
     }

@@ -410,6 +410,17 @@ export const AA_TOWER_NAMES = Object.values(TOWERS)
   .filter((d) => d.hitsAir && !d.support)
   .map((d) => d.name)
 export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
+// Combo: unbroken kills build a streak. The reward is TEMPO, not gold —
+// while the streak holds at the threshold, ability cooldowns recover at
+// double speed, so a defense that never stops mowing cycles its meteors
+// faster. (A flat gold-per-kill reward was tried first and re-broke the
+// economy within one test run — the Bounty Banner lesson: in a horde game,
+// flat per-kill gold IS the economy.) The window is short enough that only
+// live pressure holds it, and a single leak breaks it.
+export const COMBO_WINDOW_TICKS = 90 // 3s without a kill breaks the streak
+export const COMBO_HASTE_THRESHOLD = 25 // streak needed for double-speed ability recharge
+export const COMBO_MILESTONE = 25 // every 25th unbroken kill announces itself
+
 // Veterancy: kill counts at which a tower earns its stars. Render-only
 // recognition (no stat change) — but the thresholds are data so the codex
 // and the canvas can never disagree.

@@ -33,6 +33,7 @@ type SoundKind =
   | 'shot_lance'
   | 'ramp_capped'
   | 'coin'
+  | 'combo'
   | 'kill'
   | 'spire_hit'
   | 'wave_cleared'
@@ -125,6 +126,11 @@ const SOUNDS: Record<SoundKind, Note[]> = {
   coin: [
     { freq: 1320, dur: 0.06, type: 'pluck', gain: 0.035 },
     { freq: 1980, dur: 0.09, type: 'sine', gain: 0.012, at: 0.02, pure: true },
+  ],
+  // Combo milestone: two quick FM bells a fifth apart — momentum, audibly.
+  combo: [
+    { freq: 880, dur: 0.12, type: 'fm', gain: 0.045, ratio: 3.51, index: 1.2 },
+    { freq: 1320, dur: 0.2, type: 'fm', gain: 0.05, ratio: 3.51, index: 1.2, at: 0.07 },
   ],
   // Kill: metallic clink over a body thud — a "chunk", not a chirp.
   kill: [
@@ -236,6 +242,7 @@ const MIN_GAP: Partial<Record<SoundKind, number>> = {
   bulwark: 400,
   ramp_capped: 600,
   coin: 120,
+  combo: 500,
 }
 const DEFAULT_MIN_GAP = 140
 
@@ -277,6 +284,7 @@ function panFromX(xMillicells: number): number {
 // rapid fire gets melodic variety without leaving the key.
 const CHORD_SNAPPED: ReadonlySet<SoundKind> = new Set([
   'coin',
+  'combo',
   'kill',
   'ramp_capped',
   'wave_cleared',
@@ -458,6 +466,9 @@ export class Sfx {
           break
         case 'mint_income':
           this.play('coin')
+          break
+        case 'combo_milestone':
+          this.play('combo')
           break
         default:
           break

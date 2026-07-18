@@ -9,6 +9,8 @@ import {
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   relicSkipGold,
+  COMBO_HASTE_THRESHOLD,
+  COMBO_WINDOW_TICKS,
   CRUCIBLE_HP_PCT_PER_RANK,
   CRUCIBLE_SPARK_PCT_PER_RANK,
   crucibleTiersAt,
@@ -822,6 +824,20 @@ export default function App() {
           </button>
         </div>
         <div className="hud-right">
+          {state.combo >= 5 && (
+            <span
+              className={`hud-combo${state.combo >= COMBO_HASTE_THRESHOLD ? ' hasted' : ''}`}
+              data-testid="combo"
+              title={`Unbroken kill streak — hold ${COMBO_HASTE_THRESHOLD}+ and ability cooldowns recover at double speed. A leak, or ${COMBO_WINDOW_TICKS / 30}s of silence mid-wave, breaks it.`}
+            >
+              ⚡{state.combo}
+              {state.combo >= COMBO_HASTE_THRESHOLD && ' 2×'}
+              <span
+                className="combo-drain"
+                style={{ width: `${Math.round((state.comboTicks / COMBO_WINDOW_TICKS) * 100)}%` }}
+              />
+            </span>
+          )}
           <span className="hud-gold" data-testid="gold">
             ⛀ {state.gold}
           </span>

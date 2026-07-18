@@ -298,6 +298,7 @@ export function RunStatsModal({ state, onClose }: { state: RunState; onClose: ()
         <h2>This run so far</h2>
         <p className="run-summary">
           {Math.max(0, state.wavesCleared - state.startWave)} waves cleared · {state.kills} kills ·{' '}
+          {state.bestCombo >= 10 && <span>⚡ {state.bestCombo} best streak · </span>}
           <strong data-testid="stats-sparks">✦ {computeSparks(state)}</strong> sparks banked if it ended now
         </p>
         {state.trials.length > 0 && (
@@ -419,6 +420,9 @@ export function RunOverOverlay({
         )}
         <p className="run-summary">
           {summary.wavesCleared} waves cleared · {summary.kills} kills ·{' '}
+          {summary.bestCombo >= 10 && (
+            <span data-testid="best-combo">⚡ {summary.bestCombo} best streak · </span>
+          )}
           <strong data-testid="sparks-earned">✦ {summary.sparks} sparks</strong> earned
           {summary.wavesCleared > 0 && summary.wavesCleared >= meta.bestWave && (
             <span className="new-record" data-testid="new-record">

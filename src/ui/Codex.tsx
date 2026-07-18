@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import {
   AA_TOWER_LIST,
   ABILITIES,
+  COMBO_HASTE_THRESHOLD,
+  COMBO_WINDOW_TICKS,
   AFFIXES,
   ARROW_AIR_BONUS_PCT,
   BOSS_WAVE_INTERVAL,
@@ -148,6 +150,10 @@ const MECHANICS: MechanicEntry[] = [
   {
     title: 'Repair',
     body: `Repair mends up to ${REPAIR_MAX_PER_CAST} HP per cast and the price per HP climbs each wave. While a wave is live, repair crews manage only ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''}; they recover when it clears. The Spire also knits ${WAVE_CLEAR_KNIT_HP} HP on its own after every cleared wave.`,
+  },
+  {
+    title: 'Combo',
+    body: `Unbroken kills build a streak. Hold it at ${COMBO_HASTE_THRESHOLD}+ and ability cooldowns recover at DOUBLE speed — the streak's reward is tempo, never gold. ${COMBO_WINDOW_TICKS / 30} seconds without a kill mid-wave, or any enemy reaching the Spire, breaks it. The streak rides across the build phase; the ⚡ badge's underline is the window draining.`,
   },
   {
     title: 'Veterancy',
