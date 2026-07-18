@@ -606,7 +606,10 @@ export default function App() {
   const repairsExhausted = state.phase === 'wave' && state.repairsThisWave >= repairCap
 
   // Scouting report: deterministic preview of what start_wave will field.
-  const preview = state.phase === 'build' && !summary ? previewNextWave(state) : null
+  // Blackout trial: the report exists (the engine still computes it — bots
+  // and replays are unaffected) but the UI refuses to show it.
+  const blackout = state.trials.includes('blackout')
+  const preview = state.phase === 'build' && !summary && !blackout ? previewNextWave(state) : null
   const cataclysmIn = summary ? null : wavesUntilCataclysm(state)
 
   // First-run onboarding: three contextual hints, gone forever once a run
@@ -971,6 +974,10 @@ export default function App() {
                 </span>
               )}
             </>
+          ) : blackout && state.phase === 'build' ? (
+            <span className="preview-label" data-testid="blackout-report" title={TRIALS.blackout.description}>
+              🕶 Blackout — the scouting report is dark
+            </span>
           ) : (
             <>
               <span className="preview-label">Wave {state.wave}:</span>

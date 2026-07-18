@@ -476,6 +476,10 @@ export const TRIALS: Record<TrialId, TrialDef> = {
   iron_horde: { name: 'Iron Horde', description: 'Enemies field 25% more HP.', sparkBonusPct: 35 },
   famine: { name: 'Famine', description: 'All gold income is cut by 25%.', sparkBonusPct: 30 },
   no_mercy: { name: 'No Mercy', description: 'The Spire cannot be repaired. What breaks stays broken.', sparkBonusPct: 45 },
+  // An information handicap, not a stat one: the engine is untouched, the
+  // scouting report goes dark in the UI. (Bots never read the report, so the
+  // balance envelope can't price this — the bonus is set by feel.)
+  blackout: { name: 'Blackout', description: 'The scouting report is dark — every wave arrives unseen.', sparkBonusPct: 25 },
 }
 
 export const TRIAL_IDS = Object.keys(TRIALS) as TrialId[]

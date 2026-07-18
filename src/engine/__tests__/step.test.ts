@@ -576,6 +576,12 @@ describe('cataclysms', () => {
     const trialSparks = computeSparks({ ...progressed, trials: ['glass_spire'] })
     expect(trialSparks).toBe(Math.floor(((10 * 15 + 10) * 140) / 100))
     expect(trialSparks).toBeGreaterThan(plainSparks)
+    // Blackout is a pure information handicap: spawns are UNTOUCHED (the UI
+    // hides the report; the engine never changes) — but the bonus still pays.
+    const dark = spawnFirst(['blackout'])
+    expect(dark.maxHp).toBe(plain.maxHp)
+    expect(dark.speed).toBe(plain.speed)
+    expect(computeSparks({ ...progressed, trials: ['blackout'] })).toBe(Math.floor(((10 * 15 + 10) * 125) / 100))
   })
 
   it('Crucible named tiers: rank milestones add speed and armor texture', () => {

@@ -249,6 +249,15 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(snap.wave).toBe(0)
   expect(snap.gold).toBe(230) // 200 base + 30 from War Chest level 1
   expect(snap.runs).toBe(1)
+
+  // Blackout darkens the scouting report — no counts, no threat estimate.
+  await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  await page.getByTestId('tab-next').click()
+  await page.getByTestId('trial-select').selectOption('blackout')
+  await page.getByTestId('next-run').click()
+  await expect(page.getByTestId('blackout-report')).toBeVisible()
+  await expect(page.getByTestId('wave-preview')).not.toContainText('HP')
   expect(errors).toEqual([])
 })
 

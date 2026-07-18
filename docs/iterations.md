@@ -52,6 +52,16 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+131. *(marathon II, iteration 43)* **The Blackout trial** — sixth
+    trial, and the first INFORMATION handicap: the engine is untouched
+    (spawns identical, bots and replays unaffected — unit test pins
+    both), but the scouting report goes dark in the UI ("🕶 Blackout")
+    for +25% sparks. Zero golden/balance risk by construction, with
+    the honest caveat recorded in the data file: bots never read the
+    report, so the envelope can't price this bonus — it's set by
+    feel. E2e picks the trial and asserts the dark report. 194 unit
+    tests, 43 e2e specs.
+
 130. *(marathon II, iteration 42)* **Confirm dialog keyboard flow** —
     focus lands on the Confirm button when the dialog opens (Enter
     accepts, Escape cancels — the flow window.confirm gave for free),

@@ -113,7 +113,7 @@ export function assertInvariants(state: RunState): void {
   )
 
   for (const t of state.trials) {
-    check(['glass_spire', 'swift_horde', 'iron_horde', 'famine', 'no_mercy'].includes(t), `unknown trial ${String(t)}`)
+    check(['glass_spire', 'swift_horde', 'iron_horde', 'famine', 'no_mercy', 'blackout'].includes(t), `unknown trial ${String(t)}`)
   }
   check(new Set(state.trials).size === state.trials.length, 'duplicate trials')
   check(Number.isInteger(state.crucible) && state.crucible >= 0, 'crucible must be a non-negative integer')
