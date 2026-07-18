@@ -1,3 +1,4 @@
+import { deriveStream } from '../engine/rng'
 import type { MetaState, RunState } from '../engine/types'
 
 // localStorage persistence with an explicit schema version so future format
@@ -167,6 +168,11 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.combo ??= 0
         data.run.comboTicks ??= 0
         data.run.bestCombo ??= 0
+        // Pre-boon saves: no offer mid-run (the next wave clear draws one),
+        // and the stream derives fresh from the seed.
+        data.run.boonOffer ??= null
+        data.run.activeBoon ??= null
+        data.run.rng.boons ??= deriveStream(data.run.seed, 'boons')
       }
       return data
     }

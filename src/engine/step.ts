@@ -65,7 +65,7 @@ import type {
   Targeting,
 } from './types'
 import { nextInt } from './rng'
-import { affixHpPct, affixSpeedPct, generateWave, scaledHp } from './waves'
+import { affixHpPct, affixSpeedPct, drawBoonOffer, generateWave, scaledHp } from './waves'
 
 export const TICKS_PER_SECOND = 30
 
@@ -149,6 +149,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.pendingSpawns = generated.spawns.map((p) => ({ type: p.type, tick: s.tick + p.tick }))
       s.phase = 'wave'
       s.repairsThisWave = 0
+      s.boonOffer = null // starting unchosen forfeits the offer — skipping is free
       // A streak carried across the break gets a fresh window — the build
       // pause froze it, and the opening spawns need time to reach the guns.
       if (s.combo > 0) s.comboTicks = COMBO_WINDOW_TICKS
@@ -221,6 +222,16 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.gold -= def.cost
       tower.spec = def.id
       events.push({ type: 'tower_specialized', id: tower.id, spec: def.id, cost: def.cost })
+      return
+    }
+
+    case 'choose_boon': {
+      if (s.phase !== 'build') return reject(command, 'boons are chosen before the wave', events)
+      if (s.boonOffer === null) return reject(command, 'no boon on offer', events)
+      if (!s.boonOffer.includes(command.boon)) return reject(command, 'boon not offered', events)
+      s.activeBoon = command.boon
+      s.boonOffer = null
+      events.push({ type: 'boon_chosen', boon: command.boon })
       return
     }
 
@@ -542,6 +553,11 @@ function ventsErupt(s: RunState, map: MapDef, events: GameEvent[]): void {
 function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (s.pendingSpawns.length > 0 || s.enemies.length > 0) return
   s.wavesCleared = s.wave
+  // The blessing dies with its wave, and the next choice is on the table.
+  s.activeBoon = null
+  const nextBoons = drawBoonOffer(s.rng.boons)
+  s.rng.boons = nextBoons.rng
+  s.boonOffer = nextBoons.offer
   const clearBonus = s.relics.includes('deep_pockets') ? DEEP_POCKETS_GOLD_PCT : 0
   const goldAwarded = Math.floor(
     ((WAVE_CLEAR_GOLD_BASE + s.wave * WAVE_CLEAR_GOLD_PER_WAVE) * (100 + s.mods.goldPct + clearBonus)) / 100,

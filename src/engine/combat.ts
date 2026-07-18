@@ -6,6 +6,9 @@ import {
   BLIZZARD_SPLASH_TICKS_PCT,
   BREAKER_DAMAGE_PCT,
   CAPACITOR_DAMAGE_PCT,
+  BOON_BOUNTY_GOLD,
+  BOON_DAMAGE_PCT,
+  BOON_SLOW_PCT,
   COMBO_HASTE_THRESHOLD,
   COMBO_MILESTONE,
   COMBO_WINDOW_TICKS,
@@ -71,6 +74,7 @@ import { scaledHp } from './waves'
 
 export function effectiveDamagePct(state: RunState, tower: Tower['type']): number {
   let pct = 100 + state.mods.damagePct
+  if (state.activeBoon === 'sharpened') pct += BOON_DAMAGE_PCT // wave boon, dies with the wave
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += PIERCING_ARROWS_PCT
   if (state.relics.includes('glass_cannon')) pct += GLASS_CANNON_PCT
   if (state.relics.includes('colossus')) pct += COLOSSUS_DAMAGE_PCT
@@ -94,6 +98,7 @@ export function damageBreakdown(
 ): { base: number; parts: DamagePart[]; totalPct: number; specPct: number; effective: number } {
   const base = towerTier(tower.type, tower.tier).damage
   const parts: DamagePart[] = []
+  if (state.activeBoon === 'sharpened') parts.push({ source: 'Sharpened Steel (boon, this wave)', pct: BOON_DAMAGE_PCT })
   if (state.mods.damagePct > 0) parts.push({ source: 'Honed Arsenal (Spire Tree)', pct: state.mods.damagePct })
   else if (state.mods.damagePct < 0) parts.push({ source: 'Dampening Field (cataclysm)', pct: state.mods.damagePct })
   if (tower.type === 'arrow' && state.relics.includes('piercing_arrows'))
@@ -199,6 +204,10 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
     // Frostfen pools: soft ground drags at ground enemies (fliers skip it).
     if (map.marsh.length > 0 && !ENEMIES[enemy.type].flying && map.marsh[cellIndex(map, cellOf(enemy.pos))]) {
       budget = Math.max(1, Math.floor((budget * MARSH_SPEED_PCT) / 100))
+    }
+    // Hoarfrost Wind (wave boon): the whole horde wades through it.
+    if (state.activeBoon === 'frosted') {
+      budget = Math.max(1, Math.floor((budget * BOON_SLOW_PCT) / 100))
     }
 
     // Fliers ignore the maze entirely: straight for the spire, over
@@ -757,7 +766,8 @@ export function tickStatuses(state: RunState): void {
   if (state.phase === 'wave') {
     // Combo haste: a held streak doubles recharge — the streak's whole
     // reward is tempo, so keeping the mow alive cycles abilities faster.
-    const recover = state.combo >= COMBO_HASTE_THRESHOLD ? 2 : 1
+    // Swift Sigils (wave boon) adds another point on top.
+    const recover = (state.combo >= COMBO_HASTE_THRESHOLD ? 2 : 1) + (state.activeBoon === 'swift' ? 1 : 0)
     for (const key of Object.keys(state.abilities)) {
       const cd = state.abilities[key]!
       if (cd > 0) state.abilities[key] = Math.max(0, cd - recover)
@@ -902,6 +912,7 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     state.comboTicks = COMBO_WINDOW_TICKS
     if (state.combo > state.bestCombo) state.bestCombo = state.combo
     if (state.combo % COMBO_MILESTONE === 0) events.push({ type: 'combo_milestone', combo: state.combo })
+    if (state.activeBoon === 'bounty') bounty += BOON_BOUNTY_GOLD // War Levy, this wave only
     state.gold += bounty
     state.kills += 1
     state.killsByEnemy[e.type] = (state.killsByEnemy[e.type] ?? 0) + 1

@@ -34,6 +34,7 @@ import {
   type EmberUpgradeId,
 } from '../data/emberTree'
 import { deriveStream, nextInt } from './rng'
+import { drawBoonOffer } from './waves'
 import type { AbilityId, MetaState, RunState, RunSummary, TowerType, TrialId } from './types'
 
 export function createMeta(): MetaState {
@@ -184,6 +185,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     catchUpGold += WAVE_CLEAR_GOLD_BASE + w * WAVE_CLEAR_GOLD_PER_WAVE + Math.floor(waveBudget / 4)
   }
 
+  const firstBoons = drawBoonOffer(deriveStream(seed, 'boons'))
+
   return {
     schemaVersion: 1,
     seed,
@@ -193,6 +196,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
       waves: deriveStream(seed, 'waves'),
       combat: deriveStream(seed, 'combat'),
       relics: deriveStream(seed, 'relics'),
+      boons: firstBoons.rng,
     },
     mapId: 0, // legacy field; generated runs resolve through (biome, mapSeed)
     biome: chosenBiome,
@@ -217,6 +221,10 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     relicOffer: null,
     relicRerolled: false,
     cataclysmOffer: null,
+    // The first offer is on the table before wave 1 — a decision from the
+    // opening bell. Skipping is always free; start_wave never gates on it.
+    boonOffer: firstBoons.offer,
+    activeBoon: null,
     availableTowers,
     activeAffix: null,
     cataclysms: [],

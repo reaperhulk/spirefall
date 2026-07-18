@@ -480,6 +480,9 @@ export class Sfx {
         case 'tower_overcharged':
           this.play('overcharge', panFromX((e.cell.cx + 0.5) * 1000))
           break
+        case 'boon_chosen':
+          this.play('relic') // same glass bell — a blessing accepted
+          break
         default:
           break
       }

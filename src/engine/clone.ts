@@ -5,7 +5,12 @@ import type { RunState } from './types'
 export function cloneRun(s: RunState): RunState {
   return {
     ...s,
-    rng: { waves: { ...s.rng.waves }, combat: { ...s.rng.combat }, relics: { ...s.rng.relics } },
+    rng: {
+      waves: { ...s.rng.waves },
+      combat: { ...s.rng.combat },
+      relics: { ...s.rng.relics },
+      boons: { ...s.rng.boons },
+    },
     towers: s.towers.map((t) => ({ ...t, cell: { ...t.cell } })),
     enemies: s.enemies.map((e) => ({
       ...e,
@@ -23,6 +28,7 @@ export function cloneRun(s: RunState): RunState {
     killsByEnemy: { ...s.killsByEnemy },
     relicOffer: s.relicOffer ? [...s.relicOffer] : null,
     cataclysmOffer: s.cataclysmOffer ? [...s.cataclysmOffer] : null,
+    boonOffer: s.boonOffer ? [...s.boonOffer] : null,
     availableTowers: [...s.availableTowers],
     mods: { ...s.mods },
   }

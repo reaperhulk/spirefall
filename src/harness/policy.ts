@@ -1,7 +1,7 @@
 import type { MetaUpgradeId } from '../data/metaTree'
 import { META_TREE } from '../data/metaTree'
 import { nextInt, type Rng } from '../engine/rng'
-import { TOWERS } from '../data/content'
+import { BOON_IDS, type BoonId, TOWERS } from '../data/content'
 import type { RelicId, RunState, Targeting, TowerType } from '../engine/types'
 import { type Bot, type BuildKnobs, buildActions, RELIC_PRIORITY, waveActions } from './bots'
 import { PLACEMENT_STRATEGIES, type PlacementStrategy } from './placement'
@@ -38,6 +38,8 @@ export interface PolicyGenome {
   // attention-free CEILING — arming every ready tower — so the fuzzer probes
   // what perfect spam is worth, which no human reaches.
   overchargePolicy?: 'never' | 'boss' | 'ready'
+  // Boon doctrine: preference ranking over BOON_IDS; absent = always skip.
+  boonPriority?: BoonId[]
 }
 
 const OVERCHARGE_POLICIES = ['never', 'boss', 'ready'] as const
@@ -120,6 +122,8 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
   }
   const oc = pickOne(r, OVERCHARGE_POLICIES)
   r = oc.rng
+  const boons = shuffled(r, BOON_IDS)
+  r = boons.rng
   return {
     genome: {
       ratio,
@@ -140,6 +144,7 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
       enhanceFocus: focus.value,
       targetingByType,
       overchargePolicy: oc.value,
+      boonPriority: boons.value,
     },
     rng: r,
   }
@@ -153,7 +158,7 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
   const count = draw(r, 1, 3)
   r = count.rng
   for (let i = 0; i < count.value; i++) {
-    const which = draw(r, 0, 11)
+    const which = draw(r, 0, 12)
     r = which.rng
     switch (which.value) {
       case 0: {
@@ -249,6 +254,13 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
         g.overchargePolicy = o.value
         break
       }
+      case 12: {
+        // Reshuffle the boon doctrine (or grant one to a boon-blind genome).
+        const b = shuffled(r, BOON_IDS)
+        r = b.rng
+        g.boonPriority = b.value
+        break
+      }
     }
   }
   return { genome: g, rng: r }
@@ -293,7 +305,16 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
     relicPriority: genome.relicPriority,
   }
   return (state) => {
-    if (state.phase === 'build') return buildActions(state, (s) => pickWeighted(s, genome), knobs)
+    if (state.phase === 'build') {
+      const acts = buildActions(state, (s) => pickWeighted(s, genome), knobs)
+      if (state.boonOffer !== null && genome.boonPriority) {
+        const pick = [...state.boonOffer].sort(
+          (a, b) => genome.boonPriority!.indexOf(a) - genome.boonPriority!.indexOf(b),
+        )[0]!
+        acts.unshift({ type: 'choose_boon', boon: pick })
+      }
+      return acts
+    }
     if (state.phase === 'wave') {
       const acts = waveActions(state, genome.waveRepairPct)
       const oc = genome.overchargePolicy ?? 'never'

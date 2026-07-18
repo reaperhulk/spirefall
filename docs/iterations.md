@@ -52,6 +52,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+192. *(active-play package, 5/7)* **Wave boons** — every build phase
+    offers two single-wave blessings (Sharpened Steel +15% damage,
+    Swift Sigils +1 ability recovery/tick, Hoarfrost Wind 10% slower
+    horde, War Levy +2 gold/kill): pick one or just start the wave —
+    skipping is free, the offer NEVER gates, and nothing outlives the
+    wave it blessed. A decision every thirty seconds with zero power
+    creep. New `boons` RNG stream (own stream so offers never
+    reshuffle relic draws; first offer on the table before wave 1),
+    `choose_boon` command, quiet strip UI between the scouting report
+    and the board, active-blessing banner, panel breakdown part for
+    Sharpened, codex entry. Fuzzer gained a boonPriority ranking gene
+    + mutation axis; named bots skip, so goldens moved stateHash-only
+    (new stream + fields, behavior identical). Effects each pinned by
+    exact arithmetic; determinism covers the command; e2e drives
+    choose → bless → expire → forfeit. 225 unit tests, 51 e2e specs.
+
 191. *(active-play package, 4/7)* **Overcharge** — tap any combat
     tower (panel button, or O with it selected) to supercharge its
     NEXT shot to ×2. Free; the cost is attention — each tower

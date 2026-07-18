@@ -2,6 +2,8 @@ import {
   AFFIX_CHANCE_PCT,
   AFFIX_FIRST_WAVE,
   AFFIX_IDS,
+  BOON_IDS,
+  type BoonId,
   BOSS_ROSTER,
   BOSS_WAVE_INTERVAL,
   ENEMIES,
@@ -99,6 +101,15 @@ export function generateWave(rng: Rng, wave: number, budget: number): GeneratedW
   }
 
   return { spawns, affix, rng: r }
+}
+
+// Two DISTINCT boons per offer, drawn from the dedicated boons stream —
+// structural distinctness the same way cataclysm offers do it.
+export function drawBoonOffer(rng: Rng): { offer: BoonId[]; rng: Rng } {
+  const first = nextInt(rng, 0, BOON_IDS.length - 1)
+  const second = nextInt(first.rng, 0, BOON_IDS.length - 2)
+  const secondIdx = second.value >= first.value ? second.value + 1 : second.value
+  return { offer: [BOON_IDS[first.value]!, BOON_IDS[secondIdx]!], rng: second.rng }
 }
 
 export function scaledHp(type: EnemyType, hpScalePct: number): number {

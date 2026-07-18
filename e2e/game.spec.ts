@@ -281,6 +281,31 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   expect(errors).toEqual([])
 })
 
+test('wave boons: pick one, it blesses exactly one wave, skipping is free', async ({ page }) => {
+  const errors = await boot(page, 'e2e-boons')
+  await expect(page.getByTestId('boon-offer')).toBeVisible()
+  const offered = await page.evaluate(() => window.__harness.getState().boonOffer)
+  expect(offered).toHaveLength(2)
+  await page.getByTestId(`boon-${offered![0]}`).click()
+  await expect(page.getByTestId('boon-active')).toBeVisible()
+  expect(await page.evaluate(() => window.__harness.getState().activeBoon)).toBe(offered![0])
+  // Survive the wave with a real defense, then: blessing gone, next offer up.
+  await page.getByTestId('shop-arrow').click()
+  for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
+  await page.evaluate(() => {
+    window.__harness.dispatch({ type: 'start_wave' })
+    window.__harness.fastForward(120)
+  })
+  await expect.poll(async () => page.evaluate(() => window.__harness.snapshot().phase)).toBe('build')
+  expect(await page.evaluate(() => window.__harness.getState().activeBoon)).toBeNull()
+  await expect(page.getByTestId('boon-offer')).toBeVisible()
+  // Starting unchosen forfeits — no strip mid-wave, no blessing.
+  await page.evaluate(() => window.__harness.dispatch({ type: 'start_wave' }))
+  expect(await page.evaluate(() => window.__harness.getState().boonOffer)).toBeNull()
+  expect(await page.evaluate(() => window.__harness.getState().activeBoon)).toBeNull()
+  expect(errors).toEqual([])
+})
+
 test('overcharge: the panel button arms the next shot and the recharge gates it', async ({ page }) => {
   const errors = await boot(page, 'e2e-overcharge')
   await page.getByTestId('shop-arrow').click()

@@ -154,6 +154,11 @@ const MECHANICS: MechanicEntry[] = [
     body: `Repair mends up to ${REPAIR_MAX_PER_CAST} HP per cast and the price per HP climbs each wave. While a wave is live, repair crews manage only ${REPAIR_CASTS_PER_WAVE} cast${REPAIR_CASTS_PER_WAVE > 1 ? 's' : ''}; they recover when it clears. The Spire also knits ${WAVE_CLEAR_KNIT_HP} HP on its own after every cleared wave.`,
   },
   {
+    title: 'Wave boons',
+    body:
+      'Every build phase offers two single-wave blessings — pick one or just start the wave (skipping is free; the offer never gates). Nothing outlives the wave it blessed: a decision every thirty seconds with zero power creep.',
+  },
+  {
     title: 'Overcharge',
     body: `Tap any combat tower (or press O with it selected) to supercharge its NEXT shot to ×${OVERCHARGE_DAMAGE_PCT / 100} — free, with a ${OVERCHARGE_COOLDOWN_TICKS / 30}s per-tower recharge that only ticks during waves. The cost is your attention: spike the boss, or bank it for the shieldbearers behind it.`,
   },

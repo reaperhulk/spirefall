@@ -9,6 +9,7 @@ import {
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   relicSkipGold,
+  BOONS,
   COMBO_HASTE_THRESHOLD,
   COMBO_WINDOW_TICKS,
   OVERCHARGE_COOLDOWN_TICKS,
@@ -1015,6 +1016,32 @@ export default function App() {
             setShowCodex(true)
           }}
         />
+      )}
+
+      {/* Wave boons: a decision every thirty seconds, never a gate. The
+          strip only exists while there's a choice to make (or a blessing
+          to show); Space keeps working — skipping is free. */}
+      {!summary && state.phase === 'build' && state.boonOffer !== null && (
+        <div className="boon-strip" data-testid="boon-offer">
+          <span className="boon-label">Next wave boon —</span>
+          {state.boonOffer.map((b) => (
+            <button
+              key={b}
+              className="ghost-btn boon-btn"
+              data-testid={`boon-${b}`}
+              title={BOONS[b].description}
+              onClick={() => session.dispatch({ type: 'choose_boon', boon: b })}
+            >
+              {BOONS[b].name}
+            </button>
+          ))}
+          <span className="boon-skip">or start the wave without one</span>
+        </div>
+      )}
+      {!summary && state.activeBoon !== null && (
+        <div className="boon-strip active" data-testid="boon-active" title={BOONS[state.activeBoon].description}>
+          ✦ {BOONS[state.activeBoon].name} — {BOONS[state.activeBoon].description}
+        </div>
       )}
 
       <main className="board">

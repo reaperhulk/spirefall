@@ -1,5 +1,5 @@
 import type { BiomeId } from '../data/biomes'
-import type { TowerSpecId } from '../data/content'
+import type { BoonId, TowerSpecId } from '../data/content'
 import type { Rng } from './rng'
 
 // RunState is the entire simulation. It must stay plain JSON data: no classes,
@@ -82,6 +82,7 @@ export interface RngStreams {
   waves: Rng
   combat: Rng
   relics: Rng
+  boons: Rng // wave-boon offers — own stream so boons never reshuffle relic draws
 }
 
 export interface Tower {
@@ -174,6 +175,8 @@ export interface RunState {
   relicOffer: RelicId[] | null
   relicRerolled: boolean // one reroll per offer
   cataclysmOffer: CataclysmId[] | null // endless: two dooms offered, pick one (gates start_wave)
+  boonOffer: BoonId[] | null // build phase: two single-wave perks; skipping is free
+  activeBoon: BoonId | null // the perk blessing the current wave (cleared at wave end)
   availableTowers: TowerType[]
   mods: RunMods
   activeAffix: AffixId | null // wave modifier for the current/last wave
@@ -204,6 +207,7 @@ export type Command =
   | { type: 'specialize_tower'; id: number; spec: TowerSpecId }
   | { type: 'sell_tower'; id: number }
   | { type: 'overcharge_tower'; id: number }
+  | { type: 'choose_boon'; boon: BoonId }
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
@@ -236,6 +240,7 @@ export type GameEvent =
   | { type: 'ramp_capped'; id: number; cell: CellPos } // a lance's climb hit LANCE_MAX_STACKS
   | { type: 'combo_milestone'; combo: number } // every COMBO_MILESTONE unbroken kills
   | { type: 'tower_overcharged'; id: number; cell: CellPos }
+  | { type: 'boon_chosen'; boon: BoonId }
   | { type: 'relic_offered'; options: RelicId[] }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }

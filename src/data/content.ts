@@ -410,6 +410,28 @@ export const AA_TOWER_NAMES = Object.values(TOWERS)
   .filter((d) => d.hitsAir && !d.support)
   .map((d) => d.name)
 export const AA_TOWER_LIST = `${AA_TOWER_NAMES.slice(0, -1).join(', ')}, and ${AA_TOWER_NAMES[AA_TOWER_NAMES.length - 1]}`
+// Wave boons: every build phase offers two single-wave perks — pick one or
+// just start the wave (skipping is always free; the offer never gates).
+// Wave-scoped by design: a decision every thirty seconds with zero power
+// creep, because nothing outlives the wave it blessed.
+export interface BoonDef {
+  name: string
+  description: string
+}
+
+export const BOONS = {
+  sharpened: { name: 'Sharpened Steel', description: 'Towers deal +15% damage this wave.' },
+  swift: { name: 'Swift Sigils', description: 'Ability cooldowns recover +1/tick this wave.' },
+  frosted: { name: 'Hoarfrost Wind', description: 'Enemies move 10% slower this wave.' },
+  bounty: { name: 'War Levy', description: '+2 gold per kill this wave.' },
+} as const
+
+export type BoonId = keyof typeof BOONS
+export const BOON_IDS = Object.keys(BOONS) as BoonId[]
+export const BOON_DAMAGE_PCT = 15
+export const BOON_SLOW_PCT = 90 // enemies move at this % speed under Hoarfrost
+export const BOON_BOUNTY_GOLD = 2
+
 // Overcharge: tap a tower to supercharge its NEXT shot. Free, per-tower
 // cooldown — the cost is your attention. ×2 on a 10s cycle caps the perfect
 // -spam ceiling around +12% for one tower and far less across a board, so
