@@ -52,6 +52,15 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+160. *(marathon II, iteration 72)* **Phased Veilwarden fades** — the
+    same audit lens, one layer deeper: the phased-shadow check was
+    hardcoded to 'wraith' (a phased Veilwarden kept its shadow), and
+    the boss body never faded during its untargetable window —
+    players would waste focus fire into nothing. The shadow check now
+    reads `e.phased` for any type, and a bossAlpha multiplier threads
+    the 0.3 fade through every regalia layer (plain alpha sets would
+    clobber it). 195 unit tests, 47 e2e specs.
+
 159. *(marathon II, iteration 71)* **Endless bosses get the regalia**
     — boss4/5/6 fell through to the generic walker body and read like
     fat brutes; all six bosses now wear the crown/aura/breathing-core
