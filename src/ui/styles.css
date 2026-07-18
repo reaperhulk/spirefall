@@ -1443,6 +1443,11 @@ button.preview-unit:hover {
   color: #9ece6a;
 }
 
+.history-table .history-where {
+  color: #8a93ad;
+  font-size: 12px;
+}
+
 .new-record {
   color: #e5c07b;
   font-weight: 700;

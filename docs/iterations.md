@@ -52,6 +52,19 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+118. *(marathon II, iteration 30)* **History says where + block-30
+    re-derivation** — run history entries now record biome and
+    crucible rank (optional fields, so pre-existing saves need no
+    migration); the stats table shows "Frostfen 🔥2" alongside the
+    score. Audited-and-already-covered this block: victory target in
+    HUD (`wave N/24`), misclick undo (zero-shot towers sell at 100%,
+    labeled), tower targeting UI (panel dropdown), in-run victory
+    prompt. Debt check: App.tsx 1332 / render.ts 1857 / styles.css
+    1706 — all under thresholds. Next-block candidates: ember-tree
+    depth (needs a balance pass + goldens), history sparkline
+    tooltips, runCard relic count, codex spec entries. 192 unit
+    tests, 42 e2e specs.
+
 117. *(marathon II, iteration 29)* **Run loadout on the Result tab** —
     the run-over screen tallied damage and kills but never said WHAT
     you were playing: RunSummary now carries the run's relics (pick

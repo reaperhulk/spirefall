@@ -285,7 +285,14 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
       achievements: [...meta.achievements, ...unlocked.map((a) => a.id)],
       lifetimeKills: meta.lifetimeKills + summary.kills,
       history: [
-        { outcome: summary.outcome, wavesCleared: summary.wavesCleared, kills: summary.kills, sparks: summary.sparks },
+        {
+          outcome: summary.outcome,
+          wavesCleared: summary.wavesCleared,
+          kills: summary.kills,
+          sparks: summary.sparks,
+          biome: summary.biome,
+          crucible: summary.crucible,
+        },
         ...meta.history,
       ].slice(0, HISTORY_LIMIT),
     },

@@ -751,6 +751,10 @@ export function SettingsModal({
                 <tr key={i} className={h.outcome === 'victory' ? 'won' : ''}>
                   <td>{h.outcome === 'victory' ? '🏆' : '💀'}</td>
                   <td>wave {h.wavesCleared}</td>
+                  <td className="history-where">
+                    {h.biome ? BIOMES[h.biome].name : ''}
+                    {(h.crucible ?? 0) > 0 ? ` 🔥${h.crucible}` : ''}
+                  </td>
                   <td>{h.kills} kills</td>
                   <td>✦ {h.sparks}</td>
                 </tr>

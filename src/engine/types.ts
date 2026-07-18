@@ -261,5 +261,14 @@ export interface MetaState {
   bestWaveByMap: Record<string, number> // mapId (as string key) -> furthest wave cleared there
   lifetimeKills: number
   achievements: string[] // earned achievement ids, in earn order
-  history: { outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }[] // recent runs, newest first
+  // Recent runs, newest first. biome/crucible are optional: entries from
+  // before they were recorded simply don't have them (no save migration).
+  history: {
+    outcome: 'defeat' | 'victory'
+    wavesCleared: number
+    kills: number
+    sparks: number
+    biome?: BiomeId
+    crucible?: number
+  }[]
 }

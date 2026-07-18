@@ -395,6 +395,10 @@ describe('records', () => {
     expect(meta.lifetimeKills).toBe(150)
     expect(meta.history).toHaveLength(HISTORY_LIMIT)
     expect(meta.history[0]!.wavesCleared).toBe(14) // newest first
+    // Entries say WHERE the run happened, not just what it scored. (Biomes
+    // roll by seed once unlocked, so pin presence, not a specific biome.)
+    expect(meta.history[0]!.biome).toBeDefined()
+    expect(meta.history[0]!.crucible).toBe(0)
   })
 
   it('per-biome bests track each battlefield separately and never regress', () => {
