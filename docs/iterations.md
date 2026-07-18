@@ -38,6 +38,20 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
+78. *(playtest feedback)* **Longer musical form** — the 4-bar progression
+    (~11s) announced its loop too fast. Progressions doubled to 8 bars as
+    two real phrases (a wandering antecedent, a cadencing consequent), and
+    every other pass through the progression is a LIFT: the melody reaches
+    one chord tone higher and drops fewer pattern hits, the pad plays
+    louder/brighter, and the bass answers with the fifth regardless of
+    intensity — so the audible form is 16 bars (~44s), and the last bar of
+    every pass fills in its back half as a cadence hand-off. The 6-mask
+    rhythm rotation interleaves against the 8-bar harmony (LCM 24 bars),
+    so literal repetition only lines up every ~2 minutes. Verified with
+    the analyser tap: the per-bar low-register peak traces an exact 8-bar
+    root sequence (231→350→231→275→312→312→350→231, repeating), no
+    console errors over 50s of play. 170 unit tests, 31 e2e specs.
+
 77. *(playtest feedback)* **The score is music now, not a drone** — the old
     generative music held one root+fifth pad chord forever; everything
     melodic hid behind intensity gates and low random densities, so calm

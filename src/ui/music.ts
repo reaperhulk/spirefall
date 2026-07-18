@@ -37,12 +37,15 @@ const BIOME_ROOT: Record<BiomeId, number> = {
 
 // Chord progressions as scale-degree roots, one chord per bar. Chords are
 // stacked in SCALE space (every other degree), which yields proper triads
-// on the 7-note mode and open quartal colors on the pentatonics.
+// on the 7-note mode and open quartal colors on the pentatonics. Each is
+// two 4-bar phrases — an antecedent that wanders and a consequent that
+// cadences home — so the harmony runs 8 bars (~22s) before repeating, and
+// the alternating lift pass stretches the full form to 16 bars (~44s).
 const BIOME_PROGRESSION: Record<BiomeId, number[]> = {
-  verdant: [0, 3, 4, 1], // I – V – vi – ii: warm, keeps turning over
-  frostfen: [0, 2, 4, 3], // minor drift that never quite resolves
-  emberwaste: [0, 1, 0, 3], // the phrygian b2 lean — menace, release, menace
-  highlands: [0, 5, 3, 4], // I – vi – IV – V over mixolydian
+  verdant: [0, 3, 4, 1, 2, 4, 3, 0], // I–V–vi–ii, then out through iii to a V–I close
+  frostfen: [0, 2, 4, 3, 1, 4, 2, 0], // minor drift, drifting further before it settles
+  emberwaste: [0, 1, 0, 3, 4, 1, 3, 0], // phrygian b2 menace, an excursion, back to the dark
+  highlands: [0, 5, 3, 4, 1, 5, 4, 0], // I–vi–IV–V answered by ii–vi–V–I
 }
 
 const midiHz = (m: number): number => 440 * Math.pow(2, (m - 69) / 12)
@@ -198,6 +201,12 @@ export class Music {
     const bar = Math.floor(this.totalStep / STEPS_PER_BAR)
     const step = this.totalStep % STEPS_PER_BAR
     const chordDegree = prog[bar % prog.length]!
+    // Every other pass through the progression LIFTS: melody reaches higher
+    // chord tones and thickens, the pad brightens, the bass answers more.
+    // Doubles the form (~44s) so the loop stops announcing itself.
+    const lift = Math.floor(bar / prog.length) % 2 === 1
+    // The last bar of each pass earns a little cadence fill.
+    const cadenceBar = bar % prog.length === prog.length - 1
     // A chord tone, stacked in scale space: k=0 root, k=1 "third", k=2 "fifth".
     const tone = (deg: number, k: number): number => {
       const off = deg + 2 * k
@@ -209,10 +218,12 @@ export class Music {
       // on the downbeat and relax through the bar (breathing, not droning),
       // and let the filter bloom open then settle.
       this.tunePad(ctx, at, [tone(chordDegree, 0), tone(chordDegree, 1), tone(chordDegree, 2)])
-      this.padGain.gain.setTargetAtTime(this.padLevel, at, 0.3)
-      this.padGain.gain.setTargetAtTime(this.padLevel * 0.65, at + BEAT * 4, 0.9)
-      this.padFilter.frequency.setTargetAtTime(700 + this.intensity * 1600, at, 0.06)
-      this.padFilter.frequency.setTargetAtTime(380 + this.intensity * 1100, at + 0.5, 0.9)
+      const level = this.padLevel * (lift ? 1.12 : 1)
+      const bright = lift ? 260 : 0
+      this.padGain.gain.setTargetAtTime(level, at, 0.3)
+      this.padGain.gain.setTargetAtTime(level * 0.65, at + BEAT * 4, 0.9)
+      this.padFilter.frequency.setTargetAtTime(700 + this.intensity * 1600 + bright, at, 0.06)
+      this.padFilter.frequency.setTargetAtTime(380 + this.intensity * 1100 + bright, at + 0.5, 0.9)
     }
 
     // Bass: the chord root anchors every downbeat (triangle, not sine — the
@@ -220,7 +231,7 @@ export class Music {
     // answers mid-bar once the fight warms, and at full boil it pulses.
     if (step === 0) {
       this.blip(ctx, at, midiHz(tone(chordDegree, 0)), 0.6, 'triangle', 0.35 + this.intensity * 0.3)
-    } else if (step === 4 && this.intensity > 0.3) {
+    } else if (step === 4 && (lift || this.intensity > 0.3)) {
       this.blip(ctx, at, midiHz(tone(chordDegree, 1)), 0.45, 'triangle', 0.4)
     } else if (step % 2 === 0 && this.intensity > 0.65) {
       this.blip(ctx, at, midiHz(tone(chordDegree, 0)), 0.2, 'triangle', 0.3)
@@ -237,11 +248,17 @@ export class Music {
 
     // Melody: a seeded rhythm pattern per bar. Strong beats pull toward
     // chord tones an octave above the pad; passing notes walk the scale.
-    // Intensity thins or thickens the line by dropping pattern hits.
+    // Intensity thins or thickens the line by dropping pattern hits; the
+    // lift pass reaches into higher chord tones and drops fewer, and the
+    // cadence bar's back half fills in to hand the phrase over.
     const mask = RHYTHMS[(bar + rhythmSalt) % RHYTHMS.length]!
-    if (mask[step] === 1 && Math.random() < 0.35 + this.intensity * 0.55) {
+    let gate = 0.35 + this.intensity * 0.55
+    if (lift) gate += 0.15
+    if (cadenceBar && step >= 6) gate += 0.3
+    if (mask[step] === 1 && Math.random() < gate) {
       if (step % 4 === 0 || Math.random() < 0.35) {
-        const targetPos = chordDegree + 2 * Math.floor(Math.random() * 3) + len
+        const stack = (lift ? 1 : 0) + Math.floor(Math.random() * 3)
+        const targetPos = chordDegree + 2 * stack + len
         const drift = Math.max(-2, Math.min(2, targetPos - this.melodyPos))
         this.melodyPos += drift
       } else {
