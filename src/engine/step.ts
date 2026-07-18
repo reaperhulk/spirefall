@@ -2,6 +2,7 @@ import {
   ABILITIES,
   specForTower,
   BASE_WAVE_BUDGET,
+  AFFIX_SHIELD_BONUS,
   BOSS_WAVE_INTERVAL,
   CATACLYSM_IDS,
   CATACLYSM_WAVE_INTERVAL,
@@ -424,10 +425,13 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
     // permanently above rapid-fire chip damage, below cannon shells until
     // deep endless, and always pierced by snipers.
     const shieldScalePct = 100 + Math.floor((s.hpScalePct - 100) / 2)
-    const shield =
+    const baseShield =
       def.shield > 0
         ? Math.max(def.shield, Math.floor((def.shield * shieldScalePct * ironclad) / 10_000))
         : 0
+    // Shielded affix: a flat, unscaled shield on EVERYONE — the shield
+    // composition check spread across a whole wave instead of one unit type.
+    const shield = baseShield + (s.activeAffix === 'shielded' ? AFFIX_SHIELD_BONUS : 0)
     // Armor grows out of the hp curve's EXCESS over baseline: zero at spawn
     // parity (the fresh-account opening is untouched — wave 5 was already a
     // knife's edge), ~1 point by wave 8, a third of every arrow by the late

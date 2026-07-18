@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ENHANCE_COST_GROWTH_PCT, RELIC_IDS, RELIC_PITY_WAVE, RELICS, relicSkipGold, TOWERS } from '../../data/content'
+import { AFFIX_SHIELD_BONUS, ENEMIES, ENHANCE_COST_GROWTH_PCT, RELIC_IDS, RELIC_PITY_WAVE, RELICS, relicSkipGold, TOWERS } from '../../data/content'
 import { autoplay } from '../../harness/autoplay'
 import { afkBot, balancedBot, buildCandidates } from '../../harness/bots'
 import { cloneRun } from '../clone'
@@ -555,6 +555,17 @@ describe('cataclysms', () => {
     const trialSparks = computeSparks({ ...progressed, trials: ['glass_spire'] })
     expect(trialSparks).toBe(Math.floor(((10 * 15 + 10) * 140) / 100))
     expect(trialSparks).toBeGreaterThan(plainSparks)
+  })
+
+  it('Shielded affix: every spawn raises the flat bonus shield', () => {
+    let s = cloneRun({ ...freshRun('shielded-affix'), wave: 6, wavesCleared: 6, waveBudget: 800, hpScalePct: 200 })
+    s = step(s, [{ type: 'start_wave' }]).state
+    s.activeAffix = 'shielded' // pin the affix regardless of the seeded roll
+    s = stepUntil(s, (st) => st.enemies.length > 0, 300)
+    const first = s.enemies[0]!
+    const def = ENEMIES[first.type]
+    expect(first.shield).toBeGreaterThanOrEqual(AFFIX_SHIELD_BONUS)
+    if (def.shield === 0) expect(first.shield).toBe(AFFIX_SHIELD_BONUS) // unshielded types gain exactly the bonus
   })
 
   it('No Mercy: repairs are rejected and the wave-clear knit never fires', () => {

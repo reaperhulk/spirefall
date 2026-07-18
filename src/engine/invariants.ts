@@ -35,7 +35,7 @@ export function assertInvariants(state: RunState): void {
   check(state.phase !== 'defeat' || state.spireHp === 0, 'defeat requires a fallen spire')
   check(state.phase !== 'victory' || state.victoryClaimed, 'victory phase requires a claimed victory')
   check(
-    state.activeAffix === null || ['frenzied', 'armored', 'horde', 'vanguard'].includes(state.activeAffix),
+    state.activeAffix === null || ['frenzied', 'armored', 'horde', 'vanguard', 'shielded'].includes(state.activeAffix),
     `unknown affix ${String(state.activeAffix)}`,
   )
 

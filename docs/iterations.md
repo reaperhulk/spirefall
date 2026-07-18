@@ -44,6 +44,23 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+95. *(marathon II, iteration 7)* **Shielded affix — and the dilution
+    lesson** — new wave affix: every enemy raises a small flat shield
+    (AFFIX_SHIELD_BONUS 4; sniper-pierceable, heavy-shot-breakable —
+    the composition check spread across a whole wave). The interesting
+    part was what it broke: adding a 5th affix at the old 35% roll
+    chance DILUTED armored/frenzied draws (8.75% → 7% of waves each),
+    waves got net easier, and the pinned Mortar-Blizzard genome
+    resurrected its 8k win on gamma. Fixes: AFFIX_CHANCE_PCT 35 → 44
+    (restores each affix's per-wave rate: new affixes must ADD threat,
+    not discount existing threat) and MORTAR_DAMAGE_PCT 125 → 120 (the
+    reshuffled world still handed the comp a legitimate 24-wave clear;
+    one more click on the original lever kills it). All three pins
+    green again. Goldens regenerated: balanced-fresh 10 → 9 waves
+    (affix density restored + the new affix), balanced-rich unchanged
+    at 13; envelope re-derived green. Engine test pins the flat shield
+    on every spawn under the affix. 188 unit tests, 34 e2e specs.
+
 94. *(marathon II, iteration 6)* **No Mercy trial** — a fifth opt-in
     handicap for the players who treat the repair button as a crutch:
     the Spire cannot be repaired at all (the command bounces with the

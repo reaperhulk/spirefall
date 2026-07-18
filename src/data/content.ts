@@ -215,7 +215,10 @@ export const VOLLEY_EXTRA_TARGETS = 2
 export const VOLLEY_PCT = 60
 export const LONGBOW_RANGE_PCT = 130
 export const MORTAR_SPLASH_PCT = 160
-export const MORTAR_DAMAGE_PCT = 125
+// 140 → 125 killed the original Mortar-Blizzard 8k win; the shielded-affix
+// world reshuffle (2026-07) handed the same comp a gamma win at 125, so one
+// more click: 120. The mortar stays the wave-clear king, just not a cheap one.
+export const MORTAR_DAMAGE_PCT = 120
 export const MORTAR_COOLDOWN_PCT = 160
 export const BREAKER_DAMAGE_PCT = 180
 export const BLIZZARD_RADIUS = 900
@@ -438,11 +441,24 @@ export const AFFIXES: Record<AffixId, AffixDef> = {
   armored: { name: 'Armored', description: '+40% enemy HP' },
   horde: { name: 'Horde', description: 'Far more enemies at -30% HP' },
   vanguard: { name: 'Vanguard', description: 'Enemies arrive in a compressed rush' },
+  shielded: { name: 'Shielded', description: 'Every enemy raises a small shield — pierce it or punch through it' },
 }
+
+// Flat shield every enemy gains under the Shielded affix (sniper-pierceable,
+// single-blockable — the composition check, spread across a whole wave).
+// Tuned at 4: at 2 the affix was so much softer than the rolls it displaced
+// (a fifth of 'armored' draws became 'shielded') that the pinned
+// Mortar-Blizzard genome won at 8k on gamma again. 4 keeps the wave-threat
+// pool honest and the pin dead.
+export const AFFIX_SHIELD_BONUS = 4
 
 export const AFFIX_IDS = Object.keys(AFFIXES) as AffixId[]
 export const AFFIX_FIRST_WAVE = 6
-export const AFFIX_CHANCE_PCT = 35
+// 44 with a 5-affix pool keeps each affix's per-wave rate where the 4-pool
+// had it (35/4 = 8.75% ≈ 44/5 = 8.8%): a new affix must ADD threat, not
+// dilute armored/frenzied draws — dilution at 35% resurrected the pinned
+// Mortar-Blizzard 8k win.
+export const AFFIX_CHANCE_PCT = 44
 
 // ---------------------------------------------------------------------------
 // Trials: opt-in handicaps chosen at run start. Harder runs pay more sparks —

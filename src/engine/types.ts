@@ -58,7 +58,7 @@ export type RelicId =
   | 'golden_ledger'
   | 'prism_lens'
 
-export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard'
+export type AffixId = 'frenzied' | 'armored' | 'horde' | 'vanguard' | 'shielded'
 
 export type CataclysmId = 'surge' | 'juggernaut' | 'swarm' | 'dampening' | 'crumbling' | 'ironclad'
 

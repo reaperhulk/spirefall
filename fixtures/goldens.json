@@ -16,19 +16,19 @@
     "stateHash": "8dedfa03"
   },
   "balanced-fresh": {
-    "ticks": 4959,
-    "wavesCleared": 10,
-    "kills": 495,
+    "ticks": 4208,
+    "wavesCleared": 9,
+    "kills": 374,
     "outcome": "defeat",
-    "sparks": 238,
-    "stateHash": "ef53d61a"
+    "sparks": 207,
+    "stateHash": "ca7e3d8b"
   },
   "balanced-rich": {
-    "ticks": 7499,
+    "ticks": 8582,
     "wavesCleared": 13,
-    "kills": 775,
+    "kills": 828,
     "outcome": "defeat",
-    "sparks": 259,
-    "stateHash": "da112f68"
+    "sparks": 264,
+    "stateHash": "bf17d6f4"
   }
 }
