@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { CARAPACE_BREAK_DAMAGE, ENEMIES, GALE_SPEED_PCT } from '../../data/content'
-import { applyHit, bossMechanics, carrierBroods } from '../combat'
+import { applyHit, bossMechanics, carrierBroods, enemyAuras, tickStatuses } from '../combat'
 import { cellCenter } from '../grid'
 import { createMeta, createRun } from '../meta'
+import { deriveStream } from '../rng'
 import type { Enemy, GameEvent, RunState } from '../types'
+import { generateWave } from '../waves'
 
 // Boss signature mechanics: every 10th wave is an encounter with explicit
 // counterplay, not a stat check. Exact arithmetic throughout.
@@ -86,6 +88,33 @@ describe('Stormcaller gale', () => {
     const gale = events.find((e) => e.type === 'boss_gale')
     expect(gale).toBeDefined()
     expect((gale as { hastened: number }).hastened).toBe(1)
+  })
+})
+
+describe('endless-tier bosses (Veilwarden, Blightmother)', () => {
+  it('the roster cycles into them at waves 40 and 50', () => {
+    const rng = deriveStream('boss-roster', 'waves')
+    expect(generateWave(rng, 40, 10_000).spawns.some((sp) => sp.type === 'boss4')).toBe(true)
+    expect(generateWave(rng, 50, 12_000).spawns.some((sp) => sp.type === 'boss5')).toBe(true)
+  })
+
+  it('Veilwarden flickers on the wraith machinery', () => {
+    const veil = enemy({ id: 1, type: 'boss4', phaseCooldown: 1 })
+    const s = waveState([veil])
+    tickStatuses(s)
+    expect(veil.phased).toBe(true) // untargetable window opens
+    expect(veil.phaseCooldown).toBe(ENEMIES.boss4.phasing!.hiddenTicks)
+  })
+
+  it('Blightmother mends the horde on the healer pulse, scaled by the hp curve', () => {
+    const blight = enemy({ id: 1, type: 'boss5', healCooldown: 0, hp: 600, maxHp: 620 })
+    const hurt = enemy({ id: 2, hp: 400, maxHp: 500 })
+    const s = waveState([blight, hurt])
+    enemyAuras(s, [])
+    const expected = Math.max(1, Math.floor((ENEMIES.boss5.heal!.amount * s.hpScalePct) / 100))
+    expect(hurt.hp).toBe(400 + expected)
+    expect(blight.hp).toBe(600) // never heals itself
+    expect(blight.healCooldown).toBe(ENEMIES.boss5.heal!.everyTicks)
   })
 })
 

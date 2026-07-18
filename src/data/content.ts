@@ -61,11 +61,15 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, armor: 1, unlockWave: 10, elite: true, mech: { kind: 'carapace', everyTicks: 240, durationTicks: 60 } },
   boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, armor: 1, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 }, brood: { type: 'splitling', count: 2, everyTicks: 180 } },
   boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, armor: 1, unlockWave: 30, elite: true, flying: true, mech: { kind: 'gale', everyTicks: 210, durationTicks: 45 } },
+  // Endless-tier bosses (waves 40 and 50 in the cycle): pure data — they
+  // ride the wraith-phasing and healer machinery the engine already has.
+  boss4: { name: 'Veilwarden', hp: 560, speed: 44, cost: 0, pack: 1, spacing: 0, bounty: 55, damage: 10, shield: 0, armor: 2, unlockWave: 40, elite: true, phasing: { visibleTicks: 120, hiddenTicks: 50 } },
+  boss5: { name: 'Blightmother', hp: 620, speed: 38, cost: 0, pack: 1, spacing: 0, bounty: 60, damage: 12, shield: 4, armor: 1, unlockWave: 50, elite: true, heal: { everyTicks: 80, amount: 10, radius: 2400 } },
 }
 
 // Boss waves rotate through the roster: 10 → Spirebreaker (tank),
 // 20 → Gravemind (splits on death), 30 → Stormcaller (flies) — and repeat.
-export const BOSS_ROSTER: EnemyType[] = ['boss', 'boss2', 'boss3']
+export const BOSS_ROSTER: EnemyType[] = ['boss', 'boss2', 'boss3', 'boss4', 'boss5']
 
 // ---------------------------------------------------------------------------
 // Towers

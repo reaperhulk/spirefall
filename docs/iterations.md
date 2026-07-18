@@ -44,6 +44,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > achievement toasts; low-end render perf pass; continuous re-planning
 > from playtests and fuzz hunts.
 
+91. *(marathon II, iteration 3)* **Endless-tier bosses: Veilwarden and
+    Blightmother** — the 3-boss roster meant endless runs met a repeat
+    by wave 40. Two new bosses extend the cycle to 5, both PURE DATA on
+    machinery the engine already had: Veilwarden (wave 40) rides the
+    wraith phasing config — a tanky armored boss that flickers
+    untargetable for 50-tick windows, punishing burst-only comps;
+    Blightmother (wave 50) rides the healer pulse — a slow shielded
+    mass that mends the whole horde around her (amount scales on the hp
+    curve), turning her escort into a race. Distinct colors (plus
+    Okabe–Ito assist entries) and sizes; the codex, preview chips, and
+    boss music pick them up automatically. The core 24-wave run never
+    sees them, so goldens and the balance envelope are untouched —
+    pinned by the roster-cycle test (10→boss … 40→boss4, 50→boss5,
+    60→around again) plus machinery tests through the real engine
+    paths. 186 unit tests, 34 e2e specs.
+
 90. *(marathon II, iteration 2)* **The scouting report warns about boss
     mechanics** — the wave preview listed the boss as just another unit;
     the carapace/gale surprise landed mid-fight. Boss chips now carry a

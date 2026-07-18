@@ -30,6 +30,8 @@ export const ENEMY_COLORS: Record<string, string> = {
   boss: '#ff007c',
   boss2: '#c53b53',
   boss3: '#ffc777',
+  boss4: '#b39dff',
+  boss5: '#7fbf5f',
 }
 
 // High-visibility alternates, derived from the Okabe–Ito colorblind-safe
@@ -50,6 +52,8 @@ export const ENEMY_COLORS_ASSIST: Record<string, string> = {
   boss: '#ee3377', // magenta
   boss2: '#0077bb', // strong blue
   boss3: '#eecc66', // pale gold
+  boss4: '#ddccff', // pale violet
+  boss5: '#117733', // deep green
 }
 
 // Live palette lookup: reads the settings singleton each call, so toggling
@@ -528,6 +532,8 @@ const ENEMY_RADIUS: Record<string, number> = {
   boss: 16,
   boss2: 16,
   boss3: 15,
+  boss4: 17,
+  boss5: 18,
 }
 
 function px(v: number): number {
