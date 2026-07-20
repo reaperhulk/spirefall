@@ -1104,7 +1104,7 @@ export default function App() {
                   title={BOONS[b].description}
                   onClick={() => session.dispatch({ type: 'choose_boon', boon: b })}
                 >
-                  {BOONS[b].name}
+                  {BOONS[b].name} <span className="boon-effect">{BOONS[b].effect}</span>
                 </button>
               ))}
               <span className="boon-skip">or start the wave without one</span>

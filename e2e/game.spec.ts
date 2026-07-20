@@ -1087,6 +1087,25 @@ test.describe('mobile viewport', () => {
     expect(errors).toEqual([])
   })
 
+  test('boon offers are legible without hover: each button names its effect on screen', async ({ page }) => {
+    const errors = await boot(page, 'e2e-mobile-boons')
+    const offer = page.getByTestId('boon-offer')
+    await expect(offer).toBeVisible()
+    // Touch has no tooltips: every offered boon must carry a visible effect
+    // tag (the compact form from the BOONS table) inside the button itself.
+    const ids = await page.evaluate(() => window.__harness.getState().boonOffer)
+    expect(ids!.length).toBeGreaterThan(0)
+    for (const id of ids!) {
+      const tag = page.getByTestId(`boon-${id}`).locator('.boon-effect')
+      await expect(tag).toBeVisible()
+      expect((await tag.textContent())!.trim().length).toBeGreaterThan(0)
+    }
+    // The strip itself must not push the page wide on a phone.
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+    expect(overflow).toBeLessThanOrEqual(1)
+    expect(errors).toEqual([])
+  })
+
   test('run-over modal fits the phone: the trial dropdown cannot force horizontal scroll', async ({ page }) => {
     const errors = await boot(page, 'e2e-mobile-overflow')
     await page.evaluate(() => window.__harness.dispatch({ type: 'abandon_run' }))

@@ -988,6 +988,10 @@ button.preview-unit:hover {
   box-sizing: border-box;
   font-size: 12px;
   color: #8a93ad;
+  /* As a flex child, min-width:auto would let long offers push the whole
+     page wide; pin it so overflow scrolls inside the strip instead. */
+  min-width: 0;
+  max-width: 100%;
 }
 
 .boon-row {
@@ -1003,11 +1007,37 @@ button.preview-unit:hover {
 .boon-btn {
   padding: 2px 10px;
   font-size: 12px;
+  white-space: nowrap;
+}
+
+/* The effect tag rides inside the button: on touch there is no hover, so
+   the choice has to be legible from the button text alone. */
+.boon-effect {
+  color: #e0af68;
+  font-size: 11px;
 }
 
 .boon-skip {
   font-size: 11px;
   opacity: 0.7;
+}
+
+/* Narrow screens: the buttons (name + effect) ARE the information — shed
+   the decorative label and skip hint instead of overflowing the strip. */
+@media (max-width: 700px) {
+  .boon-label,
+  .boon-skip {
+    display: none;
+  }
+
+  .boon-strip {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .boon-btn {
+    padding: 2px 6px;
+  }
 }
 
 /* The beam toggle: selected = live; overheated = red pulse until vented. */

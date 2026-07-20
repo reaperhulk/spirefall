@@ -458,11 +458,13 @@ export interface BoonDef {
   description: string
 }
 
+// `effect` is the compact form shown INSIDE the offer button — touch
+// screens have no hover, so the choice must be legible without a tooltip.
 export const BOONS = {
-  sharpened: { name: 'Sharpened Steel', description: 'Towers deal +15% damage this wave.' },
-  swift: { name: 'Swift Sigils', description: 'Ability cooldowns recover +1/tick this wave.' },
-  frosted: { name: 'Hoarfrost Wind', description: 'Enemies move 10% slower this wave.' },
-  bounty: { name: 'War Levy', description: '+2 gold per kill this wave.' },
+  sharpened: { name: 'Sharpened Steel', effect: '+15% dmg', description: 'Towers deal +15% damage this wave.' },
+  swift: { name: 'Swift Sigils', effect: '2× recharge', description: 'Ability cooldowns recover +1/tick this wave.' },
+  frosted: { name: 'Hoarfrost Wind', effect: '−10% speed', description: 'Enemies move 10% slower this wave.' },
+  bounty: { name: 'War Levy', effect: '+2g/kill', description: '+2 gold per kill this wave.' },
 } as const
 
 export type BoonId = keyof typeof BOONS
