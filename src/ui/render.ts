@@ -8,6 +8,7 @@ import {
   LANCE_MAX_STACKS,
   towerTier,
   VETERANCY_TIERS,
+  mintStars,
   veterancyStars,
 } from '../data/content'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
@@ -1188,11 +1189,34 @@ function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, ui: Ren
 
     // Veterancy: kills earn stars (10/50/150) — a tower's career reads on
     // the field, and watching a favorite grow up is half the fun of 1x.
-    const stars = veterancyStars(t.kills)
+    // Mints earn theirs off gold minted — see MINT_VETERANCY_TIERS.
+    const stars = t.type === 'mint' ? mintStars(t.earned ?? 0) : veterancyStars(t.kills)
     if (stars > 0) {
       ctx.fillStyle = '#e0af68'
       for (let i = 0; i < stars; i++) drawStar(ctx, gx + 7 + i * 7, gy + 8, 3)
       if (stars >= VETERANCY_TIERS.length) glow(ctx, cx, cy, CELL_PX * 0.5, '#e0af68', 0.12)
+    }
+
+    // A beacon's contribution is not a career, it's live COVERAGE — how many
+    // towers are standing in the aura right now. Pips, not stars, because
+    // the number is meant to move: sell a neighbour and one goes out, which
+    // is exactly the feedback that makes placement legible. Same slot as the
+    // stars so the glance is the same glance; different shape so it cannot
+    // be misread as veterancy. Previously this was visible only while the
+    // beacon was SELECTED, which is precisely when you no longer need it.
+    if (t.type === 'beacon') {
+      const reach = towerTier('beacon', t.tier).range
+      const at = cellCenter(t.cell)
+      let boosted = 0
+      for (const other of state.towers) {
+        if (other.id === t.id || other.type === 'beacon') continue
+        if (distSq(cellCenter(other.cell), at) <= reach * reach) boosted++
+      }
+      ctx.fillStyle = boosted > 0 ? '#ff9e64' : '#5a4436'
+      for (let i = 0; i < Math.max(1, Math.min(boosted, 6)); i++) {
+        circle(ctx, gx + 8 + i * 6, gy + 8, 2)
+        ctx.fill()
+      }
     }
     if (t.enhance > 0) {
       ctx.font = 'bold 9px ui-monospace, monospace'

@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { AA_TOWER_NAMES, AFFIX_FIRST_WAVE, ENEMIES, TOWERS, VETERANCY_TIERS, veterancyStars } from '../../data/content'
+import {
+  AA_TOWER_NAMES,
+  AFFIX_FIRST_WAVE,
+  ENEMIES,
+  MINT_VETERANCY_TIERS,
+  TOWERS,
+  VETERANCY_TIERS,
+  mintStars,
+  veterancyStars,
+} from '../../data/content'
 import { buildCandidates } from '../../harness/bots'
 import { cellCenter, distSq } from '../grid'
 import { getRunMap } from '../mapgen'
@@ -100,6 +109,20 @@ describe('veterancy', () => {
     expect(veterancyStars(50)).toBe(2)
     expect(veterancyStars(150)).toBe(3)
     expect(veterancyStars(9999)).toBe(3)
+  })
+
+  it('mints earn stars off gold, since they can never earn one off kills', () => {
+    // A support tower fires at nothing, so a kills-based career left the
+    // mint and the beacon as the only towers on the board that could never
+    // show one. The mint's currency is the gold it minted.
+    expect(MINT_VETERANCY_TIERS).toEqual([150, 600, 1800])
+    expect(mintStars(0)).toBe(0)
+    expect(mintStars(149)).toBe(0)
+    expect(mintStars(150)).toBe(1)
+    expect(mintStars(599)).toBe(1)
+    expect(mintStars(600)).toBe(2)
+    expect(mintStars(1800)).toBe(3)
+    expect(mintStars(99_999)).toBe(3)
   })
 })
 

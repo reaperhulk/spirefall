@@ -52,6 +52,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+205. *(graphics/identity)* **The support towers get a career** — the
+    backlog said mint and beacon "read weakly against the damage towers"
+    and the reason turned out to be structural: veterancy stars come from
+    KILLS, and both are `support: true` and never fire. They were the only
+    two towers on the board that could never show a star, permanently
+    blank beside arrows growing up. Now each earns a readout in the same
+    glance-slot, in its own currency. Mint: stars off gold minted
+    (150/600/1800 — it already tracked `earned`, so no engine change).
+    Beacon: amber PIPS, one per tower standing in the aura — deliberately
+    not stars, because coverage is live, not a career, and a pip winking
+    out when you sell a neighbour is the feedback that makes placement
+    legible. That link view existed only while the beacon was SELECTED,
+    which is exactly when you no longer need it. Both verified by eye at
+    4× device scale, not just by test: two pips on a beacon covering two
+    towers, one star on a mint at 204 gold.
+
 204. *(perf)* **The budget measures the cheap tick** — the only perf test
     played a FRESH account, which dies around wave 9 with a few dozen
     bodies: it measured the easy case and called it the budget. The

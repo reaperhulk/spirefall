@@ -504,6 +504,20 @@ export function veterancyStars(kills: number): number {
   return stars
 }
 
+// Support towers never fire, so they can never earn a KILL star — which
+// left the mint and the beacon as the only two towers on the board with no
+// visible career at all, permanently blank next to arrows growing stars.
+// They earn the same stars off the thing they actually do: gold minted.
+// (Render-only recognition, same as kills — thresholds live here so the
+// codex and the canvas cannot disagree.)
+export const MINT_VETERANCY_TIERS = [150, 600, 1800] as const
+
+export function mintStars(earned: number): number {
+  let stars = 0
+  for (const need of MINT_VETERANCY_TIERS) if (earned >= need) stars++
+  return stars
+}
+
 export const RELIC_WAVE_INTERVAL = 5
 export const RELIC_OFFER_SIZE = 3
 
