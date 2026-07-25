@@ -22,7 +22,7 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome } from '..
 // The deep hunt is minutes of straight-line work, and a Vitest worker that
 // never yields cannot answer its reporter: birpc times out at a hardcoded
 // 60s and the run dies with `Timeout calling "onTaskUpdate"` — exit 1 with
-// every test green, which is exactly how the weekly job failed. One
+// every test green, which is exactly how the deep-fuzz job failed. One
 // macrotask per run is enough for the worker to drain its message port, and
 // costs ~1ms against a run that takes ~200ms.
 async function drainBreathing<T>(steps: Generator<unknown, T, void>): Promise<T> {
@@ -47,7 +47,7 @@ describe('build fuzzer', () => {
     const opts = { fuzzSeed: 'step-equiv', budgets: [0], seeds: ['alpha'], population: 2, generations: 1 }
 
     // Every simulation gets its own yield, so the longest the caller's thread
-    // is held is ONE bot run — this is the property the weekly job needs, so
+    // is held is ONE bot run — this is the property the deep-fuzz job needs, so
     // pin the granularity, not just the total.
     const gen = fuzzBuildsSteps(opts)
     let yields = 0

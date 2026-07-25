@@ -52,6 +52,25 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+201. *(CI, user-reported)* **The beam spec stops racing the spire** — the
+    e2e job went red on one spec: the beam's tap-to-aim poll timed out in
+    CI while passing locally. Not flaky-random. The spec placed NO towers,
+    so wave 1's eighteen enemies walked into a 10 HP spire and ended the
+    run about five seconds in; the run-over modal then covered the
+    playfield and swallowed the click. Locally it finished in 4.7-4.9s —
+    it had been passing with 0.3s to spare. Traced with a throwaway
+    lifetime probe rather than guessed at. Fixed by defending the spire
+    (four arrows via the existing findBuildCells helper) so the run cannot
+    die mid-spec. That exposed the mirror race: with the spire defended
+    AND the old fastForward(3), the wave had ~260ms left to live, while
+    the 's left' label assertion is gated on phase 'wave' — a coin flip
+    that had been landing heads. Dropping the fast-forward leaves a ~3.3s
+    wave window against ~0.5s of assertions, and the enemy poll already
+    waited for the spawns. Measured all three fast-forward budgets before
+    picking. 5/5 green. Also: the deep fuzz moves off its Monday cron onto
+    push + PR, so a curve break is caught by the change that caused it
+    instead of surfacing days later in a run nobody is watching.
+
 200. *(CI, user-reported)* **The weekly hunt breathes** — the scheduled
     deep fuzz went red on all four biomes with every test GREEN: `Errors 1
     error — [vitest-worker]: Timeout calling "onTaskUpdate"`, exit 1. Not

@@ -283,9 +283,22 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
 
 test('the spire beam: B (or the button) toggles it, taps and the cursor aim it', async ({ page }) => {
   const errors = await boot(page, 'e2e-beam')
+  // Defend the spire before starting the wave. This spec drives the beam UI
+  // in REAL time (heat climbs, venting finishes), so it needs the run to
+  // outlive its own assertions — with an undefended spire, wave 1's leaks
+  // ended the run about five seconds in, the run-over modal covered the
+  // playfield, and the tap-to-aim click below landed on the modal instead.
+  // It passed locally with ~0.3s to spare and failed in CI, which is a race
+  // the spec should not have been running at all.
+  await page.getByTestId('shop-arrow').click()
+  for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
+  await page.getByTestId('shop-arrow').click() // disarm so clicks below aim the beam
+  // No fastForward: the 's left' label below is gated on phase 'wave', and
+  // skipping 3s ahead left the wave with ~260ms to live — the assertion was
+  // a coin flip. Letting it run keeps the wave up for ~3.3s, and the poll
+  // just below already waits for the spawns.
   await page.evaluate(() => {
     window.__harness.dispatch({ type: 'start_wave' })
-    window.__harness.fastForward(3)
   })
   await expect.poll(async () => page.evaluate(() => window.__harness.getState().enemies.length)).toBeGreaterThan(0)
   // The Beam button always shows the barrel's state.
