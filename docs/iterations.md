@@ -52,6 +52,21 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+204. *(perf)* **The budget measures the cheap tick** — the only perf test
+    played a FRESH account, which dies around wave 9 with a few dozen
+    bodies: it measured the easy case and called it the budget. The
+    expensive tick is late-endless, where cost is towers × enemies. New
+    test builds that worst case directly (60k-tree account, ~40 towers
+    across seven types, a 300-strong six-type horde at 20× HP so the board
+    stays loaded for the whole 600-tick window) rather than grinding a bot
+    to wave 30 for it. Measured: **0.28ms** for 39 towers × ~260 enemies.
+    The first ceiling drafted (4ms) had 15× headroom — a budget that loose
+    catches nothing, so it is 2ms, and the test PRINTS its number and
+    percentage used, because a budget nobody can see the headroom on rots
+    silently until the day it fails. (`spawnHorde` on `window.__harness`
+    already existed for browser playtesting; the missing half was the
+    headless measurement.)
+
 203. *(mobile)* **320px was never actually tested** — the layout matrix
     started at 375, and the stylesheet had a `max-width: 360px` block
     claiming "tab rows tighten so every tab fits at 320px" that nothing
