@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createMeta, createRun } from '../../engine/meta'
 import { deriveStream } from '../../engine/rng'
 import { autoplay, spendSparks } from '../autoplay'
-import { calibrateFindings, classify, type FuzzFinding, fuzzBuilds } from '../fuzz'
+import { calibrateFindings, classify, type FuzzFinding, fuzzBuilds, fuzzBuildsSteps } from '../fuzz'
 import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome } from '../policy'
 
 // The build fuzzer hunts for strategies that break the difficulty curve.
@@ -10,6 +10,21 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome } from '..
 // it with `npm run fuzz:builds` for a deep search. A red sweep means a
 // genome printed above it wins far cheaper than the curve allows — fix the
 // balance, then consider pinning that genome as a named bot.
+
+// Drive a sweep to completion, yielding the event loop between simulations.
+// The deep hunt is minutes of straight-line work, and a Vitest worker that
+// never yields cannot answer its reporter: birpc times out at a hardcoded
+// 60s and the run dies with `Timeout calling "onTaskUpdate"` — exit 1 with
+// every test green, which is exactly how the weekly job failed. One
+// macrotask per run is enough for the worker to drain its message port, and
+// costs ~1ms against a run that takes ~200ms.
+async function drainBreathing<T>(steps: Generator<unknown, T, void>): Promise<T> {
+  for (;;) {
+    const step = steps.next()
+    if (step.done) return step.value
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  }
+}
 
 describe('build fuzzer', () => {
   it('genome generation and mutation are deterministic from the seed', () => {
@@ -19,6 +34,28 @@ describe('build fuzzer', () => {
     const ma = mutateGenome(a.rng, a.genome)
     const mb = mutateGenome(b.rng, b.genome)
     expect(ma.genome).toEqual(mb.genome)
+  })
+
+  it('breathing between runs cannot change the hunt: stepped == blocking', async () => {
+    const opts = { fuzzSeed: 'step-equiv', budgets: [0], seeds: ['alpha'], population: 2, generations: 1 }
+
+    // Every simulation gets its own yield, so the longest the caller's thread
+    // is held is ONE bot run — this is the property the weekly job needs, so
+    // pin the granularity, not just the total.
+    const gen = fuzzBuildsSteps(opts)
+    let yields = 0
+    let stepped
+    for (;;) {
+      const step = gen.next()
+      if (step.done) {
+        stepped = step.value
+        break
+      }
+      yields++
+    }
+    expect(yields).toBe(3) // 1 balanced reference + 2 population members × 1 seed
+
+    expect(stepped).toEqual(fuzzBuilds(opts))
   })
 
   it('policy bots are pure functions of state', () => {
@@ -323,17 +360,17 @@ describe('build fuzzer', () => {
     }
   }, 600_000)
 
-  it('sweep finds no curve-breaking build (deep mode: npm run fuzz:builds)', () => {
+  it('sweep finds no curve-breaking build (deep mode: npm run fuzz:builds)', async () => {
     const biome = process.env['FUZZ_BIOME'] as import('../../data/biomes').BiomeId | undefined
     if (biome) console.log(`fuzz sweep biome: ${biome}`)
-    const result = fuzzBuilds({
+    const result = await drainBreathing(fuzzBuildsSteps({
       fuzzSeed: process.env['FUZZ_SEED'] ?? 'ci-sweep',
       budgets: (process.env['FUZZ_BUDGETS'] ?? '8000').split(',').map(Number),
       seeds: (process.env['FUZZ_SEEDS'] ?? 'alpha,gamma').split(','),
       population: Number(process.env['FUZZ_POP'] ?? 6),
       generations: Number(process.env['FUZZ_GENS'] ?? 2),
       biome,
-    })
+    }))
     for (const f of result.findings) {
       console.log(
         `[${f.severity}] ${f.reason} — seed ${f.seed}, ${f.wavesCleared} waves (ref ${f.referenceWaves})\n` +

@@ -87,16 +87,25 @@ function metaFor(budget: number, priority: PolicyGenome['metaPriority']): MetaSt
   return spendSparks({ ...createMeta(), sparks: budget }, priority)
 }
 
-function evaluate(genome: PolicyGenome, budget: number, seeds: string[], biome?: BiomeId): EvalOutcome[] {
+function* evaluate(
+  genome: PolicyGenome,
+  budget: number,
+  seeds: string[],
+  evaluated: number,
+  biome?: BiomeId,
+): Generator<FuzzStep, EvalOutcome[], void> {
   const bot = makePolicyBot(genome)
-  return seeds.map((seed) => {
+  const runs: EvalOutcome[] = []
+  for (const seed of seeds) {
     const { state } = autoplay(createRun(metaFor(budget, genome.metaPriority), seed, biome), bot, MAX_TICKS)
-    return {
+    runs.push({
       wavesCleared: state.wavesCleared,
       outcome: state.phase === 'victory' ? ('victory' as const) : ('defeat' as const),
       seed,
-    }
-  })
+    })
+    yield { phase: 'evaluate', budget, evaluated: evaluated + runs.length }
+  }
+  return runs
 }
 
 // Pure classification of one run against the curve contract — unit-testable
@@ -130,7 +139,21 @@ export function classify(
   return null
 }
 
-export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
+// A breathing point between two chunks of simulation. A deep sweep is
+// minutes of straight-line work; a caller that must stay responsive (the CI
+// test — its worker owes a reporter heartbeat) drives the generator and
+// awaits a macrotask on every yield. Yields sit after each individual
+// autoplay, so the longest uninterrupted block is ONE bot run, not the whole
+// hunt. Breathing cannot change the search: the generator resumes exactly
+// where it paused, on the same RNG thread, so the blocking `fuzzBuilds`
+// below still returns identical findings (pinned by a test).
+export interface FuzzStep {
+  phase: 'reference' | 'evaluate'
+  budget: number
+  evaluated: number
+}
+
+export function* fuzzBuildsSteps(opts: FuzzOptions): Generator<FuzzStep, FuzzResult, void> {
   let rng = deriveStream(opts.fuzzSeed, 'build-fuzz')
   const findings: FuzzFinding[] = []
   const seenFindings = new Set<string>()
@@ -144,6 +167,7 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
       const meta = budget <= 0 ? createMeta() : spendSparks({ ...createMeta(), sparks: budget }, DEFAULT_BUY_PRIORITY)
       const { state } = autoplay(createRun(meta, seed, opts.biome), BOTS.balanced, MAX_TICKS)
       reference.set(`${budget}:${seed}`, state.wavesCleared)
+      yield { phase: 'reference', budget, evaluated }
     }
   }
 
@@ -182,7 +206,7 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
 
     for (let gen = 0; gen < opts.generations; gen++) {
       for (const member of population) {
-        const runs = evaluate(member.genome, budget, opts.seeds, opts.biome)
+        const runs = yield* evaluate(member.genome, budget, opts.seeds, evaluated, opts.biome)
         evaluated += runs.length
         member.score = record(member.genome, budget, runs)
         const key = archetype(member.genome)
@@ -222,6 +246,17 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
 
   findings.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'breaking' ? -1 : 1))
   return { findings, evaluated, bestByBudget, nichesByBudget }
+}
+
+// Run the whole hunt in one blocking call. Fine for short sweeps; a caller
+// that must not monopolise its thread for minutes should drive
+// `fuzzBuildsSteps` directly instead.
+export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
+  const steps = fuzzBuildsSteps(opts)
+  for (;;) {
+    const step = steps.next()
+    if (step.done) return step.value
+  }
 }
 
 // Seed-luck calibration: a cheap victory is only a ROBUST exploit if the

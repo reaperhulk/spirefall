@@ -52,6 +52,23 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+200. *(CI, user-reported)* **The weekly hunt breathes** — the scheduled
+    deep fuzz went red on all four biomes with every test GREEN: `Errors 1
+    error — [vitest-worker]: Timeout calling "onTaskUpdate"`, exit 1. Not
+    a balance find. The sweep is ~330s of straight-line simulation in one
+    test, and a worker that never yields its event loop cannot answer the
+    reporter; birpc gives up at a hardcoded 60s (not configurable from
+    vitest.config), so the overdue timer fires the instant the block ends.
+    `fuzzBuilds` is now a thin blocking driver over a new `fuzzBuildsSteps`
+    generator that yields after EVERY autoplay — reference runs included —
+    so the deep test can await a macrotask between simulations and the
+    longest uninterrupted block is one bot run instead of the whole hunt.
+    Breathing cannot move the search (the generator resumes on the same RNG
+    thread); a new test pins stepped == blocking and pins the yield
+    granularity at one-per-run, so a future refactor can't quietly restore
+    the monolithic block. Reproduced before (exit 1, 14/14 passing) and
+    verified after on the same verdant deep hunt.
+
 199. *(rebalance — user feedback ×2)* **The consolidation** — "enemies
     die so quickly that all the money ends up in the same place." The
     probe agreed: 92% of fresh-account kills (gold-weighted) landed in
