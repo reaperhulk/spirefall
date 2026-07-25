@@ -20,7 +20,30 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 // The curve contract (PLAN §2.3): a mixed comp needs ~20k sparks to win.
 export const BREAKING_VICTORY_BUDGET = 10_000 // any win at or below this budget is a broken build
 export const WARNING_VICTORY_BUDGET = 14_000 // wins here are suspiciously cheap
-export const WARNING_OVERPERFORMANCE = 7 // waves beyond the balanced reference at equal budget
+// Overperformance is measured against the balanced bot — the strongest bot
+// that plays the INTENDED way (measured 2026-07: balanced reaches 9-11 waves
+// at 0 sparks and wins at 20k on 3 of 4 seeds, while greedy plateaus at
+// 11-13 everywhere, so balanced is the yardstick, not merely the default).
+//
+// The margin is proportional, not flat. A fixed "+7 waves" means wildly
+// different things at each end of the curve: +7 over a 9-wave fresh-account
+// reference is a build that DOUBLES intended play, while +7 over a 20-wave
+// deep-tree reference is a third better. The old flat rule fired on every
+// low-budget genome and stayed silent on high-budget ones, which is exactly
+// backwards from where a curve break hides — and it trained readers to skim
+// past warnings. A ratio asks the same question at every budget: did this
+// build reach dramatically further than intended play at equal investment?
+export const WARNING_OVERPERFORMANCE_NUM = 3 // 3/2 → 50% deeper than the reference
+export const WARNING_OVERPERFORMANCE_DEN = 2
+export const WARNING_OVERPERFORMANCE_FLOOR = 6 // absolute guard so shallow references cannot trip on noise
+
+// Kept as integer math (house rule: no float thresholds in graded output).
+export function overperformanceThreshold(referenceWaves: number): number {
+  return Math.max(
+    referenceWaves + WARNING_OVERPERFORMANCE_FLOOR,
+    Math.ceil((referenceWaves * WARNING_OVERPERFORMANCE_NUM) / WARNING_OVERPERFORMANCE_DEN),
+  )
+}
 export const WARNING_ENDLESS_WAVES = 34 // endless scaling should end everyone by here
 
 const MAX_TICKS = 120_000 // ~67 sim-minutes; every real run ends far sooner
@@ -130,10 +153,14 @@ export function classify(
       reason: `reached wave ${run.wavesCleared} — endless scaling is too soft`,
     }
   }
-  if (run.wavesCleared >= referenceWaves + WARNING_OVERPERFORMANCE) {
+  if (run.wavesCleared >= overperformanceThreshold(referenceWaves)) {
+    // Report the multiple so a human can RANK findings instead of drowning
+    // in equally-worded ones: 2.0x intended play reads louder than 1.5x.
+    const tenths = referenceWaves > 0 ? Math.round((run.wavesCleared * 10) / referenceWaves) : 0
+    const multiple = `${Math.floor(tenths / 10)}.${tenths % 10}x`
     return {
       severity: 'warning',
-      reason: `${run.wavesCleared} waves vs balanced reference ${referenceWaves} at ${budget} sparks`,
+      reason: `${run.wavesCleared} waves vs balanced reference ${referenceWaves} at ${budget} sparks (${multiple} intended play)`,
     }
   }
   return null
@@ -266,18 +293,36 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
 // path. The curve is defended against strategies, not dice: single-seed
 // cheap wins demote to warnings (still logged, with repro genomes).
 export function calibrateFindings(findings: FuzzFinding[]): void {
-  const breakingWins = new Map<string, Set<string>>()
-  for (const f of findings) {
-    if (f.severity !== 'breaking') continue
-    const key = `${f.budget}:${JSON.stringify(f.genome)}`
-    if (!breakingWins.has(key)) breakingWins.set(key, new Set())
-    breakingWins.get(key)!.add(f.seed)
+  const cheapWins = findings.filter((f) => f.severity === 'breaking')
+  const key = (f: FuzzFinding): string => `${f.budget}:${JSON.stringify(f.genome)}`
+
+  const seedsOf = new Map<string, Set<string>>()
+  for (const f of cheapWins) {
+    if (!seedsOf.has(key(f))) seedsOf.set(key(f), new Set())
+    seedsOf.get(key(f))!.add(f.seed)
   }
-  for (const f of findings) {
-    if (f.severity !== 'breaking') continue
-    if (breakingWins.get(`${f.budget}:${JSON.stringify(f.genome)}`)!.size < 2) {
-      f.severity = 'warning'
-      f.reason += ' (single-seed — seed softness, not a robust exploit)'
+  const lucky = cheapWins.filter((f) => seedsOf.get(key(f))!.size < 2)
+
+  // Seed softness is a claim about ONE genome drawing a friendly map. When
+  // several INDEPENDENT genomes each convert a cheap win on DIFFERENT seeds,
+  // that excuse stops working: the budget itself is winnable, and demoting
+  // each of them in isolation lets a broken curve pass in silence. That is
+  // exactly how the 2026-07 hunt read — two unrelated builds won at 5k, one
+  // seed each, and both were waved through as dice.
+  const softBudgets = new Set<number>()
+  for (const budget of new Set(lucky.map((f) => f.budget))) {
+    const atBudget = lucky.filter((f) => f.budget === budget)
+    const genomes = new Set(atBudget.map((f) => JSON.stringify(f.genome)))
+    const seeds = new Set(atBudget.map((f) => f.seed))
+    if (genomes.size >= 2 && seeds.size >= 2) softBudgets.add(budget)
+  }
+
+  for (const f of lucky) {
+    if (softBudgets.has(f.budget)) {
+      f.reason += ' (single-seed, but independent builds also win here — the BUDGET is soft)'
+      continue
     }
+    f.severity = 'warning'
+    f.reason += ' (single-seed — seed softness, not a robust exploit)'
   }
 }

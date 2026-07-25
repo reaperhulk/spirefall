@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { createMeta, createRun } from '../../engine/meta'
 import { deriveStream } from '../../engine/rng'
 import { autoplay, spendSparks } from '../autoplay'
-import { calibrateFindings, classify, type FuzzFinding, fuzzBuilds, fuzzBuildsSteps } from '../fuzz'
+import {
+  calibrateFindings,
+  classify,
+  type FuzzFinding,
+  fuzzBuilds,
+  fuzzBuildsSteps,
+  overperformanceThreshold,
+} from '../fuzz'
 import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome } from '../policy'
 
 // The build fuzzer hunts for strategies that break the difficulty curve.
@@ -92,6 +99,23 @@ describe('build fuzzer', () => {
     expect(classify({ wavesCleared: 18, outcome: 'defeat', seed: 'x' }, 5_000, 17)).toBeNull() // near the reference is fine
   })
 
+  it('overperformance asks the same question at both ends of the curve', () => {
+    // Shallow reference: the absolute floor binds, so a fresh-account build
+    // has to genuinely run away with it (not just clear a couple more).
+    expect(overperformanceThreshold(9)).toBe(15)
+    // Deep reference: the ratio binds. The old flat +7 would have warned at
+    // 27 over a 20-wave reference — a third better than intended play, which
+    // is ordinary build variance, not a curve break.
+    expect(overperformanceThreshold(20)).toBe(30)
+    expect(classify({ wavesCleared: 27, outcome: 'defeat', seed: 'x' }, 20_000, 20)).toBeNull()
+
+    // Doubling intended play still warns, and says by how much so findings
+    // can be ranked instead of skimmed.
+    const doubled = classify({ wavesCleared: 18, outcome: 'defeat', seed: 'x' }, 0, 9)
+    expect(doubled?.severity).toBe('warning')
+    expect(doubled?.reason).toMatch(/2\.0x intended play/)
+  })
+
   it('calibration: single-seed cheap wins demote to warnings, multi-seed stay breaking', () => {
     const g1 = { marker: 'lucky' } as unknown as PolicyGenome
     const g2 = { marker: 'robust' } as unknown as PolicyGenome
@@ -111,6 +135,37 @@ describe('build fuzzer', () => {
     expect(findings[0]!.reason).toMatch(/single-seed/)
     expect(findings[1]!.severity).toBe('breaking') // converts on two seeds — a real exploit
     expect(findings[2]!.severity).toBe('breaking')
+  })
+
+  it('calibration: independent single-seed wins at one budget mean the BUDGET is soft', () => {
+    // The blind spot the 2026-07 hunt fell into: two unrelated builds each
+    // won at 5k on a seed of their own, and the per-genome rule waved both
+    // through as dice. Two dice landing the same way is a loaded table.
+    const finding = (marker: string, seed: string): FuzzFinding => ({
+      severity: 'breaking',
+      reason: 'victory at 5000 sparks — the curve says a win costs ~20k',
+      budget: 5000,
+      seed,
+      wavesCleared: 24,
+      outcome: 'victory',
+      referenceWaves: 15,
+      genome: { marker } as unknown as PolicyGenome,
+    })
+
+    const independent = [finding('cannonWall', 'alpha'), finding('mintEconomy', 'delta')]
+    calibrateFindings(independent)
+    expect(independent.map((f) => f.severity)).toEqual(['breaking', 'breaking'])
+    expect(independent[0]!.reason).toMatch(/BUDGET is soft/)
+
+    // Still dice when it is one genome, or when the wins pile onto a single
+    // soft seed — neither says the budget is reachable.
+    const oneGenome = [finding('cannonWall', 'alpha')]
+    calibrateFindings(oneGenome)
+    expect(oneGenome[0]!.severity).toBe('warning')
+
+    const oneSeed = [finding('cannonWall', 'alpha'), finding('mintEconomy', 'alpha')]
+    calibrateFindings(oneSeed)
+    expect(oneSeed.map((f) => f.severity)).toEqual(['warning', 'warning'])
   })
 
   // Pinned find from the 2026-07 deep hunt: an all-offense account (Honed
