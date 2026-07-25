@@ -187,6 +187,26 @@ intentionally moves):
 | Arrow-only spam, +20k sparks | dies at the shield wall (~wave 22) on every map — composition is mandatory |
 | Career (bot) | first victory around run ~13, repeating wins after, then endless |
 
+**The skill ceiling, measured (2026-07).** The table above is *intended* play —
+the balanced bot. The build fuzzer plays the same budgets as well as an
+evolutionary search can, and the gap between the two is the room the game
+gives strategy:
+
+| Sparks | Intended play (balanced bot) | Optimized play (1600-run hunt) |
+|---|---|---|
+| 0 | 9–11 | 17 |
+| 5,000 | 12–17 | 20 |
+| 8,000 | 16–19 | 23 |
+| 10,000 | — | 20 |
+| 14,000 | 18–20 | **24–25 (wins)** |
+| 20,000 | **23–25 (wins)** | — |
+
+So: nothing wins at or below 10k, optimized play wins from ~14k, intended play
+wins at ~20k. The fuzzer's BREAKING (≤10k) and WARNING (≤14k) budgets were
+re-derived against these numbers and both landed where they already stood — a
+14k victory is the expert ceiling doing its job, not the curve drifting, and is
+not a reason to rebalance.
+
 Two defense stats keep composition honest, binding at different times:
 
 - **Shields** (shieldbearers, carriers) are a threshold: hits at or below the

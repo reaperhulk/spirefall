@@ -3,6 +3,7 @@ import { createMeta, createRun } from '../../engine/meta'
 import { deriveStream } from '../../engine/rng'
 import { autoplay, spendSparks } from '../autoplay'
 import {
+  BREAKING_VICTORY_BUDGET,
   calibrateFindings,
   classify,
   type FuzzFinding,
@@ -420,7 +421,11 @@ describe('build fuzzer', () => {
     if (biome) console.log(`fuzz sweep biome: ${biome}`)
     const result = await drainBreathing(fuzzBuildsSteps({
       fuzzSeed: process.env['FUZZ_SEED'] ?? 'ci-sweep',
-      budgets: (process.env['FUZZ_BUDGETS'] ?? '8000').split(',').map(Number),
+      // Default to the BREAKING boundary itself. The sweep used to smoke-test
+      // 8000 and the deep hunt 0/5000/8000/14000, so the one budget the
+      // contract actually names — 10000, "any win at or below this is a
+      // broken build" — was never searched by either.
+      budgets: (process.env['FUZZ_BUDGETS'] ?? String(BREAKING_VICTORY_BUDGET)).split(',').map(Number),
       seeds: (process.env['FUZZ_SEEDS'] ?? 'alpha,gamma').split(','),
       population: Number(process.env['FUZZ_POP'] ?? 6),
       generations: Number(process.env['FUZZ_GENS'] ?? 2),

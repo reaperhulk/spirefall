@@ -916,7 +916,7 @@ export function beamVent(state: RunState): void {
 // Aimed = heating (a hose that's on is hot whether or not it bites);
 // overheat locks it until fully vented. Every bite goes through applyHit
 // unmodified — armor taxes it, shields block it, phased wraiths are beyond
-// it. Kills collect like any other.
+// it — but the ray never finishes anything: see the clamp below.
 export function beamFire(state: RunState, map: MapDef, events: GameEvent[]): void {
   if (state.beamTarget === null || state.beamOverheated) {
     beamVent(state)
@@ -934,7 +934,25 @@ export function beamFire(state: RunState, map: MapDef, events: GameEvent[]): voi
   for (const e of state.enemies) {
     if (e.hp <= 0 || e.phased) continue
     if (distSqToSegment(e.pos, from, state.beamTarget) <= rSq) {
-      applyHit(e, BEAM_DAMAGE_PER_TICK)
+      // The beam SOFTENS — it never lands the killing blow, leaving every
+      // target at 1 HP for a tower (or your own execute) to finish.
+      //
+      // Without this it was not a hose but the main gun: 1 damage a tick to
+      // EVERY body on the line is 30 damage a second times the length of the
+      // column, free, from wave 1, forever. The 2026-07 hunt found a build
+      // that won at 5000 sparks on frost towers and nothing else — the frost
+      // slowed, the beam killed, and pulling the beam out of that genome
+      // dropped it from a victory to wave ONE. Slowed enemies plus infinite
+      // free damage is a soft-lock no throughput trim can reach: cutting the
+      // beam to a quarter of its output only made the same clear take
+      // longer, because nothing was ever racing it. Denying the last point
+      // of damage is what makes it a supplement instead of a substitute, and
+      // it hands the kill to the execute window — burn it down, then finish
+      // it by hand.
+      if (e.hp > 1) {
+        applyHit(e, BEAM_DAMAGE_PER_TICK)
+        if (e.hp < 1) e.hp = 1
+      }
     }
   }
 }

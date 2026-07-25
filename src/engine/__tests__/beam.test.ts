@@ -120,14 +120,33 @@ describe('the Spire beam', () => {
     expect(s.beamTarget!.y).toBe(14 * 1000) // clamped to the board's south edge
   })
 
-  it('beam kills collect like any other: bounty, combo, tallies', () => {
+  it('the beam softens but never lands the killing blow', () => {
     let s = waveState()
-    s.enemies = [makeEnemy(s, { id: 1, pos: { ...AIM }, hp: 1, maxHp: ENEMIES.runner.hp })]
+    s.enemies = [makeEnemy(s, { id: 1, pos: { ...AIM }, hp: 3, maxHp: ENEMIES.runner.hp })]
+    s.collectAt = { ...AIM }
+    const gold = s.gold
+    // Burn it for far longer than its remaining HP: it bottoms out at 1 and
+    // stays there, alive, paying nothing.
+    s = step(s, [{ type: 'set_beam', target: { ...AIM } }]).state
+    for (let i = 0; i < 10; i++) s = step(s, []).state
+    expect(s.enemies[0]!.hp).toBe(1)
+    expect(s.kills).toBe(0)
+    expect(s.gold).toBe(gold)
+  })
+
+  it('what the beam softened, your own hand can finish — and that kill pays', () => {
+    // The verbs pair on purpose: the ray wounds everything on the line into
+    // execute range, the blade collects. This is the beam's kill path now.
+    let s = waveState()
+    s.enemies = [makeEnemy(s, { id: 1, pos: { ...AIM }, hp: 3, maxHp: ENEMIES.runner.hp })]
     s.collectAt = { ...AIM } // the bounty drops as a coin; the hand is parked on it
     const gold = s.gold
     s = step(s, [{ type: 'set_beam', target: { ...AIM } }]).state
+    for (let i = 0; i < 10; i++) s = step(s, []).state
+    expect(s.enemies[0]!.hp).toBe(1) // wounded, well inside the execute window
+    s = step(s, [{ type: 'execute_enemy', id: 1 }]).state
     expect(s.kills).toBe(1)
     expect(s.combo).toBe(1)
-    expect(s.gold).toBe(gold + 1)
+    expect(s.gold).toBeGreaterThan(gold)
   })
 })

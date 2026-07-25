@@ -1447,7 +1447,7 @@ export default function App() {
               <button
                 className={`ability-btn beam-btn${beamMode ? ' selected' : ''}${state.beamOverheated ? ' overheated' : ''}`}
                 data-testid="beam-toggle"
-                title={`The Spire beam — press B or this button to toggle it, then tap (or hover) the battlefield to aim. Burns EVERYTHING on the line for ${BEAM_DAMAGE_PER_TICK}/tick; ${BEAM_HEAT_MAX / 30}s of fire overheats it and it stays locked until fully vented. It cools between waves too.`}
+                title={`The Spire beam — press B or this button to toggle it, then tap (or hover) the battlefield to aim. Burns EVERYTHING on the line for ${BEAM_DAMAGE_PER_TICK}/tick, wounding down to 1 HP — it never lands the killing blow, so let a tower or an execute finish what it softened. ${BEAM_HEAT_MAX / 30}s of fire overheats it and it stays locked until fully vented. It cools between waves too.`}
                 onClick={() => toggleBeam(!beamModeRef.current)}
               >
                 🔆 Beam

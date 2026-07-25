@@ -18,8 +18,21 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 // break is a one-liner to reproduce and pin as a regression.
 
 // The curve contract (PLAN §2.3): a mixed comp needs ~20k sparks to win.
+//
+// Both thresholds below were re-derived from measurement in 2026-07 rather
+// than argued from the design doc, and both came back where they already
+// stood. Intended play (the balanced bot) reaches 18-20 waves at 14k and
+// wins at 20k on 3 of 4 seeds. A 1600-run evolutionary hunt, after the beam
+// soft-lock was closed, tops out at 20 waves at 5k, 23 at 8k, 20 at 10k —
+// and wins at 14k. So the real shape is: nothing wins at or below 10k,
+// optimized play wins from ~14k, intended play wins at ~20k.
+//
+// That gap is the SKILL CEILING, not curve drift: a 14k victory means an
+// expert build is about 6k ahead of the reference, which is the game having
+// build depth. Hence warning, not breaking — the log should mention it, and
+// nobody should rebalance because of it.
 export const BREAKING_VICTORY_BUDGET = 10_000 // any win at or below this budget is a broken build
-export const WARNING_VICTORY_BUDGET = 14_000 // wins here are suspiciously cheap
+export const WARNING_VICTORY_BUDGET = 14_000 // the measured expert ceiling — expected, worth watching
 // Overperformance is measured against the balanced bot — the strongest bot
 // that plays the INTENDED way (measured 2026-07: balanced reaches 9-11 waves
 // at 0 sparks and wins at 20k on 3 of 4 seeds, while greedy plateaus at

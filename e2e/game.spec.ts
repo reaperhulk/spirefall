@@ -394,9 +394,18 @@ test('execute windows: clicking a wounded enemy finishes it for a bonus', async 
     e.speed = 0
     return { cx: Math.floor(e.pos.x / 1000), cy: Math.floor(e.pos.y / 1000), id: e.id, gold: s.gold }
   })
-  await clickCell(page, mark.cx, mark.cy)
-  // The blade falls: enemy gone, bonus banked, cooldown running.
-  await expect.poll(async () => page.evaluate(() => window.__harness.getState().executeCd)).toBeGreaterThan(0)
+  // Click until the blade lands. The wound above is written straight into
+  // engine state, but the click handler reads REACT's snapshot — under
+  // full-suite load that snapshot can still be a frame behind, in which case
+  // the handler sees no wounded enemy in the cell and silently does nothing.
+  // A click that finds nothing is a no-op, and once the cooldown is running
+  // the handler's own guard ignores the extras, so retrying is free.
+  await expect
+    .poll(async () => {
+      await clickCell(page, mark.cx, mark.cy)
+      return page.evaluate(() => window.__harness.getState().executeCd)
+    })
+    .toBeGreaterThan(0)
   expect(await page.evaluate((id) => window.__harness.getState().enemies.some((e) => e.id === id), mark.id)).toBe(false)
   expect(await page.evaluate(() => window.__harness.getState().gold)).toBeGreaterThan(mark.gold)
   expect(errors).toEqual([])

@@ -433,9 +433,11 @@ export const AUTO_COLLECT_PULL_SPEED = 260 // millicells/tick while being sucked
 // The Spire beam: a weak continuous ray YOU steer (hold B / the beam
 // toggle), with a heat bar. The ninth tower is your own hand — but it's a
 // pressure hose, not a cannon: 1 damage per tick means armor taxes it to
-// the bone and any shield blocks it outright. Overheat locks it until
-// fully vented, so it's a rhythm (burst, vent, burst), not a laser you
-// leave parked on the path.
+// the bone and any shield blocks it outright, and it NEVER lands the
+// killing blow — it bottoms every target out at 1 HP for a tower, or your
+// own execute window, to finish. Overheat locks it until fully vented, so
+// it's a rhythm (burst, vent, burst), not a laser you leave parked on the
+// path.
 export const BEAM_DAMAGE_PER_TICK = 1
 export const BEAM_RADIUS = 800 // millicells — how close to the aim point it bites
 export const BEAM_HEAT_MAX = 120 // 4s of continuous fire
@@ -446,7 +448,7 @@ export const BEAM_COOL_PER_TICK = 2 // a full vent takes 2s
 // gates the blade, so it's a stream of small aimed decisions, not a hose.
 // Skill-clicker layer: ignorable at 10x, lucrative at 1x.
 export const EXECUTE_THRESHOLD_PCT = 15 // wounded = at or below this % of max HP
-export const EXECUTE_COOLDOWN_TICKS = 60 // 2s between executions
+export const EXECUTE_COOLDOWN_TICKS = 120 // 4s between executions
 export const EXECUTE_BONUS_PCT = 100 // bonus = the enemy's base bounty again
 
 // Wave boons: every build phase offers two single-wave perks — pick one or

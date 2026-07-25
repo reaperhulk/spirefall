@@ -52,6 +52,35 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+202. *(balance — the fuzzer's own finding)* **The beam softens, it does
+    not kill** — the hunt was winning at 5000 sparks against a ~20k curve,
+    on two unrelated builds. Ablation found the cause and it was not
+    economy: one genome was a BEAM-CARRY — frost towers to slow, the
+    player's own ray to kill, and nothing else. Pull the beam out of it and
+    a 24-wave victory becomes wave ONE. The ray bit every body on the line
+    for 1/tick, so against a single-file column it was 30 damage a second
+    times the length of the column, free, from wave 1 — its own comment
+    called it "a pressure hose, not a cannon". Four rounds of throughput
+    trims (uptime to a third, radius, execute rate and bounty) moved it by
+    almost nothing, because frost + infinite free damage is a SOFT-LOCK:
+    nothing was racing the clear, so a weaker beam just took longer. The
+    fix is structural, and it let every blunt number go back to its
+    original value: the beam now bottoms targets out at 1 HP and never
+    lands the killing blow, leaving the finish to a tower or to your own
+    execute window — the two active-play verbs now pair by design. Plus
+    one number: execute's cooldown 2s → 4s, which was the other genome's
+    lever. Verified by a 1600-run hunt: best at 5k fell 25 (a victory) →
+    20, at 8k 23, and a dedicated 400-run hunt at exactly 10k tops out at
+    20. Nothing wins at or below 10k. Intended play is untouched — the
+    balanced bot's numbers are byte-identical through every round of this
+    (it never used these verbs), which is also why goldens and the whole
+    balance envelope stayed green without regeneration. Gate gap closed
+    while here: BREAKING is 10k and neither sweep had ever SEARCHED 10k;
+    it is now the default budget. PLAN §2.3 gains the measured
+    intended-vs-optimized table — nothing wins ≤10k, optimized wins from
+    ~14k, intended wins at ~20k — so a 14k warning reads as the expert
+    ceiling doing its job instead of drift.
+
 201. *(CI, user-reported)* **The beam spec stops racing the spire** — the
     e2e job went red on one spec: the beam's tap-to-aim poll timed out in
     CI while passing locally. Not flaky-random. The spec placed NO towers,
