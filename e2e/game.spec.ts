@@ -923,6 +923,10 @@ test.describe('touch', () => {
 // sideways on touch), and every HUD control must sit fully on screen —
 // at boot, with the tower panel open, and during a live wave.
 const STANDARD_VIEWPORTS: [string, number, number][] = [
+  // 320 is the floor of the real world (iPhone SE 1st gen, older Androids,
+  // and any phone in a split-screen half). The stylesheet already claimed to
+  // handle it; nothing proved it until this row existed.
+  ['phone-tiny', 320, 568],
   ['phone-small', 375, 667],
   ['phone', 390, 844],
   ['phone-large', 412, 915],

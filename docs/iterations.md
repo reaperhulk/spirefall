@@ -52,6 +52,22 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+203. *(mobile)* **320px was never actually tested** — the layout matrix
+    started at 375, and the stylesheet had a `max-width: 360px` block
+    claiming "tab rows tighten so every tab fits at 320px" that nothing
+    exercised. Adding a 320×568 row (iPhone SE 1st gen, older Androids,
+    any phone in split-screen) found the block was doing the opposite of
+    its comment: its `overflow-x: auto` turned the tab strips into scroll
+    containers, and a flex item that is a scroll container has an
+    automatic minimum size of ZERO instead of its content. Both strips
+    live inside `.modal`, a height-capped flex column — so the run-over
+    tab bar was crushed from 34px to a **6px sliver** with its tabs
+    spilling past the clip. The tabs still resolved for a click, so
+    Playwright reported "the modal intercepts pointer events" and it read
+    as anything but a layout bug; the geometry dump (bar 230×6, tab-next
+    ending 21px past the bar's right edge) is what named it. One line each
+    on `.tab-bar`/`.codex-tabs`: `flex-shrink: 0`. 57/57 green.
+
 202. *(balance — the fuzzer's own finding)* **The beam softens, it does
     not kill** — the hunt was winning at 5000 sparks against a ~20k curve,
     on two unrelated builds. Ablation found the cause and it was not

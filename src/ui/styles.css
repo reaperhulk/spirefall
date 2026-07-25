@@ -1843,12 +1843,22 @@ button.preview-unit:hover {
   .tab-bar {
     overflow-x: auto;
     max-width: 100%;
+    /* Without this the overflow-x above SILENTLY EATS THE STRIP. A flex
+       item's automatic minimum size is its content — unless it is a scroll
+       container, where it resolves to 0. These bars sit in a height-capped
+       flex column (.modal), so the moment overflow-x made them scrollable
+       they became crushable, and the run-over strip collapsed to a 6px
+       sliver with its tabs spilling past the clip. The tabs still resolved
+       for a click, so it read as "the modal intercepts pointer events"
+       rather than as a layout bug. */
+    flex-shrink: 0;
   }
 
   .codex-tabs {
     gap: 3px;
     overflow-x: auto;
     max-width: 100%;
+    flex-shrink: 0; /* same crush hazard as .tab-bar above */
   }
 
   .codex-tab {
