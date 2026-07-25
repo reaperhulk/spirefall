@@ -1,4 +1,5 @@
 import type { BiomeId } from '../data/biomes'
+import { VICTORY_WAVE } from '../data/content'
 import { createMeta, createRun } from '../engine/meta'
 import { deriveStream } from '../engine/rng'
 import type { MetaState, TowerType } from '../engine/types'
@@ -19,20 +20,33 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 
 // The curve contract (PLAN §2.3): a mixed comp needs ~20k sparks to win.
 //
-// Both thresholds below were re-derived from measurement in 2026-07 rather
-// than argued from the design doc, and both came back where they already
-// stood. Intended play (the balanced bot) reaches 18-20 waves at 14k and
-// wins at 20k on 3 of 4 seeds. A 1600-run evolutionary hunt, after the beam
-// soft-lock was closed, tops out at 20 waves at 5k, 23 at 8k, 20 at 10k —
-// and wins at 14k. So the real shape is: nothing wins at or below 10k,
-// optimized play wins from ~14k, intended play wins at ~20k.
+// Both thresholds below are MEASURED, not argued from the design doc.
 //
-// That gap is the SKILL CEILING, not curve drift: a 14k victory means an
-// expert build is about 6k ahead of the reference, which is the game having
-// build depth. Hence warning, not breaking — the log should mention it, and
-// nobody should rebalance because of it.
+// The breaking line sat at 10k on the strength of that doc, and no sweep
+// had ever searched 10k to check — the smoke test ran 8000 and the deep
+// hunt 0/5000/8000/14000, so the one budget the contract actually named was
+// the one nobody looked at. The moment 10k was added, a cannon-dominant
+// comp (see CANNON_TEN_K below) won there on ALL FOUR seeds. Not seed luck,
+// not one lucky lineage: a robust, map-independent 10k victory that had
+// been sitting inside the gap the whole time.
+//
+// The obvious next move was to slide the line down to whatever the sweep
+// reported as its floor (best 20-23 waves at 5000-8000, so ~8000). That
+// would have been wrong, and finding out why is what fixed the hunt:
+// running that same cannon comp DIRECTLY down the budget ladder wins at
+// 8000 on three biomes and as low as 4000 on highlands. The sweep's floor
+// was never a floor. It searched each budget from a FRESH random
+// population, so a build discovered at 14k was never once tried at 8k —
+// `bestByBudget` measured what the search happened to stumble into at each
+// budget in isolation, not how cheaply a known-good build can win. See the
+// descent phase in fuzzBuildsSteps, which closes exactly that hole.
+//
+// So the line stays at 10k, where the design contract puts it, because
+// there is no honest lower number to move it to: the game currently permits
+// wins far beneath it. That is a real balance debt, now visible instead of
+// hidden behind a blind search.
 export const BREAKING_VICTORY_BUDGET = 10_000 // any win at or below this budget is a broken build
-export const WARNING_VICTORY_BUDGET = 14_000 // the measured expert ceiling — expected, worth watching
+export const WARNING_VICTORY_BUDGET = 14_000 // the optimized ceiling — expected, worth watching
 // Overperformance is measured against the balanced bot — the strongest bot
 // that plays the INTENDED way (measured 2026-07: balanced reaches 9-11 waves
 // at 0 sparks and wins at 20k on 3 of 4 seeds, while greedy plateaus at
@@ -58,6 +72,24 @@ export function overperformanceThreshold(referenceWaves: number): number {
   )
 }
 export const WARNING_ENDLESS_WAVES = 34 // endless scaling should end everyone by here
+
+// Descent tuning: how many elites per budget get walked down, and how close
+// to a victory they must have come to be worth it. Deliberately small — the
+// descent is a targeted second look at near-winners, not a second sweep.
+export const DESCEND_ELITES = 3
+export const DESCEND_SCORE_SLACK = 2 // within 2 waves of VICTORY_WAVE counts as a near-winner
+
+// Which of a budget's niche elites are worth walking down the ladder: the
+// strongest few, and only those that came within a hair of winning. A build
+// that died at wave 12 tells us nothing by dying at wave 9 for less money;
+// a build that WON is the one whose true price we do not yet know.
+export function selectDescent(elites: { genome: PolicyGenome; score: number }[]): PolicyGenome[] {
+  return elites
+    .filter((e) => e.score >= VICTORY_WAVE - DESCEND_SCORE_SLACK)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, DESCEND_ELITES)
+    .map((e) => e.genome)
+}
 
 const MAX_TICKS = 120_000 // ~67 sim-minutes; every real run ends far sooner
 
@@ -228,6 +260,9 @@ export function* fuzzBuildsSteps(opts: FuzzOptions): Generator<FuzzStep, FuzzRes
     return best
   }
 
+  // Elites worth walking down the ladder (budget they were found at).
+  const descent: { genome: PolicyGenome; budget: number }[] = []
+
   const bestByBudget: FuzzResult['bestByBudget'] = {}
   const nichesByBudget: FuzzResult['nichesByBudget'] = {}
   for (const budget of opts.budgets) {
@@ -280,6 +315,32 @@ export function* fuzzBuildsSteps(opts: FuzzOptions): Generator<FuzzStep, FuzzRes
       population = next
     }
     nichesByBudget[budget] = [...archive.keys()].sort()
+
+    // Carry this budget's strongest near-winners into the descent pool.
+    for (const genome of selectDescent([...archive.values()])) descent.push({ genome, budget })
+  }
+
+  // The descent: re-run the best builds at every budget BELOW the one that
+  // found them.
+  //
+  // Without this the hunt cannot answer the only question the contract
+  // actually asks — "how cheaply can this be won?" — because each budget
+  // searched from its own fresh random population, so a build discovered at
+  // 14k was never tried at 8k. That blind spot hid a cannon comp that wins
+  // at 10k on all four seeds and as low as 4000 on highlands, while the
+  // sweep serenely reported a best of 23 waves at 8000. A build that wins
+  // cheap is worth far more search than a build that wins expensive, and
+  // finding one is exactly when you want it walked down the ladder.
+  for (const cand of descent) {
+    for (const lower of [...new Set(opts.budgets)].sort((a, b) => a - b)) {
+      if (lower >= cand.budget) continue
+      const runs = yield* evaluate(cand.genome, lower, opts.seeds, evaluated, opts.biome)
+      evaluated += runs.length
+      const best = record(cand.genome, lower, runs)
+      if (!bestByBudget[lower] || best > bestByBudget[lower].wavesCleared) {
+        bestByBudget[lower] = { wavesCleared: best, genome: cand.genome }
+      }
+    }
   }
 
   calibrateFindings(findings)
@@ -305,6 +366,20 @@ export function fuzzBuilds(opts: FuzzOptions): FuzzResult {
 // every HP wall steep enough to seal them also broke the intended deep-tree
 // path. The curve is defended against strategies, not dice: single-seed
 // cheap wins demote to warnings (still logged, with repro genomes).
+// How many top-level genes two builds must disagree on before the sweep
+// treats them as separate discoveries rather than one lineage. Three is
+// drawn from the 2026-07 10k family: its members sat 1-2 genes apart
+// (enhanceFocus alone, placement alone) while genuinely unrelated finds —
+// the beam-carry vs the cannon wall — differed across four or more.
+export const MIN_INDEPENDENT_GENES = 3
+
+export function geneDistance(a: PolicyGenome, b: PolicyGenome): number {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]) as Set<keyof PolicyGenome>
+  let d = 0
+  for (const k of keys) if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) d++
+  return d
+}
+
 export function calibrateFindings(findings: FuzzFinding[]): void {
   const cheapWins = findings.filter((f) => f.severity === 'breaking')
   const key = (f: FuzzFinding): string => `${f.budget}:${JSON.stringify(f.genome)}`
@@ -322,12 +397,23 @@ export function calibrateFindings(findings: FuzzFinding[]): void {
   // each of them in isolation lets a broken curve pass in silence. That is
   // exactly how the 2026-07 hunt read — two unrelated builds won at 5k, one
   // seed each, and both were waved through as dice.
+  //
+  // "Independent" cannot mean "not byte-identical", though. The search
+  // breeds each generation by mutating niche elites ONE gene at a time, so a
+  // winner and its child are different genomes by construction while being
+  // the same strategy wearing a different hat. Counting those as two
+  // discoveries would let a single lineage escalate itself. Independence is
+  // therefore structural: genomes must differ in at least MIN_INDEPENDENT
+  // genes to count as separate finds.
   const softBudgets = new Set<number>()
   for (const budget of new Set(lucky.map((f) => f.budget))) {
     const atBudget = lucky.filter((f) => f.budget === budget)
-    const genomes = new Set(atBudget.map((f) => JSON.stringify(f.genome)))
     const seeds = new Set(atBudget.map((f) => f.seed))
-    if (genomes.size >= 2 && seeds.size >= 2) softBudgets.add(budget)
+    const families: PolicyGenome[] = []
+    for (const f of atBudget) {
+      if (families.every((g) => geneDistance(g, f.genome) >= MIN_INDEPENDENT_GENES)) families.push(f.genome)
+    }
+    if (families.length >= 2 && seeds.size >= 2) softBudgets.add(budget)
   }
 
   for (const f of lucky) {

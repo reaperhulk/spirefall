@@ -2,14 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { createMeta, createRun } from '../../engine/meta'
 import { deriveStream } from '../../engine/rng'
 import { autoplay, spendSparks } from '../autoplay'
+import { VICTORY_WAVE } from '../../data/content'
 import {
   BREAKING_VICTORY_BUDGET,
+  DESCEND_ELITES,
+  DESCEND_SCORE_SLACK,
   calibrateFindings,
   classify,
   type FuzzFinding,
   fuzzBuilds,
   fuzzBuildsSteps,
   overperformanceThreshold,
+  selectDescent,
 } from '../fuzz'
 import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome } from '../policy'
 
@@ -64,6 +68,31 @@ describe('build fuzzer', () => {
     expect(yields).toBe(3) // 1 balanced reference + 2 population members × 1 seed
 
     expect(stepped).toEqual(fuzzBuilds(opts))
+  })
+
+  it('the descent picks near-winners only, strongest first', () => {
+    // The hunt used to search each budget from a fresh population, so a
+    // build found at 14k was never tried at 8k and the sweep could report a
+    // comfortable "best 23 waves at 8000" while a known build won there.
+    // The descent closes that, and this pins WHICH builds it bothers with:
+    // a run that died at wave 12 says nothing by dying at wave 9 for less,
+    // but a winner's true price is exactly what we do not know yet.
+    const g = (marker: string): PolicyGenome => ({ marker }) as unknown as PolicyGenome
+    const picked = selectDescent([
+      { genome: g('died-early'), score: 12 },
+      { genome: g('won'), score: VICTORY_WAVE },
+      { genome: g('near-miss'), score: VICTORY_WAVE - DESCEND_SCORE_SLACK },
+      { genome: g('just-outside'), score: VICTORY_WAVE - DESCEND_SCORE_SLACK - 1 },
+      { genome: g('deep-endless'), score: VICTORY_WAVE + 4 },
+      { genome: g('also-won'), score: VICTORY_WAVE + 1 },
+    ])
+    expect(picked.map((p) => (p as unknown as { marker: string }).marker)).toEqual([
+      'deep-endless',
+      'also-won',
+      'won',
+    ])
+    expect(picked).toHaveLength(DESCEND_ELITES)
+    expect(selectDescent([{ genome: g('nobody-close'), score: 10 }])).toEqual([])
   })
 
   it('policy bots are pure functions of state', () => {
@@ -142,7 +171,7 @@ describe('build fuzzer', () => {
     // The blind spot the 2026-07 hunt fell into: two unrelated builds each
     // won at 5k on a seed of their own, and the per-genome rule waved both
     // through as dice. Two dice landing the same way is a loaded table.
-    const finding = (marker: string, seed: string): FuzzFinding => ({
+    const finding = (genome: Partial<PolicyGenome>, seed: string): FuzzFinding => ({
       severity: 'breaking',
       reason: 'victory at 5000 sparks — the curve says a win costs ~20k',
       budget: 5000,
@@ -150,23 +179,46 @@ describe('build fuzzer', () => {
       wavesCleared: 24,
       outcome: 'victory',
       referenceWaves: 15,
-      genome: { marker } as unknown as PolicyGenome,
+      genome: genome as PolicyGenome,
     })
+    // Two genuinely unrelated builds: a beam-carried frost maze and a cannon
+    // wall, far apart on every axis that matters.
+    const beamCarry = {
+      earlyType: 'frost',
+      placement: 'mesaFirst',
+      beamPolicy: 'lead',
+      enhanceStrategy: 'mint',
+    } as Partial<PolicyGenome>
+    const cannonWall = {
+      earlyType: 'cannon',
+      placement: 'spireChoke',
+      beamPolicy: 'never',
+      enhanceStrategy: 'frost',
+    } as Partial<PolicyGenome>
 
-    const independent = [finding('cannonWall', 'alpha'), finding('mintEconomy', 'delta')]
+    const independent = [finding(beamCarry, 'alpha'), finding(cannonWall, 'delta')]
     calibrateFindings(independent)
     expect(independent.map((f) => f.severity)).toEqual(['breaking', 'breaking'])
     expect(independent[0]!.reason).toMatch(/BUDGET is soft/)
 
     // Still dice when it is one genome, or when the wins pile onto a single
     // soft seed — neither says the budget is reachable.
-    const oneGenome = [finding('cannonWall', 'alpha')]
+    const oneGenome = [finding(beamCarry, 'alpha')]
     calibrateFindings(oneGenome)
     expect(oneGenome[0]!.severity).toBe('warning')
 
-    const oneSeed = [finding('cannonWall', 'alpha'), finding('mintEconomy', 'alpha')]
+    const oneSeed = [finding(beamCarry, 'alpha'), finding(cannonWall, 'alpha')]
     calibrateFindings(oneSeed)
     expect(oneSeed.map((f) => f.severity)).toEqual(['warning', 'warning'])
+
+    // And — the trap this rule fell into — SIBLINGS are not independent.
+    // The search breeds by mutating an elite one gene at a time, so a winner
+    // and its child are different genomes by construction. Counting those as
+    // two discoveries would let a single lineage escalate itself.
+    const child = { ...beamCarry, placement: 'pathAdjacent' as const } as Partial<PolicyGenome> // one gene from its parent
+    const lineage = [finding(beamCarry, 'alpha'), finding(child, 'delta')]
+    calibrateFindings(lineage)
+    expect(lineage.map((f) => f.severity)).toEqual(['warning', 'warning'])
   })
 
   // Pinned find from the 2026-07 deep hunt: an all-offense account (Honed
@@ -412,6 +464,31 @@ describe('build fuzzer', () => {
         const meta = spendSparks({ ...createMeta(), sparks: 8000 }, genome.metaPriority)
         const { state } = autoplay(createRun(meta, 'alpha', biome), bot, 120_000)
         expect(state.phase, `${biome} @ 8000`).toBe('defeat')
+      }
+    }
+  }, 600_000)
+
+  // The find that exposed the descent hole (2026-07). Adding 10000 to the
+  // sweep — the budget the contract named and no sweep had ever searched —
+  // turned up this cannon-dominant comp winning there on ALL FOUR seeds.
+  // Walked down the ladder by hand it wins at 8000 on three biomes and as
+  // low as 4000 on highlands, while the sweep was reporting a best of 23
+  // waves at 8000: proof that searching each budget from a fresh population
+  // measures nothing about how CHEAPLY a build can win. The descent phase
+  // exists because of this genome.
+  //
+  // The pin asserts what is true TODAY, not what we wish were: this build
+  // beats the contract badly, and the honest guard is its measured floor.
+  // Nothing wins at 3000 on any biome. If that changes, the curve has
+  // regressed beneath even this build's known reach.
+  const CANNON_TEN_K: PolicyGenome = {"ratio":{"arrow":5,"cannon":7,"frost":2,"tesla":0,"sniper":3,"mint":3,"beacon":7,"lance":4},"earlyType":"cannon","upgradeAtTowers":5,"targetBase":6,"targetPerWave":1,"targetMax":23,"enhanceStrategy":"frost","repairDeficit":3,"repairMinGold":360,"waveRepairPct":10,"specChoice":1,"relicPriority":["last_stand","duelists_oath","colossus","cinder_shells","keen_sights","shatter","spark_siphon","glass_cannon","stoneskin","bounty_banner","storm_coils","fortune_idol","golden_touch","field_medicine","quickdraw","piercing_arrows","prism_lens","winters_grip","deep_pockets","soul_harvest","golden_ledger","echo_chamber","longsight","deadeye_sigil","heavy_powder","ricochet_strings","executioners_seal","overclock","overcharge","mint_condition","shatterheart"],"metaPriority":["spire_magnet","tower_damage","spire_hp","crit_chance","unlock_gold_rush","gold_income","unlock_beacon","starting_gold","unlock_mint","unlock_tesla","spark_gain","magnet_reach","unlock_lance","wave_skip","unlock_bulwark"],"placement":"spireChoke","specByType":{"arrow":1,"cannon":1,"frost":0,"tesla":0,"sniper":1,"mint":1,"beacon":1,"lance":1},"enhanceFocus":"focus","targetingByType":{"cannon":"weakest","frost":"first","tesla":"first","mint":"strongest","beacon":"strongest","lance":"strongest"},"overchargePolicy":"ready","boonPriority":["frosted","bounty","sharpened","swift"],"executeReady":false,"beamPolicy":"never"} as PolicyGenome
+
+  it('the cannon comp cannot reach below its measured floor', () => {
+    for (const biome of ['verdant', 'frostfen', 'emberwaste', 'highlands'] as const) {
+      for (const seed of ['alpha', 'beta', 'gamma', 'delta']) {
+        const meta = spendSparks({ ...createMeta(), sparks: 3000 }, CANNON_TEN_K.metaPriority)
+        const { state } = autoplay(createRun(meta, seed, biome), makePolicyBot(CANNON_TEN_K), 120_000)
+        expect(state.phase, `cannon comp won at 3000 on ${biome}/${seed}`).toBe('defeat')
       }
     }
   }, 600_000)

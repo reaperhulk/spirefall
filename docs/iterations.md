@@ -52,6 +52,31 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+206. *(harness — user-reported)* **The hunt could not see downhill** —
+    the deep fuzz went red with a cannon comp winning at 10000 on ALL FOUR
+    seeds. First hypothesis (my escalation rule counting evolutionary
+    siblings as independent finds) was WRONG, and the data said so: three
+    genomes won multi-seed, one on every seed, which is breaking under the
+    original per-genome rule. So the finding was real. The next move —
+    slide the breaking line down to the sweep's reported floor (best 20-23
+    waves at 5000-8000, so ~8000) — was also wrong, and finding out why is
+    the actual fix: running that same comp DIRECTLY down the ladder wins
+    at 8000 on three biomes and **as low as 4000** on highlands. The
+    sweep's floor was never a floor. It searched every budget from a FRESH
+    random population, so a build discovered at 14k was never once tried
+    at 8k; `bestByBudget` measured what the search stumbled into at each
+    budget in isolation, never how CHEAPLY a known-good build can win —
+    the only question the contract actually asks. New descent phase walks
+    each budget's top near-winners down every lower budget. Same seed,
+    same search, before → after: best at 5000 **20 → 24 (a victory)**, at
+    8000 **23 → 24 (a victory)**. Four waves of under-reporting, which is
+    exactly the gap between "comfortably short" and "won". Cost +31% runs.
+    Kept from the wrong turns: the gene-distance rule (siblings one gene
+    apart no longer fake independence — latent, but real), and the
+    breaking line stays at 10k because there is no honest lower number to
+    move it to. The debt is now visible instead of hidden: 15 breaking
+    findings on verdant alone. Rebalancing the cannon comp is its own job.
+
 205. *(graphics/identity)* **The support towers get a career** — the
     backlog said mint and beacon "read weakly against the damage towers"
     and the reason turned out to be structural: veterancy stars come from
