@@ -46,9 +46,6 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > An hour went into re-discovering that. Prune this list when you finish
 > something, or the next session pays the same hour.)
 >
-> - Goldens pin PASSIVE play only — `balancedBot` uses no active verb, so
->   the layer entries 192–199 added has no golden regression surface. That
->   is why active-play trims kept looking free (209).
 > - `relicDebt` (210) has no UI: a player owed relic offers is told
 >   nothing, and the offers arrive later looking like a bug.
 > - Endless is unsearched above the victory wave — the hunt stops at 24,
@@ -56,6 +53,26 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > - `beta` is the friendly map seed on every biome (211's grid). Either the
 >   generator has a systematic tell worth finding, or seed choice is a
 >   bigger lever than the biome, which the unlock arc does not reflect.
+
+212. *(harness — the goldens were watching the wrong player)* **Active play
+    gets a regression surface** — all four golden scenarios ran passive bots,
+    so from 192 to 199 the entire active-play layer shipped with nothing
+    pinning it. That is the mechanism behind 209's uncomfortable observation
+    that every active-play trim came back byte-identical: the fixtures were
+    measuring a player who never touched the thing being trimmed, so "no
+    diff" meant "not measured", not "no effect". Two scenarios added —
+    `active-fresh` and `active-rich`, same seeds and shape as the passive
+    pair so the diffs read side by side — and the four existing rows came
+    back byte-identical, exactly as they must, since `balancedBot` did not
+    change. New pins: active-fresh 18 waves / 1432 kills, active-rich 14 /
+    765, against balanced's 9 and 12. From here a change to overcharge,
+    execute, the beam, boons, or the coin sweep moves a golden or it does
+    nothing. One number wanted an explanation before it could be trusted:
+    active-fresh reaches 18 but active-rich only 14, which reads like meta
+    progression running backwards. It isn't — those are different map seeds.
+    On a FIXED seed the active bot is monotonic in spend (golden-balanced
+    18/19/20 at 0/2k/5k, golden-rich 13/14/17), so `golden-rich` is simply
+    the harder battlefield.
 
 211. *(harness/balance — the oracle was calling the reference player broken)*
     **The eight-seed biome hunt** — the deep search had only ever played

@@ -30,5 +30,21 @@
     "outcome": "defeat",
     "sparks": 229,
     "stateHash": "e5a3a944"
+  },
+  "active-fresh": {
+    "ticks": 14051,
+    "wavesCleared": 18,
+    "kills": 1432,
+    "outcome": "defeat",
+    "sparks": 389,
+    "stateHash": "eb9be67f"
+  },
+  "active-rich": {
+    "ticks": 8467,
+    "wavesCleared": 14,
+    "kills": 765,
+    "outcome": "defeat",
+    "sparks": 273,
+    "stateHash": "fc019551"
   }
 }

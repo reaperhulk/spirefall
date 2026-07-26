@@ -44,6 +44,16 @@ export const SCENARIOS: Scenario[] = [
   { name: 'greedy-fresh', seed: 'golden-greedy', bot: 'greedy', meta: createMeta, maxTicks: 400_000 },
   { name: 'balanced-fresh', seed: 'golden-balanced', bot: 'balanced', meta: createMeta, maxTicks: 400_000 },
   { name: 'balanced-rich', seed: 'golden-rich', bot: 'balanced', meta: () => richMeta(2000), maxTicks: 600_000 },
+  // The four above all play PASSIVELY — `balancedBot` never overcharges,
+  // executes, beams, or takes a boon. So for the whole life of the
+  // active-play layer (entries 192-199) nothing pinned it, and every trim to
+  // it came back "free" because the goldens were measuring a player who
+  // wasn't using it. These two watch the verbs: a fresh account and a banked
+  // one, same seeds-and-shape as the passive pair so the diffs read side by
+  // side. A change to overcharge, execute, the beam, boons, or the coin
+  // sweep moves these and only these.
+  { name: 'active-fresh', seed: 'golden-balanced', bot: 'active', meta: createMeta, maxTicks: 400_000 },
+  { name: 'active-rich', seed: 'golden-rich', bot: 'active', meta: () => richMeta(2000), maxTicks: 600_000 },
 ]
 
 export const BOT_FOR: typeof BOTS = BOTS
