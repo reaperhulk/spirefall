@@ -1,0 +1,112 @@
+/* Cataclysm badges: permanent endless modifiers. */
+.cataclysm-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cataclysm-badge {
+  background: #2a1a33;
+  border: 1px solid #bb9af7;
+  color: #bb9af7;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Trial badges: opt-in handicaps, worn like a dueling scar. */
+.trial-badge {
+  background: #33241a;
+  border: 1px solid #e0af68;
+  color: #e0af68;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Cataclysm countdown: endless-only strike warning. */
+.cataclysm-countdown {
+  border: 1px solid #6a5480;
+  color: #a58cc4;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.cataclysm-countdown.imminent {
+  border-color: #f7768e;
+  color: #f7768e;
+  background: #33141c;
+  animation: pulse-imminent 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-imminent {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cataclysm-countdown.imminent {
+    animation: none;
+  }
+}
+
+/* HP sparkline: the run's health timeline. */
+.hp-spark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+
+.hp-spark h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a93ad;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hp-spark svg {
+  background: #12141c;
+  border: 1px solid #232839;
+  border-radius: 6px;
+}
+
+.hp-spark-ends {
+  font-size: 12px;
+  color: #8a93ad;
+}
+
+/* Spectator banner while a replay of the last run is playing. */
+.replay-banner {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(16, 21, 31, 0.95);
+  border: 1px solid #e5c07b;
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #e5c07b;
+  font-size: 13px;
+  max-width: calc(100% - 24px);
+}

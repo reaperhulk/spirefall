@@ -1,0 +1,39 @@
+/* Spire tree */
+.spire-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #1e2534;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.tree-node.maxed {
+  opacity: 0.6;
+}
+
+.tree-node-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-node-info span {
+  font-size: 12px;
+  color: #8a93ad;
+}
+
+.tree-level {
+  color: #7dcfff !important;
+}
+
+.buy-btn {
+  min-width: 76px;
+  color: #7dcfff;
+}

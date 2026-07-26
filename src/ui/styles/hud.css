@@ -1,0 +1,162 @@
+/* HUD */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.hud-title {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #e5c07b;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.hud-wave {
+  font-size: 12px;
+  color: #8a93ad;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+.affix-badge {
+  background: #33201a;
+  border: 1px solid #ff5f3c;
+  color: #ff9e64;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.hud-spire {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.hp-bar {
+  flex: 1;
+  height: 10px;
+  background: #1a2030;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #db4b4b, #e5c07b, #9ece6a);
+  transition: width 0.2s;
+}
+
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  /* The control strip owns full rows: its wrap pattern depends only on its
+     own (constant) contents, so the header height never changes with phase
+     or label text — a re-wrapped header shoves the playfield around. */
+  flex-basis: 100%;
+}
+
+/* Variable-label controls hold reserved widths so text changes (wave
+   numbers, Give up vs End run, repair prices) never re-wrap the header. */
+.btn-wave {
+  min-width: 126px;
+  white-space: nowrap;
+}
+
+.btn-abandon {
+  min-width: 78px;
+  white-space: nowrap;
+}
+
+.btn-repair {
+  min-width: 150px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.hud-gold {
+  color: #e5c07b;
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.hud-sparks {
+  color: #7dcfff;
+  font-weight: 600;
+  min-width: 60px;
+}
+
+/* Sound not yet proven live (browsers gate audio behind a gesture): the
+   button breathes gently until the probe confirms the clock is running. */
+.sound-pending {
+  animation: sound-pending-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sound-pending-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-pending {
+    animation: none;
+    opacity: 0.65;
+  }
+}
+
+
+.speed-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.speed-controls button {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.speed-controls button.active {
+  background: #2c3448;
+  border-color: #7dcfff;
+}
+
+.primary-btn {
+  background: #274a2c;
+  border-color: #9ece6a;
+  font-weight: 600;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #2f5c36;
+}
+
+.ghost-btn {
+  background: transparent;
+}
+
+.ghost-btn.danger {
+  color: #db4b4b;
+  border-color: #5c2c34;
+}
+
+.ghost-btn.danger:hover:not(:disabled) {
+  border-color: #db4b4b;
+  background: #2a1418;
+}

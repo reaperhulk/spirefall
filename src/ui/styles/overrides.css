@@ -1,0 +1,11 @@
+/* Must sit at the END of the file: same specificity as the base rules above,
+   so source order is what makes these overrides win. */
+@media (prefers-reduced-motion: reduce) {
+  .victory-embers {
+    display: none;
+  }
+
+  .modal.run-over.victory h2 {
+    animation: none;
+  }
+}

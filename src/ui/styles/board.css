@@ -1,0 +1,86 @@
+/* Board */
+.board {
+  position: relative;
+}
+
+.playfield-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.playfield {
+  display: block;
+  border: 1px solid #2c3448;
+  border-radius: 8px;
+  cursor: crosshair;
+  /* iOS long-press callout would hijack hold-to-aim. */
+  -webkit-touch-callout: none;
+}
+
+/* The touch-aim loupe: a screen-space overlay, deliberately NOT clipped to
+   the playfield — on phones the board is too short to host it anywhere the
+   finger isn't. Above the tower panel (8) and tooltips, below modals (10). */
+.placement-loupe {
+  position: absolute;
+  pointer-events: none;
+  z-index: 9;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.6));
+}
+
+.tower-panel {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(13, 17, 26, 0.95);
+  border: 1px solid #2c3448;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 190px;
+  /* Above the shop and tooltips, below modal backdrops (10). */
+  z-index: 8;
+}
+
+.tower-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(13, 17, 26, 0.95);
+  border: 1px solid #2c3448;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 180px;
+  font-size: 12px;
+  z-index: 5;
+}
+
+.tower-tooltip strong {
+  color: #e5c07b;
+}
+
+.tower-tooltip span {
+  color: #8a93ad;
+}
+
+.tower-panel h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.tower-panel p {
+  margin: 0;
+  font-size: 12px;
+  color: #8a93ad;
+}
+
+.tower-panel select {
+  background: #141a26;
+  color: #d8dee9;
+  border: 1px solid #2c3448;
+  border-radius: 4px;
+  padding: 2px 4px;
+}

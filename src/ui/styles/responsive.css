@@ -1,0 +1,111 @@
+/* Small screens */
+@media (max-width: 640px) {
+  .app {
+    /* Respect notches and home-indicator bars on standalone/PWA displays. */
+    padding: 8px;
+    padding-left: calc(8px + env(safe-area-inset-left, 0px));
+    padding-right: calc(8px + env(safe-area-inset-right, 0px));
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    gap: 8px;
+  }
+
+  .hud {
+    gap: 6px 8px;
+  }
+
+  /* Tighter controls: a phone header should spend its pixels on the
+     battlefield, not on button padding. Reserved widths shrink with it —
+     the labels still fit, the layout still never re-wraps mid-run. */
+  .hud button {
+    padding: 5px 8px;
+    font-size: 13px;
+  }
+
+  .hud .speed-controls button {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .hud-right {
+    gap: 5px 7px;
+  }
+
+  .btn-wave {
+    min-width: 106px;
+  }
+
+  .btn-abandon {
+    min-width: 64px;
+  }
+
+  .btn-repair {
+    min-width: 118px;
+    font-size: 12px;
+  }
+
+  /* Phone-sized shop cards: tighter type, no hotkey badges (they're
+     touch screens), smaller dots — the 2×4 grid keeps every card whole. */
+  .shop-towers {
+    gap: 3px;
+  }
+
+  .shop-card {
+    padding: 5px 1px;
+    gap: 2px;
+  }
+
+  .shop-card-name {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .shop-card .key-hint {
+    display: none;
+  }
+
+  .shop-card .cost {
+    font-size: 10px;
+  }
+
+  /* No room for the dot: the NAME wears the tower's color instead. */
+  .shop-card .tower-dot {
+    display: none;
+  }
+
+  .shop-card[data-tower='arrow'] .shop-card-name { color: #9ece6a; }
+  .shop-card[data-tower='cannon'] .shop-card-name { color: #e0af68; }
+  .shop-card[data-tower='frost'] .shop-card-name { color: #7dcfff; }
+  .shop-card[data-tower='tesla'] .shop-card-name { color: #bb9af7; }
+  .shop-card[data-tower='sniper'] .shop-card-name { color: #73daca; }
+  .shop-card[data-tower='mint'] .shop-card-name { color: #e5c07b; }
+  .shop-card[data-tower='beacon'] .shop-card-name { color: #ff9e64; }
+
+  /* The ✈ becomes a corner badge: air identity kept, zero row width. */
+  .shop-card {
+    position: relative;
+  }
+
+  .shop-card .air-mark {
+    position: absolute;
+    top: 0;
+    right: 2px;
+    font-size: 8px;
+    margin-left: 0;
+  }
+
+  /* The board is too small to host a floating panel — it would spill into
+     the shop below with murky stacking. Become a bottom sheet instead:
+     fixed, full-width, and explicitly above the shop. */
+  .tower-panel {
+    position: fixed;
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    font-size: 12px;
+    box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.55);
+  }
+}

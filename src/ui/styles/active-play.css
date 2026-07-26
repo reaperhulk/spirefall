@@ -1,0 +1,199 @@
+/* Wave-boon strip: a one-line offer between the scouting report and the
+   board. Quiet — a choice, not an interruption. FIXED height: the strip
+   stays mounted across build/wave, so the playfield never shifts. */
+.boon-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 12px;
+  height: 28px;
+  box-sizing: border-box;
+  font-size: 12px;
+  color: #8a93ad;
+  /* As a flex child, min-width:auto would let long offers push the whole
+     page wide; pin it so overflow scrolls inside the strip instead. */
+  min-width: 0;
+  max-width: 100%;
+}
+
+.boon-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.boon-strip.active {
+  color: #9ece6a;
+}
+
+.boon-btn {
+  padding: 2px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* The effect tag rides inside the button: on touch there is no hover, so
+   the choice has to be legible from the button text alone. */
+.boon-effect {
+  color: #e0af68;
+  font-size: 11px;
+}
+
+.boon-skip {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* Narrow screens: the buttons (name + effect) ARE the information — shed
+   the decorative label and skip hint instead of overflowing the strip. */
+@media (max-width: 700px) {
+  .boon-label,
+  .boon-skip {
+    display: none;
+  }
+
+  .boon-strip {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .boon-btn {
+    padding: 2px 6px;
+  }
+}
+
+/* The beam toggle: selected = live; overheated = red pulse until vented. */
+.beam-btn.selected {
+  outline: 1px solid #7dcfff;
+}
+
+.beam-btn.overheated {
+  color: #db4b4b;
+}
+
+/* Spire-beam heat: a filling bar under the sun glyph; red when locked. */
+.hud-beam {
+  position: relative;
+  padding: 0 6px 2px 2px;
+}
+
+.hud-beam .beam-heat-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: #7dcfff;
+  transition: width 90ms linear;
+}
+
+.hud-beam.overheated .beam-heat-bar {
+  background: #db4b4b;
+}
+
+/* Combo streak badge: electric amber with a draining window bar underneath —
+   the bar IS the tension. */
+.hud-combo {
+  position: relative;
+  color: #e0af68;
+  font-weight: 700;
+  padding: 0 6px 2px 6px;
+}
+
+.hud-combo.hasted {
+  color: #ff9e64;
+  text-shadow: 0 0 8px rgba(255, 158, 100, 0.5);
+}
+
+.hud-combo .combo-drain {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: #e0af68;
+  transition: width 120ms linear;
+}
+
+/* Veterancy stars in the tower panel — gold, like the canvas pips. */
+.vet-stars {
+  color: #e0af68;
+}
+
+.tower-air-note {
+  font-size: 12px;
+  color: #a9b1d6;
+}
+
+/* What the next tier buys — sits directly above the Upgrade button so the
+   price always has its goods next to it (visible on touch too, where the
+   old-style hover tooltip never fires). */
+.tower-panel .upgrade-preview {
+  color: #9ece6a;
+}
+
+/* Keyboard hint chips. */
+.key-hint {
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 5px;
+  border: 1px solid #3a4258;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #10141f;
+  color: #7982a9;
+}
+
+/* Spire Tree cumulative effect line. */
+.tree-effect {
+  color: #9ece6a;
+  font-size: 12px;
+}
+
+.tree-effect em {
+  color: #e5c07b;
+  font-style: normal;
+}
+
+/* Itemized damage multipliers in the tower panel. */
+.dmg-breakdown {
+  list-style: none;
+  margin: 2px 0 6px;
+  font-size: 11px;
+  color: #7982a9;
+}
+
+.dmg-breakdown li::before {
+  content: '▸ ';
+  color: #565f89;
+}
+
+/* Dismiss button for the tower panel — the only escape hatch on touch. */
+.panel-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  /* The button base style's 6px/12px padding shoved the ✕ off-centre in a
+     fixed 28px square — kill it and let flex centre the glyph. */
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #3a4258;
+  border-radius: 6px;
+  background: #10141f;
+  color: #7982a9;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.panel-close:hover {
+  color: #c0caf5;
+  border-color: #565f89;
+}
+
+.tower-panel h3 {
+  padding-right: 30px;
+}

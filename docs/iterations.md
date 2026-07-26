@@ -52,6 +52,27 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+208. *(maintainability)* **The three big files come apart** — render.ts
+    2085 lines, App.tsx 1632, styles.css 1880, and every iteration for
+    months had to scroll past unrelated subsystems to reach the one it was
+    changing. **Renderer** → eight passes (theme, primitives, terrain,
+    towers, enemies, effects, loupe, types) with render.ts down to 328 as
+    the front door: the re-exports at its top mean App/GameCanvas/Codex/
+    session import `./render` exactly as before, zero call sites touched.
+    Sliced by top-level declaration rather than by line number, so nothing
+    could be half-moved. RenderUiState got its own module instead of being
+    imported back out of the facade, which would have been circular.
+    **App.tsx** → the pure prelude out to `prefs.ts` (seeds, daily
+    rotation, remembered map/trial) and `towerCopy.ts` (orderings and the
+    "what does the next tier buy" copy). The 166-line tower panel was
+    NOT extracted: 159 identifiers are in scope there, and threading that
+    many props is exactly the kind of change that quietly alters behavior
+    while claiming not to — noted for a proper hook-extraction pass rather
+    than smuggled into a refactor commit. **styles.css** → 13 files by
+    surface, with a load-bearing import order (responsive after the layouts
+    it narrows, overrides dead last). Proof rather than hope: the BUILT css
+    bundle is byte-identical, same md5 before and after.
+
 207. *(balance — CI red)* **Splash stops multiplying** — with the hunt
     finally able to see downhill (206), the debt it exposed came due: a
     cannon comp winning at 4000-10000 against a ~20k contract. Ablation
