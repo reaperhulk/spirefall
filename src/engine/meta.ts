@@ -11,6 +11,7 @@ import {
   WAVE_BUDGET_GROWTH_PCT,
   WAVE_CLEAR_GOLD_BASE,
   WAVE_CLEAR_GOLD_PER_WAVE,
+  RELIC_WAVE_INTERVAL,
 } from '../data/content'
 import { BIOME_IDS, unlockedBiomes, type BiomeId } from '../data/biomes'
 import {
@@ -176,8 +177,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
   if (chosenTrials.includes('glass_spire')) spireHp = Math.max(1, Math.floor(spireHp / 2))
 
   // Ashen Road: start further in, with the gold those waves would roughly
-  // have paid (clear income plus ~a quarter of each wave's budget in
-  // bounties). The trade: skipped waves never offer relics.
+  // have paid (clear income plus ~a third of each wave's budget in bounties)
+  // AND the relic offers they would have made — see relicDebt below.
   const startWave = metaLevel(meta, 'wave_skip') * META_WAVE_SKIP_PER_LEVEL
   let waveBudget = 0
   let hpScalePct = 100
@@ -226,6 +227,13 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     bulwarkTicks: 0,
     relics: [],
     relicOffer: null,
+    // Every relic offer the skipped waves would have made is still owed. This
+    // was the node's real cost and it was mispriced: measured at 20k sparks,
+    // level 5 (start wave 11, two offers missed) dropped the win rate from
+    // 10/16 to 1/16, and handing those two relics back restored it to 7/16.
+    // Gold was never the binding loss — tripling the catch-up bankroll moved
+    // the win rate not at all.
+    relicDebt: Math.floor(startWave / RELIC_WAVE_INTERVAL),
     relicRerolled: false,
     cataclysmOffer: null,
     // The first offer is on the table before wave 1 — a decision from the

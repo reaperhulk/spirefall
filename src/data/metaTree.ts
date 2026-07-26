@@ -79,7 +79,7 @@ export const META_TREE: MetaNodeDef[] = [
   {
     id: 'wave_skip',
     name: 'Ashen Road',
-    description: 'Start 2 waves further in per level, with catch-up gold. (Skipped waves offer no relics.)',
+    description: 'Start 2 waves further in per level, with catch-up gold and the relic picks those waves owed you.',
     maxLevel: 5,
     costs: [200, 500, 1200, 2800, 6000],
   },

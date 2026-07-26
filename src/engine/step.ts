@@ -687,6 +687,18 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   }
 
   s.phase = 'build'
+  // Ashen Road pays its skipped offers back, one per build phase, before the
+  // regular cadence resumes.
+  if ((s.relicDebt ?? 0) > 0 && s.wave % RELIC_WAVE_INTERVAL !== 0) {
+    const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
+    if (pool.length > 0) {
+      const offer = drawRelicOffer(s, pool, Math.min(RELIC_OFFER_SIZE, pool.length)) as RelicId[]
+      s.relicOffer = offer
+      s.relicRerolled = false
+      s.relicDebt = (s.relicDebt ?? 0) - 1
+      events.push({ type: 'relic_offered', options: [...offer] })
+    }
+  }
   if (s.wave % RELIC_WAVE_INTERVAL === 0) {
     const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
     if (pool.length > 0) {

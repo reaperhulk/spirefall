@@ -52,6 +52,32 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+210. *(balance — a trap node)* **Ashen Road stops punishing the people
+    who buy it** — evidence was circumstantial (a genome scoring 24 waves
+    at 5k and 15 at 8k; the e2e pilot carrying "No Ashen Road: skipping
+    ahead lands a tier-1 scatter in front of late-wave HP scale"), so it
+    got measured properly: 4 biomes × 4 seeds at 20k sparks, skip levels
+    granted FREE so cost was not a confound. **Level 0 won 10/16. Level 5
+    won 1/16.** Ten thousand seven hundred sparks of permanent,
+    unrefundable purchase to cut your win rate by ninety percent — in an
+    incremental, where the entire promise is that spending makes you
+    stronger. Gold was NOT the cause: tripling the catch-up bankroll
+    (budget/3 → full budget) moved the win rate not at all, 1/16 either
+    way. The cause was the relic offers the skipped waves swallowed —
+    granting the two it misses took level 5 from 1/16 to 7/16, and four
+    relics overshot to 11/16. So the node already compensated the gold
+    those waves would have paid and simply forgot the relics, while its own
+    description advertised that omission as a feature. New `relicDebt` on
+    RunState (optional, so old saves restore untouched) pays the owed
+    offers back one per build phase. After: level 5 goes 1/16 → 4/16
+    passive and 2/16 → **11/16** active against a 14/16 baseline. A
+    residual cost remains at the deepest levels and is legitimate — you
+    traded ten waves of tier-ups for the time saved — but it is now a cost
+    instead of a cliff. Envelope pins average depth (stable; win counts
+    swing on noise) so the next trap node cannot hide either. Goldens moved
+    in state hash ONLY: ticks, waves, kills, sparks and outcome identical
+    on all four, because at zero debt nothing behaves differently.
+
 209. *(harness/balance — the yardstick)* **The reference bot didn't play
     the game** — `BOTS.balanced` defines intended play: the whole balance
     envelope asserts against it and the fuzzer measured overperformance

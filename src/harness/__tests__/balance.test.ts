@@ -61,6 +61,40 @@ describe('balance envelope', () => {
     }
   }, 240_000)
 
+  it('a permanent purchase never makes runs worse: Ashen Road at max is not a trap', () => {
+    // Ashen Road was a TRAP node. Measured at 20k sparks across 4 biomes x 4
+    // seeds: level 0 won 10/16, level 5 won 1/16. Ten thousand sparks of
+    // permanent, unrefundable purchase to cut your win rate by 90%.
+    //
+    // The cause was not gold — tripling the catch-up bankroll moved the win
+    // rate not at all. It was the relic offers the skipped waves swallowed:
+    // handing those back took level 5 from 1/16 to 4/16 passive and 2/16 to
+    // 11/16 active. Some residual cost remains at the deepest levels and is
+    // legitimate — you traded ten waves of tier-ups and enhancements for the
+    // time saved — but it must be a cost, not a cliff.
+    //
+    // Asserted on AVERAGE depth rather than win count: wins are a threshold
+    // and swing several runs on noise, while the mean is stable. If a future
+    // node (or a change to this one) starts making accounts weaker, the whole
+    // point of an incremental has broken and this is where it surfaces.
+    for (const bot of ['balanced', 'active'] as const) {
+      const depth = (skip: number): number => {
+        let total = 0
+        for (const seed of SEEDS) {
+          const meta = richMeta(20_000)
+          meta.upgrades['wave_skip'] = skip
+          total += play(seed, bot, meta).wavesCleared
+        }
+        return total / SEEDS.length
+      }
+      const none = depth(0)
+      const max = depth(5)
+      expect(max, `${bot}: buying Ashen Road to max must not collapse depth (${none} -> ${max})`).toBeGreaterThan(
+        none - 2,
+      )
+    }
+  }, 300_000)
+
   it('playing well beats not playing: greedy > afk on every seed', () => {
     for (const seed of SEEDS) {
       const afk = play(seed, 'afk')

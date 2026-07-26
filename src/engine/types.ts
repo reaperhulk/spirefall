@@ -184,6 +184,9 @@ export interface RunState {
   bulwarkTicks: number // spire invulnerability window (ability)
   relics: RelicId[]
   relicOffer: RelicId[] | null
+  // Ashen Road: relic offers the skipped waves owed you, paid out one per
+  // build phase. Optional so pre-existing saves restore without migration.
+  relicDebt?: number
   relicRerolled: boolean // one reroll per offer
   cataclysmOffer: CataclysmId[] | null // endless: two dooms offered, pick one (gates start_wave)
   boonOffer: BoonId[] | null // build phase: two single-wave perks; skipping is free
