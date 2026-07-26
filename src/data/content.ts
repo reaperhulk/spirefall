@@ -475,12 +475,20 @@ export const BOON_DAMAGE_PCT = 15
 export const BOON_SLOW_PCT = 90 // enemies move at this % speed under Hoarfrost
 export const BOON_BOUNTY_GOLD = 2
 
+// Splash falloff: a cannon blast catches every body inside its radius, but
+// each additional one takes this share of the body before it, floored so the
+// tail never rounds to nothing. Full-weight splash on every target made a
+// shell worth its damage TIMES the pack size, which is what let a cannon
+// wall win at 8000 sparks against a ~20k curve.
+export const SPLASH_FALLOFF_PCT = 80
+export const SPLASH_MIN_PCT = 40
+
 // Overcharge: tap a tower to supercharge its NEXT shot. Free, per-tower
 // cooldown — the cost is your attention. ×2 on a 10s cycle caps the perfect
 // -spam ceiling around +12% for one tower and far less across a board, so
 // the verb rewards presence without becoming the economy.
-export const OVERCHARGE_DAMAGE_PCT = 200 // the armed shot lands at double weight
-export const OVERCHARGE_COOLDOWN_TICKS = 300 // 10s per tower, wave-time only
+export const OVERCHARGE_DAMAGE_PCT = 150 // the armed shot lands at half again
+export const OVERCHARGE_COOLDOWN_TICKS = 450 // 15s per tower, wave-time only
 
 // Combo: unbroken kills build a streak. The reward is TEMPO, not gold —
 // while the streak holds at the threshold, ability cooldowns recover at

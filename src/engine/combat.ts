@@ -59,6 +59,8 @@ import {
   QUICKDRAW_COOLDOWN_PCT,
   SHATTER_BONUS_PCT,
   SOUL_HARVEST_EVERY_KILLS,
+  SPLASH_FALLOFF_PCT,
+  SPLASH_MIN_PCT,
   RELIC_PITY_WAVE,
   RELIC_RARITY_WEIGHTS,
   RELICS,
@@ -431,6 +433,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // spent and the tower's personal recharge begins. Applied after the
     // additive stack, before the crit roll — a lucky overcharged crit is
     // both, multiplied.
+    const wasOvercharged = tower.overcharged === true
     if (tower.overcharged) {
       baseDamage = Math.floor((baseDamage * OVERCHARGE_DAMAGE_PCT) / 100)
       tower.overcharged = false
@@ -578,12 +581,39 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
         if (tower.spec === 'mortar') radius = Math.floor((radius * MORTAR_SPLASH_PCT) / 100)
         if (state.relics.includes('heavy_powder')) radius = Math.floor((radius * 130) / 100)
         const radiusSq = radius * radius
+        hit(target)
+        // Splash falloff: the blast still catches EVERY body in radius (the
+        // ring you see is the ring that burns), but each additional one takes
+        // less than the body before it, down to a floor.
+        //
+        // Unbounded full-weight splash was the cheap-win engine. One shell
+        // into a ten-pack was ten times its damage, so a cannon wall scaled
+        // with how tightly the horde bunched — and the consolidation pass
+        // deliberately made the horde bunch. That is how a cannon comp won at
+        // 8000 sparks against a curve that says a win costs ~20k. Falloff
+        // taxes exactly that multiplication and leaves single-target and
+        // small-group shells where they were, so a MIXED comp barely notices
+        // while a stack-everything-on-the-choke comp loses its engine.
+        const caught: { e: Enemy; d: number }[] = []
         for (const e of alive) {
-          if (e.hp <= 0) continue // killed earlier this tick
-          if (e.id === target.id || distSq(target.pos, e.pos) <= radiusSq) {
-            hit(e)
-            if (e.id !== target.id) hitIds.push(e.id)
-          }
+          if (e.hp <= 0 || e.id === target.id) continue // killed earlier this tick
+          const d = distSq(target.pos, e.pos)
+          if (d <= radiusSq) caught.push({ e, d })
+        }
+        // Nearest first, id as tiebreak — entity order stays stable.
+        caught.sort((a, b) => a.d - b.d || a.e.id - b.e.id)
+        // An overcharged shell is a charge AIMED at one target: the primary
+        // takes it, the blast around it does not. Overcharge x splash was the
+        // remaining multiplier behind the cheap cannon win — one tap turning
+        // a whole pack's worth of damage into double a whole pack's worth —
+        // and it is also where the verb's own "+12% for one tower" claim
+        // stopped being true. Single-target towers keep the charge in full.
+        const chargeDivisor = wasOvercharged ? OVERCHARGE_DAMAGE_PCT : 100
+        let sharePct = 100
+        for (const { e } of caught) {
+          sharePct = Math.max(SPLASH_MIN_PCT, Math.floor((sharePct * SPLASH_FALLOFF_PCT) / 100))
+          hit(e, Math.max(1, Math.floor((sharePct * 100) / chargeDivisor)))
+          hitIds.push(e.id)
         }
         break
       }

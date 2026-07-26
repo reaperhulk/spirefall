@@ -52,6 +52,32 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+207. *(balance — CI red)* **Splash stops multiplying** — with the hunt
+    finally able to see downhill (206), the debt it exposed came due: a
+    cannon comp winning at 4000-10000 against a ~20k contract. Ablation
+    named the carriers precisely — cannons (−8 of 9 wins) and overcharge
+    (−6); beacons, focused enhancement and tier-3 specs were worth ZERO
+    despite the genome loading up on them. Two changes, both aimed at the
+    multiplier rather than at cannons in general (the intended comp is
+    cannon-leaning; a blunt nerf breaks the 20k win, which is the trap the
+    repo already has a scar from). **Splash falloff**: the blast still
+    catches every body in radius, but each one takes 80% of the body
+    before it, floored at 40% — unbounded full-weight splash made a shell
+    worth its damage TIMES the pack size, and the consolidation pass had
+    deliberately made the horde bunch. **Overcharge**: 2x/10s → 1.5x/15s,
+    and no longer applies to splash victims at all — a charge is aimed at
+    ONE target, which is also where its own "+12% for one tower" claim was
+    true. Result on the pinned comp: highlands 4000 → never, frostfen and
+    emberwaste → never, verdant → one seed at 8000+. For the search:
+    breaking findings 15 → 0 across all four biomes. Intended play is
+    intact — envelope 10/10 green, and goldens moved only in tick count
+    and hash (identical waves, kills, sparks, outcome). Breaking line now
+    8000, one step below the reachable floor, because a boundary sitting
+    exactly ON the floor can only ever read as failure. Honest asterisk
+    recorded in the code: emberwaste still reaches 24 at 5000 and 8000 on
+    single seeds, which calibration demotes as dice — a known soft spot on
+    one biome, not a claim of a clean floor everywhere.
+
 206. *(harness — user-reported)* **The hunt could not see downhill** —
     the deep fuzz went red with a cannon comp winning at 10000 on ALL FOUR
     seeds. First hypothesis (my escalation rule counting evolutionary

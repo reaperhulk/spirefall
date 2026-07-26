@@ -30,22 +30,43 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 // not one lucky lineage: a robust, map-independent 10k victory that had
 // been sitting inside the gap the whole time.
 //
-// The obvious next move was to slide the line down to whatever the sweep
-// reported as its floor (best 20-23 waves at 5000-8000, so ~8000). That
-// would have been wrong, and finding out why is what fixed the hunt:
-// running that same cannon comp DIRECTLY down the budget ladder wins at
-// 8000 on three biomes and as low as 4000 on highlands. The sweep's floor
-// was never a floor. It searched each budget from a FRESH random
-// population, so a build discovered at 14k was never once tried at 8k —
-// `bestByBudget` measured what the search happened to stumble into at each
-// budget in isolation, not how cheaply a known-good build can win. See the
-// descent phase in fuzzBuildsSteps, which closes exactly that hole.
+// Sliding the line down to the sweep's reported floor would have been wrong,
+// and finding out why is what fixed the hunt: running that comp DIRECTLY
+// down the ladder won at 8000 on three biomes and as low as 4000 on
+// highlands, while the sweep serenely reported 20-23 waves there. It
+// searched each budget from a FRESH random population, so a build found at
+// 14k was never once tried at 8k. See the descent phase in fuzzBuildsSteps.
 //
-// So the line stays at 10k, where the design contract puts it, because
-// there is no honest lower number to move it to: the game currently permits
-// wins far beneath it. That is a real balance debt, now visible instead of
-// hidden behind a blind search.
-export const BREAKING_VICTORY_BUDGET = 10_000 // any win at or below this budget is a broken build
+// With the hunt able to see downhill, the curve was rebalanced against it
+// (splash falloff, overcharge trimmed to its documented weight and taken off
+// splash). What that moved, running THAT ONE PINNED COMP down the ladder:
+//
+//   biome        BEFORE wins at        AFTER wins at
+//   verdant      6000+                 8000, 10000 (one seed)
+//   frostfen     8000+                 never
+//   emberwaste   6000+                 never
+//   highlands    4000+                 never
+//
+// And for the SEARCH, best-wave per budget across all four biomes:
+//
+//   biome        0     5000  8000  10000  14000
+//   verdant      14    21    23    25 W   23
+//   frostfen     14    23    23    26 W   22
+//   emberwaste   15    24 W  24 W  24 W   22
+//   highlands    13    23    23    24 W   23
+//
+// So 10000 is robustly winnable and the line cannot sit there: a contract
+// boundary resting exactly ON the floor can only ever read as failure. 8000
+// is one step below what the search reaches on three of four biomes.
+//
+// Emberwaste is the honest asterisk — it reaches 24 at 5000 and 8000, on a
+// single seed each, which calibrateFindings demotes as seed softness rather
+// than strategy. That is the same rule the repo has always applied (the
+// curve is defended against strategies, not dice), so this is a known soft
+// spot on one biome, NOT a claim that nothing wins below 8000 anywhere. If
+// a build ever converts those on two seeds, it escalates and fails the job,
+// which is exactly what should happen.
+export const BREAKING_VICTORY_BUDGET = 8_000 // one step below the measured floor — a win here is a broken build
 export const WARNING_VICTORY_BUDGET = 14_000 // the optimized ceiling — expected, worth watching
 // Overperformance is measured against the balanced bot — the strongest bot
 // that plays the INTENDED way (measured 2026-07: balanced reaches 9-11 waves

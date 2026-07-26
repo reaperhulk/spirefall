@@ -477,18 +477,18 @@ describe('build fuzzer', () => {
   // measures nothing about how CHEAPLY a build can win. The descent phase
   // exists because of this genome.
   //
-  // The pin asserts what is true TODAY, not what we wish were: this build
-  // beats the contract badly, and the honest guard is its measured floor.
-  // Nothing wins at 3000 on any biome. If that changes, the curve has
-  // regressed beneath even this build's known reach.
+  // Post-rebalance this comp wins only on verdant/beta, at 8000 and up; it
+  // used to win at 4000 on highlands and across three other biomes. The pin
+  // guards the new floor: nothing wins at 6000 anywhere. If that goes red,
+  // the splash/overcharge rebalance has come undone.
   const CANNON_TEN_K: PolicyGenome = {"ratio":{"arrow":5,"cannon":7,"frost":2,"tesla":0,"sniper":3,"mint":3,"beacon":7,"lance":4},"earlyType":"cannon","upgradeAtTowers":5,"targetBase":6,"targetPerWave":1,"targetMax":23,"enhanceStrategy":"frost","repairDeficit":3,"repairMinGold":360,"waveRepairPct":10,"specChoice":1,"relicPriority":["last_stand","duelists_oath","colossus","cinder_shells","keen_sights","shatter","spark_siphon","glass_cannon","stoneskin","bounty_banner","storm_coils","fortune_idol","golden_touch","field_medicine","quickdraw","piercing_arrows","prism_lens","winters_grip","deep_pockets","soul_harvest","golden_ledger","echo_chamber","longsight","deadeye_sigil","heavy_powder","ricochet_strings","executioners_seal","overclock","overcharge","mint_condition","shatterheart"],"metaPriority":["spire_magnet","tower_damage","spire_hp","crit_chance","unlock_gold_rush","gold_income","unlock_beacon","starting_gold","unlock_mint","unlock_tesla","spark_gain","magnet_reach","unlock_lance","wave_skip","unlock_bulwark"],"placement":"spireChoke","specByType":{"arrow":1,"cannon":1,"frost":0,"tesla":0,"sniper":1,"mint":1,"beacon":1,"lance":1},"enhanceFocus":"focus","targetingByType":{"cannon":"weakest","frost":"first","tesla":"first","mint":"strongest","beacon":"strongest","lance":"strongest"},"overchargePolicy":"ready","boonPriority":["frosted","bounty","sharpened","swift"],"executeReady":false,"beamPolicy":"never"} as PolicyGenome
 
-  it('the cannon comp cannot reach below its measured floor', () => {
+  it('the cannon comp cannot reach below its rebalanced floor', () => {
     for (const biome of ['verdant', 'frostfen', 'emberwaste', 'highlands'] as const) {
       for (const seed of ['alpha', 'beta', 'gamma', 'delta']) {
-        const meta = spendSparks({ ...createMeta(), sparks: 3000 }, CANNON_TEN_K.metaPriority)
+        const meta = spendSparks({ ...createMeta(), sparks: 6000 }, CANNON_TEN_K.metaPriority)
         const { state } = autoplay(createRun(meta, seed, biome), makePolicyBot(CANNON_TEN_K), 120_000)
-        expect(state.phase, `cannon comp won at 3000 on ${biome}/${seed}`).toBe('defeat')
+        expect(state.phase, `cannon comp won at 6000 on ${biome}/${seed}`).toBe('defeat')
       }
     }
   }, 600_000)

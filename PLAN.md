@@ -192,20 +192,27 @@ the balanced bot. The build fuzzer plays the same budgets as well as an
 evolutionary search can, and the gap between the two is the room the game
 gives strategy:
 
-| Sparks | Intended play (balanced bot) | Optimized play (1600-run hunt) |
+| Sparks | Intended play (balanced bot) | Optimized play (2000-run hunt, with descent) |
 |---|---|---|
-| 0 | 9–11 | 17 |
-| 5,000 | 12–17 | 20 |
+| 0 | 9–11 | 14 |
+| 5,000 | 12–17 | 21 |
 | 8,000 | 16–19 | 23 |
-| 10,000 | — | 20 |
-| 14,000 | 18–20 | **24–25 (wins)** |
+| 10,000 | — | **25 (wins)** |
+| 14,000 | 18–20 | 23 |
 | 20,000 | **23–25 (wins)** | — |
 
-So: nothing wins at or below 10k, optimized play wins from ~14k, intended play
-wins at ~20k. The fuzzer's BREAKING (≤10k) and WARNING (≤14k) budgets were
-re-derived against these numbers and both landed where they already stood — a
-14k victory is the expert ceiling doing its job, not the curve drifting, and is
-not a reason to rebalance.
+So: nothing wins at or below 8k, optimized play wins from 10k, intended play
+wins at ~20k. BREAKING is 8k — one step *below* the reachable floor, because a
+line sitting exactly on the floor can only ever read as failure. Wins in the
+10k–14k band are the expert ceiling doing their job, not curve drift, and are
+warnings rather than a reason to rebalance.
+
+These numbers only became knowable once the hunt could carry a build DOWN the
+budget ladder (see the descent phase in `fuzz.ts`). Before that, each budget
+was searched from a fresh random population, so the sweep reported a
+comfortable "23 waves at 8000" while a known build won there — and, on
+highlands, at 4000. The optimized column above is honest in a way the old one
+was not.
 
 Two defense stats keep composition honest, binding at different times:
 

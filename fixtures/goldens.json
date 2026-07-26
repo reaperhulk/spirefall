@@ -21,14 +21,14 @@
     "kills": 402,
     "outcome": "defeat",
     "sparks": 168,
-    "stateHash": "1802e257"
+    "stateHash": "5310ce51"
   },
   "balanced-rich": {
-    "ticks": 6973,
+    "ticks": 6864,
     "wavesCleared": 12,
     "kills": 588,
     "outcome": "defeat",
     "sparks": 229,
-    "stateHash": "64870d80"
+    "stateHash": "b63ad694"
   }
 }

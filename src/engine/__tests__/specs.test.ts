@@ -12,6 +12,7 @@ import {
   MOMENTUM_RAMP_PCT,
   MORTAR_COOLDOWN_PCT,
   MORTAR_DAMAGE_PCT,
+  SPLASH_FALLOFF_PCT,
   OVERCHARGE_DAMAGE_PCT,
   PERMAFROST_BONUS_PCT,
   TOWER_SPECS,
@@ -218,7 +219,11 @@ describe('the ten paths', () => {
     fire(m)
     const mortarHit = Math.floor((95 * MORTAR_DAMAGE_PCT) / 100)
     expect(a.hp).toBe(1000 - mortarHit)
-    expect(near.hp).toBe(1000 - mortarHit) // splash carries the same weight
+    // Splash reaches it, but not at the primary's weight: every additional
+    // body in the blast takes SPLASH_FALLOFF_PCT of the one before it. The
+    // old "splash carries the same weight" made a shell worth its damage
+    // times the pack size, which is what let a cannon wall win at 8k.
+    expect(near.hp).toBe(1000 - Math.floor((mortarHit * SPLASH_FALLOFF_PCT) / 100))
 
     const a2 = enemy({ id: 1 })
     const near2 = enemy({ id: 2, pos: { x: a2.pos.x + 600, y: a2.pos.y } })
