@@ -66,7 +66,46 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 // spot on one biome, NOT a claim that nothing wins below 8000 anywhere. If
 // a build ever converts those on two seeds, it escalates and fails the job,
 // which is exactly what should happen.
-export const BREAKING_VICTORY_BUDGET = 8_000 // one step below the measured floor — a win here is a broken build
+// --- Re-derivation, 2026-07 (the eight-seed biome hunt) --------------------
+//
+// Everything above was measured when the reference player was PASSIVE. Two
+// changes since then moved the thing the boundary is measured against, and
+// neither triggered a re-derivation:
+//   - the overperformance reference became `activeBot` (it uses the four
+//     verbs the game teaches), and
+//   - `relicDebt` landed, so every build that buys Ashen Road — including
+//     the reference, whose DEFAULT_BUY_PRIORITY contains wave_skip — got the
+//     relic offers the skipped waves used to swallow.
+//
+// The eight-seed hunt (pop 14, gens 4, all five budgets, 2352 runs/biome)
+// then found 8000-spark victories on frostfen and highlands, multi-seed, so
+// not demotable as dice. Before touching a line of content, both floors were
+// measured across the FULL grid — 4 biomes × 8 seeds, victories out of 32:
+//
+//   budget   intended active play   optimized genome (the hunt's winner)
+//   5000     0/32                   1/32   (emberwaste/beta)
+//   6500     3/32                   1/32   (emberwaste/beta)
+//   8000     1/32                   5/32
+//   10000    10/32                  —
+//   14000    7/32                   —
+//
+// Intended play wins at 6500. So a boundary at 8000 was not measuring a
+// broken build — it was declaring the reference player broken, and would fire
+// on any hunt forever while the curve underneath was healthy. The gap that
+// matters is optimal-vs-intended, and it is ~1.5 budget steps wide (5/32 vs
+// 1/32 at 8000, 10/32 for intended play one step up), which is the skill
+// headroom an incremental wants, not drift.
+//
+// So the oracle calibrates and the curve stays — the same call iteration 98
+// made when an HP wall steep enough to stop lucky-seed wins broke the
+// deep-tree guarantee. The line moves to 5000: the measured budget below
+// which intended active play NEVER wins, on any biome, on any seed. The
+// single-cell 5000 win above is emberwaste/beta, and beta is the friendly
+// map seed across the board (at 10000 intended play wins beta on all four
+// biomes) — one cell, one genome family, which calibrateFindings demotes as
+// seed softness. Wins in the 6500–14000 band now surface on the WARNING
+// channel, where an expert ceiling belongs.
+export const BREAKING_VICTORY_BUDGET = 5_000 // below intended active play's measured floor — a win here is a broken build
 export const WARNING_VICTORY_BUDGET = 14_000 // the optimized ceiling — expected, worth watching
 // Overperformance is measured against the ACTIVE bot — a competent player who
 // also uses the verbs the game teaches (overcharge, execute, beam, boons).

@@ -121,7 +121,11 @@ describe('build fuzzer', () => {
 
   it('the oracle classifies runs against the curve contract', () => {
     const win = { wavesCleared: 24, outcome: 'victory' as const, seed: 'x' }
-    expect(classify(win, 8_000, 20)?.severity).toBe('breaking') // cheap win = broken build
+    // The boundary sits BELOW intended active play's measured floor (5000 —
+    // see BREAKING_VICTORY_BUDGET); 6500-14000 wins are the expert ceiling
+    // and belong on the warning channel, not the failure one.
+    expect(classify(win, 5_000, 20)?.severity).toBe('breaking') // cheap win = broken build
+    expect(classify(win, 8_000, 20)?.severity).toBe('warning') // intended play wins at 6500
     expect(classify(win, 14_000, 20)?.severity).toBe('warning') // suspiciously cheap
     expect(classify(win, 20_000, 20)).toBeNull() // a 20k win is the intended curve
     expect(classify({ wavesCleared: 36, outcome: 'defeat', seed: 'x' }, 20_000, 27)?.reason).toMatch(/endless/)
@@ -493,6 +497,46 @@ describe('build fuzzer', () => {
     }
   }, 600_000)
 
+  // The eight-seed biome hunt's winner (2026-07): a beacon-and-cannon comp
+  // with the lance, focus-enhancing snipers, and EVERY active verb switched
+  // on — 8000-spark victories on frostfen/beta, highlands/beta and
+  // highlands/epsilon, multi-seed and therefore not demotable as dice.
+  //
+  // Ablation says the active layer as a WHOLE carries it, no single verb:
+  // dropping execute took 3/4 wins to 0/4, the beam to 1/4, overcharge to
+  // 2/4, boons to 2/4, and all four off is 0/4 — while dropping beacons,
+  // tesla or the lance changed nothing (no lance actually won MORE). Halving
+  // the execute bonus changed nothing either, so it is not a gold faucet.
+  // relicDebt was exonerated outright: zeroing it left the result identical.
+  //
+  // So no content moved. The BREAKING boundary did (8000 -> 5000, see the
+  // measured 4x8 grid over BREAKING_VICTORY_BUDGET in fuzz.ts): intended
+  // active play itself wins at 6500, so the old line was calling the
+  // reference player a broken build. This pin holds the genome to the floor
+  // that measurement found — nothing it can do at 5000 on the three cells it
+  // broke at 8000.
+  const ACTIVE_STACK: PolicyGenome = {"ratio":{"arrow":1,"cannon":7,"frost":3,"tesla":6,"sniper":4,"mint":3,"beacon":6,"lance":3},"earlyType":"arrow","upgradeAtTowers":10,"targetBase":4,"targetPerWave":2,"targetMax":20,"enhanceStrategy":"sniper","repairDeficit":1,"repairMinGold":220,"waveRepairPct":50,"specChoice":1,"relicPriority":["fortune_idol","executioners_seal","quickdraw","duelists_oath","last_stand","field_medicine","heavy_powder","echo_chamber","soul_harvest","mint_condition","deep_pockets","piercing_arrows","winters_grip","ricochet_strings","glass_cannon","colossus","keen_sights","storm_coils","deadeye_sigil","shatter","bounty_banner","prism_lens","golden_ledger","cinder_shells","stoneskin","golden_touch","longsight","overcharge","overclock","shatterheart","spark_siphon"],"metaPriority":["starting_gold","unlock_lance","tower_damage","gold_income","spark_gain","unlock_gold_rush","unlock_beacon","magnet_reach","unlock_mint","wave_skip","unlock_tesla","spire_magnet","unlock_bulwark","spire_hp","crit_chance"],"placement":"pathAdjacent","specByType":{"arrow":0,"cannon":1,"frost":0,"tesla":1,"sniper":1,"mint":0,"beacon":0,"lance":1},"enhanceFocus":"focus","targetingByType":{"arrow":"first","cannon":"nearest","frost":"elites","tesla":"nearest","sniper":"elites","beacon":"strongest","lance":"elites"},"overchargePolicy":"boss","boonPriority":["frosted","bounty","sharpened","swift"],"executeReady":true,"beamPolicy":"lead"} as PolicyGenome
+
+  it('the full-active-verb comp cannot win below the measured floor', () => {
+    const bot = makePolicyBot(ACTIVE_STACK)
+    // The cells it actually broke at 8000 — none of them may fall at 5000.
+    for (const [biome, seed] of [
+      ['frostfen', 'beta'],
+      ['highlands', 'beta'],
+      ['highlands', 'epsilon'],
+    ] as const) {
+      const meta = spendSparks({ ...createMeta(), sparks: BREAKING_VICTORY_BUDGET }, ACTIVE_STACK.metaPriority)
+      const { state } = autoplay(createRun(meta, seed, biome), bot, 150_000)
+      expect(state.phase, `active-stack comp won at ${BREAKING_VICTORY_BUDGET} on ${biome}/${seed}`).toBe('defeat')
+    }
+    // Emberwaste/beta is the known soft cell — beta is the friendly map seed
+    // on every biome. Named here so a future reader knows it is measured and
+    // deliberately tolerated, not an oversight the pin quietly steps around.
+    const soft = spendSparks({ ...createMeta(), sparks: BREAKING_VICTORY_BUDGET }, ACTIVE_STACK.metaPriority)
+    const softRun = autoplay(createRun(soft, 'beta', 'emberwaste'), bot, 150_000)
+    expect(softRun.state.wavesCleared).toBeGreaterThan(20) // it gets there; that is the softness
+  }, 600_000)
+
   it('sweep finds no curve-breaking build (deep mode: npm run fuzz:builds)', async () => {
     const biome = process.env['FUZZ_BIOME'] as import('../../data/biomes').BiomeId | undefined
     if (biome) console.log(`fuzz sweep biome: ${biome}`)
@@ -523,5 +567,12 @@ describe('build fuzzer', () => {
     }
     const breaking = result.findings.filter((f) => f.severity === 'breaking')
     expect(breaking, breaking.map((f) => f.reason).join('; ')).toEqual([])
-  }, 600_000)
+    // 30 min, not 10: this one test scales with the env config, and the deep
+    // recipe (npm run fuzz:builds — 8 seeds × 5 budgets × pop 14 × gens 4,
+    // plus the descent) needs ~10. CI's defaults finish in seconds, so the
+    // long ceiling only ever applies to a hunt someone asked for. Budgets
+    // must stay in ONE process: the descent walks each budget's elites down
+    // to every LOWER budget, which is the only thing that answers "how
+    // cheaply can this be won" — splitting them silently removes it.
+  }, 1_800_000)
 })

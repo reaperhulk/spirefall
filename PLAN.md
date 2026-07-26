@@ -203,11 +203,30 @@ Measured 2026-07 with an `active` bot (same build logic, plus the verbs):
 | 20,000 | wins | wins | +0.5 |
 
 So the honest statement is that a *passive* player needs ~20k and an active one
-wins from ~14k — the same 3–5 wave gap on every biome. That ceiling is healthy;
-measuring the game without it was not. The envelope now pins the relationship
-in both directions (verbs must matter, verbs must not decide runs outright),
-and the fuzzer measures overperformance against `active`, so a warning means a
-build beat a good player rather than a bystander.
+wins far earlier — the same 3–5 wave gap on every biome. That ceiling is
+healthy; measuring the game without it was not. The envelope now pins the
+relationship in both directions (verbs must matter, verbs must not decide runs
+outright), and the fuzzer measures overperformance against `active`, so a
+warning means a build beat a good player rather than a bystander.
+
+**Where the active floor actually is (re-measured over the full grid).** The
+table above samples two seeds, which put the active win at ~14k. Measured
+across 4 biomes × 8 seeds — 32 cells per budget, victories out of 32:
+
+| Sparks | Intended active play | Optimized hunt winner |
+|---|---|---|
+| 5,000 | 0/32 | 1/32 (emberwaste/beta) |
+| 6,500 | 3/32 | 1/32 (emberwaste/beta) |
+| 8,000 | 1/32 | 5/32 |
+| 10,000 | **10/32** | — |
+| 14,000 | 7/32 | — |
+
+Active play wins its first cells at 6,500 and wins robustly from 10,000. The
+map seed dominates the tail: `beta` is the friendly seed on every biome (at
+10k intended play wins beta on all four), which is why single-cell cheap wins
+are demoted as dice. `relicDebt` (Ashen Road paying back its owed relic
+offers) raised this whole column after the two-seed table was measured, and
+nothing re-derived the boundary until the eight-seed hunt forced it.
 
 **The skill ceiling, measured (2026-07).** The build fuzzer plays the same
 budgets as well as an evolutionary search can, and the gap between it and
@@ -222,11 +241,13 @@ intended play is the room the game gives strategy:
 | 14,000 | 18–20 | 23 |
 | 20,000 | **23–25 (wins)** | — |
 
-So: nothing wins at or below 8k, optimized play wins from 10k, intended play
-wins at ~20k. BREAKING is 8k — one step *below* the reachable floor, because a
-line sitting exactly on the floor can only ever read as failure. Wins in the
-10k–14k band are the expert ceiling doing their job, not curve drift, and are
-warnings rather than a reason to rebalance.
+That table is the *passive* reference. Against the active reference the floors
+sit lower (see the grid above), so BREAKING is **5k** — the measured budget
+below which intended active play never wins, on any biome, on any seed. It was
+8k until the eight-seed hunt showed intended play itself winning at 6.5k: a
+boundary that fires on the reference player measures nothing about builds.
+Wins in the 6.5k–14k band are the expert ceiling doing their job, not curve
+drift, and are warnings rather than a reason to rebalance.
 
 These numbers only became knowable once the hunt could carry a build DOWN the
 budget ladder (see the descent phase in `fuzz.ts`). Before that, each budget

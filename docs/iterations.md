@@ -38,19 +38,63 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 
 ## Log
 
-> **Marathon II backlog** (re-derived at iteration 10; revised every
-> iteration): fuzz sweeps on non-verdant biomes (the evolutionary search
-> only ever plays verdant — feature-biome exploits are unsearched);
-> music phrase pools (two progressions per biome, ~90s form); phasing
-> tell in the wave preview (wraiths/Veilwarden punish burst comps
-> unannounced); save-code compression via CompressionStream (shorter
-> codes, enables replay URLs); debug spawn hook + true horde perf
-> measurement; 320px small-phone audit; beacon/mint identity polish;
-> App.tsx/styles.css size check & split.
-> Completed 1–10: shareable replays, boss-mech preview warnings,
-> endless bosses ×2, relic codex, career sparkline, No Mercy trial,
-> Shielded affix (+ dilution lesson + mortar trim), named Crucible
-> tiers, 4 new achievements, render-perf measurement.
+> **Backlog** (re-derived at 211 from live state — the previous blurb was
+> written at iteration 10 and never pruned, so it still advertised eight
+> items of which seven had shipped: phrase pools at 103, save-code
+> compression at 101, the spawn hook at 99, the phasing tell at 147, the
+> 320px audit at 203, beacon/mint identity at 205, the file splits at 208.
+> An hour went into re-discovering that. Prune this list when you finish
+> something, or the next session pays the same hour.)
+>
+> - Goldens pin PASSIVE play only — `balancedBot` uses no active verb, so
+>   the layer entries 192–199 added has no golden regression surface. That
+>   is why active-play trims kept looking free (209).
+> - `relicDebt` (210) has no UI: a player owed relic offers is told
+>   nothing, and the offers arrive later looking like a bug.
+> - Endless is unsearched above the victory wave — the hunt stops at 24,
+>   so cataclysm stacking has never met an optimizing opponent.
+> - `beta` is the friendly map seed on every biome (211's grid). Either the
+>   generator has a systematic tell worth finding, or seed choice is a
+>   bigger lever than the biome, which the unlock arc does not reflect.
+
+211. *(harness/balance — the oracle was calling the reference player broken)*
+    **The eight-seed biome hunt** — the deep search had only ever played
+    verdant with four seeds, and two changes had since moved the thing its
+    boundary measures: the overperformance reference became `activeBot`
+    (209) and `relicDebt` landed (210), which strengthens every build that
+    buys Ashen Road — including the reference, whose buy priority contains
+    it. Neither triggered a re-derivation. Widened to eight seeds
+    (alpha…theta, pop 14 × gens 4 × five budgets, ~2350 runs per biome) and
+    swept all four biomes: verdant and emberwaste clean, **frostfen and
+    highlands broke at 8000 sparks on two independent seeds each** — not
+    demotable as dice. One genome carried all three cells: a
+    beacon-and-cannon comp with the lance, focus-enhanced snipers, and every
+    active verb on. Ablation put the cause beyond doubt, and it was not a
+    single overtuned thing: dropping execute took it 3/4 → 0/4, the beam →
+    1/4, overcharge → 2/4, boons → 2/4, all four off → 0/4, while dropping
+    beacons, tesla or the lance changed nothing at all (no lance won MORE).
+    Halving the execute bonus changed nothing either, so not a gold faucet;
+    zeroing `relicDebt` left the result identical, so 210 was exonerated. So
+    before touching content, both floors got measured across the full grid —
+    4 biomes × 8 seeds, victories out of 32: **intended active play 0/32 at
+    5000, 3/32 at 6500, 1/32 at 8000, 10/32 at 10000**; the optimized genome
+    1/32, 1/32, 5/32. Intended play wins at 6500 — so a BREAKING line at
+    8000 was not catching broken builds, it was declaring the reference
+    player broken, and would have fired on every hunt forever while the
+    curve underneath was healthy. Same call iteration 98 made when an HP wall
+    steep enough to stop lucky-seed wins broke the deep-tree guarantee: the
+    oracle calibrates, the curve stays. BREAKING moves 8000 → **5000**, the
+    budget below which intended play never wins anywhere; the 6.5k–14k band
+    reports on the warning channel where an expert ceiling belongs. The
+    genome is pinned at the new floor on the three cells it broke, with
+    emberwaste/beta named in the test as the known soft cell — `beta` is the
+    friendly map seed on every biome, so it is dice by the rule this repo has
+    always applied. Also: the deep sweep's test timeout goes to 30 min
+    (budgets must stay in ONE process — the descent walks each budget's
+    elites down to every lower one, which is the only thing that answers
+    "how cheaply can this be won"), and the stale iteration-10 backlog blurb
+    is replaced with one derived from live state. No content changed, so
+    goldens and the envelope are untouched.
 
 210. *(balance — a trap node)* **Ashen Road stops punishing the people
     who buy it** — evidence was circumstantial (a genome scoring 24 waves
