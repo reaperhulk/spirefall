@@ -11,7 +11,7 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 // The build fuzzer: an evolutionary search over PolicyGenome space that hunts
 // for strategies which BREAK the intended difficulty curve — winning far
 // cheaper than the design says a win should cost, or wildly outperforming
-// the balanced reference at the same investment. A human found mono-arrow
+// the active reference at the same investment. A human found mono-arrow
 // cheese by hand; this system exists to find the next one first.
 //
 // Everything is seeded: same fuzz seed → same genomes → same runs → same
@@ -68,10 +68,17 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 // which is exactly what should happen.
 export const BREAKING_VICTORY_BUDGET = 8_000 // one step below the measured floor — a win here is a broken build
 export const WARNING_VICTORY_BUDGET = 14_000 // the optimized ceiling — expected, worth watching
-// Overperformance is measured against the balanced bot — the strongest bot
-// that plays the INTENDED way (measured 2026-07: balanced reaches 9-11 waves
-// at 0 sparks and wins at 20k on 3 of 4 seeds, while greedy plateaus at
-// 11-13 everywhere, so balanced is the yardstick, not merely the default).
+// Overperformance is measured against the ACTIVE bot — a competent player who
+// also uses the verbs the game teaches (overcharge, execute, beam, boons).
+//
+// It used to be `balanced`, which uses none of them, and that made the
+// yardstick shorter than the thing it measures: a genome that merely played
+// actively read as 1.3-1.5x "overperformance" before it had done anything
+// clever. Measured 2026-07, active over balanced at equal spend: +4.5 waves
+// at 0 sparks, +4.5 at 5k, +3.5 at 8k, +4.75 at 14k (where active WINS and
+// balanced does not), converging to +0.5 at 20k once both hit the victory
+// ceiling. Against the active reference, a warning now means a build beat a
+// good player rather than beating a bystander.
 //
 // The margin is proportional, not flat. A fixed "+7 waves" means wildly
 // different things at each end of the curve: +7 over a 9-wave fresh-account
@@ -226,7 +233,7 @@ export function classify(
     const multiple = `${Math.floor(tenths / 10)}.${tenths % 10}x`
     return {
       severity: 'warning',
-      reason: `${run.wavesCleared} waves vs balanced reference ${referenceWaves} at ${budget} sparks (${multiple} intended play)`,
+      reason: `${run.wavesCleared} waves vs active reference ${referenceWaves} at ${budget} sparks (${multiple} intended play)`,
     }
   }
   return null
@@ -258,7 +265,7 @@ export function* fuzzBuildsSteps(opts: FuzzOptions): Generator<FuzzStep, FuzzRes
   for (const budget of opts.budgets) {
     for (const seed of opts.seeds) {
       const meta = budget <= 0 ? createMeta() : spendSparks({ ...createMeta(), sparks: budget }, DEFAULT_BUY_PRIORITY)
-      const { state } = autoplay(createRun(meta, seed, opts.biome), BOTS.balanced, MAX_TICKS)
+      const { state } = autoplay(createRun(meta, seed, opts.biome), BOTS.active, MAX_TICKS)
       reference.set(`${budget}:${seed}`, state.wavesCleared)
       yield { phase: 'reference', budget, evaluated }
     }

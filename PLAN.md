@@ -187,10 +187,31 @@ intentionally moves):
 | Arrow-only spam, +20k sparks | dies at the shield wall (~wave 22) on every map — composition is mandatory |
 | Career (bot) | first victory around run ~13, repeating wins after, then endless |
 
-**The skill ceiling, measured (2026-07).** The table above is *intended* play —
-the balanced bot. The build fuzzer plays the same budgets as well as an
-evolutionary search can, and the gap between the two is the room the game
-gives strategy:
+**Active play is worth 3–5 waves, and the curve never knew.** The table above
+is the `balanced` bot, which uses **no** active-play verb — no overcharge, no
+execute, no beam, no boon. That layer shipped after this curve was calibrated,
+so the yardstick was structurally blind to the power it added, and "a win costs
+~20k" quietly described a player who ignores half the verbs the game teaches.
+Measured 2026-07 with an `active` bot (same build logic, plus the verbs):
+
+| Sparks | balanced | active | gap |
+|---|---|---|---|
+| 0 | 8–10 | 12–15 | **+4.5** |
+| 5,000 | 12–15 | 18–20 | **+4.5** |
+| 8,000 | 15–18 | 18–21 | +3.5 |
+| 14,000 | 15–20, no win | 22–24, **wins** | **+4.75** |
+| 20,000 | wins | wins | +0.5 |
+
+So the honest statement is that a *passive* player needs ~20k and an active one
+wins from ~14k — the same 3–5 wave gap on every biome. That ceiling is healthy;
+measuring the game without it was not. The envelope now pins the relationship
+in both directions (verbs must matter, verbs must not decide runs outright),
+and the fuzzer measures overperformance against `active`, so a warning means a
+build beat a good player rather than a bystander.
+
+**The skill ceiling, measured (2026-07).** The build fuzzer plays the same
+budgets as well as an evolutionary search can, and the gap between it and
+intended play is the room the game gives strategy:
 
 | Sparks | Intended play (balanced bot) | Optimized play (2000-run hunt, with descent) |
 |---|---|---|

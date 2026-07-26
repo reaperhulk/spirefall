@@ -36,6 +36,31 @@ describe('balance envelope', () => {
     }
   }, 60_000)
 
+  it('the verbs are worth playing: active hands beat the same build left alone', () => {
+    // The gap this pins is the blind spot the envelope had until 2026-07.
+    // `balanced` — the reference every other assertion here is written
+    // against — uses NO active-play verb: no overcharge, no execute, no beam,
+    // no boon. The active layer shipped after this curve was calibrated, so
+    // the yardstick could not see the power it added, and the contract's
+    // "a win costs ~20k" quietly described a player who ignores half the
+    // verbs the game teaches.
+    //
+    // Measured: active runs 3-5 waves deeper at every budget, and WINS at
+    // 14k where the passive reference does not. That is a real skill ceiling
+    // and it is fine that it exists — what is not fine is measuring the game
+    // without it. Pinned so it cannot drift unnoticed in either direction:
+    // if the verbs stop mattering, or start deciding runs outright, this
+    // test is where it shows up.
+    for (const seed of SEEDS) {
+      const passive = play(seed, 'balanced', richMeta(14_000))
+      const active = play(seed, 'active', richMeta(14_000))
+      expect(active.wavesCleared, `${seed}: active play must reach further`).toBeGreaterThan(passive.wavesCleared)
+      // ...but the verbs are a ceiling, not a replacement for investment: a
+      // 14k active run must not run away to endless depths.
+      expect(active.wavesCleared, `${seed}: active play must not trivialize the curve`).toBeLessThan(VICTORY_WAVE + 4)
+    }
+  }, 240_000)
+
   it('playing well beats not playing: greedy > afk on every seed', () => {
     for (const seed of SEEDS) {
       const afk = play(seed, 'afk')

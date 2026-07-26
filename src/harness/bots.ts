@@ -1,4 +1,4 @@
-import { enhanceCost, TOWER_SPECS, towerTier, TOWERS } from '../data/content'
+import { enhanceCost, EXECUTE_THRESHOLD_PCT, TOWER_SPECS, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
 import { cellCenter, distSq, sameCell } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
@@ -296,6 +296,54 @@ export const balancedBot: Bot = (state) => {
   return []
 }
 
+// The same competent player as `balanced`, except this one actually PLAYS:
+// taps overcharges as they come up, finishes wounded enemies by hand, steers
+// the beam at whatever is furthest along, and takes a boon when offered.
+//
+// It exists because `balanced` — the bot the whole balance envelope is
+// written against, and the reference the fuzzer measures overperformance
+// from — uses none of those verbs. Measured before this bot existed: zero
+// execute income, never beams, never overcharges, never takes a boon. The
+// active-play layer shipped AFTER the curve was calibrated, so the yardstick
+// was structurally incapable of noticing the power it added, and every
+// active-play trim could be waved through as free because intended-play
+// numbers never moved. The gap between these two bots at the same spend is
+// the size of that blind spot — measure it, do not assume it.
+export const activeBot: Bot = (state) => {
+  if (state.phase === 'build') {
+    const acts = buildActions(state, pickBuildType)
+    // First offer, deterministically — this bot measures whether the verbs
+    // matter at all, not how well a boon can be drafted.
+    if (state.boonOffer !== null) acts.unshift({ type: 'choose_boon', boon: state.boonOffer[0]! })
+    return acts
+  }
+  if (state.phase === 'wave') {
+    const acts = waveActions(state)
+    for (const t of state.towers) {
+      if (TOWERS[t.type].support || t.overcharged || (t.overchargeCd ?? 0) > 0) continue
+      acts.push({ type: 'overcharge_tower', id: t.id })
+    }
+    if (state.executeCd === 0) {
+      const wounded = state.enemies.find(
+        (e) => e.hp > 0 && !e.phased && e.hp * 100 <= e.maxHp * EXECUTE_THRESHOLD_PCT,
+      )
+      if (wounded) acts.push({ type: 'execute_enemy', id: wounded.id })
+    }
+    // The spire sits on the right edge, so the enemy deepest along x is the
+    // one about to arrive — beam that. Release while overheated so the barrel
+    // vents instead of sitting locked.
+    const targets = state.enemies.filter((e) => e.hp > 0 && !e.phased)
+    if (state.beamOverheated || targets.length === 0) {
+      if (state.beamTarget !== null) acts.push({ type: 'set_beam', target: null })
+    } else {
+      const lead = targets.reduce((a, b) => (a.pos.x >= b.pos.x ? a : b))
+      acts.push({ type: 'set_beam', target: { x: lead.pos.x, y: lead.pos.y } })
+    }
+    return acts
+  }
+  return []
+}
+
 // The degenerate strategy a playtester actually won with: nothing but arrow
 // towers, buffed by meta damage and gold. Scaling shields exist to kill it —
 // the balance envelope pins this bot as a LOSER at any realistic spark depth.
@@ -305,5 +353,5 @@ export const arrowOnlyBot: Bot = (state) => {
   return []
 }
 
-export const BOTS = { afk: afkBot, greedy: greedyBot, balanced: balancedBot, arrowOnly: arrowOnlyBot } as const
+export const BOTS = { afk: afkBot, greedy: greedyBot, balanced: balancedBot, active: activeBot, arrowOnly: arrowOnlyBot } as const
 export type BotName = keyof typeof BOTS

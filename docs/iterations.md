@@ -52,6 +52,30 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > Shielded affix (+ dilution lesson + mortar trim), named Crucible
 > tiers, 4 new achievements, render-perf measurement.
 
+209. *(harness/balance — the yardstick)* **The reference bot didn't play
+    the game** — `BOTS.balanced` defines intended play: the whole balance
+    envelope asserts against it and the fuzzer measured overperformance
+    from it. It used ZERO active-play verbs — measured: no overcharge, no
+    execute, never beams, never takes a boon. The active layer shipped in
+    192-199, AFTER the curve was calibrated, so the yardstick was
+    structurally incapable of noticing the power it added. That is also
+    why every active-play trim this week looked free: intended-play numbers
+    came back byte-identical because I was trimming things the reference
+    never touched. New `activeBot` — same build logic plus the four verbs —
+    and the gap is not subtle: **+4.5 waves at 0 sparks, +4.5 at 5k, +3.5
+    at 8k, +4.75 at 14k where active WINS and balanced does not**,
+    converging to +0.5 at 20k once both hit the victory ceiling. Same 3-5
+    waves on every biome. So "a win costs ~20k" described a PASSIVE player;
+    an active one wins from ~14k. Nothing nerfed — that ceiling is healthy,
+    measuring the game without it was not. Envelope pins the relationship
+    in both directions (the verbs must matter; the verbs must not decide
+    runs outright). Fuzzer's overperformance reference switches to
+    `active`, which silenced the overperformance channel completely —
+    those warnings had been firing at builds that merely played actively,
+    against a bystander. The cheap-victory channel still fires (6 at 10k),
+    so the signal stayed and only the noise left. PLAN §2.3 gains the
+    measured table. Goldens untouched: `balancedBot` itself never changed.
+
 208. *(maintainability)* **The three big files come apart** — render.ts
     2085 lines, App.tsx 1632, styles.css 1880, and every iteration for
     months had to scroll past unrelated subsystems to reach the one it was
