@@ -1311,6 +1311,53 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
   expect(errors).toEqual([])
 })
 
+test('Ashen Road says what it owes you: the relic debt is on screen, not a surprise', async ({ page }) => {
+  const errors = await boot(page, 'e2e-relic-debt')
+  // A fresh account owes nothing, so the chip must not be there at all.
+  await expect(page.getByTestId('relic-debt')).toHaveCount(0)
+  // Buy Ashen Road to the top: starting at wave 10 swallowed the wave-5 and
+  // wave-10 relic offers, so the run opens owing two picks.
+  const owed = await page.evaluate(() => {
+    const h = window.__harness
+    h.getMeta().sparks = 1_000_000
+    for (let i = 0; i < 5; i++) h.buyMeta('wave_skip')
+    h.newRun('e2e-relic-debt')
+    return h.getState().relicDebt
+  })
+  expect(owed).toBe(2)
+  // The count is in the TEXT — touch devices have no tooltip to hover.
+  const chip = page.getByTestId('relic-debt')
+  await expect(chip).toBeVisible()
+  await expect(chip).toContainText('2 relic picks owed')
+  // ...and ON SCREEN. The scouting strip scrolls horizontally, so a chip
+  // appended at the end sits past the right edge: in the DOM, toBeVisible
+  // green, and never once read by a player. Assert it is actually inside the
+  // strip's visible box, at phone width too, where the strip is tightest.
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 700 })
+    const inView = await page.evaluate(() => {
+      const strip = document.querySelector('[data-testid="wave-preview"]')!.getBoundingClientRect()
+      const c = document.querySelector('[data-testid="relic-debt"]')!.getBoundingClientRect()
+      return c.left >= strip.left - 1 && c.right <= strip.right + 1
+    })
+    expect(inView, `relic debt chip off screen at ${width}px`).toBe(true)
+  }
+  // It tracks the debt down as the engine settles it, and clears at zero.
+  await page.evaluate(() => {
+    const s = window.__harness.getState()
+    s.relicDebt = 1
+    window.__harness.fastForward(0.2)
+  })
+  await expect(chip).toContainText('1 relic pick owed') // singular, too
+  await page.evaluate(() => {
+    const s = window.__harness.getState()
+    s.relicDebt = 0
+    window.__harness.fastForward(0.2)
+  })
+  await expect(page.getByTestId('relic-debt')).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
 test('endless: a Cataclysm strike offers two dooms; the wave is gated until you choose', async ({ page }) => {
   const errors = await boot(page, 'e2e-cataclysm')
   await page.locator('.hint-close').click()

@@ -19,6 +19,23 @@ export function WavePreview({
 }) {
   return (
     <div className="wave-preview" data-testid="wave-preview">
+      {/* Ashen Road's IOU, and it goes FIRST. The node pays back the relic
+          offers its skipped waves swallowed, one per build phase, but nothing
+          said so — an offer arriving off-cadence reads as a bug rather than a
+          debt being settled. This strip is fixed-height with overflow scroll,
+          so a chip here can never move the playfield; appended at the END,
+          though, it sat past the right edge behind a scroll on every viewport
+          (in the DOM, `toBeVisible` green, and unread by the player). The
+          count is in the TEXT, not a tooltip — touch has no hover. */}
+      {(state.relicDebt ?? 0) > 0 && (
+        <span
+          className="preview-debt"
+          data-testid="relic-debt"
+          title="Ashen Road: the waves you skipped owed you relic picks. One arrives each build phase until the debt is paid."
+        >
+          ⚜ {state.relicDebt} relic pick{state.relicDebt === 1 ? '' : 's'} owed
+        </span>
+      )}
       {preview ? (
         <>
           <span className="preview-label">Next wave:</span>

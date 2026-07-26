@@ -46,13 +46,29 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 > An hour went into re-discovering that. Prune this list when you finish
 > something, or the next session pays the same hour.)
 >
-> - `relicDebt` (210) has no UI: a player owed relic offers is told
->   nothing, and the offers arrive later looking like a bug.
 > - Endless is unsearched above the victory wave — the hunt stops at 24,
 >   so cataclysm stacking has never met an optimizing opponent.
 > - `beta` is the friendly map seed on every biome (211's grid). Either the
 >   generator has a systematic tell worth finding, or seed choice is a
 >   bigger lever than the biome, which the unlock arc does not reflect.
+
+213. *(UX + test debt)* **Ashen Road says what it owes** — 210 gave the node
+    a `relicDebt` that pays its swallowed relic offers back one per build
+    phase, and shipped it with no UI and no unit test. Both gaps closed. The
+    player now sees "⚜ 2 relic picks owed" in the scouting strip, in the text
+    rather than a tooltip (touch has no hover), so an offer arriving
+    off-cadence reads as a debt being settled instead of a bug. Four engine
+    tests pin the rule 210 never pinned: a fresh account owes nothing, level
+    3 owes one and level 5 owes two, the debt pays down one per build phase
+    and then stops, a cadence wave's regular offer is NOT a repayment, and a
+    pre-210 save with the field absent restores inert. The lesson worth
+    keeping is from looking at it: appended at the END of the strip the chip
+    was in the DOM, `toBeVisible()` was green, the e2e passed — and the
+    screenshot showed it parked past the right edge behind a horizontal
+    scroll, on desktop AND phone. Unreadable by any actual player. It leads
+    the strip now, and the spec asserts the chip's box sits inside the
+    strip's box at 1280px and 375px, so "present in the DOM" can never again
+    be mistaken for "on screen".
 
 212. *(harness — the goldens were watching the wrong player)* **Active play
     gets a regression surface** — all four golden scenarios ran passive bots,

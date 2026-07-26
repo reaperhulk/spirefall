@@ -271,6 +271,13 @@
   font-weight: 600;
 }
 
+/* Ashen Road's outstanding relic picks. Relic-purple, so it reads as owed
+   loot rather than another threat number. */
+.preview-debt {
+  color: #bb9af7;
+  font-weight: 600;
+}
+
 /* Records. */
 .records-row {
   display: flex;
