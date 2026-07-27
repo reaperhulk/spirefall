@@ -118,6 +118,16 @@ function migrate(parsed: { version?: number }): SaveData | null {
       data.meta.lifetimeKills ??= 0
       data.meta.history ??= []
       data.meta.achievements ??= []
+      // Skill-tree restructure: Honed Edge was one 25-level node and is now
+      // three veins of 8/8/9 carrying the SAME cost entries in the same
+      // order. Spread an old level count across them and the account keeps
+      // exactly the damage it paid for — lossless in value, not in shape.
+      const honed = data.meta.upgrades?.['tower_damage']
+      if (typeof honed === 'number' && honed > 8) {
+        data.meta.upgrades['tower_damage'] = 8
+        data.meta.upgrades['tower_damage_2'] = Math.min(honed - 8, 8)
+        if (honed > 16) data.meta.upgrades['tower_damage_3'] = Math.min(honed - 16, 9)
+      }
       // Discard finished runs; they only exist mid-play.
       if (data.run && (data.run.phase === 'defeat' || data.run.phase === 'victory')) {
         return { ...data, run: null }
@@ -182,6 +192,11 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.collectAt ??= null
         data.run.mods.collectRadius ??= COLLECT_RADIUS_BASE
         data.run.mods.autoCollectRadius ??= 0
+        // Ash branch (skill-tree restructure): pre-tree runs have no
+        // cooldown shaving, and an undefined here would poison the
+        // arithmetic that reads it every execute and every overcharge.
+        data.run.mods.executeCdPct ??= 0
+        data.run.mods.overchargeCdPct ??= 0
       }
       return data
     }

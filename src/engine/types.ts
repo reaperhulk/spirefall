@@ -155,6 +155,8 @@ export interface RunMods {
   repairCasts: number // extra mid-wave repair casts (ember: Emberbound Crews)
   collectRadius: number // coin pickup reach around the cursor/finger (millicells)
   autoCollectRadius: number // Spire Magnet reach (0 = no auto-collect)
+  executeCdPct: number // % shaved off the execute blade's recovery (Ash: Quick Hands)
+  overchargeCdPct: number // % shaved off a tower's overcharge recharge (Ash: Steady Aim)
 }
 
 export interface RunState {

@@ -11,6 +11,11 @@ import type { RunState } from '../types'
 
 function skipRun(levels: number): RunState {
   let meta = { ...createMeta(), sparks: 1_000_000 }
+  // Ashen Road sits in Ash tier 2 since the tree restructure, so the branch
+  // gate has to be paid before the node will sell anything.
+  for (const id of ['unlock_gold_rush', 'quick_hands', 'quick_hands', 'steady_aim', 'steady_aim'] as const) {
+    meta = buyMetaUpgrade(meta, id).meta
+  }
   for (let i = 0; i < levels; i++) meta = buyMetaUpgrade(meta, 'wave_skip').meta
   return createRun(meta, 'debt-lab')
 }

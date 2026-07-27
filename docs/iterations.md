@@ -52,6 +52,44 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 >   generator has a systematic tell worth finding, or seed choice is a
 >   bigger lever than the biome, which the unlock arc does not reflect.
 
+214. *(progression — phase 1 of the skill-tree restructure)* **The Spire Tree
+    becomes a tree** — fifteen nodes in a flat list had no choice in them,
+    only an order, and `DEFAULT_BUY_PRIORITY` already knew the answer; at 20k
+    sparks every account was the same account. Design in
+    docs/spire-tree-redesign.md. This phase ships the machinery with the old
+    screen still rendering: three branches (Iron kills, Gold pays, Ash is
+    what you do with your hands), tier GATES that open by spend *within* a
+    branch, KEYSTONES that exclude their rivals, a free keystone respec, and
+    authored graph coordinates for both a wide and a compact layout. Honed
+    Edge's 25-level slider splits into three veins of 8/8/9 carrying the
+    original cost entries in the original order, so the damage ceiling
+    (+200%) and the price of reaching it (✦155,816, verified against the
+    pre-split node) are unchanged — only where those levels sit moved. The
+    Ash branch closes the gap 209 exposed: the active layer had no meta
+    progression at all, and now Quick Hands and Steady Aim shorten the
+    execute blade and the overcharge recharge. Iron's keystone pair proves
+    the exclusivity machinery on real knobs — Glassforge (+35% damage, −40%
+    Spire HP) against Bastion Line (+6 HP, −10% damage) — and respec refunds
+    in full, because a permanent purchase that makes you weaker is the worst
+    thing this game can do to a player (210). Old saves migrate by VALUE:
+    an account with 20 levels of Honed Edge becomes 8/8/4 across the veins,
+    and pre-tree runs backfill the two new mods instead of poisoning the
+    arithmetic with undefined. Two lessons came out of the measurement.
+    First, the veins must stay ADJACENT in any buy-priority list — scattered,
+    intended play at 10k collapsed from 10/32 wins to **1/32**, because
+    sparks that used to compound into damage fell through into crit; kept
+    together it reads 16/32, slightly stronger than the list-era 10/32, which
+    is the new Ash nodes doing their job. Second, gates *improved* a badly
+    ordered build: the pinned cannon comp opens on a Gold tier-2 node, so
+    gating pushed its early sparks into damage and core instead and it now
+    wins at 6000 where it could not before — its pin re-derives to a measured
+    floor of 4000 (0/16), with single soft cells at 5000/6000 that the
+    seed-softness rule demotes. The BREAKING boundary holds at 5000: intended
+    active play is still 0/32 there. Goldens moved in state hash ONLY — ticks,
+    waves, kills, sparks and outcome identical on all six, because at equal
+    spend the split tree buys the same thing. Phases 2 (the SVG graph view)
+    and 3 (Gold/Ash keystones, capstones, the no-trap test) are still ahead.
+
 213. *(UX + test debt)* **Ashen Road says what it owes** — 210 gave the node
     a `relicDebt` that pays its swallowed relic offers back one per build
     phase, and shipped it with no UI and no unit test. Both gaps closed. The

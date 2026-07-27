@@ -19,6 +19,8 @@ import {
   canAscend,
   createMeta,
   createRun,
+  isNodeUnlocked,
+  metaLevel,
   emberGainOnAscend,
   HISTORY_LIMIT,
   metaUpgradeCost,
@@ -70,7 +72,7 @@ describe('createRun applies meta', () => {
     expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP)
     expect(run.availableTowers).not.toContain('tesla')
     expect(Object.keys(run.abilities)).not.toContain('gold_rush')
-    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0, abilityCdPct: 0, repairCasts: 0, collectRadius: COLLECT_RADIUS_BASE, autoCollectRadius: 0 })
+    expect(run.mods).toEqual({ damagePct: 0, goldPct: 0, sparkPct: 0, critChancePct: 0, abilityCdPct: 0, repairCasts: 0, collectRadius: COLLECT_RADIUS_BASE, autoCollectRadius: 0, executeCdPct: 0, overchargeCdPct: 0 })
   })
 
   it('upgrades show up as run bonuses and unlocks', () => {
@@ -78,13 +80,17 @@ describe('createRun applies meta', () => {
     meta = buyMetaUpgrade(meta, 'starting_gold').meta
     meta = buyMetaUpgrade(meta, 'spire_hp').meta
     meta = buyMetaUpgrade(meta, 'tower_damage').meta
+    // Killer Instinct is Iron tier 2 now: pay the branch gate first.
+    while (!isNodeUnlocked(meta, 'crit_chance')) meta = buyMetaUpgrade(meta, 'spire_hp').meta
     meta = buyMetaUpgrade(meta, 'crit_chance').meta
     meta = buyMetaUpgrade(meta, 'crit_chance').meta
     meta = buyMetaUpgrade(meta, 'unlock_tesla').meta
     meta = buyMetaUpgrade(meta, 'unlock_gold_rush').meta
     const run = createRun(meta, 'meta-rich')
     expect(run.gold).toBe(STARTING_GOLD + 30)
-    expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP + META_SPIRE_HP_PER_LEVEL)
+    // Paying Iron's gate above bought extra Reinforced Core levels, so this
+    // asserts against the levels actually held rather than a magic 1.
+    expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP + metaLevel(meta, 'spire_hp') * META_SPIRE_HP_PER_LEVEL)
     expect(run.mods.damagePct).toBe(META_TOWER_DAMAGE_PCT_PER_LEVEL)
     expect(run.mods.critChancePct).toBe(2 * META_CRIT_CHANCE_PCT_PER_LEVEL)
     expect(run.availableTowers).toContain('tesla')
@@ -93,6 +99,13 @@ describe('createRun applies meta', () => {
 
   it('Ashen Road skips starting waves with catch-up gold, and skipped waves pay no sparks', () => {
     let meta = { ...createMeta(), sparks: 1_000 }
+    // Ashen Road lives in Ash tier 2 — pay the branch gate first. No single
+    // Ash tier-1 node can cover the gate alone (Quick Hands maxes out at
+    // ✦180 against a ✦400 gate), so this walks the whole tier.
+    for (const id of ['unlock_gold_rush', 'quick_hands', 'quick_hands', 'steady_aim', 'steady_aim'] as const) {
+      meta = buyMetaUpgrade(meta, id).meta
+    }
+    expect(isNodeUnlocked(meta, 'wave_skip')).toBe(true)
     meta = buyMetaUpgrade(meta, 'wave_skip').meta // level 1 = start at wave 2
     const run = createRun(meta, 'skip-run')
     expect(run.startWave).toBe(2)

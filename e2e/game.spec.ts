@@ -1320,6 +1320,10 @@ test('Ashen Road says what it owes you: the relic debt is on screen, not a surpr
   const owed = await page.evaluate(() => {
     const h = window.__harness
     h.getMeta().sparks = 1_000_000
+    // Ashen Road is Ash tier 2 — pay the branch gate before it will sell.
+    for (const id of ['unlock_gold_rush', 'quick_hands', 'quick_hands', 'steady_aim', 'steady_aim'] as const) {
+      h.buyMeta(id)
+    }
     for (let i = 0; i < 5; i++) h.buyMeta('wave_skip')
     h.newRun('e2e-relic-debt')
     return h.getState().relicDebt
@@ -1406,7 +1410,11 @@ test('the Lance: locked until Duelist Doctrine, then hotkey 8 places it and the 
 
   await page.evaluate(() => {
     const h = window.__harness
-    h.getMeta().sparks = 500
+    // 2000, not 500: Duelist Doctrine is Iron tier 2 since the tree
+    // restructure, so the branch gate (✦400, paid here in Reinforced Core)
+    // comes before the node's own ✦180.
+    h.getMeta().sparks = 2000
+    for (let i = 0; i < 6; i++) h.buyMeta('spire_hp') // ✦465 — just past the gate
     h.buyMeta('unlock_lance')
     h.newRun('e2e-lance')
     h.getState().gold = 2000
@@ -1622,10 +1630,15 @@ const MAXED_PILOT = (seed: string) => {
   h.getMeta().sparks = 1_000_000
   // No Ashen Road: skipping ahead lands a tier-1 scatter in front of
   // late-wave HP scale. Ramping from wave 1 lets the kill box compound.
+  // Every damage vein by name: Honed Edge is split across three tiers since
+  // the tree restructure, so a list naming only the first caps the pilot at
+  // 8 levels instead of 25 — measured as dying on wave 22 instead of winning.
+  // The Ash tier-1 nodes also pay that branch's gate, which Bulwark needs.
   const ids = [
-    'starting_gold', 'spire_hp', 'tower_damage', 'crit_chance', 'gold_income', 'spark_gain',
-    'unlock_tesla', 'unlock_mint', 'unlock_beacon', 'unlock_gold_rush', 'unlock_bulwark',
-    'magnet_reach', 'spire_magnet',
+    'starting_gold', 'spire_hp', 'tower_damage', 'tower_damage_2', 'tower_damage_3',
+    'crit_chance', 'gold_income', 'spark_gain',
+    'unlock_tesla', 'unlock_mint', 'unlock_beacon', 'unlock_gold_rush', 'quick_hands',
+    'steady_aim', 'unlock_bulwark', 'magnet_reach', 'spire_magnet',
   ]
   for (let pass = 0; pass < 25; pass++) for (const id of ids) h.buyMeta(id)
   h.newRun(seed)

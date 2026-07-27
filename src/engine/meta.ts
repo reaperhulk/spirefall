@@ -15,14 +15,27 @@ import {
 } from '../data/content'
 import { BIOME_IDS, unlockedBiomes, type BiomeId } from '../data/biomes'
 import {
+  branchNodes,
+  BRANCH_GATES,
+  BRANCH_NAMES,
+  DAMAGE_NODE_IDS,
+  keystoneRivals,
+  KEYSTONE_BASTION_DAMAGE_PCT,
+  KEYSTONE_BASTION_HP,
+  KEYSTONE_GLASSFORGE_DAMAGE_PCT,
+  KEYSTONE_GLASSFORGE_HP_LOSS_PCT,
   META_CRIT_CHANCE_PCT_PER_LEVEL,
+  META_EXECUTE_CD_PCT_PER_LEVEL,
   META_GOLD_INCOME_PCT_PER_LEVEL,
+  META_OVERCHARGE_CD_PCT_PER_LEVEL,
   META_SPARK_GAIN_PCT_PER_LEVEL,
   META_SPIRE_HP_PER_LEVEL,
   META_STARTING_GOLD_PER_LEVEL,
   META_TOWER_DAMAGE_PCT_PER_LEVEL,
   META_WAVE_SKIP_PER_LEVEL,
   metaNode,
+  sparksSpentOn,
+  type MetaBranch,
   type MetaUpgradeId,
 } from '../data/metaTree'
 import { ACHIEVEMENTS } from '../data/achievements'
@@ -125,9 +138,40 @@ export function metaUpgradeCost(meta: MetaState, id: MetaUpgradeId): number | nu
   return node.costs[level]!
 }
 
+// Sparks already sunk into a branch. This is what gates measure — spend
+// inside a branch and its next tier opens — so it counts LEVELS BOUGHT, not
+// sparks earned, and a keystone you later respec stops counting the moment
+// it is refunded.
+export function branchSpend(meta: MetaState, branch: MetaBranch): number {
+  let total = 0
+  for (const node of branchNodes(branch)) total += sparksSpentOn(node.id, metaLevel(meta, node.id))
+  return total
+}
+
+// A node is reachable when its branch gate is paid. Tier 1 is always open.
+export function isNodeUnlocked(meta: MetaState, id: MetaUpgradeId): boolean {
+  const node = metaNode(id)
+  return branchSpend(meta, node.branch) >= BRANCH_GATES[node.tier]
+}
+
+// The keystone (if any) already taken in this node's exclusive group.
+export function keystoneConflict(meta: MetaState, id: MetaUpgradeId): MetaUpgradeId | null {
+  for (const rival of keystoneRivals(id)) {
+    if (metaLevel(meta, rival) > 0) return rival
+  }
+  return null
+}
+
 export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: MetaState; ok: boolean; reason: string } {
   const cost = metaUpgradeCost(meta, id)
   if (cost === null) return { meta, ok: false, reason: 'already at max level' }
+  if (!isNodeUnlocked(meta, id)) {
+    const node = metaNode(id)
+    const short = BRANCH_GATES[node.tier] - branchSpend(meta, node.branch)
+    return { meta, ok: false, reason: `spend ✦${short} more in ${BRANCH_NAMES[node.branch]} to open this tier` }
+  }
+  const rival = keystoneConflict(meta, id)
+  if (rival !== null) return { meta, ok: false, reason: `${metaNode(rival).name} is taken — respec it first` }
   if (meta.sparks < cost) return { meta, ok: false, reason: 'not enough sparks' }
   return {
     meta: {
@@ -135,6 +179,24 @@ export function buyMetaUpgrade(meta: MetaState, id: MetaUpgradeId): { meta: Meta
       sparks: meta.sparks - cost,
       upgrades: { ...meta.upgrades, [id]: metaLevel(meta, id) + 1 },
     },
+    ok: true,
+    reason: '',
+  }
+}
+
+// Keystones — and ONLY keystones — can be handed back, in full, for free.
+// A keystone carries a real downside, and a permanent purchase that makes
+// you weaker is the worst thing this game can do to a player (Ashen Road,
+// iteration 210). Veins and gates stay permanent: the grind still compounds.
+export function respecKeystone(meta: MetaState, id: MetaUpgradeId): { meta: MetaState; ok: boolean; reason: string } {
+  const node = metaNode(id)
+  if (node.keystone !== true) return { meta, ok: false, reason: 'only keystones can be respecced' }
+  const level = metaLevel(meta, id)
+  if (level === 0) return { meta, ok: false, reason: 'not taken' }
+  const upgrades = { ...meta.upgrades }
+  delete upgrades[id]
+  return {
+    meta: { ...meta, sparks: meta.sparks + sparksSpentOn(id, level), upgrades },
     ok: true,
     reason: '',
   }
@@ -173,7 +235,13 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
   let spireHp =
     STARTING_SPIRE_HP +
     metaLevel(meta, 'spire_hp') * META_SPIRE_HP_PER_LEVEL +
-    emberLevel(meta, 'eternal_core') * EMBER_SPIRE_HP_PER_LEVEL
+    emberLevel(meta, 'eternal_core') * EMBER_SPIRE_HP_PER_LEVEL +
+    (metaLevel(meta, 'ks_bastion') > 0 ? KEYSTONE_BASTION_HP : 0)
+  // Glassforge trades wall for teeth. Applied BEFORE the Glass Spire trial so
+  // the two stack multiplicatively rather than racing to floor each other.
+  if (metaLevel(meta, 'ks_glassforge') > 0) {
+    spireHp = Math.max(1, Math.floor((spireHp * (100 - KEYSTONE_GLASSFORGE_HP_LOSS_PCT)) / 100))
+  }
   if (chosenTrials.includes('glass_spire')) spireHp = Math.max(1, Math.floor(spireHp / 2))
 
   // Ashen Road: start further in, with the gold those waves would roughly
@@ -261,8 +329,13 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     bestCombo: 0,
     victoryClaimed: false,
     mods: {
+      // Honed Edge is three veins across three tiers, so damage sums over
+      // all of them (DAMAGE_NODE_IDS is derived, never a restated list), plus
+      // whichever Iron keystone is held.
       damagePct:
-        metaLevel(meta, 'tower_damage') * META_TOWER_DAMAGE_PCT_PER_LEVEL +
+        DAMAGE_NODE_IDS.reduce((sum, id) => sum + metaLevel(meta, id), 0) * META_TOWER_DAMAGE_PCT_PER_LEVEL +
+        (metaLevel(meta, 'ks_glassforge') > 0 ? KEYSTONE_GLASSFORGE_DAMAGE_PCT : 0) -
+        (metaLevel(meta, 'ks_bastion') > 0 ? KEYSTONE_BASTION_DAMAGE_PCT : 0) +
         emberLevel(meta, 'kindled_arsenal') * EMBER_DAMAGE_PCT_PER_LEVEL,
       goldPct:
         metaLevel(meta, 'gold_income') * META_GOLD_INCOME_PCT_PER_LEVEL +
@@ -276,6 +349,9 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
       repairCasts: emberLevel(meta, 'ember_crews') * EMBER_REPAIR_CASTS_PER_LEVEL,
       collectRadius: COLLECT_RADIUS_BASE + metaLevel(meta, 'magnet_reach') * META_MAGNET_RADIUS_PER_LEVEL,
       autoCollectRadius: metaLevel(meta, 'spire_magnet') * META_SPIRE_MAGNET_RADIUS_PER_LEVEL,
+      // Ash: the verbs the game teaches finally have somewhere to grow.
+      executeCdPct: metaLevel(meta, 'quick_hands') * META_EXECUTE_CD_PCT_PER_LEVEL,
+      overchargeCdPct: metaLevel(meta, 'steady_aim') * META_OVERCHARGE_CD_PCT_PER_LEVEL,
     },
     sparksEarned: 0,
   }

@@ -286,7 +286,8 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       const bonus = Math.floor((ENEMIES[enemy.type].bounty * EXECUTE_BONUS_PCT) / 100)
       enemy.hp = 0
       s.gold += bonus
-      s.executeCd = EXECUTE_COOLDOWN_TICKS
+      // Quick Hands (Ash) shortens the blade's recovery.
+      s.executeCd = Math.max(1, Math.floor((EXECUTE_COOLDOWN_TICKS * (100 - s.mods.executeCdPct)) / 100))
       events.push({ type: 'enemy_executed', id: enemy.id, at: { ...enemy.pos }, bonus })
       return
     }

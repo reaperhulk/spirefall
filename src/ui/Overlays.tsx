@@ -4,8 +4,26 @@ import { drawRunCard, challengeLink } from './runCard'
 import { CATACLYSMS, CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
 import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
-import { META_TREE, metaNodeEffect } from '../data/metaTree'
-import { canAscend, emberGainOnAscend, emberLevel, emberUpgradeCost, metaLevel, metaUpgradeCost } from '../engine/meta'
+import {
+  branchNodes,
+  BRANCH_BLURBS,
+  BRANCH_GATES,
+  BRANCH_NAMES,
+  META_BRANCHES,
+  metaNode,
+  metaNodeEffect,
+} from '../data/metaTree'
+import {
+  branchSpend,
+  canAscend,
+  emberGainOnAscend,
+  emberLevel,
+  emberUpgradeCost,
+  isNodeUnlocked,
+  keystoneConflict,
+  metaLevel,
+  metaUpgradeCost,
+} from '../engine/meta'
 import { computeSparks } from '../engine/step'
 import type { CataclysmId, MetaState, RelicId, RunState, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
@@ -124,21 +142,45 @@ function AscensionPanel({
   )
 }
 
+// Phase 1 of the skill-tree restructure keeps this list rendering (the graph
+// view is phase 2) but it must not LIE: nodes are grouped by branch and tier,
+// and a locked tier says what it wants instead of offering a button that
+// silently refuses.
 export function SpireTree({ meta, onBuy }: { meta: MetaState; onBuy: (id: MetaUpgradeId) => void }) {
   return (
     <div className="spire-tree" data-testid="spire-tree">
-      {META_TREE.map((node) => {
+      {META_BRANCHES.map((branch) => (
+        <div key={branch} className="tree-branch" data-testid={`branch-${branch}`}>
+          <h4 className="tree-branch-head">
+            {BRANCH_NAMES[branch]} <span className="tree-branch-blurb">{BRANCH_BLURBS[branch]}</span>
+            <span className="tree-branch-spend">✦ {branchSpend(meta, branch)} spent</span>
+          </h4>
+          {branchNodes(branch).map((node) => {
         const level = metaLevel(meta, node.id)
         const cost = metaUpgradeCost(meta, node.id)
         const maxed = cost === null
-        const affordable = cost !== null && meta.sparks >= cost
+        const unlocked = isNodeUnlocked(meta, node.id)
+        const rival = keystoneConflict(meta, node.id)
+        const affordable = cost !== null && meta.sparks >= cost && unlocked && rival === null
         const now = metaNodeEffect(node.id, level)
         const next = maxed ? null : metaNodeEffect(node.id, level + 1)
         return (
-          <div key={node.id} className={`tree-node${maxed ? ' maxed' : ''}`}>
+          <div
+            key={node.id}
+            className={`tree-node${maxed ? ' maxed' : ''}${unlocked ? '' : ' locked'}${node.keystone === true ? ' keystone' : ''}`}
+            data-testid={`node-${node.id}`}
+          >
             <div className="tree-node-info">
               <strong>{node.name}</strong>
               <span>{node.description}</span>
+              {!unlocked && (
+                <span className="tree-gate" data-testid={`gate-${node.id}`}>
+                  Locked — spend ✦{BRANCH_GATES[node.tier] - branchSpend(meta, branch)} more in {BRANCH_NAMES[branch]}
+                </span>
+              )}
+              {rival !== null && (
+                <span className="tree-gate">{metaNode(rival).name} is taken — respec it to switch</span>
+              )}
               {now && (
                 <span className="tree-effect" data-testid={`effect-${node.id}`}>
                   Now: {now}
@@ -160,11 +202,13 @@ export function SpireTree({ meta, onBuy }: { meta: MetaState; onBuy: (id: MetaUp
               onClick={() => onBuy(node.id)}
               data-testid={`buy-${node.id}`}
             >
-              {maxed ? 'MAX' : `✦ ${cost}`}
+              {maxed ? 'MAX' : unlocked ? `✦ ${cost}` : '🔒'}
             </button>
           </div>
         )
-      })}
+          })}
+        </div>
+      ))}
     </div>
   )
 }

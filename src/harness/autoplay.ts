@@ -69,17 +69,23 @@ export function playProgression(
   return { meta, history }
 }
 
+// Spend down the priority list, skipping anything the tree will not sell:
+// maxed nodes, unaffordable ones, tiers whose branch gate is unpaid, and
+// keystones whose rival is already taken. buyMetaUpgrade is the single
+// authority on all of that — asking it and believing the answer means the
+// bots can never buy something a player could not.
 export function spendSparks(meta: MetaState, buyPriority: MetaUpgradeId[]): MetaState {
   let current = meta
   for (;;) {
     let bought = false
     for (const id of buyPriority) {
       const cost = metaUpgradeCost(current, id)
-      if (cost !== null && current.sparks >= cost) {
-        current = buyMetaUpgrade(current, id).meta
-        bought = true
-        break
-      }
+      if (cost === null || current.sparks < cost) continue
+      const result = buyMetaUpgrade(current, id)
+      if (!result.ok) continue // locked tier or keystone conflict — try the next
+      current = result.meta
+      bought = true
+      break
     }
     if (!bought) return current
   }

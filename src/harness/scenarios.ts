@@ -13,9 +13,22 @@ export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
   // your way out of — Reinforced Core leads. Crit sits late: shields judge
   // shots by pre-crit weight, so raw damage breaks walls and crit only
   // multiplies what already lands.
+  //
+  // Post-restructure the list also has to WALK the tree: Honed Edge II and
+  // III sit behind Iron's gates, and the reference player takes no keystone
+  // (spendSparks skips what the tree won't sell, so an unreachable entry
+  // costs nothing but a skip). Keystone-taking references belong in the
+  // no-trap measurement, not in the default yardstick.
   'spire_hp',
   'unlock_tesla',
   'tower_damage',
+  // The three Honed Edge veins stay ADJACENT here. They are one 25-level
+  // slider split across three tiers, so separating them in the priority list
+  // silently rewrites the reference build: sparks that used to compound into
+  // damage fall through to crit instead. Measured — with the veins scattered,
+  // intended play at 10k collapsed from 10/32 wins to 1/32.
+  'tower_damage_2',
+  'tower_damage_3',
   'starting_gold',
   'unlock_mint',
   'unlock_beacon',
@@ -23,6 +36,8 @@ export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
   'wave_skip',
   'unlock_gold_rush',
   'unlock_bulwark',
+  'quick_hands',
+  'steady_aim',
   'crit_chance',
   'spark_gain',
 ]

@@ -437,7 +437,8 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     if (tower.overcharged) {
       baseDamage = Math.floor((baseDamage * OVERCHARGE_DAMAGE_PCT) / 100)
       tower.overcharged = false
-      tower.overchargeCd = OVERCHARGE_COOLDOWN_TICKS
+      // Steady Aim (Ash) shortens the recharge.
+      tower.overchargeCd = Math.max(1, Math.floor((OVERCHARGE_COOLDOWN_TICKS * (100 - state.mods.overchargeCdPct)) / 100))
     }
 
     // One crit roll per shot: a critical cannon shell crits its whole splash,
