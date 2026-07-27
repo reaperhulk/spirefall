@@ -52,6 +52,35 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 >   generator has a systematic tell worth finding, or seed choice is a
 >   bigger lever than the biome, which the unlock arc does not reflect.
 
+215. *(progression — phase 2 of the skill-tree restructure)* **The tree
+    becomes a graph you can see** — an SVG view replaces the list: three
+    branches fanning from THE SPIRE, edges authored in the data as `parent`
+    links (never inferred, so the shape is a design decision and the
+    purchase animation knows exactly which line to run down). SVG rather
+    than canvas because every node is then a real focusable element —
+    keyboard, screen readers and `getByTestId` all keep working. Node state
+    is carried by COLOUR and BRIGHTNESS, since "what can I afford" is the
+    question the screen answers every second it is open: branch hue (Iron
+    steel-blue, Gold coin-amber, Ash ember-violet), affordable nodes at full
+    colour with a breathing glow, unaffordable dimmed but legible, locked
+    nearly dark and dashed, maxed filled solid, keystone-locked-out faded to
+    a quarter. Weight on purchase: the node takes the hit (scale punch on a
+    springy curve) and rings out a shockwave halo. And the thing the whole
+    view is built around — when a buy opens something new, CHARGE runs down
+    the lines to it (a travelling dash) and the newly opened nodes unveil
+    with a scale-in, so a purchase visibly SENDS something somewhere rather
+    than just decrementing a counter. Two layouts from one component and one
+    dataset: authored `wide` coordinates fan out, `compact` stacks the
+    branches for phones and routes edges as right-angle traces, because
+    stacked diagonals crossed every row between parent and child. Labels are
+    short forms (`Edge I`, `Tithe`) since full names collide at node
+    spacing — the long name lives in the detail panel. Reduced motion kills
+    every animation and leaves the colour language intact. E2e pins node
+    state via aria-label, the gate message on a locked node, a purchase
+    moving the level, the charge element rendering on newly unveiled edges,
+    and — the iteration-213 lesson again — the graph being ON SCREEN at
+    1280px and 375px, not merely in the DOM.
+
 214. *(progression — phase 1 of the skill-tree restructure)* **The Spire Tree
     becomes a tree** — fifteen nodes in a flat list had no choice in them,
     only an order, and `DEFAULT_BUY_PRIORITY` already knew the answer; at 20k

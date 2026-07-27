@@ -250,6 +250,8 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   // (Next Run tab), then begin. (A fresh account has only Verdant unlocked —
   // the picker's other biomes are disabled, which this select would fail on.)
   await page.getByTestId('tab-tree').click()
+  // The tree is a graph now: select the node, then buy from its panel.
+  await page.getByTestId('gnode-starting_gold').click()
   await page.getByTestId('buy-starting_gold').click()
   await page.getByTestId('tab-next').click()
   await page.getByTestId('map-select').selectOption('verdant')
@@ -1359,6 +1361,51 @@ test('Ashen Road says what it owes you: the relic debt is on screen, not a surpr
     window.__harness.fastForward(0.2)
   })
   await expect(page.getByTestId('relic-debt')).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
+test('the Spire Tree graph: nodes carry state, a purchase runs charge down the line', async ({ page }) => {
+  const errors = await boot(page, 'e2e-tree-graph')
+  await page.evaluate(() => {
+    window.__harness.getMeta().sparks = 600
+  })
+  await page.getByTestId('open-tree').click()
+  await expect(page.getByTestId('tree-graph')).toBeVisible()
+
+  // Tier 1 is open on a fresh account; Iron tier 2 is gated behind spend.
+  await expect(page.getByTestId('gnode-tower_damage')).toHaveAttribute('aria-label', /affordable/)
+  await expect(page.getByTestId('gnode-crit_chance')).toHaveAttribute('aria-label', /locked/)
+
+  // Selecting a node opens its detail panel; buying it moves the level.
+  await page.getByTestId('gnode-tower_damage').click()
+  await expect(page.getByTestId('tree-detail')).toBeVisible()
+  await page.getByTestId('buy-tower_damage').click()
+  await expect
+    .poll(async () => page.evaluate(() => window.__harness.getMeta().upgrades['tower_damage'] ?? 0))
+    .toBe(1)
+
+  // A locked node says what it wants rather than offering a dead button.
+  await page.getByTestId('gnode-crit_chance').click()
+  await expect(page.getByTestId('detail-gate')).toContainText('more in Iron')
+  await expect(page.getByTestId('buy-crit_chance')).toBeDisabled()
+
+  // Spend until Iron's gate opens: the charge element renders on the edges
+  // that were just unveiled — the animation the screen is built around.
+  await page.getByTestId('gnode-spire_hp').click()
+  for (let i = 0; i < 6; i++) await page.getByTestId('buy-spire_hp').click()
+  await expect(page.locator('.tree-edge-charge').first()).toBeAttached()
+  await expect(page.getByTestId('gnode-crit_chance')).toHaveAttribute('aria-label', /affordable|unaffordable/)
+
+  // And the graph stays ON SCREEN, not merely in the DOM, at both widths.
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 800 })
+    await page.waitForTimeout(120)
+    const inside = await page.evaluate(() => {
+      const svg = document.querySelector('.tree-graph')!.getBoundingClientRect()
+      return svg.left >= -1 && svg.right <= window.innerWidth + 1 && svg.width > 100
+    })
+    expect(inside, `tree graph off screen at ${width}px`).toBe(true)
+  }
   expect(errors).toEqual([])
 })
 

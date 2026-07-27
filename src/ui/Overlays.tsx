@@ -28,6 +28,7 @@ import { computeSparks } from '../engine/step'
 import type { CataclysmId, MetaState, RelicId, RunState, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
 import { exportSave, importSave } from './save'
+import { SpireTreeGraph } from './SpireTreeGraph'
 
 export function RelicModal({
   options,
@@ -600,7 +601,7 @@ export function RunOverOverlay({
           </div>
         )}
         <h3>The Spire Tree — ✦ {meta.sparks} available</h3>
-        <SpireTree meta={meta} onBuy={onBuy} />
+        <SpireTreeGraph meta={meta} onBuy={onBuy} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
           </>
         )}
@@ -1017,7 +1018,7 @@ export function SpireTreeModal({
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Spire Tree">
         <h2>The Spire Tree — ✦ {meta.sparks}</h2>
         <p className="run-flavor">Permanent upgrades. New purchases take effect on your next run.</p>
-        <SpireTree meta={meta} onBuy={onBuy} />
+        <SpireTreeGraph meta={meta} onBuy={onBuy} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
         <button className="ghost-btn" onClick={onClose}>
           Close

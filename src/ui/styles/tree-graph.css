@@ -1,0 +1,313 @@
+/* The Spire Tree graph. Branch identity is carried by colour: Iron is cold
+   steel, Gold is coin, Ash is ember-violet. Affordability is carried by
+   BRIGHTNESS — a node you can buy right now glows; one you cannot is dim but
+   still readable, because "what can I afford" is the question the screen is
+   answering every second it is open. */
+
+.tree-graph-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.tree-graph {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 58vh;
+  overflow: visible;
+  touch-action: manipulation;
+}
+
+/* Branch palettes, reused by gradients, edges and node faces. */
+.grad-iron-a { stop-color: #7dcfff; }
+.grad-iron-b { stop-color: #3d7ea6; }
+.grad-gold-a { stop-color: #e5c07b; }
+.grad-gold-b { stop-color: #a97f2f; }
+.grad-ash-a { stop-color: #bb9af7; }
+.grad-ash-b { stop-color: #6c4fa3; }
+
+/* --- edges --------------------------------------------------------------- */
+.tree-edge {
+  fill: none;
+  stroke: #222838;
+  stroke-width: 0.5;
+  stroke-linecap: round;
+}
+
+.tree-edge.open {
+  stroke-width: 0.7;
+}
+
+.edge-iron.open { stroke: #2f4a5c; }
+.edge-gold.open { stroke: #5c4a24; }
+.edge-ash.open { stroke: #453466; }
+
+/* A line with levels on it is a line you have walked. */
+.tree-edge.live.edge-iron { stroke: #7dcfff; stroke-width: 0.9; }
+.tree-edge.live.edge-gold { stroke: #e5c07b; stroke-width: 0.9; }
+.tree-edge.live.edge-ash { stroke: #bb9af7; stroke-width: 0.9; }
+
+/* Charge running outward from a purchase: a bright dash travelling the line,
+   which is what makes a buy feel like it SENT something somewhere. */
+.tree-edge-charge {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 7 200;
+  filter: drop-shadow(0 0 1.5px currentColor);
+  animation: edge-charge 0.9s ease-out forwards;
+}
+
+.tree-edge-charge.edge-iron { stroke: #a5e4ff; color: #7dcfff; }
+.tree-edge-charge.edge-gold { stroke: #ffe6ad; color: #e5c07b; }
+.tree-edge-charge.edge-ash { stroke: #d9c4ff; color: #bb9af7; }
+
+@keyframes edge-charge {
+  from { stroke-dashoffset: 207; opacity: 1; }
+  to { stroke-dashoffset: 0; opacity: 0.15; }
+}
+
+/* --- the root ------------------------------------------------------------ */
+.tree-root {
+  fill: #1a2233;
+  stroke: #e5c07b;
+  stroke-width: 0.6;
+  filter: drop-shadow(0 0 2px rgba(229, 192, 123, 0.5));
+}
+
+.tree-root-label {
+  fill: #8a93ad;
+  font-size: 2.4px;
+  letter-spacing: 0.3px;
+  font-weight: 700;
+}
+
+/* --- nodes --------------------------------------------------------------- */
+.tree-gnode-hit {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.tree-gnode-hit:focus-visible + .tree-gnode-label,
+.tree-gnode-hit:focus-visible {
+  outline: none;
+}
+
+.tree-gnode:focus-within .tree-gnode-halo {
+  opacity: 0.9;
+}
+
+.tree-gnode-halo {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 0.35;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tree-gnode-face {
+  stroke-width: 0.55;
+  transition: fill 0.25s, stroke 0.25s, opacity 0.25s;
+}
+
+.tree-gnode-fill {
+  fill: currentColor;
+}
+
+.tree-gnode-label {
+  font-size: 2.5px;
+  fill: #8a93ad;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.tree-gnode-lv {
+  font-size: 2.3px;
+  fill: #6b7392;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* Branch colour is the node's currentColor, so halo/fill inherit it. */
+.tree-gnode.branch-iron { color: #7dcfff; }
+.tree-gnode.branch-gold { color: #e5c07b; }
+.tree-gnode.branch-ash { color: #bb9af7; }
+
+.tree-gnode .tree-gnode-face {
+  fill: #10151f;
+  stroke: currentColor;
+}
+
+/* Affordability, the whole point of the colour scheme:
+   - affordable: full colour, breathing glow, bright label
+   - unaffordable: desaturated and dim, but legible
+   - locked: nearly invisible until the gate opens
+   - maxed: filled solid
+   - keystone-out: crossed out by opacity, the rival won */
+.tree-gnode.state-affordable .tree-gnode-face {
+  filter: drop-shadow(0 0 1.6px currentColor);
+  animation: node-breathe 2.4s ease-in-out infinite;
+}
+
+.tree-gnode.state-affordable .tree-gnode-label {
+  fill: #d8dee9;
+}
+
+.tree-gnode.state-unaffordable .tree-gnode-face,
+.tree-gnode.state-owned .tree-gnode-face {
+  opacity: 0.62;
+}
+
+.tree-gnode.state-locked .tree-gnode-face {
+  opacity: 0.22;
+  stroke-dasharray: 1 1;
+}
+
+.tree-gnode.state-locked .tree-gnode-label,
+.tree-gnode.state-locked .tree-gnode-lv {
+  opacity: 0.4;
+}
+
+.tree-gnode.state-maxed .tree-gnode-face {
+  fill: currentColor;
+  filter: drop-shadow(0 0 2px currentColor);
+}
+
+.tree-gnode.state-maxed .tree-gnode-label {
+  fill: #d8dee9;
+}
+
+.tree-gnode.state-keystone-out .tree-gnode-face {
+  opacity: 0.25;
+}
+
+.tree-gnode.is-keystone .tree-gnode-face {
+  stroke-width: 0.7;
+}
+
+@keyframes node-breathe {
+  0%, 100% { filter: drop-shadow(0 0 1.2px currentColor); }
+  50% { filter: drop-shadow(0 0 3px currentColor); }
+}
+
+/* The weight of a purchase: the node takes the hit and rings out. */
+.tree-gnode.struck .tree-gnode-face {
+  animation: node-struck 0.46s cubic-bezier(0.2, 1.6, 0.3, 1);
+}
+
+.tree-gnode.struck .tree-gnode-halo {
+  animation: node-shock 0.46s ease-out;
+}
+
+@keyframes node-struck {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+
+@keyframes node-shock {
+  0% { opacity: 0.9; stroke-width: 0.8; transform: scale(0.5); }
+  100% { opacity: 0; stroke-width: 0.1; transform: scale(1.9); }
+}
+
+/* Newly opened by the charge that just arrived. */
+.tree-gnode.revealing .tree-gnode-face {
+  animation: node-reveal 0.9s ease-out;
+}
+
+@keyframes node-reveal {
+  0% { opacity: 0; transform: scale(0.2); }
+  55% { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* --- legend + detail ----------------------------------------------------- */
+.tree-branch-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  color: #8a93ad;
+  padding: 4px 2px 0;
+}
+
+.tree-key i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+.tree-key.branch-iron i { background: #7dcfff; }
+.tree-key.branch-gold i { background: #e5c07b; }
+.tree-key.branch-ash i { background: #bb9af7; }
+.tree-key b { color: #d8dee9; }
+
+.tree-detail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid #2c3448;
+  border-radius: 8px;
+  background: #10151f;
+  font-size: 12px;
+  color: #8a93ad;
+}
+
+.tree-detail strong {
+  color: #e5c07b;
+  font-size: 14px;
+}
+
+.tree-detail-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.tree-detail-gate {
+  color: #ff9e64;
+}
+
+.tree-detail-effect em {
+  color: #9ece6a;
+}
+
+.tree-detail-buy {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* Motion is decoration: never required to understand the screen. */
+/* Phones read the stacked layout, which is tall: give it the screen. */
+@media (max-width: 700px) {
+  .tree-graph {
+    max-height: 66vh;
+  }
+
+  .tree-gnode-label {
+    font-size: 2.9px;
+  }
+
+  .tree-gnode-lv {
+    font-size: 2.6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-edge-charge,
+  .tree-gnode.state-affordable .tree-gnode-face,
+  .tree-gnode.struck .tree-gnode-face,
+  .tree-gnode.struck .tree-gnode-halo,
+  .tree-gnode.revealing .tree-gnode-face {
+    animation: none;
+  }
+}
