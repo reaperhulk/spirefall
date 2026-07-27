@@ -52,6 +52,34 @@ Spark → Ascension → Ember meta stack, PWA/mobile parity, accessibility pass.
 >   generator has a systematic tell worth finding, or seed choice is a
 >   bigger lever than the biome, which the unlock arc does not reflect.
 
+216-225. *(graphics — ten passes on the Spire Tree)* **Making the tree
+    exciting** — shipped in two batches, all decoration: every state tell
+    already lives in colour and brightness from 215, and
+    `prefers-reduced-motion` strips all of it without removing meaning.
+    **216 branch colour pools** — a soft radial per branch so each owns a
+    region of the canvas instead of floating in flat black. **217 embers**
+    drift up out of the Spire's fires on fixed positions and phases (no RNG
+    anywhere near the render). **218 progress arcs** — level/max as a filling
+    ring around each node, read at a glance instead of parsed from "4/8".
+    **219 lineage highlight** — selecting a node lights its entire path back
+    to the Spire in white, which is how the tree teaches what a node actually
+    costs to reach; the selected node's halo turns slowly. **220 gate meters**
+    in the legend: each branch shows a filling bar toward its next tier,
+    because a bar is a goal with a shape and "spend ✦180 more" is arithmetic
+    you have to do yourself. **221 keystone diamonds** — keystones are
+    diamonds by GEOMETRY (a polygon), not a CSS rotation: the punch and
+    reveal animations both animate `transform`, so a rotated rect gets
+    clobbered the moment either fires, which is exactly what happened and
+    what the screenshot caught. **222 the price, leaving** — a −✦cost floats
+    off the node you just bought, so a spend looks like a spend. **223 the
+    current** — edges leading to anything affordable right now carry a
+    crawling dash, pulling the eye toward what is buyable. **224 maxed as
+    celebration** — a solid core, a bright full ring and a slow halo turn
+    that says finished, rather than a grey-out that says done with you.
+    **225 sealed, not absent** — locked nodes creep their dashed ring, and
+    unveiling bursts the seal outward. Each pass was verified by screenshot
+    at desktop and phone width, which is also how 221 was caught.
+
 215. *(progression — phase 2 of the skill-tree restructure)* **The tree
     becomes a graph you can see** — an SVG view replaces the list: three
     branches fanning from THE SPIRE, edges authored in the data as `parent`

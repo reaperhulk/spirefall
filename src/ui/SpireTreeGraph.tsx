@@ -56,6 +56,30 @@ function rootPos(compact: boolean): { x: number; y: number } {
 // Wide fans out, so straight lines read fine. Stacked (compact) they would
 // be long diagonals crossing every row between parent and child, so those
 // route as right-angle traces instead — circuit board, not spaghetti.
+// Every node between this one and the Spire. Selecting a node lights its
+// whole lineage, which is how a player learns what a node actually costs to
+// reach — the tree teaches its own shape.
+function lineageOf(id: MetaUpgradeId): Set<MetaUpgradeId> {
+  const chain = new Set<MetaUpgradeId>()
+  let cursor: MetaUpgradeId | undefined = id
+  while (cursor !== undefined) {
+    chain.add(cursor)
+    cursor = metaNode(cursor).parent
+  }
+  return chain
+}
+
+// Ambient embers: fixed positions and phases, so the background has life
+// without a random number anywhere near it.
+const EMBERS = [
+  { x: 12, y: 84, d: 11, delay: 0 },
+  { x: 34, y: 92, d: 14, delay: 2.5 },
+  { x: 58, y: 88, d: 12, delay: 5 },
+  { x: 78, y: 94, d: 15, delay: 1.2 },
+  { x: 92, y: 80, d: 13, delay: 3.8 },
+  { x: 46, y: 96, d: 16, delay: 6.4 },
+]
+
 function edgePath(from: { x: number; y: number }, to: { x: number; y: number }, compact: boolean): string {
   if (!compact) return `M ${from.x} ${from.y} L ${to.x} ${to.y}`
   const midY = from.y + (to.y - from.y) * 0.55
@@ -96,6 +120,9 @@ export function SpireTreeGraph({
   // nodes that charge is about to reveal. Purely presentational.
   const [charging, setCharging] = useState<MetaUpgradeId[]>([])
   const [struck, setStruck] = useState<MetaUpgradeId | null>(null)
+  // What the last purchase cost, floating off the node it bought.
+  const [spent, setSpent] = useState<{ id: MetaUpgradeId; cost: number; key: number } | null>(null)
+  const spendKey = useRef(0)
   const prevUnlocked = useRef<Set<MetaUpgradeId>>(new Set())
   const timers = useRef<number[]>([])
 
@@ -123,14 +150,18 @@ export function SpireTreeGraph({
   }, [meta])
 
   const handleBuy = (id: MetaUpgradeId): void => {
+    const cost = metaUpgradeCost(meta, id) ?? 0
     onBuy(id)
     setStruck(id)
+    setSpent({ id, cost, key: spendKey.current++ })
     const t = window.setTimeout(() => setStruck(null), 460)
-    timers.current.push(t)
+    const t2 = window.setTimeout(() => setSpent(null), 900)
+    timers.current.push(t, t2)
   }
 
   const root = rootPos(compact)
   const detail = selected === null ? null : metaNode(selected)
+  const lineage = selected === null ? new Set<MetaUpgradeId>() : lineageOf(selected)
 
   return (
     <div className="tree-graph-wrap" data-testid="tree-graph">
@@ -141,6 +172,9 @@ export function SpireTreeGraph({
         aria-label="The Spire Tree"
       >
         <defs>
+          <radialGradient id="pool-iron"><stop offset="0%" className="pool-iron-a" /><stop offset="100%" className="pool-stop-b" /></radialGradient>
+          <radialGradient id="pool-gold"><stop offset="0%" className="pool-gold-a" /><stop offset="100%" className="pool-stop-b" /></radialGradient>
+          <radialGradient id="pool-ash"><stop offset="0%" className="pool-ash-a" /><stop offset="100%" className="pool-stop-b" /></radialGradient>
           {META_BRANCHES.map((branch) => (
             <linearGradient key={branch} id={`branch-${branch}`} x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" className={`grad-${branch}-a`} />
@@ -149,16 +183,42 @@ export function SpireTreeGraph({
           ))}
         </defs>
 
+        {/* Atmosphere, behind everything: a colour pool per branch so each
+            one owns a region of the canvas, plus embers drifting up from the
+            Spire's fires. Decoration only — nothing here is a state tell. */}
+        {!compact &&
+          (['iron', 'gold', 'ash'] as const).map((branch, i) => (
+            <circle
+              key={`pool-${branch}`}
+              className="tree-pool"
+              cx={[20, 54, 86][i]}
+              cy={52}
+              r={26}
+              fill={`url(#pool-${branch})`}
+            />
+          ))}
+        {EMBERS.map((e, i) => (
+          <circle
+            key={`ember-${i}`}
+            className="tree-ember"
+            cx={e.x}
+            cy={e.y}
+            r={0.5}
+            style={{ animationDuration: `${e.d}s`, animationDelay: `${e.delay}s` }}
+          />
+        ))}
+
         {/* Edges first, so nodes sit on top of their own lines. */}
         {META_TREE.map((node) => {
           const from = node.parent === undefined ? root : pos(metaNode(node.parent), compact)
           const to = pos(node, compact)
           const open = isNodeUnlocked(meta, node.id)
           const live = metaLevel(meta, node.id) > 0
+          const pulls = nodeState(meta, node) === 'affordable'
           return (
             <g key={`edge-${node.id}`}>
               <path
-                className={`tree-edge${open ? ' open' : ''}${live ? ' live' : ''} edge-${node.branch}`}
+                className={`tree-edge${open ? ' open' : ''}${live ? ' live' : ''}${lineage.has(node.id) ? ' lineage' : ''}${pulls ? ' affordable-target' : ''} edge-${node.branch}`}
                 d={edgePath(from, to, compact)}
                 data-testid={`edge-${node.id}`}
               />
@@ -183,17 +243,33 @@ export function SpireTreeGraph({
           return (
             <g
               key={node.id}
-              className={`tree-gnode state-${state} branch-${node.branch}${node.keystone === true ? ' is-keystone' : ''}${revealing ? ' revealing' : ''}${struck === node.id ? ' struck' : ''}`}
+              className={`tree-gnode state-${state} branch-${node.branch}${node.keystone === true ? ' is-keystone' : ''}${revealing ? ' revealing' : ''}${struck === node.id ? ' struck' : ''}${lineage.has(node.id) ? ' lineage' : ''}${selected === node.id ? ' selected' : ''}`}
               transform={`translate(${p.x} ${p.y})`}
             >
               {/* The hit target is a real button so focus and keys work. */}
               <circle className="tree-gnode-halo" r={R * 1.9} />
               {node.keystone === true ? (
-                <rect className="tree-gnode-face" x={-R} y={-R} width={R * 2} height={R * 2} transform="rotate(45)" />
+                // A diamond by geometry, not by a CSS transform: the punch
+                // and reveal animations both animate `transform`, and a
+                // rotation there gets clobbered the moment one fires.
+                <polygon
+                  className="tree-gnode-face keystone-face"
+                  points={`0,${-R * 1.25} ${R * 1.25},0 0,${R * 1.25} ${-R * 1.25},0`}
+                />
               ) : (
                 <circle className="tree-gnode-face" r={R} />
               )}
               {level > 0 && <circle className="tree-gnode-fill" r={R * 0.55} />}
+              {/* Progress arc: how far into this node you are, read at a
+                  glance instead of parsed from "4/8". */}
+              {node.maxLevel > 1 && level > 0 && (
+                <circle
+                  className="tree-gnode-arc"
+                  r={R * 1.35}
+                  strokeDasharray={`${(level / node.maxLevel) * 2 * Math.PI * R * 1.35} 999`}
+                  transform="rotate(-90)"
+                />
+              )}
               <circle
                 className="tree-gnode-hit"
                 r={R * 2.2}
@@ -212,6 +288,11 @@ export function SpireTreeGraph({
               <text className="tree-gnode-label" y={R * 2.3} textAnchor="middle">
                 {node.short}
               </text>
+              {spent !== null && spent.id === node.id && (
+                <text key={spent.key} className="tree-gnode-spent" y={-R * 2.6} textAnchor="middle">
+                  −✦{spent.cost}
+                </text>
+              )}
               {node.maxLevel > 1 && (
                 <text className="tree-gnode-lv" y={-R * 1.6} textAnchor="middle">
                   {level}/{node.maxLevel}
@@ -227,6 +308,7 @@ export function SpireTreeGraph({
           <span key={branch} className={`tree-key branch-${branch}`} data-testid={`key-${branch}`}>
             <i />
             {BRANCH_NAMES[branch]} · {BRANCH_BLURBS[branch]} <b>✦{branchSpend(meta, branch)}</b>
+            <GateMeter meta={meta} branch={branch} />
           </span>
         ))}
       </div>
@@ -242,6 +324,21 @@ export function SpireTreeGraph({
         </div>
       )}
     </div>
+  )
+}
+
+// How close this branch is to its next gate. A bar is a goal with a shape;
+// "spend ✦180 more" is arithmetic you have to do yourself.
+function GateMeter({ meta, branch }: { meta: MetaState; branch: MetaBranch }) {
+  const spend = branchSpend(meta, branch)
+  const next = ([2, 3] as const).find((tier) => spend < BRANCH_GATES[tier])
+  if (next === undefined) return <em className="tree-gate-meter done">all tiers open</em>
+  const pct = Math.min(100, Math.round((spend / BRANCH_GATES[next]) * 100))
+  return (
+    <span className="tree-gate-meter" title={`✦${BRANCH_GATES[next] - spend} more opens tier ${next}`}>
+      <span className="tree-gate-fill" style={{ width: `${pct}%` }} />
+      <b>tier {next}</b>
+    </span>
   )
 }
 

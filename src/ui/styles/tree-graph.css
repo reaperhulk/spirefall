@@ -311,3 +311,206 @@
     animation: none;
   }
 }
+
+/* ============================================================
+   Graphics pass (iterations 216-225). Everything below is
+   decoration: state is already legible from colour and
+   brightness above, and prefers-reduced-motion strips the
+   motion at the end of this file without taking meaning away.
+   ============================================================ */
+
+/* 216 — atmosphere: a colour pool per branch, so each owns a region. */
+.tree-pool { opacity: 0.5; pointer-events: none; }
+.pool-iron-a { stop-color: #14344a; stop-opacity: 0.85; }
+.pool-gold-a { stop-color: #3d3116; stop-opacity: 0.85; }
+.pool-ash-a { stop-color: #2a1f45; stop-opacity: 0.85; }
+.pool-stop-b { stop-color: #0b0e14; stop-opacity: 0; }
+
+/* 217 — embers drifting up out of the Spire's fires. */
+.tree-ember {
+  fill: #e5c07b;
+  opacity: 0;
+  pointer-events: none;
+  animation-name: ember-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes ember-rise {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  12% { opacity: 0.55; }
+  70% { opacity: 0.3; }
+  100% { transform: translateY(-46px) scale(1.1); opacity: 0; }
+}
+
+/* 218 — the progress arc: level/max as a filling ring. */
+.tree-gnode-arc {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.55;
+  stroke-linecap: round;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 1px currentColor);
+  transition: stroke-dasharray 0.45s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* 219 — lineage: selecting a node lights its whole path to the Spire, which
+   is how the tree teaches what a node costs to reach. */
+.tree-edge.lineage {
+  stroke: #f0f4ff !important;
+  stroke-width: 1.1;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 1.5px currentColor);
+}
+
+.tree-gnode.lineage .tree-gnode-face { opacity: 1; }
+.tree-gnode.lineage .tree-gnode-label { fill: #d8dee9; }
+
+.tree-gnode.selected .tree-gnode-halo {
+  opacity: 1;
+  stroke-width: 0.5;
+  animation: sel-spin 5s linear infinite;
+  stroke-dasharray: 2 2;
+}
+
+@keyframes sel-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 220 — gate meters in the legend: a goal with a shape. */
+.tree-gate-meter {
+  position: relative;
+  display: inline-block;
+  width: 54px;
+  height: 9px;
+  margin-left: 6px;
+  border: 1px solid #2c3448;
+  border-radius: 5px;
+  overflow: hidden;
+  vertical-align: -1px;
+}
+
+.tree-gate-meter b {
+  position: absolute;
+  inset: 0;
+  font-size: 7px;
+  line-height: 9px;
+  text-align: center;
+  color: #d8dee9;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.tree-gate-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: currentColor;
+  opacity: 0.5;
+  transition: width 0.5s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.tree-key.branch-iron .tree-gate-meter { color: #7dcfff; }
+.tree-key.branch-gold .tree-gate-meter { color: #e5c07b; }
+.tree-key.branch-ash .tree-gate-meter { color: #bb9af7; }
+
+.tree-gate-meter.done {
+  width: auto;
+  border: 0;
+  font-size: 11px;
+  color: #9ece6a;
+  font-style: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-ember,
+  .tree-gnode.selected .tree-gnode-halo {
+    animation: none;
+  }
+  .tree-ember { opacity: 0.25; }
+}
+
+/* 221 — keystones are diamonds, in CSS so the punch/reveal transforms above
+   cannot clobber the rotation. */
+.tree-gnode-face.keystone-face {
+  stroke-linejoin: miter;
+}
+
+/* 222 — the price, leaving. A spend should be visible as a spend. */
+.tree-gnode-spent {
+  fill: #e5c07b;
+  font-size: 3px;
+  font-weight: 700;
+  pointer-events: none;
+  animation: spent-float 0.9s ease-out forwards;
+}
+
+@keyframes spent-float {
+  0% { opacity: 0; transform: translateY(2px) scale(0.7); }
+  20% { opacity: 1; transform: translateY(0) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-7px) scale(1); }
+}
+
+/* 223 — a current runs along every edge that leads to something you can
+   afford right now, so the eye is pulled toward what is actually buyable. */
+.tree-edge.affordable-target {
+  stroke-dasharray: 2 5;
+  animation: edge-current 1.6s linear infinite;
+}
+
+@keyframes edge-current {
+  to { stroke-dashoffset: -7; }
+}
+
+/* 224 — maxed is a celebration, not a grey-out: a solid core, a bright ring,
+   and a slow halo turn that says "finished". */
+.tree-gnode.state-maxed .tree-gnode-arc {
+  stroke-width: 0.75;
+  opacity: 1;
+}
+
+.tree-gnode.state-maxed .tree-gnode-halo {
+  opacity: 0.55;
+  stroke-dasharray: 1.2 1.6;
+  animation: maxed-turn 9s linear infinite;
+}
+
+@keyframes maxed-turn {
+  to { transform: rotate(-360deg); }
+}
+
+/* 225 — locked nodes read as SEALED rather than absent: the dashed ring
+   creeps, and unveiling bursts the seal. */
+.tree-gnode.state-locked .tree-gnode-face {
+  animation: seal-creep 14s linear infinite;
+}
+
+@keyframes seal-creep {
+  to { stroke-dashoffset: -20; }
+}
+
+.tree-gnode.revealing .tree-gnode-halo {
+  animation: seal-burst 0.9s ease-out;
+}
+
+@keyframes seal-burst {
+  0% { opacity: 1; stroke-width: 1.1; transform: scale(0.3); }
+  100% { opacity: 0; stroke-width: 0.05; transform: scale(2.4); }
+}
+
+/* Legend: keys own their own lines so the gate meters never collide with the
+   next branch's label. */
+.tree-branch-keys {
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-gnode-spent,
+  .tree-edge.affordable-target,
+  .tree-gnode.state-maxed .tree-gnode-halo,
+  .tree-gnode.state-locked .tree-gnode-face,
+  .tree-gnode.revealing .tree-gnode-halo {
+    animation: none;
+  }
+  .tree-gnode-spent { opacity: 1; }
+}
