@@ -1,3 +1,4 @@
+import { renderScorePreview } from './score'
 import { performanceReport, resetPerformance } from './performance'
 import { ENEMIES } from '../data/content'
 import type { MetaUpgradeId } from '../data/metaTree'
@@ -21,6 +22,7 @@ export interface HarnessApi {
 }
 
 export interface GameHarness {
+  renderScorePreview: typeof renderScorePreview
   getPerformance: typeof performanceReport
   resetPerformance: typeof resetPerformance
   getState: () => RunState
@@ -78,6 +80,7 @@ declare global {
 
 export function installHarness(api: HarnessApi): void {
   const harness: GameHarness = {
+    renderScorePreview,
     getState: () => api.getSession().state,
     getMeta: () => api.getMeta(),
     getMapInfo: () => {

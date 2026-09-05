@@ -3,12 +3,13 @@ import { measure } from './performance'
 import { useEffect, useRef } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { sameCell } from '../engine/grid'
-import type { CellPos } from '../engine/types'
+import type { CellPos, RunState } from '../engine/types'
 import { CELL_PX, draw, LOUPE_D, LOUPE_GAP, renderLoupe, type RenderUiState, type TouchAim } from './render'
 import { settings } from './settings'
 import type { GameSession } from './session'
 
 interface Props {
+  onObserve?: (state:RunState, identity:number) => void
   session: GameSession
   ui: RenderUiState
   // Something is armed for placement/casting: touch input switches to
@@ -22,11 +23,12 @@ interface Props {
 
 // The playfield. One rAF loop drives both the simulation clock and the
 // renderer; React never re-renders this component per frame.
-export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellClick, onHover }: Props) {
+export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellClick, onHover, onObserve }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const previewRef = useRef<HTMLParagraphElement>(null)
   const loupeRef = useRef<HTMLCanvasElement>(null)
   const uiRef = useRef(ui)
+  const observeRef = useRef(onObserve)
   // Live touch aim (finger down with a tower/ability armed). A ref, not
   // state: it changes every pointermove and only the canvas cares.
   const aimRef = useRef<TouchAim | null>(null)
@@ -40,6 +42,7 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
 
   useEffect(() => {
     uiRef.current = ui
+    observeRef.current = onObserve
   })
 
   useEffect(() => {
@@ -59,6 +62,7 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
       const simStart = performance.now()
       session.advance(now - last)
       measure('simulation', performance.now() - simStart)
+      if (!session.suspended && session.speed > 0) observeRef.current?.(session.state, session.renderId)
       const renderStart = performance.now()
       last = now
       ctx.save()

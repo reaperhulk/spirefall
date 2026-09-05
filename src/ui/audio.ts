@@ -1,3 +1,5 @@
+import { AudioCues, type TacticalCue } from './audioCues'
+import type { RunState } from '../engine/types'
 import { measure } from './performance'
 import { MAP_WIDTH } from '../data/maps'
 import type { GameEvent, TowerType } from '../engine/types'
@@ -25,7 +27,7 @@ import { snapToPitchClasses, type Tonality } from './tonality'
 
 const MUTE_KEY = 'spirefall-muted'
 
-type SoundKind =
+type SoundKind = TacticalCue
   | 'shot_arrow'
   | 'shot_cannon'
   | 'shot_frost'
@@ -86,6 +88,9 @@ interface Note {
 // sequentially (each starting at 90% of the previous note's duration) for
 // melodic figures like the victory arpeggio.
 const SOUNDS: Record<SoundKind, Note[]> = {
+  execute_ready: [{freq:880,dur:0.07,type:'pluck',gain:0.025}, {freq:1320,dur:0.12,type:'fm',gain:0.022,ratio:2,index:0.5}],
+  core_open: [{freq:330,dur:0.13,type:'fm',gain:0.05,ratio:2,index:1}, {freq:660,dur:0.23,type:'fm',gain:0.04,ratio:2,index:0.5}],
+  beam_warning: [{freq:740,dur:0.08,type:'triangle',gain:0.025}, {freq:740,dur:0.08,type:'triangle',gain:0.025,at:0.16}],
   beam_hot: [{ freq: 600, dur: 0.35, type: 'noise', gain: 0.035, sweep: 0.3, q: 2 }, { freq: 440, dur: 0.2, type: 'sine', gain: 0.02, sweep: 0.5 }],
   shield: [{ freq: 1600, dur: 0.07, type: 'fm', gain: 0.025, ratio: 1.4, index: 5 }],
   // Arrow: an actual bowstring — Karplus pluck with a tiny release tick.
@@ -246,6 +251,7 @@ const SHOT_BY_TOWER: Partial<Record<TowerType, SoundKind>> = {
 
 // Per-kind minimum gap (ms). Heavy sounds repeat slower so they stay special.
 const MIN_GAP: Partial<Record<SoundKind, number>> = {
+  execute_ready: 1500, core_open: 1000, beam_warning: 1800,
   shot_arrow: 70,
   shot_frost: 90,
   shot_tesla: 90,
@@ -330,6 +336,10 @@ const JITTERED: ReadonlySet<SoundKind> = new Set([
 ])
 
 export class Sfx {
+  private cues = new AudioCues()
+  observe(state:RunState, identity:number): void {
+    for (const cue of this.cues.observe(state,identity)) this.play(cue)
+  }
   private ctx: AudioContext | null = null
   private master: DynamicsCompressorNode | null = null
   private reverb: ConvolverNode | null = null
@@ -642,13 +652,13 @@ export class Sfx {
 
     // Per-kind cooldown plus a global cap keep fast-forward bearable.
     const minGap = MIN_GAP[kind] ?? DEFAULT_MIN_GAP
-    if (now - (this.lastPlayed[kind] ?? 0) < minGap) return
+    if (now - (this.lastPlayed[kind] ?? Number.NEGATIVE_INFINITY) < minGap) return
     if (now - this.recentWindow > 250) {
       this.recentWindow = now
       this.recentCount = 0
       this.urgentCount = 0
     }
-    const urgent = ['beam_hot', 'spire_hit', 'boss', 'carapace', 'gale', 'victory', 'defeat', 'execute', 'meteor', 'frost_nova', 'cataclysm'].includes(kind)
+    const urgent = ['core_open', 'beam_warning', 'execute_ready', 'beam_hot', 'spire_hit', 'boss', 'carapace', 'gale', 'victory', 'defeat', 'execute', 'meteor', 'frost_nova', 'cataclysm'].includes(kind)
     if (urgent) { if (this.urgentCount >= 4) return; this.urgentCount += 1 }
     else { if (this.recentCount >= (settings.quietAudio ? 3 : 8)) return; this.recentCount += 1 }
     this.lastPlayed[kind] = now

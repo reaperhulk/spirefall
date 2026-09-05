@@ -1100,6 +1100,7 @@ export default function App() {
 
       <main className="board">
         <GameCanvas
+          onObserve={(state, identity) => sfx.observe(state, identity)}
           session={session}
           ui={renderUi}
           armed={shopSelection !== null || abilitySelection !== null}

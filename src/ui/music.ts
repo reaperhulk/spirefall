@@ -1,10 +1,12 @@
+import { measure } from './performance'
+import { PHRASES, phraseFrequency, scoreVoice, type ScorePhase } from './score'
 import { BIOME_IDS, type BiomeId } from '../data/biomes'
 import type { GameEvent, RunState } from '../engine/types'
 import type { Sfx } from './audio'
 import { settings } from './settings'
 import type { Tonality } from './tonality'
 
-// Generative score — zero assets, same philosophy as the SFX stack. The
+// Hybrid score: authored themes and instrument voices with procedural accompaniment. The
 // music is built on actual harmonic motion, not a drone: a per-biome chord
 // PROGRESSION advances every bar, the pad voices glide between chords and
 // breathe (swell on the downbeat, relax through the bar), a bass line walks
@@ -120,6 +122,10 @@ export class Music {
   private victoryRunFrom = -1 // totalStep where the victory ascent plays
   private crucibleFrom = -1 // totalStep where the crucible menace motif plays
   private cruciblePulses = 0 // rank-scaled pulse count for the motif
+  private phrasePhase: ScorePhase = 'preparation'
+  private biome: BiomeId = 'verdant'
+  private ascensionFrom = -1
+  private voiceEnds: number[] = []
   private lastRunSeed = '' // detects a fresh run for the crucible motif
 
   constructor(sfx: Sfx) {
@@ -145,7 +151,7 @@ export class Music {
     const ctx = this.boundCtx
     if (ctx && ctx.state === 'running') {
       this.padFilter?.frequency.setTargetAtTime(2600, ctx.currentTime, 0.3)
-      this.victoryRunFrom = this.totalStep
+      this.ascensionFrom = this.totalStep
     }
   }
 
@@ -215,6 +221,7 @@ export class Music {
     if (!ctx || ctx.state !== 'running') return null
     if (ctx === this.boundCtx && this.bus) return ctx
     this.boundCtx = ctx
+    this.voiceEnds = []
     this.padOsc.forEach((o) => {
       try {
         o.stop()
@@ -300,6 +307,8 @@ export class Music {
 
     // Key: biome mode + seed transpose; seed also salts the rhythm rotation.
     const biome: BiomeId = BIOME_IDS.includes(state.biome) ? state.biome : 'verdant'
+    this.biome = biome
+    this.phrasePhase = bossAlive ? 'boss' : state.phase === 'wave' ? 'pressure' : 'preparation'
     const seedHash = hashSeed(state.seed)
     const root = BIOME_ROOT[biome] + (seedHash % 12)
     const scale = BIOME_SCALE[biome]
@@ -343,20 +352,15 @@ export class Music {
         this.padGain.gain.setTargetAtTime(this.padLevel, at, 0.5)
         this.padFilter.frequency.setTargetAtTime(1700, at, 0.5)
       }
-      if (this.victoryRunFrom >= 0 && this.totalStep >= this.victoryRunFrom) {
-        const off = this.totalStep - this.victoryRunFrom
-        if (off < 6) {
-          this.blip(ctx, at, midiHz(toneOf(0, off) + 12), 0.35, 'triangle', 0.5, true)
-        } else {
-          this.victoryRunFrom = -1
-        }
-      } else if (Math.random() < 0.22) {
-        this.blip(ctx, at, midiHz(toneOf(0, Math.floor(Math.random() * 3)) + 24), 0.4, 'triangle', 0.28, true)
-      }
+      const phase = this.ascensionFrom >= 0 ? 'ascension' : 'victory'
+      const from = this.ascensionFrom >= 0 ? this.ascensionFrom : this.victoryRunFrom
+      const offset = from >= 0 ? this.totalStep - from : this.totalStep % 64
+      this.authoredNote(ctx, at, root, scale, phase, offset)
+      if (this.ascensionFrom >= 0 && offset >= PHRASES.ascension.length) this.ascensionFrom = -1
       return
     }
 
-    if (overMode === 'defeat') {
+    if (overMode === 'defeat' && this.ascensionFrom < 0) {
       // The Spire has fallen. No groove, no melody — the pad holds a cold
       // octave-down tonic at a whisper and a dry low bell tolls every
       // other bar. The silence between tolls IS the defeat.
@@ -369,15 +373,6 @@ export class Music {
         this.blip(ctx, at, midiHz(toneOf(0, 0) - 12), 1.6, 'sine', 0.25)
       }
       return
-    }
-
-    if (this.totalStep % 64 < 16 && !bossAlive) {
-      const phrase = [0, -1, 4, -1, 2, -1, 1, -1, 0, -1, 2, 4, -1, -1, 0, -1]
-      const degree = phrase[this.totalStep % 64] ?? -1
-      if (degree >= 0) {
-        const hz = midiHz(root + scale[degree % scale.length]! + 12)
-        this.blip(ctx, at, hz, BEAT * 1.8, 'triangle', 0.25, true)
-      }
     }
 
     // A living boss abandons the wandering progression for a two-chord dark
@@ -452,7 +447,7 @@ export class Music {
       this.kick(ctx, at)
     }
     // Hat: offbeat air at high intensity — or whenever kills are streaming.
-    if (!dropped && (this.intensity > 0.55 || this.killHeat > 5) && step % 2 === 1 && Math.random() < 0.8) {
+    if (!settings.quietAudio && !dropped && (this.intensity > 0.55 || this.killHeat > 5) && step % 2 === 1 && Math.random() < 0.8) {
       this.hat(ctx, at)
     }
     if (dropped) return // the dropout bar: heartbeat and ducked pad, nothing else
@@ -494,6 +489,14 @@ export class Music {
       this.flourishFrom = -1
     }
 
+    const phase = this.ascensionFrom >= 0 ? 'ascension' : this.phrasePhase
+    const phraseStep = this.ascensionFrom >= 0 ? this.totalStep - this.ascensionFrom : this.totalStep % (bossAlive ? 32 : 64)
+    if (phraseStep < PHRASES[phase].length) {
+      this.authoredNote(ctx, at, root, scale, phase, phraseStep)
+      return // composed rests own the lead too
+    }
+    if (this.ascensionFrom >= 0) this.ascensionFrom = -1
+
     // Melody: a seeded rhythm pattern per bar. Strong beats pull toward
     // chord tones an octave above the pad; passing notes walk the scale.
     // Intensity thins or thickens the line by dropping pattern hits; kill
@@ -504,6 +507,7 @@ export class Music {
     let gate = 0.35 + this.intensity * 0.55 + Math.min(0.35, this.killHeat * 0.03)
     if (lift) gate += 0.15
     if (cadenceBar && step >= 6) gate += 0.3
+    if (settings.quietAudio) gate *= 0.55
     if (mask[step] === 1 && Math.random() < gate) {
       if (step % 4 === 0 || Math.random() < 0.35) {
         // Hot streaks also push the line into higher chord tones.
@@ -519,6 +523,20 @@ export class Music {
       const humanize = (Math.random() - 0.5) * 0.01
       this.blip(ctx, at + humanize, midiHz(note), 0.3, 'triangle', 0.4 + Math.random() * 0.15, true)
     }
+  }
+
+  private authoredNote(ctx:AudioContext, at:number, root:number, scale:number[], phase:ScorePhase, offset:number): void {
+    const degree = PHRASES[phase][offset] ?? -1
+    if (degree < 0 || !this.bus) return
+    const duration = phase === 'boss' ? BEAT * 1.2 : BEAT * 1.8
+    scoreVoice(ctx, this.bus, this.echoSend, this.biome, at, phraseFrequency(root, scale, degree), duration, phase === 'preparation' ? 0.25 : 0.35)
+    this.trackVoices(ctx, at + duration + 0.03, 2)
+  }
+
+  private trackVoices(ctx:AudioContext, until:number, count=1): void {
+    this.voiceEnds = this.voiceEnds.filter(end => end > ctx.currentTime)
+    for (let i = 0; i < count; i++) this.voiceEnds.push(until)
+    measure('musicVoices', this.voiceEnds.length + this.padOsc.length)
   }
 
   // Glide the sustained pad voices to a new chord; build them on first use
@@ -574,6 +592,8 @@ export class Music {
     if (echo && this.echoSend) g.connect(this.echoSend)
     osc.start(at)
     osc.stop(at + dur + 0.05)
+    osc.onended = () => { osc.disconnect(); g.disconnect() }
+    this.trackVoices(ctx, at + dur + 0.05)
   }
 
   private kick(ctx: AudioContext, at: number): void {
@@ -590,6 +610,8 @@ export class Music {
     g.connect(this.bus)
     osc.start(at)
     osc.stop(at + 0.2)
+    osc.onended = () => { osc.disconnect(); g.disconnect() }
+    this.trackVoices(ctx, at + 0.2)
   }
 
   private hat(ctx: AudioContext, at: number): void {
@@ -610,5 +632,7 @@ export class Music {
     g.connect(this.bus)
     src.start(at)
     src.stop(at + 0.08)
+    src.onended = () => { src.disconnect(); bp.disconnect(); g.disconnect() }
+    this.trackVoices(ctx, at + 0.08)
   }
 }
