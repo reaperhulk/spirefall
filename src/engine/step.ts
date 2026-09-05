@@ -1,3 +1,4 @@
+import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { navigation } from './navigation'
 import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, DOCTRINES } from '../data/doctrines'
 import {
@@ -15,6 +16,7 @@ import {
   EXECUTE_THRESHOLD_PCT,
   hpGrowthPct,
   RELIC_IDS,
+  RELICS,
   DEEP_POCKETS_GOLD_PCT,
   FIELD_MEDICINE_KNIT_HP,
   RELIC_OFFER_SIZE,
@@ -176,7 +178,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     }
     case 'choose_doctrine': {
       if (s.phase !== 'build' || s.wave < 2 || s.doctrine) return reject(command, 'choose one doctrine during planning after wave 2', events)
-      if (!(command.doctrine in DOCTRINES)) return reject(command, 'unknown doctrine', events)
+      if (!Object.hasOwn(DOCTRINES, command.doctrine)) return reject(command, 'unknown doctrine', events)
       s.doctrine = command.doctrine
       if (s.doctrine === 'storm' && !s.availableTowers.includes('tesla')) s.availableTowers.push('tesla')
       if (s.doctrine === 'war_economy') {
@@ -420,11 +422,23 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     case 'reroll_relic': {
       if (s.relicOffer === null) return reject(command, 'no relic offer pending', events)
       if (s.relicRerolled) return reject(command, 'offer already rerolled', events)
-      const cost = relicSkipGold(s.wave)
+      if (command.focus !== undefined && command.focus !== s.doctrine) return reject(command, 'focus must match your doctrine', events)
+      if (command.focus && BUILD_FAMILIES[command.focus].relics.every(r => s.relics.includes(r))) return reject(command, 'all focus relics already owned', events)
+      const cost = command.focus ? Math.ceil(relicSkipGold(s.wave) * 3 / 2) : relicSkipGold(s.wave)
       if (s.gold < cost) return reject(command, 'not enough gold', events)
       s.gold -= cost
       const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
       s.relicOffer = drawRelicOffer(s, pool, Math.min(RELIC_OFFER_SIZE, pool.length)) as RelicId[]
+      if (command.focus) {
+        const preferred = BUILD_FAMILIES[command.focus].relics.filter(r => pool.includes(r))
+        if (preferred.length && !s.relicOffer.some(r => preferred.includes(r))) {
+          const chosen = drawRelicOffer(s, preferred, 1)[0] as RelicId
+          // Keep the normal offer's rare-or-better pity floor: replace a
+          // common slot first, or one of several rare-or-better choices.
+          const common = s.relicOffer.findIndex(r => RELICS[r].rarity === 'common')
+          s.relicOffer[common >= 0 ? common : s.relicOffer.length - 1] = chosen
+        }
+      }
       s.relicRerolled = true
       events.push({ type: 'relic_offered', options: [...s.relicOffer] })
       return

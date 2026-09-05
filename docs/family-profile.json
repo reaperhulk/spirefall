@@ -1,0 +1,3207 @@
+{
+  "rules": 4,
+  "notes": "192 runs: two reference progression budgets plus all tower unlocks, four families, four biomes, six held-out seeds. At most one command every 400ms, including planning, collection and abilities. Policies are documented in src/harness/families.ts. Simulated time includes automated planning; these are policy measurements, not human win rates.",
+  "runs": [
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 388.23333333333335,
+      "commands": 954,
+      "milestones": {
+        "upgrade": 27.233333333333334,
+        "boss": 60.53333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 19,
+      "victory": false,
+      "seconds": 545.2333333333333,
+      "commands": 1341,
+      "milestones": {
+        "upgrade": 26.433333333333334,
+        "boss": 62.53333333333333,
+        "specialization": 503.23333333333335
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 15,
+      "victory": false,
+      "seconds": 316.8,
+      "commands": 780,
+      "milestones": {
+        "upgrade": 12.033333333333333,
+        "boss": 52.93333333333333
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 20,
+      "victory": false,
+      "seconds": 631.7333333333333,
+      "commands": 1545,
+      "milestones": {
+        "upgrade": 14.033333333333333,
+        "boss": 68.93333333333334
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 19,
+      "victory": false,
+      "seconds": 578.9666666666667,
+      "commands": 1424,
+      "milestones": {
+        "upgrade": 26.833333333333332,
+        "boss": 61.733333333333334,
+        "specialization": 435.6333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 14,
+      "victory": false,
+      "seconds": 278.8666666666667,
+      "commands": 681,
+      "milestones": {
+        "upgrade": 24.433333333333334,
+        "boss": 65.33333333333333
+      },
+      "towers": 16,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 368.03333333333336,
+      "commands": 899,
+      "milestones": {
+        "upgrade": 24.433333333333334,
+        "boss": 67.33333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 16,
+      "victory": false,
+      "seconds": 412.6333333333333,
+      "commands": 1007,
+      "milestones": {
+        "upgrade": 25.233333333333334,
+        "boss": 63.733333333333334
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 15,
+      "victory": false,
+      "seconds": 313.8333333333333,
+      "commands": 770,
+      "milestones": {
+        "upgrade": 13.233333333333333,
+        "boss": 51.733333333333334
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 17,
+      "victory": false,
+      "seconds": 424.8666666666667,
+      "commands": 1049,
+      "milestones": {
+        "upgrade": 12.033333333333333,
+        "boss": 59.733333333333334
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 18,
+      "victory": false,
+      "seconds": 480.3,
+      "commands": 1180,
+      "milestones": {
+        "upgrade": 26.833333333333332,
+        "boss": 63.333333333333336
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 14,
+      "victory": false,
+      "seconds": 281.56666666666666,
+      "commands": 690,
+      "milestones": {
+        "upgrade": 22.833333333333332,
+        "boss": 63.733333333333334
+      },
+      "towers": 17,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 379.43333333333334,
+      "commands": 930,
+      "milestones": {
+        "upgrade": 26.033333333333335,
+        "boss": 66.93333333333334
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 15,
+      "victory": false,
+      "seconds": 314.46666666666664,
+      "commands": 777,
+      "milestones": {
+        "upgrade": 24.033333333333335,
+        "boss": 58.53333333333333
+      },
+      "towers": 21,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 15,
+      "victory": false,
+      "seconds": 336.43333333333334,
+      "commands": 827,
+      "milestones": {
+        "upgrade": 12.833333333333334,
+        "boss": 57.333333333333336
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 17,
+      "victory": false,
+      "seconds": 436,
+      "commands": 1071,
+      "milestones": {
+        "upgrade": 11.633333333333333,
+        "boss": 62.53333333333333,
+        "specialization": 405.6333333333333
+      },
+      "towers": 23,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 18,
+      "victory": false,
+      "seconds": 488.3,
+      "commands": 1206,
+      "milestones": {
+        "upgrade": 26.833333333333332,
+        "boss": 62.13333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 14,
+      "victory": false,
+      "seconds": 273.26666666666665,
+      "commands": 665,
+      "milestones": {
+        "upgrade": 22.833333333333332,
+        "boss": 62.13333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 378.6666666666667,
+      "commands": 924,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 68.53333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 15,
+      "victory": false,
+      "seconds": 315.26666666666665,
+      "commands": 779,
+      "milestones": {
+        "upgrade": 23.233333333333334,
+        "boss": 57.733333333333334
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 15,
+      "victory": false,
+      "seconds": 335.96666666666664,
+      "commands": 817,
+      "milestones": {
+        "upgrade": 14.033333333333333,
+        "boss": 58.13333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 19,
+      "victory": false,
+      "seconds": 577.9333333333333,
+      "commands": 1421,
+      "milestones": {
+        "upgrade": 11.633333333333333,
+        "boss": 64.13333333333334,
+        "specialization": 343.23333333333335
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 20,
+      "victory": false,
+      "seconds": 610.8333333333334,
+      "commands": 1504,
+      "milestones": {
+        "upgrade": 20.833333333333332,
+        "boss": 55.333333333333336,
+        "specialization": 570.4333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 317.73333333333335,
+      "commands": 771,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 65.73333333333333
+      },
+      "towers": 21,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 350.76666666666665,
+      "commands": 860,
+      "milestones": {
+        "upgrade": 27.233333333333334,
+        "boss": 60.53333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 16,
+      "victory": false,
+      "seconds": 384.1333333333333,
+      "commands": 945,
+      "milestones": {
+        "upgrade": 26.433333333333334,
+        "boss": 62.93333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 17,
+      "victory": false,
+      "seconds": 404.53333333333336,
+      "commands": 998,
+      "milestones": {
+        "upgrade": 12.033333333333333,
+        "boss": 52.93333333333333
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 23,
+      "victory": false,
+      "seconds": 871.5,
+      "commands": 2143,
+      "milestones": {
+        "upgrade": 14.033333333333333,
+        "boss": 68.53333333333333,
+        "specialization": 741.6333333333333
+      },
+      "towers": 24,
+      "specialized": 6
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 22,
+      "victory": false,
+      "seconds": 805.1,
+      "commands": 1984,
+      "milestones": {
+        "upgrade": 26.833333333333332,
+        "boss": 61.733333333333334,
+        "specialization": 643.6333333333333
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 303.3,
+      "commands": 739,
+      "milestones": {
+        "upgrade": 24.433333333333334,
+        "boss": 65.33333333333333
+      },
+      "towers": 17,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 351.06666666666666,
+      "commands": 857,
+      "milestones": {
+        "upgrade": 24.433333333333334,
+        "boss": 66.93333333333334
+      },
+      "towers": 17,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 16,
+      "victory": false,
+      "seconds": 394.26666666666665,
+      "commands": 969,
+      "milestones": {
+        "upgrade": 25.233333333333334,
+        "boss": 66.93333333333334
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 17,
+      "victory": false,
+      "seconds": 413.93333333333334,
+      "commands": 1028,
+      "milestones": {
+        "upgrade": 13.233333333333333,
+        "boss": 51.733333333333334
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 20,
+      "victory": false,
+      "seconds": 618.7333333333333,
+      "commands": 1529,
+      "milestones": {
+        "upgrade": 12.033333333333333,
+        "boss": 65.33333333333333,
+        "specialization": 437.6333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 17,
+      "victory": false,
+      "seconds": 416.1666666666667,
+      "commands": 1021,
+      "milestones": {
+        "upgrade": 26.833333333333332,
+        "boss": 63.333333333333336
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 299.93333333333334,
+      "commands": 734,
+      "milestones": {
+        "upgrade": 22.833333333333332,
+        "boss": 63.733333333333334
+      },
+      "towers": 16,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 358,
+      "commands": 879,
+      "milestones": {
+        "upgrade": 26.033333333333335,
+        "boss": 66.93333333333334
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 15,
+      "victory": false,
+      "seconds": 326.3666666666667,
+      "commands": 802,
+      "milestones": {
+        "upgrade": 24.033333333333335,
+        "boss": 60.93333333333333
+      },
+      "towers": 15,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 18,
+      "victory": false,
+      "seconds": 473.3333333333333,
+      "commands": 1160,
+      "milestones": {
+        "upgrade": 12.833333333333334,
+        "boss": 60.53333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 20,
+      "victory": false,
+      "seconds": 604.2666666666667,
+      "commands": 1488,
+      "milestones": {
+        "upgrade": 11.633333333333333,
+        "boss": 64.13333333333334
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 18,
+      "victory": false,
+      "seconds": 471.7,
+      "commands": 1166,
+      "milestones": {
+        "upgrade": 26.833333333333332,
+        "boss": 62.13333333333333
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 14,
+      "victory": false,
+      "seconds": 272.3333333333333,
+      "commands": 668,
+      "milestones": {
+        "upgrade": 22.833333333333332,
+        "boss": 62.13333333333333
+      },
+      "towers": 15,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 350.1666666666667,
+      "commands": 860,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 68.13333333333334
+      },
+      "towers": 16,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 15,
+      "victory": false,
+      "seconds": 335.56666666666666,
+      "commands": 817,
+      "milestones": {
+        "upgrade": 23.233333333333334,
+        "boss": 61.733333333333334
+      },
+      "towers": 16,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 16,
+      "victory": false,
+      "seconds": 397.8666666666667,
+      "commands": 978,
+      "milestones": {
+        "upgrade": 14.033333333333333,
+        "boss": 58.13333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 21,
+      "victory": false,
+      "seconds": 675.8666666666667,
+      "commands": 1661,
+      "milestones": {
+        "upgrade": 11.633333333333333,
+        "boss": 63.733333333333334
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 19,
+      "victory": false,
+      "seconds": 547.8666666666667,
+      "commands": 1347,
+      "milestones": {
+        "upgrade": 20.833333333333332,
+        "boss": 55.733333333333334
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 302.26666666666665,
+      "commands": 738,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 65.73333333333333
+      },
+      "towers": 16,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 341.9,
+      "commands": 836,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 50.53333333333333
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 19,
+      "victory": false,
+      "seconds": 502.73333333333335,
+      "commands": 1238,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.13333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 16,
+      "victory": false,
+      "seconds": 374.03333333333336,
+      "commands": 916,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 42.93333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 20,
+      "victory": false,
+      "seconds": 610.0666666666667,
+      "commands": 1508,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 42.93333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 19,
+      "victory": false,
+      "seconds": 542,
+      "commands": 1329,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 45.333333333333336
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 282.5,
+      "commands": 685,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.53333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 334.8666666666667,
+      "commands": 825,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 50.13333333333333
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 16,
+      "victory": false,
+      "seconds": 360.3333333333333,
+      "commands": 890,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.13333333333333
+      },
+      "towers": 21,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 16,
+      "victory": false,
+      "seconds": 343.76666666666665,
+      "commands": 848,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 43.333333333333336
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 17,
+      "victory": false,
+      "seconds": 406.8666666666667,
+      "commands": 1000,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 42.93333333333333
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 19,
+      "victory": false,
+      "seconds": 540.0333333333333,
+      "commands": 1335,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 45.333333333333336
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 287.8666666666667,
+      "commands": 703,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.53333333333333
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 343.76666666666665,
+      "commands": 841,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 50.53333333333333
+      },
+      "towers": 21,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 16,
+      "victory": false,
+      "seconds": 331.3666666666667,
+      "commands": 819,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.13333333333333
+      },
+      "towers": 21,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 16,
+      "victory": false,
+      "seconds": 341.73333333333335,
+      "commands": 844,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 43.333333333333336
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 20,
+      "victory": false,
+      "seconds": 603.8666666666667,
+      "commands": 1491,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 42.93333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 20,
+      "victory": false,
+      "seconds": 588.3666666666667,
+      "commands": 1447,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 45.333333333333336,
+        "specialization": 477.23333333333335
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 286.76666666666665,
+      "commands": 693,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.53333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 341.6666666666667,
+      "commands": 838,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 50.13333333333333
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 16,
+      "victory": false,
+      "seconds": 354.6333333333333,
+      "commands": 875,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.13333333333333
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 15,
+      "victory": false,
+      "seconds": 301.9,
+      "commands": 745,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 43.333333333333336
+      },
+      "towers": 16,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 19,
+      "victory": false,
+      "seconds": 542.6666666666666,
+      "commands": 1343,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 42.93333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 22,
+      "victory": false,
+      "seconds": 738.6666666666666,
+      "commands": 1831,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 45.333333333333336,
+        "specialization": 474.8333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 16,
+      "victory": false,
+      "seconds": 324.4,
+      "commands": 795,
+      "milestones": {
+        "upgrade": 6.433333333333334,
+        "boss": 44.53333333333333
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 17,
+      "victory": false,
+      "seconds": 427.7,
+      "commands": 1056,
+      "milestones": {
+        "upgrade": 27.233333333333334,
+        "boss": 70.53333333333333
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 20,
+      "victory": false,
+      "seconds": 637.5333333333333,
+      "commands": 1578,
+      "milestones": {
+        "upgrade": 26.833333333333332,
+        "boss": 71.73333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 19,
+      "victory": false,
+      "seconds": 570.2,
+      "commands": 1394,
+      "milestones": {
+        "upgrade": 12.433333333333334,
+        "boss": 54.93333333333333,
+        "specialization": 394.43333333333334
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 20,
+      "victory": false,
+      "seconds": 669.1333333333333,
+      "commands": 1641,
+      "milestones": {
+        "upgrade": 15.233333333333333,
+        "boss": 80.53333333333333,
+        "specialization": 288.43333333333334
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 18,
+      "victory": false,
+      "seconds": 507.6333333333333,
+      "commands": 1245,
+      "milestones": {
+        "upgrade": 29.233333333333334,
+        "boss": 66.93333333333334
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 14,
+      "victory": false,
+      "seconds": 280.2,
+      "commands": 677,
+      "milestones": {
+        "upgrade": 26.033333333333335,
+        "boss": 64.53333333333333
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 351.46666666666664,
+      "commands": 859,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 67.73333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 18,
+      "victory": false,
+      "seconds": 497.3666666666667,
+      "commands": 1228,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 69.73333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 16,
+      "victory": false,
+      "seconds": 406.8333333333333,
+      "commands": 1000,
+      "milestones": {
+        "upgrade": 13.233333333333333,
+        "boss": 60.13333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 18,
+      "victory": false,
+      "seconds": 535.8666666666667,
+      "commands": 1310,
+      "milestones": {
+        "upgrade": 13.233333333333333,
+        "boss": 71.33333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 19,
+      "victory": false,
+      "seconds": 583.3666666666667,
+      "commands": 1442,
+      "milestones": {
+        "upgrade": 30.033333333333335,
+        "boss": 68.93333333333334,
+        "specialization": 341.6333333333333
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 14,
+      "victory": false,
+      "seconds": 271.8333333333333,
+      "commands": 658,
+      "milestones": {
+        "upgrade": 24.033333333333335,
+        "boss": 61.333333333333336
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 364.8,
+      "commands": 894,
+      "milestones": {
+        "upgrade": 26.033333333333335,
+        "boss": 69.33333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 14,
+      "victory": false,
+      "seconds": 306.46666666666664,
+      "commands": 748,
+      "milestones": {
+        "upgrade": 25.633333333333333,
+        "boss": 68.53333333333333
+      },
+      "towers": 20,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 16,
+      "victory": false,
+      "seconds": 402.06666666666666,
+      "commands": 988,
+      "milestones": {
+        "upgrade": 12.833333333333334,
+        "boss": 62.93333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 17,
+      "victory": false,
+      "seconds": 458.4,
+      "commands": 1105,
+      "milestones": {
+        "upgrade": 12.833333333333334,
+        "boss": 66.13333333333334
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 19,
+      "victory": false,
+      "seconds": 574.8333333333334,
+      "commands": 1412,
+      "milestones": {
+        "upgrade": 26.033333333333335,
+        "boss": 66.93333333333334
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 16,
+      "victory": false,
+      "seconds": 365.2,
+      "commands": 888,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 62.93333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 16,
+      "victory": false,
+      "seconds": 370.3,
+      "commands": 905,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 66.53333333333333,
+        "specialization": 338.43333333333334
+      },
+      "towers": 22,
+      "specialized": 1
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 14,
+      "victory": false,
+      "seconds": 290.53333333333336,
+      "commands": 710,
+      "milestones": {
+        "upgrade": 22.833333333333332,
+        "boss": 64.93333333333334
+      },
+      "towers": 19,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 15,
+      "victory": false,
+      "seconds": 343.8666666666667,
+      "commands": 847,
+      "milestones": {
+        "upgrade": 14.033333333333333,
+        "boss": 66.13333333333334
+      },
+      "towers": 21,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 18,
+      "victory": false,
+      "seconds": 517.6,
+      "commands": 1266,
+      "milestones": {
+        "upgrade": 12.833333333333334,
+        "boss": 67.33333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 22,
+      "victory": false,
+      "seconds": 843.9333333333333,
+      "commands": 2092,
+      "milestones": {
+        "upgrade": 18.833333333333332,
+        "boss": 56.13333333333333,
+        "specialization": 335.6333333333333
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 10000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 14,
+      "victory": false,
+      "seconds": 273.03333333333336,
+      "commands": 663,
+      "milestones": {
+        "upgrade": 24.833333333333332,
+        "boss": 62.93333333333333
+      },
+      "towers": 18,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 21,
+      "victory": false,
+      "seconds": 659.8,
+      "commands": 1619,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 57.733333333333334,
+        "specialization": 317.6333333333333
+      },
+      "towers": 24,
+      "specialized": 4
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 20,
+      "victory": false,
+      "seconds": 606.4,
+      "commands": 1501,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 53.333333333333336
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 19,
+      "victory": false,
+      "seconds": 516.6666666666666,
+      "commands": 1267,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 49.733333333333334,
+        "specialization": 472.8333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 846.4666666666667,
+      "commands": 2084,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 55.333333333333336,
+        "specialization": 549.2333333333333,
+        "victory": 846.4333333333333
+      },
+      "towers": 24,
+      "specialized": 21
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 21,
+      "victory": false,
+      "seconds": 686.3,
+      "commands": 1683,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 58.53333333333333,
+        "specialization": 380.43333333333334
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 15,
+      "victory": false,
+      "seconds": 309.1333333333333,
+      "commands": 753,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 53.733333333333334
+      },
+      "towers": 21,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 17,
+      "victory": false,
+      "seconds": 372.46666666666664,
+      "commands": 905,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.13333333333333
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 19,
+      "victory": false,
+      "seconds": 540.9,
+      "commands": 1331,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.13333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 20,
+      "victory": false,
+      "seconds": 602.2666666666667,
+      "commands": 1482,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 49.333333333333336,
+        "specialization": 559.6333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 21,
+      "victory": false,
+      "seconds": 682.7666666666667,
+      "commands": 1679,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 54.13333333333333,
+        "specialization": 208.43333333333334
+      },
+      "towers": 24,
+      "specialized": 10
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 22,
+      "victory": false,
+      "seconds": 740.8,
+      "commands": 1822,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 57.333333333333336,
+        "specialization": 541.6333333333333
+      },
+      "towers": 24,
+      "specialized": 7
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 631.1666666666666,
+      "commands": 1559,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.53333333333333,
+        "specialization": 507.6333333333333
+      },
+      "towers": 24,
+      "specialized": 3
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 19,
+      "victory": false,
+      "seconds": 511.1,
+      "commands": 1263,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.53333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 19,
+      "victory": false,
+      "seconds": 513.6333333333333,
+      "commands": 1272,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 51.733333333333334,
+        "specialization": 418.03333333333336
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 20,
+      "victory": false,
+      "seconds": 608.3333333333334,
+      "commands": 1497,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 50.93333333333333,
+        "specialization": 565.2333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 21,
+      "victory": false,
+      "seconds": 641.2,
+      "commands": 1576,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 54.13333333333333,
+        "specialization": 208.03333333333333
+      },
+      "towers": 24,
+      "specialized": 8
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 21,
+      "victory": false,
+      "seconds": 685.0666666666667,
+      "commands": 1681,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 53.733333333333334,
+        "specialization": 612.4333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 605.9666666666667,
+      "commands": 1491,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.93333333333333,
+        "specialization": 578.8333333333334
+      },
+      "towers": 24,
+      "specialized": 3
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 19,
+      "victory": false,
+      "seconds": 478.1666666666667,
+      "commands": 1173,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.53333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 17,
+      "victory": false,
+      "seconds": 398.46666666666664,
+      "commands": 984,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 51.333333333333336
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 19,
+      "victory": false,
+      "seconds": 545.0333333333333,
+      "commands": 1343,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.13333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 21,
+      "victory": false,
+      "seconds": 684.7666666666667,
+      "commands": 1686,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 53.333333333333336,
+        "specialization": 544.4333333333333
+      },
+      "towers": 24,
+      "specialized": 12
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 21,
+      "victory": false,
+      "seconds": 655.5,
+      "commands": 1615,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 49.333333333333336
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "shatter",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 642.8666666666667,
+      "commands": 1580,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.93333333333333,
+        "specialization": 600.4333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 21,
+      "victory": false,
+      "seconds": 605.4333333333333,
+      "commands": 1485,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 57.333333333333336
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 24,
+      "victory": true,
+      "seconds": 833.0666666666667,
+      "commands": 2053,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.93333333333333,
+        "specialization": 685.2333333333333,
+        "victory": 833.0333333333333
+      },
+      "towers": 24,
+      "specialized": 11
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 21,
+      "victory": false,
+      "seconds": 696.2,
+      "commands": 1707,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 50.53333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 831.0666666666667,
+      "commands": 2055,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 58.13333333333333,
+        "specialization": 692.4333333333333,
+        "victory": 831.0333333333333
+      },
+      "towers": 24,
+      "specialized": 8
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 862.8666666666667,
+      "commands": 2114,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 57.733333333333334,
+        "specialization": 368.03333333333336,
+        "victory": 862.8333333333334
+      },
+      "towers": 24,
+      "specialized": 16
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 17,
+      "victory": false,
+      "seconds": 369,
+      "commands": 900,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 58.93333333333333
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 17,
+      "victory": false,
+      "seconds": 362.8666666666667,
+      "commands": 897,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 59.333333333333336
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 24,
+      "victory": true,
+      "seconds": 842.4666666666667,
+      "commands": 2082,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 51.333333333333336,
+        "specialization": 452.8333333333333,
+        "victory": 842.4333333333333
+      },
+      "towers": 24,
+      "specialized": 11
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 22,
+      "victory": false,
+      "seconds": 748,
+      "commands": 1855,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 50.53333333333333,
+        "specialization": 618.8333333333334
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 828.5333333333333,
+      "commands": 2037,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.93333333333333,
+        "specialization": 688.8333333333334,
+        "victory": 828.5
+      },
+      "towers": 24,
+      "specialized": 8
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 870.8666666666667,
+      "commands": 2153,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.93333333333333,
+        "specialization": 615.2333333333333,
+        "victory": 870.8333333333334
+      },
+      "towers": 24,
+      "specialized": 5
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 635.6,
+      "commands": 1573,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.53333333333333,
+        "specialization": 516.8333333333334
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 24,
+      "victory": true,
+      "seconds": 799.9666666666667,
+      "commands": 1965,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 54.53333333333333,
+        "specialization": 561.6333333333333,
+        "victory": 799.9333333333333
+      },
+      "towers": 24,
+      "specialized": 5
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 24,
+      "victory": true,
+      "seconds": 830.2,
+      "commands": 2053,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 50.53333333333333,
+        "specialization": 449.23333333333335,
+        "victory": 830.1666666666666
+      },
+      "towers": 24,
+      "specialized": 9
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 22,
+      "victory": false,
+      "seconds": 750.7,
+      "commands": 1857,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.93333333333333,
+        "specialization": 626.4333333333333
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 801.1666666666666,
+      "commands": 1958,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.93333333333333,
+        "specialization": 671.6333333333333,
+        "victory": 801.1333333333333
+      },
+      "towers": 24,
+      "specialized": 8
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 858.0333333333333,
+      "commands": 2111,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 53.333333333333336,
+        "specialization": 675.6333333333333,
+        "victory": 858
+      },
+      "towers": 24,
+      "specialized": 17
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 612.4666666666667,
+      "commands": 1503,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.13333333333333,
+        "specialization": 499.6333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 23,
+      "victory": false,
+      "seconds": 792.3,
+      "commands": 1954,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 57.333333333333336,
+        "specialization": 727.2333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 16,
+      "victory": false,
+      "seconds": 353.76666666666665,
+      "commands": 864,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 50.93333333333333
+      },
+      "towers": 22,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 19,
+      "victory": false,
+      "seconds": 542.8666666666667,
+      "commands": 1337,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 57.333333333333336
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 817.6666666666666,
+      "commands": 2024,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.53333333333333,
+        "specialization": 679.6333333333333,
+        "victory": 817.6333333333333
+      },
+      "towers": 24,
+      "specialized": 8
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 858.8666666666667,
+      "commands": 2124,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 49.733333333333334,
+        "specialization": 397.23333333333335,
+        "victory": 858.8333333333334
+      },
+      "towers": 24,
+      "specialized": 5
+    },
+    {
+      "budget": 20000,
+      "family": "siege",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 639.1,
+      "commands": 1577,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.13333333333333,
+        "specialization": 316.8333333333333
+      },
+      "towers": 24,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 24,
+      "victory": true,
+      "seconds": 802.9333333333333,
+      "commands": 1985,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 50.13333333333333,
+        "specialization": 558.4333333333333,
+        "victory": 802.9
+      },
+      "towers": 24,
+      "specialized": 10
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 24,
+      "victory": true,
+      "seconds": 830.8666666666667,
+      "commands": 2042,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.93333333333333,
+        "specialization": 262.03333333333336,
+        "victory": 830.8333333333334
+      },
+      "towers": 24,
+      "specialized": 19
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 22,
+      "victory": false,
+      "seconds": 770.6333333333333,
+      "commands": 1911,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.13333333333333,
+        "specialization": 396.43333333333334
+      },
+      "towers": 24,
+      "specialized": 6
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 810.5666666666667,
+      "commands": 1995,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 42.93333333333333,
+        "specialization": 259.23333333333335,
+        "victory": 810.5333333333333
+      },
+      "towers": 24,
+      "specialized": 17
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 862.0666666666667,
+      "commands": 2125,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 46.53333333333333,
+        "specialization": 605.2333333333333,
+        "victory": 862.0333333333333
+      },
+      "towers": 24,
+      "specialized": 12
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 19,
+      "victory": false,
+      "seconds": 463.73333333333335,
+      "commands": 1145,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 45.733333333333334,
+        "specialization": 214.83333333333334
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 17,
+      "victory": false,
+      "seconds": 369.46666666666664,
+      "commands": 906,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 49.333333333333336
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 24,
+      "victory": true,
+      "seconds": 840.8,
+      "commands": 2063,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.93333333333333,
+        "specialization": 263.23333333333335,
+        "victory": 840.7666666666667
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 21,
+      "victory": false,
+      "seconds": 672.9,
+      "commands": 1655,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.53333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 812.0666666666667,
+      "commands": 1997,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 42.93333333333333,
+        "specialization": 258.8333333333333,
+        "victory": 812.0333333333333
+      },
+      "towers": 24,
+      "specialized": 17
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 863.7,
+      "commands": 2128,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 46.53333333333333,
+        "specialization": 363.6333333333333,
+        "victory": 863.6666666666666
+      },
+      "towers": 24,
+      "specialized": 12
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 24,
+      "victory": true,
+      "seconds": 777.0666666666667,
+      "commands": 1917,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 45.733333333333334,
+        "specialization": 250.83333333333334,
+        "victory": 777.0333333333333
+      },
+      "towers": 24,
+      "specialized": 19
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 24,
+      "victory": true,
+      "seconds": 796.4666666666667,
+      "commands": 1959,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 49.733333333333334,
+        "specialization": 509.23333333333335,
+        "victory": 796.4333333333333
+      },
+      "towers": 24,
+      "specialized": 9
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 22,
+      "victory": false,
+      "seconds": 765.4666666666667,
+      "commands": 1881,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.93333333333333,
+        "specialization": 361.23333333333335
+      },
+      "towers": 24,
+      "specialized": 10
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 19,
+      "victory": false,
+      "seconds": 543.8,
+      "commands": 1335,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.53333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 797.6666666666666,
+      "commands": 1957,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 42.93333333333333,
+        "specialization": 256.43333333333334,
+        "victory": 797.6333333333333
+      },
+      "towers": 24,
+      "specialized": 16
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 865.6333333333333,
+      "commands": 2126,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 46.53333333333333,
+        "specialization": 361.23333333333335,
+        "victory": 865.6
+      },
+      "towers": 24,
+      "specialized": 13
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 24,
+      "victory": true,
+      "seconds": 758.0333333333333,
+      "commands": 1856,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 45.733333333333334,
+        "specialization": 403.23333333333335,
+        "victory": 758
+      },
+      "towers": 24,
+      "specialized": 19
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 22,
+      "victory": false,
+      "seconds": 692.4666666666667,
+      "commands": 1705,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 49.333333333333336,
+        "specialization": 638.0333333333333
+      },
+      "towers": 24,
+      "specialized": 3
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 19,
+      "victory": false,
+      "seconds": 490.96666666666664,
+      "commands": 1202,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.93333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 21,
+      "victory": false,
+      "seconds": 690.3333333333334,
+      "commands": 1699,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.53333333333333,
+        "specialization": 367.23333333333335
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 810.4666666666667,
+      "commands": 1995,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 42.93333333333333,
+        "specialization": 672.8333333333334,
+        "victory": 810.4333333333333
+      },
+      "towers": 24,
+      "specialized": 14
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 858.4666666666667,
+      "commands": 2116,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 46.53333333333333,
+        "specialization": 461.23333333333335,
+        "victory": 858.4333333333333
+      },
+      "towers": 24,
+      "specialized": 14
+    },
+    {
+      "budget": 20000,
+      "family": "storm",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 24,
+      "victory": true,
+      "seconds": 784.0666666666667,
+      "commands": 1936,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 45.733333333333334,
+        "specialization": 215.63333333333333,
+        "victory": 784.0333333333333
+      },
+      "towers": 24,
+      "specialized": 19
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-copper",
+      "waves": 19,
+      "victory": false,
+      "seconds": 495.1666666666667,
+      "commands": 1213,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 58.93333333333333
+      },
+      "towers": 24,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-heron",
+      "waves": 24,
+      "victory": true,
+      "seconds": 868.8,
+      "commands": 2138,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.93333333333333,
+        "specialization": 460.8333333333333,
+        "victory": 868.7666666666667
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-thistle",
+      "waves": 24,
+      "victory": true,
+      "seconds": 866.6333333333333,
+      "commands": 2123,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 53.733333333333334,
+        "specialization": 363.6333333333333,
+        "victory": 866.6
+      },
+      "towers": 24,
+      "specialized": 21
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 843.8333333333334,
+      "commands": 2079,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 51.733333333333334,
+        "specialization": 404.03333333333336,
+        "victory": 843.8
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 892.7333333333333,
+      "commands": 2203,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.53333333333333,
+        "specialization": 379.6333333333333,
+        "victory": 892.7
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "verdant",
+      "seed": "audit-lantern",
+      "waves": 17,
+      "victory": false,
+      "seconds": 383,
+      "commands": 934,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 68.53333333333333,
+        "specialization": 246.83333333333334
+      },
+      "towers": 23,
+      "specialized": 1
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-copper",
+      "waves": 17,
+      "victory": false,
+      "seconds": 379.06666666666666,
+      "commands": 922,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.53333333333333
+      },
+      "towers": 23,
+      "specialized": 0
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-heron",
+      "waves": 24,
+      "victory": true,
+      "seconds": 879.2666666666667,
+      "commands": 2165,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.13333333333333,
+        "specialization": 462.43333333333334,
+        "victory": 879.2333333333333
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-thistle",
+      "waves": 22,
+      "victory": false,
+      "seconds": 783.9666666666667,
+      "commands": 1927,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 56.13333333333333,
+        "specialization": 372.43333333333334
+      },
+      "towers": 24,
+      "specialized": 21
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 840.4666666666667,
+      "commands": 2065,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 49.333333333333336,
+        "specialization": 471.6333333333333,
+        "victory": 840.4333333333333
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-quartz",
+      "waves": 22,
+      "victory": false,
+      "seconds": 803.2,
+      "commands": 1991,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.53333333333333,
+        "specialization": 380.03333333333336
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "frostfen",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 645.4666666666667,
+      "commands": 1596,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 63.733333333333334,
+        "specialization": 438.43333333333334
+      },
+      "towers": 24,
+      "specialized": 19
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-copper",
+      "waves": 19,
+      "victory": false,
+      "seconds": 512.3,
+      "commands": 1258,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 57.733333333333334,
+        "specialization": 237.23333333333332
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-heron",
+      "waves": 19,
+      "victory": false,
+      "seconds": 523.0333333333333,
+      "commands": 1283,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.53333333333333,
+        "specialization": 366.8333333333333
+      },
+      "towers": 24,
+      "specialized": 8
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-thistle",
+      "waves": 24,
+      "victory": true,
+      "seconds": 877.8333333333334,
+      "commands": 2157,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 53.333333333333336,
+        "specialization": 235.63333333333333,
+        "victory": 877.8
+      },
+      "towers": 24,
+      "specialized": 21
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-tide",
+      "waves": 21,
+      "victory": false,
+      "seconds": 663.5666666666667,
+      "commands": 1636,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 49.333333333333336,
+        "specialization": 528.0333333333333
+      },
+      "towers": 24,
+      "specialized": 17
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 889.7,
+      "commands": 2189,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.53333333333333,
+        "specialization": 375.23333333333335,
+        "victory": 889.6666666666666
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "emberwaste",
+      "seed": "audit-lantern",
+      "waves": 24,
+      "victory": true,
+      "seconds": 812.8666666666667,
+      "commands": 1998,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 62.53333333333333,
+        "specialization": 500.43333333333334,
+        "victory": 812.8333333333334
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-copper",
+      "waves": 19,
+      "victory": false,
+      "seconds": 514.2,
+      "commands": 1264,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 54.13333333333333,
+        "specialization": 229.63333333333333
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-heron",
+      "waves": 18,
+      "victory": false,
+      "seconds": 427.96666666666664,
+      "commands": 1057,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 52.13333333333333,
+        "specialization": 318.03333333333336
+      },
+      "towers": 24,
+      "specialized": 2
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-thistle",
+      "waves": 22,
+      "victory": false,
+      "seconds": 773.6666666666666,
+      "commands": 1914,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 54.93333333333333,
+        "specialization": 404.03333333333336
+      },
+      "towers": 24,
+      "specialized": 21
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-tide",
+      "waves": 24,
+      "victory": true,
+      "seconds": 844.7333333333333,
+      "commands": 2061,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 49.333333333333336,
+        "specialization": 470.43333333333334,
+        "victory": 844.7
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-quartz",
+      "waves": 24,
+      "victory": true,
+      "seconds": 876.8,
+      "commands": 2161,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 51.333333333333336,
+        "specialization": 216.03333333333333,
+        "victory": 876.7666666666667
+      },
+      "towers": 24,
+      "specialized": 20
+    },
+    {
+      "budget": 20000,
+      "family": "war_economy",
+      "biome": "highlands",
+      "seed": "audit-lantern",
+      "waves": 21,
+      "victory": false,
+      "seconds": 679.7,
+      "commands": 1679,
+      "milestones": {
+        "upgrade": 2.433333333333333,
+        "boss": 68.93333333333334,
+        "specialization": 221.23333333333332
+      },
+      "towers": 24,
+      "specialized": 20
+    }
+  ]
+}

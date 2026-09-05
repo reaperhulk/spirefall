@@ -1,15 +1,15 @@
+import { placementPreview } from '../placementPreview'
 // The tower pass: every tower's sprite, its tier pips, veterancy stars and
 // beacon coverage pips, the selection ring, and the placement ghost.
 
 
 // Each tower type has its own silhouette; attacking turrets rotate to face
 // their last target (session.aim, fed by tower_fired events).
-import { MESA_RANGE_PCT } from '../../data/biomes'
 import { ABILITIES, LANCE_MAX_STACKS, VETERANCY_TIERS, mintStars, towerTier, veterancyStars } from '../../data/content'
 import type { Tower } from '../../engine/types'
 import type { MapDef } from '../../data/maps'
-import { effectiveTowerRange, towerRangeOnBoard } from '../../engine/combat'
-import { blockedGrid, canPlaceTower, cellCenter, cellIndex, distSq, distanceField, pathFrom } from '../../engine/grid'
+import { towerRangeOnBoard } from '../../engine/combat'
+import { cellCenter, distSq } from '../../engine/grid'
 import { getRunMap } from '../../engine/mapgen'
 import type { GameSession } from '../session'
 import { settings } from '../settings'
@@ -207,39 +207,28 @@ export function drawPlacementGhost(
   ui: RenderUiState,
   map: MapDef,
 ): void {
+  void map
   if (!ui.hoverCell) return
   const c = ui.hoverCell
 
   if (ui.shopSelection) {
-    // Full engine-side validation, including "would this wall off the spire".
-    const ok = canPlaceTower(session.state, map, c).ok
+    const preview = placementPreview(session.state,ui.shopSelection,c)
+    const ok = preview.ok && preview.affordable
     ctx.fillStyle = ok ? COLORS.ghostOk : COLORS.ghostBad
-    ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
-    // The ghost ring is the radius the tower would ACTUALLY get here —
-    // Longsight and this very cell's mesa bonus included.
-    let ghostRange = effectiveTowerRange(session.state, ui.shopSelection, 1)
-    if (ui.shopSelection !== 'beacon' && map.mesa.length > 0 && map.mesa[cellIndex(map, c)]) {
-      ghostRange = Math.floor((ghostRange * MESA_RANGE_PCT) / 100)
-    }
-    if (ui.shopSelection === 'beacon') ghostRange = towerTier('beacon', 1).range
+    ctx.fillRect(c.cx*CELL_PX,c.cy*CELL_PX,CELL_PX,CELL_PX)
     const center = cellCenter(c)
     ctx.strokeStyle = COLORS.rangeEdge
-    ctx.beginPath()
-    ctx.arc(px(center.x), px(center.y), px(ghostRange), 0, Math.PI * 2)
-    ctx.stroke()
-
-    // Preview how enemies would re-route around the new tower BEFORE buying:
-    // amber dots trace the would-be path.
-    if (ok) {
-      const field = distanceField(map, blockedGrid(map, session.state.towers, c))
-      const preview = [map.spawn, ...pathFrom(map, field, map.spawn)]
-      ctx.fillStyle = 'rgba(229, 192, 123, 0.8)'
-      for (const cell of preview) {
-        const p = cellCenter(cell)
-        ctx.beginPath()
-        ctx.arc(px(p.x), px(p.y), 2.5, 0, Math.PI * 2)
-        ctx.fill()
-      }
+    circle(ctx,px(center.x),px(center.y),px(preview.range)); ctx.stroke()
+    if (preview.ok) {
+      // Solid green = newly covered route; red crosses = coverage lost.
+      // Shape and line style carry the comparison without relying on hue.
+      ctx.fillStyle = '#72d9b4'
+      for (const cell of preview.gained) ctx.fillRect(cell.cx*CELL_PX+10,cell.cy*CELL_PX+10,14,14)
+      ctx.strokeStyle = '#ff9b8b'; ctx.lineWidth=2
+      for (const cell of preview.lost) { const at=cellCenter(cell); const x=px(at.x), y=px(at.y); ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y+5);ctx.moveTo(x+5,y-5);ctx.lineTo(x-5,y+5);ctx.stroke() }
+      ctx.fillStyle = 'rgba(229,192,123,0.85)'
+      for(const cell of preview.after) {const at=cellCenter(cell);circle(ctx,px(at.x),px(at.y),2.5);ctx.fill()}
+      ctx.lineWidth=1
     }
   }
 
@@ -431,12 +420,21 @@ export function drawTowerBody(ctx: CanvasRenderingContext2D, t: Pick<Tower, 'typ
         break
       }
     }
-  // Specializations change the silhouette as well as the badge.
   if (t.spec) {
-    ctx.strokeStyle = '#e6d5ac'; ctx.lineWidth = 2
-    const paired = ['volley', 'mortar', 'blizzard', 'lattice', 'overpenetrator', 'momentum'].includes(t.spec)
-    if (paired) {
-      for (const side of [-1, 1]) { ctx.beginPath(); ctx.moveTo(-7, side * 10); ctx.lineTo(9, side * 10); ctx.stroke() }
-    } else { ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(7, -6); ctx.lineTo(0, 0); ctx.lineTo(-7, -6); ctx.closePath(); ctx.stroke() }
+    ctx.strokeStyle='#e6d5ac';ctx.fillStyle='#e6d5ac';ctx.lineWidth=1.7
+    switch(t.spec) {
+      case 'volley': for(const y of [-7,0,7]) {ctx.beginPath();ctx.moveTo(-5,y);ctx.lineTo(11,y);ctx.lineTo(7,y-3);ctx.moveTo(11,y);ctx.lineTo(7,y+3);ctx.stroke()} break
+      case 'longbow': ctx.beginPath();ctx.ellipse(1,0,8,13,0,-Math.PI/2,Math.PI/2);ctx.moveTo(1,-13);ctx.lineTo(1,13);ctx.moveTo(-4,0);ctx.lineTo(16,0);ctx.stroke();break
+      case 'mortar': ctx.fillStyle='#394350';ellipse(ctx,-2,0,11,10);ctx.fill();ctx.stroke();ctx.fillStyle='#171a20';ellipse(ctx,0,0,6,5);ctx.fill();break
+      case 'breaker': ctx.strokeRect(1,-4,16,8);ctx.fillRect(15,-6,3,12);break
+      case 'blizzard': for(let i=0;i<3;i++){const a=i*Math.PI*2/3;polygon(ctx,Math.cos(a)*12,Math.sin(a)*12,3,4,Math.PI/4);ctx.fill()} break
+      case 'permafrost': for(const x of [-8,0,8]) {ctx.beginPath();ctx.moveTo(x-3,5);ctx.lineTo(x,-14+Math.abs(x));ctx.lineTo(x+3,5);ctx.closePath();ctx.stroke()} break
+      case 'lattice': for(let i=0;i<3;i++){const a=i*Math.PI*2/3;const x=Math.cos(a)*12,y=Math.sin(a)*12;ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(x,y);ctx.stroke();circle(ctx,x,y,3);ctx.fill()} break
+      case 'capacitor': ctx.strokeRect(-10,-11,5,18);ctx.strokeRect(5,-11,5,18);ctx.beginPath();ctx.moveTo(-3,-14);ctx.lineTo(2,-7);ctx.lineTo(-2,-2);ctx.lineTo(3,5);ctx.stroke();break
+      case 'executor': circle(ctx,2,0,9);ctx.stroke();ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(14,0);ctx.moveTo(2,-12);ctx.lineTo(2,12);ctx.stroke();break
+      case 'overpen': for(const y of [-5,5]){ctx.beginPath();ctx.moveTo(-6,y);ctx.lineTo(17,y);ctx.stroke()} ctx.fillRect(13,-7,3,14);break
+      case 'momentum': for(const x of [-8,-2,4]){ctx.beginPath();ctx.moveTo(x,-8);ctx.lineTo(x+5,0);ctx.lineTo(x,8);ctx.stroke()} break
+      case 'skewer': ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(18,0);ctx.moveTo(18,0);ctx.lineTo(10,-6);ctx.moveTo(18,0);ctx.lineTo(10,6);ctx.stroke();break
+    }
   }
 }

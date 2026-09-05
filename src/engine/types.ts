@@ -246,7 +246,7 @@ export type Command =
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
   | { type: 'choose_relic'; relic: RelicId | null }
-  | { type: 'reroll_relic' }
+  | { type: 'reroll_relic'; focus?: DoctrineId }
   | { type: 'choose_cataclysm'; cataclysm: CataclysmId }
 
 export type GameEvent =

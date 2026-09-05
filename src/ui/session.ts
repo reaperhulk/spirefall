@@ -1,7 +1,7 @@
 import { measure } from './performance'
 import { settings } from './settings'
 import { RULES_VERSION, type Recording } from './validation'
-import { ENEMIES } from '../data/content'
+import { ENEMIES, type TowerSpecId } from '../data/content'
 import { cellCenter } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
 import { enemyColor, stampDecal } from './render'
@@ -16,6 +16,7 @@ import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 
 export interface VisualEffect {
   kind:
+    | 'special' // specialization impact engraving
     | 'beam'
     | 'splash'
     | 'meteor'
@@ -32,6 +33,7 @@ export interface VisualEffect {
     | 'flash' // muzzle flash at the firing tower
     | 'burst' // death particles
     | 'coin' // gold: arcs from a mint payout / glints where an elite fell
+  spec?: TowerSpecId
   from?: Vec
   to?: Vec
   at?: Vec
@@ -257,6 +259,8 @@ export class GameSession {
           if (this.firedAt.size > 400) this.firedAt.clear()
           for (const id of e.targets) this.hits.set(id, now)
           if (this.hits.size > 600) this.hits.clear()
+          const spec = this.state.towers.find(t => t.id === e.id)?.spec
+          if (spec && !e.blocked) this.effects.push({kind:'special',spec,from:e.from,to:e.to,t0:now,dur:220})
           const color = e.crit ? '#ffffff' : (TOWER_BEAM_COLORS[e.tower] ?? '#ffffff')
           this.effects.push({ kind: 'flash', at: e.from, color, t0: now, dur: 90 })
           switch (e.tower) {

@@ -51,3 +51,5 @@
 .game-icon { width:20px; height:20px; vertical-align:middle; flex-shrink:0; }
 
 .replay-banner { position:static; inset:auto; transform:none; width:100%; box-sizing:border-box; margin:0 0 12px; }
+.placement-report { min-height:36px; margin:8px 0 0; color:#c1d3d7; font-size:12px; line-height:1.4; }
+@media (max-width:700px) { .placement-report { min-height:52px; } }

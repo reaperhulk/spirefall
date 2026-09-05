@@ -15,6 +15,47 @@ export function drawEffects(ctx: CanvasRenderingContext2D, session: GameSession)
     if (age > 1 || age < 0) continue // future-scheduled effects wait their turn
     const fade = 1 - age
     switch (fx.kind) {
+      case 'special': {
+        if (!fx.to || !fx.from || !fx.spec) break
+        const x = px(fx.to.x), y = px(fx.to.y), r = 5 + age * 14
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.rotate(Math.atan2(fx.to.y - fx.from.y, fx.to.x - fx.from.x))
+        ctx.globalAlpha = fade * 0.8
+        ctx.strokeStyle = '#f1dfa9'
+        ctx.lineWidth = 1.5
+        ctx.beginPath()
+        switch (fx.spec) {
+          case 'volley':
+            for (const dy of [-5, 0, 5]) { ctx.moveTo(-r, dy); ctx.lineTo(3, dy) }
+            break
+          case 'longbow': ctx.moveTo(-r * 2, 0); ctx.lineTo(r, 0); break
+          case 'mortar': ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.moveTo(r / 2, 0); ctx.arc(0, 0, r / 2, 0, Math.PI * 2); break
+          case 'breaker':
+            for (const sign of [-1, 1]) { ctx.moveTo(0, sign * r); ctx.lineTo(sign * r / 2, sign * 3); ctx.lineTo(sign * r, sign * 7) }
+            break
+          case 'blizzard':
+            ctx.strokeStyle = '#a9eeff'
+            for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.moveTo(Math.cos(a) * 4, Math.sin(a) * 4); ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r) }
+            break
+          case 'permafrost': ctx.strokeStyle = '#a9eeff'; ctx.rect(-r, -4, r * 2, 8); break
+          case 'lattice': ctx.strokeStyle = '#dac4ff'; ctx.moveTo(-r, 0); ctx.lineTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.closePath(); break
+          case 'capacitor': ctx.strokeStyle = '#dac4ff'; ctx.arc(0, 0, r, -0.8, 0.8); ctx.moveTo(-r * 0.7, r * 0.7); ctx.arc(0, 0, r, Math.PI - 0.8, Math.PI + 0.8); break
+          case 'executor':
+            for (const sign of [-1, 1]) { ctx.moveTo(sign * r, -r); ctx.lineTo(sign * r, r) }
+            ctx.moveTo(-r / 2, 0); ctx.lineTo(r / 2, 0); break
+          case 'overpen':
+            for (const dy of [-2, 2]) { ctx.moveTo(-r, dy); ctx.lineTo(r * 2, dy) }
+            break
+          case 'momentum':
+            for (const dx of [-5, 3, 11]) { ctx.moveTo(dx - 5, -5); ctx.lineTo(dx, 0); ctx.lineTo(dx - 5, 5) }
+            break
+          case 'skewer': ctx.moveTo(-r, 0); ctx.lineTo(r, 0); ctx.moveTo(r - 5, -6); ctx.lineTo(r, 0); ctx.lineTo(r - 5, 6); break
+        }
+        ctx.stroke()
+        ctx.restore()
+        break
+      }
       case 'beam': {
         if (!fx.from || !fx.to) break
         ctx.strokeStyle = fx.color ?? '#ffffff'

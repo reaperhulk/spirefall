@@ -1,7 +1,13 @@
+import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { DOCTRINES, type DoctrineId } from '../data/doctrines'
 import type { RunState } from '../engine/types'
 export function BuildDoctrine({ state, choose }: { state: RunState; choose: (id: DoctrineId) => void }) {
-  if (state.doctrine) return <p className="doctrine-summary"><strong>{DOCTRINES[state.doctrine].name}</strong> · {DOCTRINES[state.doctrine].description}</p>
+  if (state.doctrine) {
+    const family = BUILD_FAMILIES[state.doctrine]
+    return <section className="doctrine-summary"><strong>{DOCTRINES[state.doctrine].name}</strong> · {DOCTRINES[state.doctrine].description}
+      <details><summary>Build guide</summary><p>{family.opening}</p><p>{family.tactic}</p><p>{family.weakness}</p></details>
+    </section>
+  }
   if (state.phase !== 'build' || state.wave < 2) return null
   return <section className="doctrine-panel" aria-label="Choose a build doctrine">
     <strong>Shape this run · choose one permanent doctrine</strong>

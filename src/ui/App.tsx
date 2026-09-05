@@ -65,7 +65,7 @@ import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
 import { clearSave, loadSave, persistSave, getSaveStatus, subscribeSaveStatus } from './save'
 import { useDialogFocus } from './useDialogFocus'
-import { parseRecording } from './validation'
+import { RULES_VERSION, parseRecording } from './validation'
 import { GameSession } from './session'
 import { dailySeed, loadDailyBest, loadDailyRaw, loadMapPref, loadTrialPref, MAP_PREF_KEY, newSeed, TRIAL_PREF_KEY, type DailyBest } from './prefs'
 import { ABILITY_KEYS, SPEEDS, TARGETING_OPTIONS, TOWER_KEYS, towerRole, upgradeDelta } from './towerCopy'
@@ -1342,7 +1342,7 @@ export default function App() {
       </main>
 
       {!watching && <BuildDoctrine state={state} choose={doctrine => session.dispatch({ type: 'choose_doctrine', doctrine })} />}
-      {state.seed.startsWith('daily-') && <p className="doctrine-summary">Daily challenge · fixed arsenal and progression · Crucible 0 · rules 3</p>}
+      {state.seed.startsWith('daily-') && <p className="doctrine-summary">Daily challenge · fixed arsenal and progression · Crucible 0 · rules {RULES_VERSION}</p>}
       {state.shrine && <section className="doctrine-panel" aria-label="Relic shrine">
         <strong>Shrine at column {state.shrine.cell.cx + 1}, row {state.shrine.cell.cy + 1}</strong>
         <p>Station two combat towers within three cells for at least three seconds, and keep enemies outside its ring for one wave to earn {100 + state.shrine.wave * 12} gold. Failure costs no Spire health.</p>
@@ -1485,7 +1485,7 @@ export default function App() {
           skipGold={relicSkipGold(state.wave)}
           canReroll={!state.relicRerolled && state.gold >= relicSkipGold(state.wave)}
           onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })}
-          onReroll={() => session.dispatch({ type: 'reroll_relic' })}
+          onReroll={focus => session.dispatch(focus ? {type:'reroll_relic',focus} : {type:'reroll_relic'})}
         />
       )}
       {state.cataclysmOffer && !watching && !summary && (

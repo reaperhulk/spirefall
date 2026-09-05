@@ -1,3 +1,4 @@
+import { placementPreview, placementSummary } from './placementPreview'
 import { measure } from './performance'
 import { useEffect, useRef } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
@@ -23,6 +24,7 @@ interface Props {
 // renderer; React never re-renders this component per frame.
 export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellClick, onHover }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const previewRef = useRef<HTMLParagraphElement>(null)
   const loupeRef = useRef<HTMLCanvasElement>(null)
   const uiRef = useRef(ui)
   // Live touch aim (finger down with a tower/ability armed). A ref, not
@@ -69,6 +71,11 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
         ctx.translate((Math.random() - 0.5) * 2 * strength, (Math.random() - 0.5) * 2 * strength)
       }
       draw(ctx, session, uiRef.current)
+      const {shopSelection,hoverCell} = uiRef.current
+      if (previewRef.current) {
+        const text = shopSelection && hoverCell ? placementSummary(placementPreview(session.state,shopSelection,hoverCell),shopSelection) : shopSelection ? 'Aim to compare the new route and coverage. Green squares gain coverage; crossed cells lose it.' : ''
+        if (previewRef.current.textContent !== text) previewRef.current.textContent = text
+      }
       ctx.restore()
       measure('render', performance.now() - renderStart)
       measure('effects', session.effects.length)
@@ -211,6 +218,7 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
         onMouseMove={(e) => onHover(cellFromEvent(e))}
         onMouseLeave={() => onHover(null)}
       />
+      <p ref={previewRef} className="placement-report" data-testid="placement-report" role="status" />
       <canvas
         ref={loupeRef}
         className="placement-loupe"
