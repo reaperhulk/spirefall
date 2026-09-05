@@ -1,0 +1,170 @@
+{
+  "commit": "01fc4b5d95745de3c805c4e8fef1abcc459fec78",
+  "ci": "https://github.com/reaperhulk/spirefall/actions/runs/33935420127",
+  "runner": "GitHub Actions Ubuntu / headless Chromium",
+  "notes": "Repeat of the five-second synthetic profile. The shared runner shows variable 10x frame times. Only two queue-delay samples and quantized heap readings; neither input-latency percentiles nor leak rates are established.",
+  "profiles": [
+    {
+      "speed": 1,
+      "before": {
+        "towers": 40,
+        "enemies": 300,
+        "heap": 10000000
+      },
+      "metrics": {
+        "frame": {
+          "samples": 293,
+          "p50": 16.699999999999818,
+          "p95": 16.799999999999955,
+          "p99": 33.30000000000007
+        },
+        "input": {
+          "samples": 2,
+          "p50": 13.099999999998545,
+          "p95": 13.099999999998545,
+          "p99": 13.099999999998545
+        },
+        "sfxVoices": {
+          "samples": 10,
+          "p50": 2,
+          "p95": 6,
+          "p99": 6
+        },
+        "simulation": {
+          "samples": 293,
+          "p50": 0.10000000000582077,
+          "p95": 0.4000000000014552,
+          "p99": 2.599999999991269
+        },
+        "render": {
+          "samples": 293,
+          "p50": 3.3000000000029104,
+          "p95": 6,
+          "p99": 9.599999999998545
+        },
+        "effects": {
+          "samples": 293,
+          "p50": 7,
+          "p95": 22,
+          "p99": 22
+        },
+        "save": {
+          "samples": 1,
+          "p50": 1,
+          "p95": 1,
+          "p99": 1
+        }
+      },
+      "audio": "running",
+      "heap": 10000000
+    },
+    {
+      "speed": 3,
+      "before": {
+        "towers": 40,
+        "enemies": 300,
+        "heap": 10000000
+      },
+      "metrics": {
+        "frame": {
+          "samples": 289,
+          "p50": 16.699999999999818,
+          "p95": 16.800000000000182,
+          "p99": 33.399999999999636
+        },
+        "input": {
+          "samples": 2,
+          "p50": 2.6000000000058208,
+          "p95": 2.6000000000058208,
+          "p99": 2.6000000000058208
+        },
+        "sfxVoices": {
+          "samples": 22,
+          "p50": 2,
+          "p95": 5,
+          "p99": 6
+        },
+        "simulation": {
+          "samples": 289,
+          "p50": 0.39999999999417923,
+          "p95": 1.6000000000058208,
+          "p99": 7.5
+        },
+        "render": {
+          "samples": 289,
+          "p50": 3.5,
+          "p95": 6.400000000008731,
+          "p99": 8
+        },
+        "effects": {
+          "samples": 289,
+          "p50": 4,
+          "p95": 22,
+          "p99": 22
+        },
+        "save": {
+          "samples": 1,
+          "p50": 2.2999999999883585,
+          "p95": 2.2999999999883585,
+          "p99": 2.2999999999883585
+        }
+      },
+      "audio": "running",
+      "heap": 10000000
+    },
+    {
+      "speed": 10,
+      "before": {
+        "towers": 40,
+        "enemies": 300,
+        "heap": 10000000
+      },
+      "metrics": {
+        "frame": {
+          "samples": 269,
+          "p50": 16.699999999999818,
+          "p95": 33.399999999999864,
+          "p99": 33.40000000000009
+        },
+        "input": {
+          "samples": 2,
+          "p50": 3.1999999999970896,
+          "p95": 3.1999999999970896,
+          "p99": 3.1999999999970896
+        },
+        "sfxVoices": {
+          "samples": 61,
+          "p50": 3,
+          "p95": 5,
+          "p99": 6
+        },
+        "simulation": {
+          "samples": 269,
+          "p50": 1,
+          "p95": 5.5,
+          "p99": 10.099999999991269
+        },
+        "render": {
+          "samples": 269,
+          "p50": 3.3000000000029104,
+          "p95": 6.30000000000291,
+          "p99": 10.39999999999418
+        },
+        "effects": {
+          "samples": 269,
+          "p50": 4,
+          "p95": 13,
+          "p99": 15
+        },
+        "save": {
+          "samples": 1,
+          "p50": 1.2000000000116415,
+          "p95": 1.2000000000116415,
+          "p99": 1.2000000000116415
+        }
+      },
+      "audio": "running",
+      "heap": 10000000
+    }
+  ]
+}

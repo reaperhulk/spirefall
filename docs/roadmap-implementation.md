@@ -64,8 +64,11 @@ local Chromium installation was unavailable in the development environment.
 
 The first expanded browser run passed 63/65. It found a timeline overlapping Pause
 (fixed by placing playback controls above the HUD) and an obsolete emoji assertion
-(updated to check the accessible audio state). See the subsequent CI runs for the
-fix verification; no assertions were relaxed to hide simulation failures.
+(updated to check the accessible audio state). The final code commit `01fc4b5`
+[passed all 65 browser tests and the code checks](https://github.com/reaperhulk/spirefall/actions/runs/33935420127).
+[Deployment succeeded](https://github.com/reaperhulk/spirefall/actions/runs/33935420169),
+and the live asset matched `index-DXgQBRNe.js`. No assertions were relaxed to hide
+simulation failures.
 
 ### Browser baseline
 
@@ -84,6 +87,23 @@ input-latency percentiles. Reported heap values were quantized, so no leak-rate
 claim is made. The scenes exercise dense entities, but effects naturally remain
 below the cap. These results do not establish phone performance, real GPU budgets,
 long-session memory behavior or subjective audio quality.
+
+### Final-code repeat
+
+[Final profile](browser-profile-final.json), commit `01fc4b5`, same synthetic scenario:
+
+| Speed | Frame p50 / p95 / p99 | Render p95 | Simulation per frame p95 |
+|---|---|---:|---:|
+| 1× | 16.7 / 16.8 / 33.3 ms | 6.0 ms | 0.4 ms |
+| 3× | 16.7 / 16.8 / 33.4 ms | 6.4 ms | 1.6 ms |
+| 10× | 16.7 / 33.4 / 33.4 ms | 6.3 ms | 5.5 ms |
+
+Scheduled SFX voices peaked at a recorded p99 of six in each scene. The higher
+10× frame tail on the repeat warrants longer controlled profiling; shared-runner
+variation and code changes cannot be separated by these two samples. A stable
+60 fps claim at 10× would be unsupported. The provisional 1× target remains the
+priority for physical-device verification. Final production JS: 460.12 kB /
+148.44 kB gzip, versus 419.69 / 133.79 kB at the review baseline.
 
 ### Held-out pilots and geography
 
