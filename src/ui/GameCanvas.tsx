@@ -42,13 +42,14 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
   useEffect(() => {
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
-    const dpr = window.devicePixelRatio || 1
+    const dpr = Math.min(2, window.devicePixelRatio || 1)
     canvas.width = MAP_WIDTH * CELL_PX * dpr
     canvas.height = MAP_HEIGHT * CELL_PX * dpr
 
     let raf = 0
     let last = performance.now()
     const frame = (now: number) => {
+      if (document.hidden) { last = now; raf = requestAnimationFrame(frame); return }
       session.advance(now - last)
       last = now
       ctx.save()

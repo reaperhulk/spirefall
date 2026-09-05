@@ -42,7 +42,7 @@ import {
   towerRangeOnBoard,
 } from '../engine/combat'
 import { getRunMap } from '../engine/mapgen'
-import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
+import { respecKeystone, ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
 import type { EmberUpgradeId } from '../data/emberTree'
 import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { cellCenter, sameCell } from '../engine/grid'
@@ -60,12 +60,15 @@ import { CataclysmModal, ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal
 import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
-import { clearSave, loadSave, persistSave } from './save'
-import { GameSession, type LoggedCommand } from './session'
+import { clearSave, loadSave, persistSave, registerRecording, getSaveStatus, subscribeSaveStatus } from './save'
+import { useDialogFocus } from './useDialogFocus'
+import { parseRecording } from './validation'
+import { GameSession } from './session'
 import { dailySeed, loadDailyBest, loadDailyRaw, loadMapPref, loadTrialPref, MAP_PREF_KEY, newSeed, TRIAL_PREF_KEY, type DailyBest } from './prefs'
 import { ABILITY_KEYS, SPEEDS, TARGETING_OPTIONS, TOWER_KEYS, towerRole, upgradeDelta } from './towerCopy'
 
 export default function App() {
+  useDialogFocus()
   const [boot] = useState(() => {
     const save = loadSave()
     const meta = save?.meta ?? createMeta()
@@ -99,10 +102,10 @@ export default function App() {
     }
     const run =
       linkSeed !== null ? createRun(meta, linkSeed, linkBiome, linkTrials) : (save?.run ?? createRun(meta, newSeed(meta.runs)))
-    return { meta, run, linkReplay }
+    return { meta, run, linkReplay, recording: linkSeed === null ? save?.recording : undefined }
   })
   const [meta, setMeta] = useState(boot.meta)
-  const [session, setSession] = useState(() => new GameSession(boot.run))
+  const [session, setSession] = useState(() => new GameSession(boot.run, boot.recording))
   const [summary, setSummary] = useState<RunSummary | null>(null)
   const [victoryPrompt, setVictoryPrompt] = useState(false)
   const [showTree, setShowTree] = useState(false)
@@ -167,13 +170,30 @@ export default function App() {
   }, [selectedTowerId])
 
   useSyncExternalStore(session.subscribe, session.getVersion)
+  useEffect(() => {
+    session.setSuspended(showTree || showSettings || showStats || showCodex || confirm !== null || victoryPrompt)
+    return () => { session.setSuspended(false) }
+  }, [session, showTree, showSettings, showStats, showCodex, confirm, victoryPrompt])
   const state = session.state
+  const saveStatus = useSyncExternalStore(subscribeSaveStatus, getSaveStatus)
 
   // The score reads the LIVE session each scheduler tick — sessionRef stays
   // current across newRun(), so the music follows every run seamlessly.
   useEffect(() => {
     music.attach(() => sessionRef.current.state)
   }, [music])
+
+  useEffect(() => registerRecording(() => sessionRef.current.replaying ? undefined : sessionRef.current.recording()), [])
+  useEffect(() => {
+    const checkpoint = () => {
+      const live = sessionRef.current
+      if (!live.replaying) persistSave({ version: 1, meta: metaRef.current, run: live.terminal ? null : live.state })
+    }
+    const timer = window.setInterval(checkpoint, 5000)
+    window.addEventListener('pagehide', checkpoint)
+    document.addEventListener('visibilitychange', checkpoint)
+    return () => { window.clearInterval(timer); window.removeEventListener('pagehide', checkpoint); document.removeEventListener('visibilitychange', checkpoint) }
+  }, [])
 
   // Engine events drive meta settlement and saves.
   useEffect(() => {
@@ -209,6 +229,7 @@ export default function App() {
       // A replay is a spectator: it must never settle meta again, prompt
       // for victory, or touch the save — the run already happened.
       if (session.replaying) return
+      let saveNeeded = false
       for (const e of events) {
         if (e.type === 'run_ended') {
           if (s.seed === dailySeed()) {
@@ -233,10 +254,10 @@ export default function App() {
           metaRef.current = settled.meta
           setMeta(settled.meta)
           setSummary(settled.summary)
-          persistSave({ version: 1, meta: settled.meta, run: null })
+          saveNeeded = true
         } else if (e.type === 'victory_achieved') {
           setVictoryPrompt(true)
-          persistSave({ version: 1, meta: metaRef.current, run: s })
+          saveNeeded = true
         } else if (
           e.type === 'wave_started' ||
           e.type === 'wave_cleared' ||
@@ -245,9 +266,10 @@ export default function App() {
           e.type === 'tower_sold' ||
           e.type === 'tower_upgraded'
         ) {
-          persistSave({ version: 1, meta: metaRef.current, run: s })
+          saveNeeded = true
         }
       }
+      if (saveNeeded) persistSave({ version: 1, meta: metaRef.current, run: session.terminal ? null : s })
     })
     return () => {
       session.setOnEvents(null)
@@ -278,9 +300,8 @@ export default function App() {
   // spectates without touching this account's meta or save.
   const watchImported = (text: string): boolean => {
     try {
-      const data = JSON.parse(text) as { v?: number; initial?: RunState; log?: LoggedCommand[] }
-      if (data.v !== 2 || !data.initial || !Array.isArray(data.log)) return false
-      if (typeof data.initial.seed !== 'string' || data.initial.tick !== 0) return false
+      const data = parseRecording(text)
+      if (!data) return false
       const replay = new GameSession(data.initial)
       replay.replayScript = data.log.map((c) => ({ tick: c.tick, command: c.command }))
       replay.setSpeed(2)
@@ -347,6 +368,16 @@ export default function App() {
     metaRef.current = result.meta
     setMeta(result.meta)
     persistSave({ version: 1, meta: result.meta, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+  }
+
+  const respec = (id: MetaUpgradeId) => {
+    const live = sessionRef.current
+    if (live.replaying || (!live.terminal && (live.state.wave > 0 || live.state.towers.length > 0))) return
+    const result = respecKeystone(metaRef.current, id)
+    if (!result.ok) return
+    metaRef.current = result.meta
+    setMeta(result.meta)
+    persistSave({ version: 1, meta: result.meta, run: live.terminal ? null : live.state })
   }
 
   const buyEmber = (id: EmberUpgradeId) => {
@@ -492,6 +523,7 @@ export default function App() {
         setConfirm(null)
         return
       }
+      if (document.querySelector('[aria-modal="true"]')) return
       // Never hijack typing/selects (e.g. the targeting dropdown).
       const t = e.target
       if (t instanceof HTMLSelectElement || t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) return
@@ -963,6 +995,7 @@ export default function App() {
       <div className="sr-only" role="status" aria-live="polite" data-testid="sr-status">
         {srMessage}
       </div>
+      {saveStatus && <p role="status" className="save-warning">{saveStatus}</p>}
       {hint && (
         <div className="hint-banner" data-testid="hint">
           <span>{hint}</span>
@@ -1420,29 +1453,13 @@ export default function App() {
           summary={summary}
           meta={meta}
           onWatchReplay={watchReplay}
-          replay={() =>
-            // v2 embeds the tick-0 state, so ANY account can reconstruct and
-            // watch this exact run (Settings → Shared replay). The meta
-            // snapshot rides along for bug-report context only.
-            JSON.stringify({
-              v: 2,
-              seed: session.state.seed,
-              initial: session.initial,
-              upgrades: meta.upgrades,
-              emberUpgrades: meta.emberUpgrades,
-              log: session.commandLog,
-            })
-          }
+          replay={() => JSON.stringify(session.recording())}
           replayLink={async () => {
-            // The same v2 payload, gzipped into a URL: anyone who opens it
-            // spectates this exact run on arrival.
-            const blob = await gzipBase64Url(
-              JSON.stringify({ v: 2, seed: session.state.seed, initial: session.initial, log: session.commandLog }),
-            )
-            if (!blob) return null
-            return `${window.location.origin}${window.location.pathname}?replay=${blob}`
+            const blob = await gzipBase64Url(JSON.stringify(session.recording()))
+            return blob ? `${window.location.origin}${window.location.pathname}?replay=${blob}` : null
           }}
           onBuy={buyMeta}
+          onRespec={session.terminal || (state.wave === 0 && state.towers.length === 0) ? respec : undefined}
           onBuyEmber={buyEmber}
           onAscend={doAscend}
           onNextRun={() => beginNextRun()}
@@ -1503,6 +1520,7 @@ export default function App() {
         <SpireTreeModal
           meta={meta}
           onBuy={buyMeta}
+          onRespec={session.terminal || (state.wave === 0 && state.towers.length === 0) ? respec : undefined}
           onBuyEmber={buyEmber}
           onAscend={doAscend}
           onClose={() => setShowTree(false)}

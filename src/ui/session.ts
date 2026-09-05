@@ -1,3 +1,4 @@
+import { RULES_VERSION, type Recording } from './validation'
 import { ENEMIES } from '../data/content'
 import { cellCenter } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
@@ -68,6 +69,7 @@ export class GameSession {
   // player dispatches are ignored, and App suppresses meta/save effects.
   replayScript: LoggedCommand[] | null = null
   private scriptIndex = 0
+  suspended = false
   speed = 1
   effects: VisualEffect[] = []
   commandLog: LoggedCommand[] = []
@@ -90,12 +92,17 @@ export class GameSession {
   private listeners = new Set<() => void>()
   private lastNotify = 0
 
-  constructor(initial: RunState) {
+  constructor(initial: RunState, recording?: Recording) {
     this.state = initial
     this.prev = initial
     // RunState is plain JSON by architectural contract — a cheap deep copy
     // pins tick 0 against later mutation-by-reference.
-    this.initial = JSON.parse(JSON.stringify(initial)) as RunState
+    this.initial = JSON.parse(JSON.stringify(recording?.initial ?? initial)) as RunState
+    this.commandLog = recording?.log.slice() ?? []
+  }
+
+  recording(): Recording {
+    return { v: 3, rules: RULES_VERSION, initial: this.initial, log: this.commandLog, endTick: this.state.tick }
   }
 
   get terminal(): boolean {
@@ -129,13 +136,15 @@ export class GameSession {
     }
   }
 
+  setSuspended(suspended: boolean): void { this.suspended = suspended }
+
   setSpeed(n: number): void {
     this.speed = Math.max(0, Math.min(100, n))
   }
 
   // Called once per animation frame with real elapsed milliseconds.
   advance(dtMs: number): void {
-    if (this.speed <= 0 || this.terminal) {
+    if (this.suspended || this.speed <= 0 || this.terminal) {
       this.maybeNotify(true)
       return
     }
@@ -152,7 +161,7 @@ export class GameSession {
 
   // Interpolation factor between prev and state for smooth 60fps rendering.
   get alpha(): number {
-    if (this.speed <= 0 || this.terminal) return 1
+    if (this.suspended || this.speed <= 0 || this.terminal) return 1
     return Math.max(0, Math.min(1, this.accumulator / TICK_MS))
   }
 

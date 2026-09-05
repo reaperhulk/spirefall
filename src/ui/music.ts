@@ -263,7 +263,13 @@ export class Music {
     const muted = this.sfx.muted || settings.musicVolume <= 0
     const level = muted ? 0.0001 : 0.05 * (settings.musicVolume / 100)
     this.bus.gain.setTargetAtTime(level, ctx.currentTime, 0.4)
-    if (muted) return
+    if (muted) { this.nextNoteAt = ctx.currentTime + 0.1; return }
+    // Resume at the present beat after suspension; never schedule a backlog.
+    if (this.nextNoteAt < ctx.currentTime - BEAT) {
+      const skipped = Math.ceil((ctx.currentTime - this.nextNoteAt) / BEAT)
+      this.totalStep += skipped
+      this.nextNoteAt += skipped * BEAT
+    }
 
     // Intensity from the battlefield, eased toward its target.
     const over = state.phase === 'defeat' || state.phase === 'victory'

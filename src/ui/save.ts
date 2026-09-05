@@ -1,4 +1,6 @@
+import { MAX_TRANSFER_BYTES, throughStream } from './boundedStream'
 import { COLLECT_RADIUS_BASE } from '../data/content'
+import { finiteTree, parseRecording, validRun, type Recording } from './validation'
 import { deriveStream } from '../engine/rng'
 import type { MetaState, RunState } from '../engine/types'
 
@@ -9,35 +11,60 @@ export interface SaveData {
   version: 1
   meta: MetaState
   run: RunState | null
+  recording?: Recording
 }
 
 const KEY = 'spirefall-save'
-
+const BACKUP = `${KEY}-backup`
+let lastGoodRaw: string | null = null
+let status = ''
+const listeners = new Set<() => void>()
+export const getSaveStatus = () => status
+export const subscribeSaveStatus = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener) } }
+function report(message: string) { if (status !== message) { status = message; for (const fn of listeners) fn() } }
+let recordingProvider: (() => Recording | undefined) | undefined
+export function registerRecording(provider: () => Recording | undefined): () => void {
+  recordingProvider = provider
+  return () => { if (recordingProvider === provider) recordingProvider = undefined }
+}
 export function loadSave(): SaveData | null {
+  for (const key of [KEY, BACKUP]) {
+    try {
+      const raw = localStorage.getItem(key)
+      if (!raw || raw.length > MAX_TRANSFER_BYTES) continue
+      const data = migrate(JSON.parse(raw) as {version?: number})
+      if (!data) continue
+      lastGoodRaw = raw
+      if (key === BACKUP) report('Recovered your previous save checkpoint.')
+      if (data.run && !validRun(data.run)) return null
+      if (data.recording) {
+        const recording = parseRecording(JSON.stringify(data.recording))
+        if (recording && data.run && recording.endTick === data.run.tick && recording.initial.seed === data.run.seed) data.recording = recording
+        else delete data.recording // old saves still resume from their checkpoint
+      }
+      return data
+    } catch { /* Try the last good backup. */ }
+  }
+  return null
+}
+export function persistSave(data: SaveData): boolean {
   try {
-    const raw = localStorage.getItem(KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as { version?: number }
-    return migrate(parsed)
+    const recording = data.run ? recordingProvider?.() : undefined
+    const payload = recording?.endTick === data.run?.tick && recording?.initial.seed === data.run?.seed ? { ...data, recording } : data
+    const raw = JSON.stringify(payload)
+    if (raw.length > MAX_TRANSFER_BYTES) throw new Error('Save too large')
+    if (lastGoodRaw) localStorage.setItem(BACKUP, lastGoodRaw)
+    localStorage.setItem(KEY, raw)
+    lastGoodRaw = raw
+    report('')
+    return true
   } catch {
-    return null
+    report('Progress could not be saved. Free browser storage or export your progress in Settings.')
+    return false
   }
 }
-
-export function persistSave(data: SaveData): void {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(data))
-  } catch {
-    // Storage full or blocked — the game keeps playing, just unsaved.
-  }
-}
-
 export function clearSave(): void {
-  try {
-    localStorage.removeItem(KEY)
-  } catch {
-    // ignore
-  }
+  try { localStorage.removeItem(KEY); localStorage.removeItem(BACKUP); lastGoodRaw = null } catch { /* blocked storage */ }
 }
 
 // --- transfer codes ---------------------------------------------------------
@@ -47,19 +74,6 @@ export function clearSave(): void {
 
 const CODE_PREFIX = 'SF2:'
 
-async function throughStream(bytes: Uint8Array, stream: { writable: WritableStream; readable: ReadableStream }): Promise<Uint8Array> {
-  const writer = stream.writable.getWriter()
-  void writer.write(bytes)
-  void writer.close()
-  const out: number[] = []
-  const reader = stream.readable.getReader()
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) break
-    out.push(...(value as Uint8Array))
-  }
-  return new Uint8Array(out)
-}
 
 function toBase64(bytes: Uint8Array): string {
   let bin = ''
@@ -84,6 +98,7 @@ export async function exportSave(): Promise<string | null> {
 
 export async function importSave(code: string): Promise<boolean> {
   try {
+    if (code.length > MAX_TRANSFER_BYTES) return false
     const trimmed = code.trim()
     let raw: string
     if (trimmed.startsWith(CODE_PREFIX)) {
@@ -95,8 +110,7 @@ export async function importSave(code: string): Promise<boolean> {
     const parsed = JSON.parse(raw) as { version?: number }
     const data = migrate(parsed)
     if (!data) return false
-    localStorage.setItem(KEY, JSON.stringify(data))
-    return true
+    return persistSave(data)
   } catch {
     return false
   }
@@ -106,7 +120,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
   switch (parsed.version) {
     case 1: {
       const data = parsed as SaveData
-      if (!data.meta || typeof data.meta.sparks !== 'number') return null
+      if (!data.meta || !finiteTree(data) || !Number.isSafeInteger(data.meta.sparks) || data.meta.sparks < 0 || !data.meta.upgrades) return null
+      if (!['runs', 'totalSparks'].every(k => Number.isSafeInteger((data.meta as unknown as Record<string, number>)[k]))) return null
+      if (!Object.values(data.meta.upgrades).every(n => Number.isSafeInteger(n) && n >= 0)) return null
       // Ascension-era meta fields — backfill pre-ascension saves.
       data.meta.victories ??= 0
       data.meta.cycleVictories ??= 0
@@ -197,6 +213,12 @@ function migrate(parsed: { version?: number }): SaveData | null {
         // arithmetic that reads it every execute and every overcharge.
         data.run.mods.executeCdPct ??= 0
         data.run.mods.overchargeCdPct ??= 0
+      }
+      if (data.run && !validRun(data.run)) return null
+      if (data.recording) {
+        const recording = parseRecording(JSON.stringify(data.recording))
+        if (recording && data.run && recording.endTick === data.run.tick && recording.initial.seed === data.run.seed) data.recording = recording
+        else delete data.recording // old saves still resume from their checkpoint
       }
       return data
     }

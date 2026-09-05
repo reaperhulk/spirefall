@@ -107,10 +107,12 @@ function useCompactLayout(): boolean {
 export function SpireTreeGraph({
   meta,
   onBuy,
+  onRespec,
   compact: forceCompact,
 }: {
   meta: MetaState
   onBuy: (id: MetaUpgradeId) => void
+  onRespec?: ((id: MetaUpgradeId) => void) | undefined
   compact?: boolean
 }) {
   const autoCompact = useCompactLayout()
@@ -320,7 +322,7 @@ export function SpireTreeGraph({
           </button>
           <strong>{detail.name}</strong>
           <span className="tree-detail-desc">{detail.description}</span>
-          <DetailBody meta={meta} node={detail} onBuy={handleBuy} />
+          <DetailBody meta={meta} node={detail} onBuy={handleBuy} onRespec={onRespec} />
         </div>
       )}
     </div>
@@ -346,10 +348,12 @@ function DetailBody({
   meta,
   node,
   onBuy,
+  onRespec,
 }: {
   meta: MetaState
   node: MetaNodeDef
   onBuy: (id: MetaUpgradeId) => void
+  onRespec?: ((id: MetaUpgradeId) => void) | undefined
 }) {
   const level = metaLevel(meta, node.id)
   const cost = metaUpgradeCost(meta, node.id)
@@ -359,6 +363,11 @@ function DetailBody({
   const rival = keystoneConflict(meta, node.id)
   return (
     <>
+      {node.keystone && level > 0 && (
+        <button className="ghost-btn" data-testid={`respec-${node.id}`} disabled={!onRespec} onClick={() => onRespec?.(node.id)}>
+          {onRespec ? 'Respec · full Spark refund' : 'Respec between runs'}
+        </button>
+      )}
       {now !== null && (
         <span className="tree-detail-effect">
           Now: {now}

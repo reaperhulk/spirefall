@@ -382,6 +382,7 @@ export function RunOverOverlay({
   trialPref,
   onTrialPref,
   onBuy,
+  onRespec,
   onBuyEmber,
   onAscend,
   onNextRun,
@@ -398,6 +399,7 @@ export function RunOverOverlay({
   trialPref: string
   onTrialPref: (v: string) => void
   onBuy: (id: MetaUpgradeId) => void
+  onRespec?: ((id: MetaUpgradeId) => void) | undefined
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
   onNextRun: () => void
@@ -601,7 +603,7 @@ export function RunOverOverlay({
           </div>
         )}
         <h3>The Spire Tree — ✦ {meta.sparks} available</h3>
-        <SpireTreeGraph meta={meta} onBuy={onBuy} />
+        <SpireTreeGraph meta={meta} onBuy={onBuy} onRespec={onRespec} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
           </>
         )}
@@ -975,7 +977,7 @@ export function SettingsModal({
           </button>
           {replayFailed && (
             <span className="transfer-error" data-testid="replay-import-failed">
-              That didn't parse as a v2 Spirefall replay.
+              This replay is invalid, too large, or uses a different gameplay rules version.
             </span>
           )}
         </div>
@@ -999,6 +1001,7 @@ export function SettingsModal({
 export function SpireTreeModal({
   meta,
   onBuy,
+  onRespec,
   onBuyEmber,
   onAscend,
   onClose,
@@ -1007,6 +1010,7 @@ export function SpireTreeModal({
 }: {
   meta: MetaState
   onBuy: (id: MetaUpgradeId) => void
+  onRespec?: ((id: MetaUpgradeId) => void) | undefined
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
   onClose: () => void
@@ -1018,7 +1022,7 @@ export function SpireTreeModal({
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Spire Tree">
         <h2>The Spire Tree — ✦ {meta.sparks}</h2>
         <p className="run-flavor">Permanent upgrades. New purchases take effect on your next run.</p>
-        <SpireTreeGraph meta={meta} onBuy={onBuy} />
+        <SpireTreeGraph meta={meta} onBuy={onBuy} onRespec={onRespec} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
         <button className="ghost-btn" onClick={onClose}>
           Close
