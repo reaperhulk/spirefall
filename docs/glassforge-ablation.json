@@ -1,0 +1,405 @@
+{
+  "notes": "Controlled ablations at fixed 5k meta and fuzzer-discovered policies. bonus35 reconstructs the pre-fix bonus; HP-only variants keep it. Other variables and the existing robust-win oracle are unchanged. Commands stop after first victory.",
+  "runs": [
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "bonus35",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 6
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "bonus30",
+      "bonus": 30,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 19
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "bonus25",
+      "bonus": 25,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 18
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "bonus20",
+      "bonus": 20,
+      "startingHp": 16,
+      "win": false,
+      "waves": 22,
+      "leaks": 13
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "bonus0",
+      "bonus": 0,
+      "startingHp": 16,
+      "win": false,
+      "waves": 22,
+      "leaks": 13
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "hp50",
+      "bonus": 35,
+      "startingHp": 14,
+      "win": true,
+      "waves": 24,
+      "leaks": 6
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "hp55",
+      "bonus": 35,
+      "startingHp": 12,
+      "win": true,
+      "waves": 24,
+      "leaks": 6
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "no_beam",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 22
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "no_execute",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 21
+    },
+    {
+      "biome": "verdant",
+      "seed": "gamma",
+      "variant": "no_bounty",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": false,
+      "waves": 22,
+      "leaks": 12
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "bonus35",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 8
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "bonus30",
+      "bonus": 30,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 9
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "bonus25",
+      "bonus": 25,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 17
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "bonus20",
+      "bonus": 20,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 14
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "bonus0",
+      "bonus": 0,
+      "startingHp": 16,
+      "win": false,
+      "waves": 22,
+      "leaks": 17
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "hp50",
+      "bonus": 35,
+      "startingHp": 14,
+      "win": true,
+      "waves": 24,
+      "leaks": 8
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "hp55",
+      "bonus": 35,
+      "startingHp": 12,
+      "win": false,
+      "waves": 23,
+      "leaks": 8
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "no_beam",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 14
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "no_execute",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 20
+    },
+    {
+      "biome": "verdant",
+      "seed": "theta",
+      "variant": "no_bounty",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": false,
+      "waves": 16,
+      "leaks": 13
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "bonus35",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 1
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "bonus30",
+      "bonus": 30,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 0
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "bonus25",
+      "bonus": 25,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 4
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "bonus20",
+      "bonus": 20,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 5
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "bonus0",
+      "bonus": 0,
+      "startingHp": 16,
+      "win": false,
+      "waves": 21,
+      "leaks": 15
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "hp50",
+      "bonus": 35,
+      "startingHp": 14,
+      "win": true,
+      "waves": 24,
+      "leaks": 1
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "hp55",
+      "bonus": 35,
+      "startingHp": 12,
+      "win": true,
+      "waves": 24,
+      "leaks": 1
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "no_beam",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 1
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "no_execute",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 4
+    },
+    {
+      "biome": "highlands",
+      "seed": "gamma",
+      "variant": "no_bounty",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 9
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "bonus35",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 4
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "bonus30",
+      "bonus": 30,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 17
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "bonus25",
+      "bonus": 25,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 24
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "bonus20",
+      "bonus": 20,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 9
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "bonus0",
+      "bonus": 0,
+      "startingHp": 16,
+      "win": false,
+      "waves": 20,
+      "leaks": 19
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "hp50",
+      "bonus": 35,
+      "startingHp": 14,
+      "win": true,
+      "waves": 24,
+      "leaks": 4
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "hp55",
+      "bonus": 35,
+      "startingHp": 12,
+      "win": true,
+      "waves": 24,
+      "leaks": 4
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "no_beam",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 4
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "no_execute",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": false,
+      "waves": 23,
+      "leaks": 24
+    },
+    {
+      "biome": "highlands",
+      "seed": "delta",
+      "variant": "no_bounty",
+      "bonus": 35,
+      "startingHp": 16,
+      "win": true,
+      "waves": 24,
+      "leaks": 13
+    }
+  ]
+}

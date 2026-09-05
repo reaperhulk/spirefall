@@ -55,6 +55,7 @@ export interface Scenario {
 }
 
 export const SCENARIOS: Scenario[] = [
+  { name: 'glassforge-active', seed: 'golden-glassforge', bot: 'active', meta: () => spendSparks({ ...createMeta(), sparks: 5000 }, ['tower_damage', 'ks_glassforge', 'spire_hp', 'crit_chance', ...DEFAULT_BUY_PRIORITY]), maxTicks: 400_000 },
   { name: 'afk-fresh', seed: 'golden-afk', bot: 'afk', meta: createMeta, maxTicks: 400_000 },
   { name: 'greedy-fresh', seed: 'golden-greedy', bot: 'greedy', meta: createMeta, maxTicks: 400_000 },
   { name: 'balanced-fresh', seed: 'golden-balanced', bot: 'balanced', meta: createMeta, maxTicks: 400_000 },

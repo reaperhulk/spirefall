@@ -1,0 +1,261 @@
+{
+  "notes": "Fixed fuzzer-discovered policies; candidate Glassforge +25% damage at unchanged -40% HP, compared over all eight search seeds at 5k and 10k. Reference and family pilots choose no keystone.",
+  "runs": [
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 25,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 25,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 25,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 25,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 25,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 25,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 25,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "biome": "verdant",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 25,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "alpha",
+      "bonus": 25,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "beta",
+      "bonus": 25,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "gamma",
+      "bonus": 25,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "delta",
+      "bonus": 25,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "epsilon",
+      "bonus": 25,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "zeta",
+      "bonus": 25,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "eta",
+      "bonus": 25,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "biome": "verdant",
+      "budget": 10000,
+      "seed": "theta",
+      "bonus": 25,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 25,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 25,
+      "win": false,
+      "waves": 5
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 25,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 25,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 25,
+      "win": false,
+      "waves": 13
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 25,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 25,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "biome": "highlands",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 25,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "alpha",
+      "bonus": 25,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "beta",
+      "bonus": 25,
+      "win": false,
+      "waves": 5
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "gamma",
+      "bonus": 25,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "delta",
+      "bonus": 25,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "epsilon",
+      "bonus": 25,
+      "win": false,
+      "waves": 13
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "zeta",
+      "bonus": 25,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "eta",
+      "bonus": 25,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "biome": "highlands",
+      "budget": 10000,
+      "seed": "theta",
+      "bonus": 25,
+      "win": false,
+      "waves": 16
+    }
+  ]
+}
