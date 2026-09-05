@@ -1,5 +1,5 @@
 {
-  "notes": "Three frozen fuzzer-discovered policies crossed with all doctrines and none. Glassforge amplifies Honed Edge by 20%, at unchanged 1200 Sparks and -40% HP. Eight search seeds at 5k constrain repeatable early wins; four unseen seeds at 20k check retained viability. No-keystone reference/family pilots and existing win thresholds are unchanged.",
+  "notes": "Four frozen fuzzer-discovered policies, including the independent no-keystone Storm reference crossed with all doctrines and none. Glassforge amplifies Honed Edge by 15%, at unchanged 1200 Sparks and -40% HP. Eight search seeds at 5k constrain repeatable early wins; four unseen seeds at 20k check retained viability. No-keystone reference/family pilots and existing win thresholds are unchanged.",
   "runs": [
     {
       "build": "verdant-sniper",
@@ -7,7 +7,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -17,7 +17,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -27,7 +27,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 22
     },
@@ -37,9 +37,9 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "delta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 22
+      "waves": 21
     },
     {
       "build": "verdant-sniper",
@@ -47,9 +47,9 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 14
+      "waves": 18
     },
     {
       "build": "verdant-sniper",
@@ -57,7 +57,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -67,7 +67,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 19
     },
@@ -77,7 +77,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 23
     },
@@ -87,7 +87,7 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 19
     },
@@ -97,7 +97,7 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 17
     },
@@ -107,7 +107,7 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 21
     },
@@ -117,9 +117,9 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "delta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 21
+      "waves": 20
     },
     {
       "build": "verdant-sniper",
@@ -127,7 +127,7 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 18
     },
@@ -137,7 +137,7 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -147,9 +147,9 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 18
+      "waves": 19
     },
     {
       "build": "verdant-sniper",
@@ -157,7 +157,7 @@
       "doctrine": "shatter",
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 23
     },
@@ -167,9 +167,9 @@
       "doctrine": "siege",
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 19
+      "waves": 20
     },
     {
       "build": "verdant-sniper",
@@ -177,7 +177,7 @@
       "doctrine": "siege",
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -187,47 +187,7 @@
       "doctrine": "siege",
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
-      "win": false,
-      "waves": 23
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "epsilon",
-      "bonus": 12,
-      "win": false,
-      "waves": 18
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "zeta",
-      "bonus": 12,
-      "win": false,
-      "waves": 20
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 22
     },
@@ -236,10 +196,50 @@
       "biome": "verdant",
       "doctrine": "siege",
       "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 9,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 9,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 9,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
-      "win": true,
-      "waves": 24
+      "bonus": 9,
+      "win": false,
+      "waves": 23
     },
     {
       "build": "verdant-sniper",
@@ -247,7 +247,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 19
     },
@@ -257,7 +257,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 18
     },
@@ -267,7 +267,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 21
     },
@@ -277,7 +277,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "delta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -287,7 +287,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 13
     },
@@ -297,7 +297,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -307,9 +307,9 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 21
+      "waves": 18
     },
     {
       "build": "verdant-sniper",
@@ -317,9 +317,9 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 23
+      "waves": 22
     },
     {
       "build": "verdant-sniper",
@@ -327,7 +327,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
@@ -337,557 +337,557 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 9,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 9,
+      "win": false,
+      "waves": 10
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 9,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 9,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 19,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 19,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 19,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "build": "verdant-sniper",
+      "biome": "verdant",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 9,
+      "win": false,
+      "waves": 5
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 9,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 9,
+      "win": false,
+      "waves": 13
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 9,
+      "win": false,
+      "waves": 5
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 9,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 9,
+      "win": false,
+      "waves": 13
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 9,
       "win": false,
       "waves": 17
     },
     {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 9,
+      "win": false,
+      "waves": 5
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
     {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
       "budget": 5000,
       "seed": "delta",
-      "bonus": 12,
+      "bonus": 9,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 9,
+      "win": false,
+      "waves": 13
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 9,
+      "win": false,
+      "waves": 5
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
       "win": false,
       "waves": 20
     },
     {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 5000,
-      "seed": "epsilon",
-      "bonus": 12,
-      "win": false,
-      "waves": 11
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 5000,
-      "seed": "zeta",
-      "bonus": 12,
-      "win": false,
-      "waves": 18
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 5000,
-      "seed": "eta",
-      "bonus": 12,
-      "win": false,
-      "waves": 18
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 5000,
-      "seed": "theta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": null,
-      "budget": 20000,
-      "seed": "glass-heldout-1",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": null,
-      "budget": 20000,
-      "seed": "glass-heldout-2",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": null,
-      "budget": 20000,
-      "seed": "glass-heldout-3",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": null,
-      "budget": 20000,
-      "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "shatter",
-      "budget": 20000,
-      "seed": "glass-heldout-1",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "shatter",
-      "budget": 20000,
-      "seed": "glass-heldout-2",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "shatter",
-      "budget": 20000,
-      "seed": "glass-heldout-3",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "shatter",
-      "budget": 20000,
-      "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": false,
-      "waves": 22
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 20000,
-      "seed": "glass-heldout-1",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 20000,
-      "seed": "glass-heldout-2",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 20000,
-      "seed": "glass-heldout-3",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "siege",
-      "budget": 20000,
-      "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "storm",
-      "budget": 20000,
-      "seed": "glass-heldout-1",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "storm",
-      "budget": 20000,
-      "seed": "glass-heldout-2",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "storm",
-      "budget": 20000,
-      "seed": "glass-heldout-3",
-      "bonus": 25,
-      "win": false,
-      "waves": 23
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "storm",
-      "budget": 20000,
-      "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 20000,
-      "seed": "glass-heldout-1",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 20000,
-      "seed": "glass-heldout-2",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 20000,
-      "seed": "glass-heldout-3",
-      "bonus": 25,
-      "win": false,
-      "waves": 22
-    },
-    {
-      "build": "verdant-sniper",
-      "biome": "verdant",
-      "doctrine": "war_economy",
-      "budget": 20000,
-      "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "alpha",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "beta",
-      "bonus": 12,
-      "win": false,
-      "waves": 5
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "gamma",
-      "bonus": 12,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
-      "win": false,
-      "waves": 23
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "epsilon",
-      "bonus": 12,
-      "win": false,
-      "waves": 13
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "zeta",
-      "bonus": 12,
-      "win": false,
-      "waves": 15
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "eta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "theta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "alpha",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "beta",
-      "bonus": 12,
-      "win": false,
-      "waves": 5
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "gamma",
-      "bonus": 12,
-      "win": false,
-      "waves": 18
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
-      "win": false,
-      "waves": 22
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "epsilon",
-      "bonus": 12,
-      "win": false,
-      "waves": 13
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "zeta",
-      "bonus": 12,
-      "win": false,
-      "waves": 15
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "eta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "theta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "alpha",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "beta",
-      "bonus": 12,
-      "win": false,
-      "waves": 5
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "gamma",
-      "bonus": 12,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "epsilon",
-      "bonus": 12,
-      "win": false,
-      "waves": 13
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "zeta",
-      "bonus": 12,
-      "win": false,
-      "waves": 15
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "eta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "theta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "storm",
-      "budget": 5000,
-      "seed": "alpha",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "storm",
-      "budget": 5000,
-      "seed": "beta",
-      "bonus": 12,
-      "win": false,
-      "waves": 5
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "storm",
-      "budget": 5000,
-      "seed": "gamma",
-      "bonus": 12,
-      "win": false,
-      "waves": 15
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "storm",
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
-      "win": false,
-      "waves": 23
-    },
-    {
       "build": "highlands-sniper",
       "biome": "highlands",
       "doctrine": "storm",
       "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 13
     },
@@ -897,7 +897,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 15
     },
@@ -907,7 +907,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -917,7 +917,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -927,7 +927,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 15
     },
@@ -937,7 +937,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 6
     },
@@ -947,17 +947,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
-      "win": false,
-      "waves": 18
-    },
-    {
-      "build": "highlands-sniper",
-      "biome": "highlands",
-      "doctrine": "war_economy",
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 23
     },
@@ -966,8 +956,18 @@
       "biome": "highlands",
       "doctrine": "war_economy",
       "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "build": "highlands-sniper",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 12
     },
@@ -977,9 +977,9 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 14
+      "waves": 13
     },
     {
       "build": "highlands-sniper",
@@ -987,7 +987,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 14
     },
@@ -997,7 +997,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 15
     },
@@ -1007,7 +1007,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1017,7 +1017,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1027,7 +1027,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1037,7 +1037,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1047,7 +1047,7 @@
       "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1057,7 +1057,7 @@
       "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1067,7 +1067,7 @@
       "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1077,7 +1077,7 @@
       "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 15
     },
@@ -1087,7 +1087,7 @@
       "doctrine": "siege",
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1097,7 +1097,7 @@
       "doctrine": "siege",
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1107,7 +1107,7 @@
       "doctrine": "siege",
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 22
     },
@@ -1117,7 +1117,7 @@
       "doctrine": "siege",
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 15
     },
@@ -1127,7 +1127,7 @@
       "doctrine": "storm",
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1137,7 +1137,7 @@
       "doctrine": "storm",
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 19
     },
@@ -1147,9 +1147,9 @@
       "doctrine": "storm",
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
-      "waves": 21
+      "waves": 18
     },
     {
       "build": "highlands-sniper",
@@ -1157,9 +1157,9 @@
       "doctrine": "storm",
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
+      "bonus": 19,
+      "win": true,
+      "waves": 24
     },
     {
       "build": "highlands-sniper",
@@ -1167,7 +1167,7 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1177,7 +1177,7 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 20
     },
@@ -1187,7 +1187,7 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1197,7 +1197,7 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1207,7 +1207,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -1217,7 +1217,7 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 5
     },
@@ -1227,179 +1227,179 @@
       "doctrine": null,
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
-      "win": false,
-      "waves": 23
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "epsilon",
-      "bonus": 12,
-      "win": false,
-      "waves": 13
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "zeta",
-      "bonus": 12,
-      "win": false,
-      "waves": 15
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "eta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": null,
-      "budget": 5000,
-      "seed": "theta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "alpha",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "beta",
-      "bonus": 12,
-      "win": false,
-      "waves": 5
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "gamma",
-      "bonus": 12,
-      "win": false,
-      "waves": 18
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "delta",
-      "bonus": 12,
-      "win": false,
-      "waves": 22
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "epsilon",
-      "bonus": 12,
-      "win": false,
-      "waves": 13
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "zeta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "eta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 5000,
-      "seed": "theta",
-      "bonus": 12,
-      "win": false,
-      "waves": 16
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "alpha",
-      "bonus": 12,
-      "win": false,
-      "waves": 18
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "beta",
-      "bonus": 12,
-      "win": false,
-      "waves": 6
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 5000,
-      "seed": "gamma",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 21
     },
     {
       "build": "highlands-beam",
       "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 9,
+      "win": false,
+      "waves": 13
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 9,
+      "win": false,
+      "waves": 5
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 9,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 9,
+      "win": false,
+      "waves": 23
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 9,
+      "win": false,
+      "waves": 12
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 9,
+      "win": false,
+      "waves": 15
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 9,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 9,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 9,
+      "win": false,
+      "waves": 6
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 9,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
       "doctrine": "siege",
       "budget": 5000,
       "seed": "delta",
-      "bonus": 12,
-      "win": true,
-      "waves": 24
+      "bonus": 9,
+      "win": false,
+      "waves": 23
     },
     {
       "build": "highlands-beam",
@@ -1407,7 +1407,7 @@
       "doctrine": "siege",
       "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 13
     },
@@ -1417,7 +1417,7 @@
       "doctrine": "siege",
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -1427,7 +1427,7 @@
       "doctrine": "siege",
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -1437,7 +1437,7 @@
       "doctrine": "siege",
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -1447,7 +1447,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -1457,7 +1457,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 6
     },
@@ -1467,9 +1467,9 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 16
+      "waves": 15
     },
     {
       "build": "highlands-beam",
@@ -1477,9 +1477,9 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "delta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 23
+      "waves": 20
     },
     {
       "build": "highlands-beam",
@@ -1487,7 +1487,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 13
     },
@@ -1497,7 +1497,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 15
     },
@@ -1507,7 +1507,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 15
     },
@@ -1517,7 +1517,7 @@
       "doctrine": "storm",
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 16
     },
@@ -1527,9 +1527,9 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "alpha",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 15
+      "waves": 14
     },
     {
       "build": "highlands-beam",
@@ -1537,7 +1537,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "beta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 5
     },
@@ -1547,7 +1547,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "gamma",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 23
     },
@@ -1557,9 +1557,9 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "delta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 23
+      "waves": 22
     },
     {
       "build": "highlands-beam",
@@ -1567,7 +1567,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "epsilon",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 12
     },
@@ -1577,7 +1577,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "zeta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 14
     },
@@ -1587,9 +1587,9 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "eta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
-      "waves": 13
+      "waves": 14
     },
     {
       "build": "highlands-beam",
@@ -1597,7 +1597,7 @@
       "doctrine": "war_economy",
       "budget": 5000,
       "seed": "theta",
-      "bonus": 12,
+      "bonus": 9,
       "win": false,
       "waves": 15
     },
@@ -1607,7 +1607,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1617,7 +1617,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1627,7 +1627,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1637,7 +1637,7 @@
       "doctrine": null,
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1647,7 +1647,7 @@
       "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1657,97 +1657,97 @@
       "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 20000,
-      "seed": "glass-heldout-3",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "shatter",
-      "budget": 20000,
-      "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": false,
-      "waves": 15
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 20000,
-      "seed": "glass-heldout-1",
-      "bonus": 25,
-      "win": false,
-      "waves": 21
-    },
-    {
-      "build": "highlands-beam",
-      "biome": "highlands",
-      "doctrine": "siege",
-      "budget": 20000,
-      "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 19
     },
     {
       "build": "highlands-beam",
       "biome": "highlands",
-      "doctrine": "siege",
+      "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
     {
       "build": "highlands-beam",
       "biome": "highlands",
-      "doctrine": "siege",
+      "doctrine": "shatter",
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 15
     },
     {
       "build": "highlands-beam",
       "biome": "highlands",
-      "doctrine": "storm",
+      "doctrine": "siege",
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
     {
       "build": "highlands-beam",
       "biome": "highlands",
-      "doctrine": "storm",
+      "doctrine": "siege",
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 20
     },
     {
       "build": "highlands-beam",
       "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 19,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 19,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 19,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "highlands-beam",
+      "biome": "highlands",
       "doctrine": "storm",
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1757,9 +1757,9 @@
       "doctrine": "storm",
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
-      "win": true,
-      "waves": 24
+      "bonus": 19,
+      "win": false,
+      "waves": 21
     },
     {
       "build": "highlands-beam",
@@ -1767,7 +1767,7 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-1",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
       "waves": 21
     },
@@ -1777,9 +1777,9 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-2",
-      "bonus": 25,
+      "bonus": 19,
       "win": false,
-      "waves": 21
+      "waves": 20
     },
     {
       "build": "highlands-beam",
@@ -1787,7 +1787,7 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-3",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
     },
@@ -1797,9 +1797,609 @@
       "doctrine": "war_economy",
       "budget": 20000,
       "seed": "glass-heldout-4",
-      "bonus": 25,
+      "bonus": 19,
       "win": true,
       "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 0,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 0,
+      "win": false,
+      "waves": 14
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 0,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 0,
+      "win": false,
+      "waves": 17
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 0,
+      "win": false,
+      "waves": 17
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 0,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 0,
+      "win": false,
+      "waves": 17
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 0,
+      "win": false,
+      "waves": 14
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "alpha",
+      "bonus": 0,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "beta",
+      "bonus": 0,
+      "win": false,
+      "waves": 14
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "gamma",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "delta",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "epsilon",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "zeta",
+      "bonus": 0,
+      "win": false,
+      "waves": 17
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "eta",
+      "bonus": 0,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 5000,
+      "seed": "theta",
+      "bonus": 0,
+      "win": false,
+      "waves": 16
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 0,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": null,
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 0,
+      "win": false,
+      "waves": 21
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "shatter",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 0,
+      "win": false,
+      "waves": 20
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "siege",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 0,
+      "win": true,
+      "waves": 24
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "storm",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-1",
+      "bonus": 0,
+      "win": false,
+      "waves": 18
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-2",
+      "bonus": 0,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-3",
+      "bonus": 0,
+      "win": false,
+      "waves": 22
+    },
+    {
+      "build": "storm-reference",
+      "biome": "highlands",
+      "doctrine": "war_economy",
+      "budget": 20000,
+      "seed": "glass-heldout-4",
+      "bonus": 0,
+      "win": false,
+      "waves": 19
     }
   ]
 }

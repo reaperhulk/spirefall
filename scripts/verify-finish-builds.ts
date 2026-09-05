@@ -20,7 +20,7 @@ for (const finding of findings) {
         const initial = createRun(meta, seed, finding.biome as BiomeId)
         const {state} = autoplay(initial, live => live.victoryClaimed ? [{type:'abandon_run'}] : bot(live), 150000)
         const row = {build: finding.id, biome: finding.biome, doctrine, budget, seed,
-          bonus: glassforgeDamageBonus(meta), win: state.victoryClaimed, waves: state.wavesCleared}
+          bonus: meta.upgrades.ks_glassforge ? glassforgeDamageBonus(meta) : 0, win: state.victoryClaimed, waves: state.wavesCleared}
         runs.push(row)
         console.log(JSON.stringify(row))
       }
@@ -28,6 +28,6 @@ for (const finding of findings) {
   }
 }
 writeFileSync('docs/finish-balance-profile.json', JSON.stringify({
-  notes: 'Three frozen fuzzer-discovered policies crossed with all doctrines and none. Glassforge amplifies Honed Edge by 20%, at unchanged 1200 Sparks and -40% HP. Eight search seeds at 5k constrain repeatable early wins; four unseen seeds at 20k check retained viability. No-keystone reference/family pilots and existing win thresholds are unchanged.',
+  notes: 'Four frozen fuzzer-discovered policies, including the independent no-keystone Storm reference crossed with all doctrines and none. Glassforge amplifies Honed Edge by 15%, at unchanged 1200 Sparks and -40% HP. Eight search seeds at 5k constrain repeatable early wins; four unseen seeds at 20k check retained viability. No-keystone reference/family pilots and existing win thresholds are unchanged.',
   runs,
 }, null, 2) + '\n')

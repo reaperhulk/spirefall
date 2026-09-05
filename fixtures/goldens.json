@@ -1,11 +1,11 @@
 {
   "glassforge-active": {
-    "ticks": 12881,
-    "wavesCleared": 18,
-    "kills": 1242,
+    "ticks": 23775,
+    "wavesCleared": 23,
+    "kills": 2289,
     "outcome": "defeat",
-    "sparks": 373,
-    "stateHash": "334189dc"
+    "sparks": 535,
+    "stateHash": "493df872"
   },
   "afk-fresh": {
     "ticks": 211,

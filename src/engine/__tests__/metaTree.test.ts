@@ -201,9 +201,9 @@ describe('the split damage veins', () => {
 it('Glassforge scales with Honed Edge alone and rounds once across the veins', () => {
   for (const [upgrades, expected] of [
     [{}, 0],
-    [{tower_damage: 8}, 12],
-    [{tower_damage: 8, tower_damage_2: 8}, 25],
-    [{tower_damage: 8, tower_damage_2: 8, tower_damage_3: 9}, 40],
+    [{tower_damage: 8}, 9],
+    [{tower_damage: 8, tower_damage_2: 8}, 19],
+    [{tower_damage: 8, tower_damage_2: 8, tower_damage_3: 9}, 30],
   ] as const) {
     const meta: MetaState = {...createMeta(), upgrades: {...upgrades, ks_glassforge: 1}}
     const plain = createRun({...meta, upgrades: {...upgrades}}, 'glass-scaling')

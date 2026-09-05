@@ -5,7 +5,7 @@ import { createMeta, createRun, glassforgeDamageBonus } from '../src/engine/meta
 import { autoplay, spendSparks } from '../src/harness/autoplay'
 import { makePolicyBot, type PolicyGenome } from '../src/harness/policy'
 import type { BiomeId } from '../src/data/biomes'
-const builds=findings
+const builds=findings.slice(0, 3)
 const rows=[]
 for(const [bonus,cost] of [[25,1200],[15,1200],[10,1200],[35,1800],[35,2400],[25,1800],[25,2400]]) {
   metaNode('ks_glassforge').costs[0]=cost!
