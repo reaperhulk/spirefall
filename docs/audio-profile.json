@@ -1,0 +1,167 @@
+{
+  "sourceCommit": "f9ac7b05892a0ad5d8e1c513c5b7bb68988a61a7",
+  "workflowRun": 33940475063,
+  "notes": "20 real OfflineAudioContext renders of the authored phrase/instrument graph, independent of the live mixed accompaniment and SFX. Objective signal checks, not a listening assessment.",
+  "renders": [
+    {
+      "biome": "verdant",
+      "peak": 0.013930116780102253,
+      "phase": "preparation",
+      "rms": 0.0013519755645895828,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "verdant",
+      "peak": 0.014062975533306599,
+      "phase": "pressure",
+      "rms": 0.0018405696112080369,
+      "seconds": 12.909090909090908,
+      "tailRms": 0
+    },
+    {
+      "biome": "verdant",
+      "peak": 0.014053407125175,
+      "phase": "boss",
+      "rms": 0.0018137265846214644,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "verdant",
+      "peak": 0.014053407125175,
+      "phase": "victory",
+      "rms": 0.0015557017005005274,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    },
+    {
+      "biome": "verdant",
+      "peak": 0.013903999701142311,
+      "phase": "ascension",
+      "rms": 0.001570704545292352,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    },
+    {
+      "biome": "frostfen",
+      "peak": 0.017261672765016556,
+      "phase": "preparation",
+      "rms": 0.0017167602937872542,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "frostfen",
+      "peak": 0.01730339787900448,
+      "phase": "pressure",
+      "rms": 0.00233488599134789,
+      "seconds": 12.909090909090908,
+      "tailRms": 0
+    },
+    {
+      "biome": "frostfen",
+      "peak": 0.017270972952246666,
+      "phase": "boss",
+      "rms": 0.002302979434536602,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "frostfen",
+      "peak": 0.017270972952246666,
+      "phase": "victory",
+      "rms": 0.0019718869740712507,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    },
+    {
+      "biome": "frostfen",
+      "peak": 0.017791269347071648,
+      "phase": "ascension",
+      "rms": 0.001975562284173119,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    },
+    {
+      "biome": "emberwaste",
+      "peak": 0.014674116857349873,
+      "phase": "preparation",
+      "rms": 0.0015412719497868471,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "emberwaste",
+      "peak": 0.014710183255374432,
+      "phase": "pressure",
+      "rms": 0.0020991464150828818,
+      "seconds": 12.909090909090908,
+      "tailRms": 0
+    },
+    {
+      "biome": "emberwaste",
+      "peak": 0.014674116857349873,
+      "phase": "boss",
+      "rms": 0.002067611737013928,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "emberwaste",
+      "peak": 0.014674116857349873,
+      "phase": "victory",
+      "rms": 0.001774733699642805,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    },
+    {
+      "biome": "emberwaste",
+      "peak": 0.014674116857349873,
+      "phase": "ascension",
+      "rms": 0.0017407742497360433,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    },
+    {
+      "biome": "highlands",
+      "peak": 0.011339385062456131,
+      "phase": "preparation",
+      "rms": 0.0016413206369400872,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "highlands",
+      "peak": 0.01136062666773796,
+      "phase": "pressure",
+      "rms": 0.002237792356587437,
+      "seconds": 12.909090909090908,
+      "tailRms": 0
+    },
+    {
+      "biome": "highlands",
+      "peak": 0.011330750770866871,
+      "phase": "boss",
+      "rms": 0.0022023413421476796,
+      "seconds": 7.454545454545454,
+      "tailRms": 0
+    },
+    {
+      "biome": "highlands",
+      "peak": 0.011341005563735962,
+      "phase": "victory",
+      "rms": 0.001893285281271616,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    },
+    {
+      "biome": "highlands",
+      "peak": 0.011969788931310177,
+      "phase": "ascension",
+      "rms": 0.001923460431669023,
+      "seconds": 10.181818181818182,
+      "tailRms": 0
+    }
+  ]
+}

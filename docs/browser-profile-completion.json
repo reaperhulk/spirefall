@@ -1,0 +1,566 @@
+{
+  "memory": {
+    "forcedGc": true,
+    "retainedGrowth": 388364,
+    "samples": [
+      {
+        "cycle": 0,
+        "heap": 4508120,
+        "nodes": 305
+      },
+      {
+        "cycle": 1,
+        "heap": 4843064,
+        "nodes": 305
+      },
+      {
+        "cycle": 2,
+        "heap": 4774532,
+        "nodes": 305
+      },
+      {
+        "cycle": 3,
+        "heap": 4928004,
+        "nodes": 305
+      },
+      {
+        "cycle": 4,
+        "heap": 4917640,
+        "nodes": 305
+      },
+      {
+        "cycle": 5,
+        "heap": 4983980,
+        "nodes": 305
+      },
+      {
+        "cycle": 6,
+        "heap": 5020372,
+        "nodes": 305
+      },
+      {
+        "cycle": 7,
+        "heap": 4916844,
+        "nodes": 305
+      },
+      {
+        "cycle": 8,
+        "heap": 5125464,
+        "nodes": 305
+      },
+      {
+        "cycle": 9,
+        "heap": 5162896,
+        "nodes": 305
+      }
+    ],
+    "seconds": 30
+  },
+  "notes": "Headless Chromium on a shared Ubuntu GitHub Actions runner. All 30 combat towers fired; 10 support towers, 300 slow high-HP enemies, 100 coins, beam and audio active. 120 real keyboard commands per speed. Performance.memory in speed profiles was rounded to 10 MB and is not a useful heap measurement; memory soak uses precise CDP heap with forced GC.",
+  "priorComparableRun": {
+    "memory": {
+      "forcedGc": true,
+      "retainedGrowth": 402048,
+      "samples": [
+        {
+          "cycle": 0,
+          "heap": 4636940,
+          "nodes": 305
+        },
+        {
+          "cycle": 1,
+          "heap": 4856800,
+          "nodes": 305
+        },
+        {
+          "cycle": 2,
+          "heap": 4760104,
+          "nodes": 305
+        },
+        {
+          "cycle": 3,
+          "heap": 4739452,
+          "nodes": 305
+        },
+        {
+          "cycle": 4,
+          "heap": 4939264,
+          "nodes": 305
+        },
+        {
+          "cycle": 5,
+          "heap": 4846764,
+          "nodes": 305
+        },
+        {
+          "cycle": 6,
+          "heap": 5160636,
+          "nodes": 305
+        },
+        {
+          "cycle": 7,
+          "heap": 4937368,
+          "nodes": 305
+        },
+        {
+          "cycle": 8,
+          "heap": 5227272,
+          "nodes": 305
+        },
+        {
+          "cycle": 9,
+          "heap": 5141500,
+          "nodes": 305
+        }
+      ],
+      "seconds": 30
+    },
+    "notes": "Headless Chromium on a shared Ubuntu GitHub Actions runner. All 30 combat towers fired; 10 support towers, 300 slow high-HP enemies, 100 coins, beam and audio active. 120 real keyboard commands per speed. Performance.memory in speed profiles was rounded to 10 MB and is not a useful heap measurement; memory soak uses precise CDP heap with forced GC.",
+    "runs": [
+      {
+        "audio": "running",
+        "before": {
+          "enemies": 300,
+          "heap": 10000000,
+          "towers": 40
+        },
+        "firingTowers": 30,
+        "heap": 10000000,
+        "metrics": {
+          "backingScale": {
+            "p50": 0.9975490196078431,
+            "p95": 0.9975490196078431,
+            "p99": 0.9975490196078431,
+            "samples": 512
+          },
+          "effects": {
+            "p50": 20,
+            "p95": 40,
+            "p99": 40,
+            "samples": 512
+          },
+          "frame": {
+            "p50": 16.699999999999818,
+            "p95": 16.800000000000182,
+            "p99": 33.30000000000018,
+            "samples": 512
+          },
+          "input": {
+            "p50": 7.5,
+            "p95": 21.10000000000582,
+            "p99": 24.70000000001164,
+            "samples": 120
+          },
+          "inputToRender": {
+            "p50": 11.60000000000582,
+            "p95": 25.29999999998836,
+            "p99": 30.19999999999709,
+            "samples": 120
+          },
+          "musicVoices": {
+            "p50": 9,
+            "p95": 11,
+            "p99": 11,
+            "samples": 30
+          },
+          "render": {
+            "p50": 3.5,
+            "p95": 5,
+            "p99": 7.399999999994179,
+            "samples": 512
+          },
+          "save": {
+            "p50": 1.1000000000058208,
+            "p95": 1.1000000000058208,
+            "p99": 1.1000000000058208,
+            "samples": 1
+          },
+          "sfxVoices": {
+            "p50": 3,
+            "p95": 10,
+            "p99": 16,
+            "samples": 154
+          },
+          "simulation": {
+            "p50": 0.09999999999126885,
+            "p95": 0.6999999999970896,
+            "p99": 1.2999999999883585,
+            "samples": 512
+          }
+        },
+        "speed": 1
+      },
+      {
+        "audio": "running",
+        "before": {
+          "enemies": 300,
+          "heap": 10000000,
+          "towers": 40
+        },
+        "firingTowers": 30,
+        "heap": 10000000,
+        "metrics": {
+          "backingScale": {
+            "p50": 0.9975490196078431,
+            "p95": 0.9975490196078431,
+            "p99": 0.9975490196078431,
+            "samples": 512
+          },
+          "effects": {
+            "p50": 60,
+            "p95": 146,
+            "p99": 151,
+            "samples": 512
+          },
+          "frame": {
+            "p50": 16.699999999999818,
+            "p95": 16.799999999999955,
+            "p99": 33.30000000000018,
+            "samples": 512
+          },
+          "input": {
+            "p50": 0.5,
+            "p95": 4.399999999994179,
+            "p99": 5,
+            "samples": 120
+          },
+          "inputToRender": {
+            "p50": 5,
+            "p95": 8.19999999999709,
+            "p99": 9.10000000000582,
+            "samples": 120
+          },
+          "musicVoices": {
+            "p50": 9,
+            "p95": 11,
+            "p99": 11,
+            "samples": 31
+          },
+          "render": {
+            "p50": 3.5,
+            "p95": 5.19999999999709,
+            "p99": 7.099999999991269,
+            "samples": 512
+          },
+          "save": {
+            "p50": 1.0999999999912689,
+            "p95": 1.0999999999912689,
+            "p99": 1.0999999999912689,
+            "samples": 1
+          },
+          "sfxVoices": {
+            "p50": 7,
+            "p95": 11,
+            "p99": 13,
+            "samples": 434
+          },
+          "simulation": {
+            "p50": 0.3000000000029104,
+            "p95": 1.1000000000058208,
+            "p99": 2.8000000000029104,
+            "samples": 512
+          }
+        },
+        "speed": 3
+      },
+      {
+        "audio": "running",
+        "before": {
+          "enemies": 300,
+          "heap": 10000000,
+          "towers": 40
+        },
+        "firingTowers": 30,
+        "heap": 10000000,
+        "metrics": {
+          "backingScale": {
+            "p50": 0.9975490196078431,
+            "p95": 0.9975490196078431,
+            "p99": 0.9975490196078431,
+            "samples": 512
+          },
+          "effects": {
+            "p50": 170,
+            "p95": 185,
+            "p99": 194,
+            "samples": 512
+          },
+          "frame": {
+            "p50": 16.699999999999818,
+            "p95": 33.30000000000018,
+            "p99": 33.40000000000009,
+            "samples": 512
+          },
+          "input": {
+            "p50": 0.3000000000029104,
+            "p95": 2.1000000000058208,
+            "p99": 3.400000000008731,
+            "samples": 120
+          },
+          "inputToRender": {
+            "p50": 4.900000000008731,
+            "p95": 8.10000000000582,
+            "p99": 10.69999999999709,
+            "samples": 120
+          },
+          "musicVoices": {
+            "p50": 9,
+            "p95": 11,
+            "p99": 11,
+            "samples": 34
+          },
+          "render": {
+            "p50": 3.5,
+            "p95": 4.80000000000291,
+            "p99": 6.100000000005821,
+            "samples": 512
+          },
+          "save": {
+            "p50": 1.6999999999970896,
+            "p95": 1.6999999999970896,
+            "p99": 1.6999999999970896,
+            "samples": 2
+          },
+          "sfxVoices": {
+            "p50": 11,
+            "p95": 16,
+            "p99": 18,
+            "samples": 512
+          },
+          "simulation": {
+            "p50": 0.7999999999883585,
+            "p95": 2.900000000008731,
+            "p99": 4.900000000008731,
+            "samples": 512
+          }
+        },
+        "speed": 10
+      }
+    ],
+    "sourceCommit": "16725c349b765d60bf1dff6878bb530713a6fbe2",
+    "workflow": "https://github.com/reaperhulk/spirefall/actions/runs/33942268940"
+  },
+  "runs": [
+    {
+      "audio": "running",
+      "before": {
+        "enemies": 300,
+        "heap": 10000000,
+        "towers": 40
+      },
+      "firingTowers": 30,
+      "heap": 10000000,
+      "metrics": {
+        "backingScale": {
+          "p50": 0.9975490196078431,
+          "p95": 0.9975490196078431,
+          "p99": 0.9975490196078431,
+          "samples": 444
+        },
+        "effects": {
+          "p50": 25,
+          "p95": 83,
+          "p99": 83,
+          "samples": 444
+        },
+        "frame": {
+          "p50": 16.699999999999818,
+          "p95": 16.700000000000728,
+          "p99": 16.800000000000182,
+          "samples": 444
+        },
+        "input": {
+          "p50": 7.400000000008731,
+          "p95": 23.60000000000582,
+          "p99": 24.80000000000291,
+          "samples": 120
+        },
+        "inputToRender": {
+          "p50": 10.599999999991269,
+          "p95": 26.39999999999418,
+          "p99": 27,
+          "samples": 120
+        },
+        "musicVoices": {
+          "p50": 9,
+          "p95": 11,
+          "p99": 11,
+          "samples": 27
+        },
+        "render": {
+          "p50": 2.6000000000058208,
+          "p95": 4,
+          "p99": 4.900000000008731,
+          "samples": 444
+        },
+        "save": {
+          "p50": 0.8000000000029104,
+          "p95": 0.8000000000029104,
+          "p99": 0.8000000000029104,
+          "samples": 1
+        },
+        "sfxVoices": {
+          "p50": 3,
+          "p95": 11,
+          "p99": 16,
+          "samples": 127
+        },
+        "simulation": {
+          "p50": 0.09999999999126885,
+          "p95": 0.5,
+          "p99": 1.5999999999912689,
+          "samples": 444
+        }
+      },
+      "speed": 1
+    },
+    {
+      "audio": "running",
+      "before": {
+        "enemies": 300,
+        "heap": 10000000,
+        "towers": 40
+      },
+      "firingTowers": 30,
+      "heap": 10000000,
+      "metrics": {
+        "backingScale": {
+          "p50": 0.9975490196078431,
+          "p95": 0.9975490196078431,
+          "p99": 0.9975490196078431,
+          "samples": 481
+        },
+        "effects": {
+          "p50": 60,
+          "p95": 146,
+          "p99": 161,
+          "samples": 481
+        },
+        "frame": {
+          "p50": 16.699999999999818,
+          "p95": 16.700000000000728,
+          "p99": 16.800000000000182,
+          "samples": 481
+        },
+        "input": {
+          "p50": 2.3000000000029104,
+          "p95": 7.399999999994179,
+          "p99": 8.5,
+          "samples": 120
+        },
+        "inputToRender": {
+          "p50": 5.599999999991269,
+          "p95": 10.299999999988358,
+          "p99": 10.599999999991269,
+          "samples": 120
+        },
+        "musicVoices": {
+          "p50": 9,
+          "p95": 11,
+          "p99": 11,
+          "samples": 31
+        },
+        "render": {
+          "p50": 2.8000000000029104,
+          "p95": 4.900000000008731,
+          "p99": 6.30000000000291,
+          "samples": 481
+        },
+        "save": {
+          "p50": 1.8000000000029104,
+          "p95": 1.8000000000029104,
+          "p99": 1.8000000000029104,
+          "samples": 1
+        },
+        "sfxVoices": {
+          "p50": 7,
+          "p95": 11,
+          "p99": 14,
+          "samples": 392
+        },
+        "simulation": {
+          "p50": 0.19999999999708962,
+          "p95": 0.8000000000029104,
+          "p99": 2.8999999999941792,
+          "samples": 481
+        }
+      },
+      "speed": 3
+    },
+    {
+      "audio": "running",
+      "before": {
+        "enemies": 300,
+        "heap": 10000000,
+        "towers": 40
+      },
+      "firingTowers": 30,
+      "heap": 10000000,
+      "metrics": {
+        "backingScale": {
+          "p50": 0.9975490196078431,
+          "p95": 0.9975490196078431,
+          "p99": 0.9975490196078431,
+          "samples": 420
+        },
+        "effects": {
+          "p50": 170,
+          "p95": 184,
+          "p99": 189,
+          "samples": 420
+        },
+        "frame": {
+          "p50": 16.699999999999818,
+          "p95": 16.799999999999727,
+          "p99": 16.800000000000182,
+          "samples": 420
+        },
+        "input": {
+          "p50": 3.7999999999883585,
+          "p95": 7,
+          "p99": 7.19999999999709,
+          "samples": 120
+        },
+        "inputToRender": {
+          "p50": 6.400000000008731,
+          "p95": 9.80000000000291,
+          "p99": 10.19999999999709,
+          "samples": 120
+        },
+        "musicVoices": {
+          "p50": 9,
+          "p95": 11,
+          "p99": 11,
+          "samples": 27
+        },
+        "render": {
+          "p50": 2.1999999999970896,
+          "p95": 3.5,
+          "p99": 4.899999999994179,
+          "samples": 420
+        },
+        "save": {
+          "p50": 0.6999999999970896,
+          "p95": 0.6999999999970896,
+          "p99": 0.6999999999970896,
+          "samples": 1
+        },
+        "sfxVoices": {
+          "p50": 11,
+          "p95": 17,
+          "p99": 19,
+          "samples": 510
+        },
+        "simulation": {
+          "p50": 0.5,
+          "p95": 1.1999999999970896,
+          "p99": 2.6999999999970896,
+          "samples": 420
+        }
+      },
+      "speed": 10
+    }
+  ],
+  "sourceCommit": "967324348f06756cf09b31aab68ac88ffff4ef9c",
+  "workflow": "https://github.com/reaperhulk/spirefall/actions/runs/33943155587"
+}

@@ -21,6 +21,7 @@ npm run dev     # then open http://localhost:5173
 ```
 
 - **Build**: pick a tower in the shop (hotkeys 1–8), click the field to place.
+  The preview shows route changes and coverage gained/lost before committing.
   Towers block the path — build mazes. Eight types: Arrow (2× vs fliers), Cannon
   (splash), Frost (slows), Tesla (chains), Sniper (pierces shields, 1.5× vs
   elites), Mint (earns gold each wave), Beacon (amplifies neighbors), Lance
@@ -38,7 +39,9 @@ npm run dev     # then open http://localhost:5173
   recovers every six combat seconds before upgrades. B toggles the beam;
   V executes a wounded target, G collects, and O charges a selected tower.
 - **Choose**: pick a persistent Shatter, Siege, Storm or War economy doctrine
-  from wave 2. Relic offers identify matching towers and owned synergies. Every 5 waves the ruins offer a relic (31 in the pool, with
+  from wave 2, with opening and counterplay guides. Relic offers identify matching
+  towers and owned synergies. A focused reroll costs extra and guarantees one
+  unowned family relic, sharing the normal once-per-offer limit. Every 5 waves the ruins offer a relic (31 in the pool, with
   rarities, one paid reroll, and a pity floor past wave 15). Skipping pays gold.
 - **Fall**: the Spire has 10 HP and every enemy hits differently — first runs die
   in minutes. Sparks buy the Iron, Gold and Ash branches, each with rival
@@ -63,7 +66,13 @@ spectate. Recordings retain the original start across reloads, carry a rules
 version, and support seeking and wave checkpoints. Defeat reports show leaks
 and towers worth checking for coverage. Keyboard play includes target cycling
 ([ / ]), remappable combat keys, and toggle/hold beam options. Settings include
-reduced motion, color assistance, reduced combat effects and a calm audio mix.
+reduced motion, color assistance, reduced combat effects, a calm audio mix, and
+Auto/High/Low graphics quality. Direct target, execute and beam buttons sit beside
+the battlefield. Music carries authored themes through preparation, pressure,
+bosses, victory and ascension, voiced differently in each biome.
+
+See [the September release report](docs/roadmap-implementation.md) for the full
+implementation checklist, measurements, build-family results and validation limits.
 
 ## Testing
 

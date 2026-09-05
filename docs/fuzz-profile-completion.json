@@ -1,0 +1,149 @@
+{
+  "sourceCommit": "6f9c2447b00b5363d398b8754574b4f0e67c90df",
+  "workflow": "https://github.com/reaperhulk/spirefall/actions/runs/33943758869",
+  "config": {
+    "population": 14,
+    "generations": 4,
+    "budgets": [
+      0,
+      5000,
+      8000,
+      10000,
+      14000
+    ],
+    "seeds": [
+      "alpha",
+      "beta",
+      "gamma",
+      "delta",
+      "epsilon",
+      "zeta",
+      "eta",
+      "theta"
+    ]
+  },
+  "notes": "Evolutionary doctrine/focused-draft search, niche archive, and descent of strong builds into cheaper budgets. Existing same-lineage and independent-lineage calibration preserved. A bounded search is not proof against every possible strategy; the 160-run pooled regression additionally retains prior discoveries.",
+  "totalRuns": 9304,
+  "biomes": [
+    {
+      "biome": "emberwaste",
+      "jobId": 101245981900,
+      "conclusion": "success",
+      "runsEvaluated": 2344,
+      "bestByBudget": [
+        {
+          "sparks": 0,
+          "waves": 16
+        },
+        {
+          "sparks": 5000,
+          "waves": 23
+        },
+        {
+          "sparks": 8000,
+          "waves": 22
+        },
+        {
+          "sparks": 10000,
+          "waves": 22
+        },
+        {
+          "sparks": 14000,
+          "waves": 23
+        }
+      ],
+      "warnings": 0,
+      "breaking": 0
+    },
+    {
+      "biome": "highlands",
+      "jobId": 101245982066,
+      "conclusion": "success",
+      "runsEvaluated": 2328,
+      "bestByBudget": [
+        {
+          "sparks": 0,
+          "waves": 16
+        },
+        {
+          "sparks": 5000,
+          "waves": 24
+        },
+        {
+          "sparks": 8000,
+          "waves": 21
+        },
+        {
+          "sparks": 10000,
+          "waves": 22
+        },
+        {
+          "sparks": 14000,
+          "waves": 24
+        }
+      ],
+      "warnings": 2,
+      "breaking": 0
+    },
+    {
+      "biome": "frostfen",
+      "jobId": 101245982070,
+      "conclusion": "success",
+      "runsEvaluated": 2312,
+      "bestByBudget": [
+        {
+          "sparks": 0,
+          "waves": 16
+        },
+        {
+          "sparks": 5000,
+          "waves": 23
+        },
+        {
+          "sparks": 8000,
+          "waves": 22
+        },
+        {
+          "sparks": 10000,
+          "waves": 22
+        },
+        {
+          "sparks": 14000,
+          "waves": 24
+        }
+      ],
+      "warnings": 3,
+      "breaking": 0
+    },
+    {
+      "biome": "verdant",
+      "jobId": 101245982097,
+      "conclusion": "success",
+      "runsEvaluated": 2320,
+      "bestByBudget": [
+        {
+          "sparks": 0,
+          "waves": 16
+        },
+        {
+          "sparks": 5000,
+          "waves": 23
+        },
+        {
+          "sparks": 8000,
+          "waves": 21
+        },
+        {
+          "sparks": 10000,
+          "waves": 24
+        },
+        {
+          "sparks": 14000,
+          "waves": 26
+        }
+      ],
+      "warnings": 8,
+      "breaking": 0
+    }
+  ]
+}

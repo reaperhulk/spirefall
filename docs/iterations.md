@@ -1,5 +1,8 @@
 # Overnight iteration log
 
+Historical iteration snapshots follow. Current feature counts, implementation
+status and verification live in the [September release report](roadmap-implementation.md).
+
 A living backlog + log for the autonomous improvement marathon — **50 cycles,
 complete**. Each iteration: plan against the current codebase → implement →
 verify (`npm run check`, e2e/goldens when touched) → commit → push. Themes

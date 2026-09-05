@@ -3,14 +3,13 @@
 Read alongside PLAN.md §2 (the curve) — the tree is the rogue-lite engine, so
 anything here re-derives the balance envelope.
 
-**Status: phase 1 shipped (iteration 214).** Branches, gates, keystones with
-free respec, authored coordinates, the Honed Edge split, the Ash tier-1
-nodes, save migration, and gate-aware `spendSparks` are live; the old list
-screen still renders them, grouped by branch and honest about locks. Phase 2
-(the SVG graph view) and phase 3 (Gold/Ash keystones, capstones, the no-trap
-test) are still ahead. Two measured lessons from phase 1 are recorded in
-iteration 214 and worth reading before phase 3: buy-priority lists must keep
-the damage veins adjacent, and gates can *improve* a badly ordered build.
+**Status: implemented with revised commitments (September release).** The graph,
+readable branch-spend gates, free UI respec, Gold/Ash rival keystones and retained
+ascension unlocks are live. The branch-ending rivals supply the late commitment;
+the proposed second-spec, wave-scaling Mint and infinite-beam capstones below
+were not adopted because they remove tactical tradeoffs. Names and numbers below
+are the historical proposal; `src/data/metaTree.ts` is the current data. See
+[the implementation report](roadmap-implementation.md) for verification and limits.
 
 ## 1. What is actually wrong with the list
 
@@ -167,10 +166,10 @@ node, allocate down the new branch in canonical order, bank the remainder as
 sparks. Lossless in value, not in shape — plus a one-time free full respec
 for existing accounts, so nobody logs in to find 25 levels of damage gone.
 
-**A new test the redesign earns: the no-trap check.** Generalise entry 210's
-lesson — for every keystone, assert that owning it does not *reduce* measured
-depth against the 4×8 grid versus not owning it. A keystone may cost you
-something; it may not cost you the run.
+**Revised acceptance: test a viable niche, not universal improvement.** A
+tradeoff keystone may reduce depth in an unsuitable matchup. Tests verify its
+stated benefits, costs, mutual exclusion and refund; seed sweeps evaluate policy
+outcomes without requiring every commitment to dominate its absence.
 
 ## 6. Phasing
 
