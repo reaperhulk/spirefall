@@ -23,7 +23,7 @@ import {
   keystoneRivals,
   KEYSTONE_BASTION_DAMAGE_PCT,
   KEYSTONE_BASTION_HP,
-  KEYSTONE_GLASSFORGE_DAMAGE_PCT,
+  KEYSTONE_GLASSFORGE_EDGE_BOOST_PCT,
   KEYSTONE_GLASSFORGE_HP_LOSS_PCT,
   META_CRIT_CHANCE_PCT_PER_LEVEL,
   META_EXECUTE_CD_PCT_PER_LEVEL,
@@ -208,6 +208,16 @@ function bestKey(run: RunState): string {
   return run.mapSeed !== '' ? run.biome : String(run.mapId)
 }
 
+export function honedEdgeDamagePct(meta: MetaState): number {
+  return DAMAGE_NODE_IDS.reduce((sum, id) => sum + metaLevel(meta, id), 0) * META_TOWER_DAMAGE_PCT_PER_LEVEL
+}
+
+// Amplify earned Iron damage, not the base tower or relic bonuses. Keeping
+// this in the initial snapshot preserves recorded runs across tree tuning.
+export function glassforgeDamageBonus(meta: MetaState): number {
+  return Math.floor(honedEdgeDamagePct(meta) * KEYSTONE_GLASSFORGE_EDGE_BOOST_PCT / 100)
+}
+
 // Snapshot the meta tree into a fresh run. The run never reads meta again.
 // mapId, when valid, overrides the seed's map roll — player map choice. The
 // roll still always happens, so a chosen map never shifts the other streams.
@@ -346,8 +356,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
       // all of them (DAMAGE_NODE_IDS is derived, never a restated list), plus
       // whichever Iron keystone is held.
       damagePct:
-        DAMAGE_NODE_IDS.reduce((sum, id) => sum + metaLevel(meta, id), 0) * META_TOWER_DAMAGE_PCT_PER_LEVEL +
-        (metaLevel(meta, 'ks_glassforge') > 0 ? KEYSTONE_GLASSFORGE_DAMAGE_PCT : 0) -
+        honedEdgeDamagePct(meta) +
+        (metaLevel(meta, 'ks_glassforge') > 0 ? glassforgeDamageBonus(meta) : 0) -
         (metaLevel(meta, 'ks_bastion') > 0 ? KEYSTONE_BASTION_DAMAGE_PCT : 0) +
         emberLevel(meta, 'kindled_arsenal') * EMBER_DAMAGE_PCT_PER_LEVEL - (metaLevel(meta, 'ks_patron') ? 10 : 0),
       goldPct:

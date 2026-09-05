@@ -11,7 +11,7 @@ import {
   type MetaNodeDef,
   type MetaUpgradeId,
 } from '../data/metaTree'
-import { branchSpend, isNodeUnlocked, keystoneConflict, metaLevel, metaUpgradeCost } from '../engine/meta'
+import { branchSpend, glassforgeDamageBonus, isNodeUnlocked, keystoneConflict, metaLevel, metaUpgradeCost } from '../engine/meta'
 import type { MetaState } from '../engine/types'
 
 // The Spire Tree as a graph. SVG rather than canvas on purpose: every node is
@@ -323,6 +323,7 @@ export function SpireTreeGraph({
           </button>
           <strong>{detail.name}</strong>
           <span className="tree-detail-desc">{detail.description}</span>
+          {detail.id === 'ks_glassforge' && <span>With your current Honed Edge: +{glassforgeDamageBonus(meta)}% tower damage.</span>}
           <DetailBody meta={meta} node={detail} onBuy={handleBuy} onRespec={onRespec} />
         </div>
       )}

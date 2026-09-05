@@ -4,7 +4,6 @@ import {
   DAMAGE_NODE_IDS,
   KEYSTONE_BASTION_DAMAGE_PCT,
   KEYSTONE_BASTION_HP,
-  KEYSTONE_GLASSFORGE_DAMAGE_PCT,
   META_BRANCHES,
   META_TREE,
   META_TOWER_DAMAGE_PCT_PER_LEVEL,
@@ -18,6 +17,7 @@ import {
   buyMetaUpgrade,
   createMeta,
   createRun,
+  glassforgeDamageBonus,
   isNodeUnlocked,
   keystoneConflict,
   metaLevel,
@@ -173,11 +173,12 @@ describe('keystones', () => {
   })
 
   it('the Iron keystones actually bend the run they are taken into', () => {
-    const plain = createRun(ironOpened(), 'ks-lab')
-    const glass = createRun(buyMetaUpgrade(ironOpened(), 'ks_glassforge').meta, 'ks-lab')
-    const bastion = createRun(buyMetaUpgrade(ironOpened(), 'ks_bastion').meta, 'ks-lab')
+    const base = buyMetaUpgrade(ironOpened(), 'tower_damage').meta
+    const plain = createRun(base, 'ks-lab')
+    const glass = createRun(buyMetaUpgrade(base, 'ks_glassforge').meta, 'ks-lab')
+    const bastion = createRun(buyMetaUpgrade(base, 'ks_bastion').meta, 'ks-lab')
     // Glassforge: more teeth, much less wall.
-    expect(glass.mods.damagePct).toBe(plain.mods.damagePct + KEYSTONE_GLASSFORGE_DAMAGE_PCT)
+    expect(glass.mods.damagePct).toBe(plain.mods.damagePct + glassforgeDamageBonus(base))
     expect(glass.spireMaxHp).toBeLessThan(plain.spireMaxHp)
     // Bastion Line: the trade, in reverse.
     expect(bastion.mods.damagePct).toBe(plain.mods.damagePct - KEYSTONE_BASTION_DAMAGE_PCT)
@@ -193,4 +194,21 @@ describe('the split damage veins', () => {
     expect(metaLevel(meta, 'tower_damage_2')).toBe(8) // tier 2 opened along the way
     expect(createRun(meta, 'vein-lab').mods.damagePct).toBe(16 * META_TOWER_DAMAGE_PCT_PER_LEVEL)
   })
+})
+
+// Early identity keeps a cost; deeper Iron investment grows its niche. Extra
+// relic/Ember damage must not be multiplied or these budgets become misleading.
+it('Glassforge scales with Honed Edge alone and rounds once across the veins', () => {
+  for (const [upgrades, expected] of [
+    [{}, 0],
+    [{tower_damage: 8}, 12],
+    [{tower_damage: 8, tower_damage_2: 8}, 25],
+    [{tower_damage: 8, tower_damage_2: 8, tower_damage_3: 9}, 40],
+  ] as const) {
+    const meta: MetaState = {...createMeta(), upgrades: {...upgrades, ks_glassforge: 1}}
+    const plain = createRun({...meta, upgrades: {...upgrades}}, 'glass-scaling')
+    const glass = createRun(meta, 'glass-scaling')
+    expect(glass.mods.damagePct - plain.mods.damagePct).toBe(expected)
+    expect(glass.spireMaxHp).toBe(Math.floor(plain.spireMaxHp * 0.6))
+  }
 })

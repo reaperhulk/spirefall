@@ -113,7 +113,8 @@
       ],
       "executeReady": true,
       "beamPolicy": "lead"
-    }
+    },
+    "id": "verdant-sniper"
   },
   {
     "biome": "highlands",
@@ -229,6 +230,124 @@
       ],
       "executeReady": true,
       "beamPolicy": "never"
-    }
+    },
+    "id": "highlands-sniper"
+  },
+  {
+    "biome": "highlands",
+    "genome": {
+      "doctrine": null,
+      "focusRelics": true,
+      "ratio": {
+        "arrow": 1,
+        "cannon": 3,
+        "frost": 2,
+        "tesla": 4,
+        "sniper": 8,
+        "mint": 8,
+        "beacon": 6,
+        "lance": 4
+      },
+      "earlyType": "arrow",
+      "upgradeAtTowers": 6,
+      "targetBase": 6,
+      "targetPerWave": 2,
+      "targetMax": 26,
+      "enhanceStrategy": "cheapest",
+      "repairDeficit": 1,
+      "repairMinGold": 180,
+      "waveRepairPct": 10,
+      "specChoice": 1,
+      "relicPriority": [
+        "piercing_arrows",
+        "last_stand",
+        "winters_grip",
+        "shatter",
+        "ricochet_strings",
+        "fortune_idol",
+        "deadeye_sigil",
+        "golden_touch",
+        "overcharge",
+        "overclock",
+        "bounty_banner",
+        "cinder_shells",
+        "longsight",
+        "field_medicine",
+        "storm_coils",
+        "heavy_powder",
+        "soul_harvest",
+        "spark_siphon",
+        "quickdraw",
+        "duelists_oath",
+        "stoneskin",
+        "echo_chamber",
+        "colossus",
+        "glass_cannon",
+        "mint_condition",
+        "prism_lens",
+        "shatterheart",
+        "deep_pockets",
+        "executioners_seal",
+        "golden_ledger",
+        "keen_sights"
+      ],
+      "metaPriority": [
+        "wave_skip",
+        "spire_magnet",
+        "tower_damage",
+        "unlock_bulwark",
+        "unlock_lance",
+        "steady_aim",
+        "unlock_beacon",
+        "magnet_reach",
+        "unlock_gold_rush",
+        "ks_conductor",
+        "ks_glassforge",
+        "spark_gain",
+        "spire_hp",
+        "tower_damage_2",
+        "crit_chance",
+        "ks_treasury",
+        "quick_hands",
+        "ks_patron",
+        "tower_damage_3",
+        "ks_bastion",
+        "unlock_tesla",
+        "starting_gold",
+        "unlock_mint",
+        "ks_executioner",
+        "gold_income"
+      ],
+      "placement": "killboxCluster",
+      "specByType": {
+        "arrow": 1,
+        "cannon": 0,
+        "frost": 0,
+        "tesla": 1,
+        "sniper": 1,
+        "mint": 1,
+        "beacon": 1,
+        "lance": 0
+      },
+      "enhanceFocus": "focus",
+      "targetingByType": {
+        "arrow": "weakest",
+        "cannon": "strongest",
+        "frost": "last",
+        "sniper": "nearest",
+        "mint": "elites",
+        "lance": "last"
+      },
+      "overchargePolicy": "never",
+      "boonPriority": [
+        "bounty",
+        "sharpened",
+        "frosted",
+        "swift"
+      ],
+      "executeReady": true,
+      "beamPolicy": "lead"
+    },
+    "id": "highlands-beam"
   }
 ]

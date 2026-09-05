@@ -173,7 +173,7 @@ export const META_TREE: MetaNodeDef[] = [
     id: 'ks_glassforge',
     parent: 'tower_damage_2',
     name: 'Glassforge',
-    description: 'KEYSTONE — +25% tower damage, but the Spire has 40% less max HP. Kill it before it reaches you.',
+    description: 'KEYSTONE — Honed Edge grants 20% more damage (rounded down), but the Spire has 40% less max HP. Invest deeply in Iron.',
     maxLevel: 1,
     costs: [1200],
     branch: 'iron',
@@ -389,7 +389,7 @@ export const DAMAGE_NODE_IDS = META_TREE.filter((n) => n.name.startsWith('Honed 
 
 // Keystone effects, kept as data so the UI, the engine and the no-trap test
 // all read one source.
-export const KEYSTONE_GLASSFORGE_DAMAGE_PCT = 25
+export const KEYSTONE_GLASSFORGE_EDGE_BOOST_PCT = 20
 export const KEYSTONE_GLASSFORGE_HP_LOSS_PCT = 40
 export const KEYSTONE_BASTION_HP = 6
 export const KEYSTONE_BASTION_DAMAGE_PCT = 10

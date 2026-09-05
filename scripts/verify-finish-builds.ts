@@ -1,15 +1,33 @@
 import { writeFileSync } from 'node:fs'
 import findings from '../fixtures/finish-findings.json'
-import { createMeta, createRun } from '../src/engine/meta'
+import { createMeta, createRun, glassforgeDamageBonus } from '../src/engine/meta'
 import { autoplay, spendSparks } from '../src/harness/autoplay'
 import { makePolicyBot, type PolicyGenome } from '../src/harness/policy'
 import type { BiomeId } from '../src/data/biomes'
-const runs=[]
-for(const finding of findings) for(const budget of [5000,10000]) for(const seed of ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta']) {
-  const g=finding.genome as PolicyGenome,meta=spendSparks({...createMeta(),sparks:budget},g.metaPriority),bot=makePolicyBot(g)
-  const s=createRun(meta,seed,finding.biome as BiomeId)
-  const {state}=autoplay(s,live=>live.victoryClaimed?[{type:'abandon_run'}]:bot(live),150000)
-  const row={biome:finding.biome,budget,seed,bonus:25,win:state.victoryClaimed,waves:state.wavesCleared}
-  runs.push(row);console.log(JSON.stringify(row))
+const runs = []
+for (const finding of findings) {
+  for (const budget of [5000, 20000]) {
+    // Known failing seeds constrain the fix; fresh seeds check that a stronger
+    // budget can still support these exact policies without retuning them.
+    const seeds = budget === 5000
+      ? ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta']
+      : ['glass-heldout-1','glass-heldout-2','glass-heldout-3','glass-heldout-4']
+    for (const doctrine of [null, 'shatter', 'siege', 'storm', 'war_economy'] as const) {
+      const genome = {...finding.genome, doctrine} as PolicyGenome
+      const meta = spendSparks({...createMeta(), sparks: budget}, genome.metaPriority)
+      const bot = makePolicyBot(genome)
+      for (const seed of seeds) {
+        const initial = createRun(meta, seed, finding.biome as BiomeId)
+        const {state} = autoplay(initial, live => live.victoryClaimed ? [{type:'abandon_run'}] : bot(live), 150000)
+        const row = {build: finding.id, biome: finding.biome, doctrine, budget, seed,
+          bonus: glassforgeDamageBonus(meta), win: state.victoryClaimed, waves: state.wavesCleared}
+        runs.push(row)
+        console.log(JSON.stringify(row))
+      }
+    }
+  }
 }
-writeFileSync('docs/finish-balance-profile.json',JSON.stringify({notes:'Fixed fuzzer-discovered policies; Glassforge +25% damage at unchanged -40% HP, compared over all eight search seeds at 5k and 10k. Reference and family pilots choose no keystone.',runs},null,2)+'\n')
+writeFileSync('docs/finish-balance-profile.json', JSON.stringify({
+  notes: 'Three frozen fuzzer-discovered policies crossed with all doctrines and none. Glassforge amplifies Honed Edge by 20%, at unchanged 1200 Sparks and -40% HP. Eight search seeds at 5k constrain repeatable early wins; four unseen seeds at 20k check retained viability. No-keystone reference/family pilots and existing win thresholds are unchanged.',
+  runs,
+}, null, 2) + '\n')

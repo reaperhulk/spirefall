@@ -1,0 +1,1345 @@
+[
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "shatter",
+    "wins": [
+      "gamma",
+      "theta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "siege",
+    "wins": [
+      "gamma",
+      "theta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      20,
+      16
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma"
+    ],
+    "waves": [
+      24,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      16,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      21,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "gamma"
+    ],
+    "waves": [
+      24,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      18,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [
+      "gamma"
+    ],
+    "waves": [
+      24,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "siege",
+    "wins": [
+      "theta"
+    ],
+    "waves": [
+      23,
+      24
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      21,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      20,
+      16
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      23,
+      24
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      19,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      15,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      18,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      16,
+      23
+    ]
+  },
+  {
+    "bonus": 15,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      21,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "siege",
+    "wins": [],
+    "waves": [
+      23,
+      16
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      21,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      20,
+      16
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      20,
+      22
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [],
+    "waves": [
+      20,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      16,
+      21
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      18,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [],
+    "waves": [
+      20,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      15,
+      23
+    ]
+  },
+  {
+    "bonus": 10,
+    "cost": 1200,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "siege",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      21,
+      19
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      23,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      18,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      23,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      20,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "shatter",
+    "wins": [
+      "gamma",
+      "theta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "siege",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      20,
+      16
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      20,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      16,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      16,
+      23
+    ]
+  },
+  {
+    "bonus": 35,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [
+      "gamma"
+    ],
+    "waves": [
+      24,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "shatter",
+    "wins": [
+      "theta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "siege",
+    "wins": [
+      "theta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      20,
+      16
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      18,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      18,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      16,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      20,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      18,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 1800,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": null,
+    "wins": [],
+    "waves": [
+      22,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      22,
+      16
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "siege",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      22,
+      22
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 0,
+    "biome": "verdant",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      20,
+      16
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma"
+    ],
+    "waves": [
+      24,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      21,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      15,
+      22
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 1,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": null,
+    "wins": [
+      "gamma",
+      "delta"
+    ],
+    "waves": [
+      24,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "shatter",
+    "wins": [],
+    "waves": [
+      18,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "siege",
+    "wins": [
+      "delta"
+    ],
+    "waves": [
+      22,
+      24
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "storm",
+    "wins": [],
+    "waves": [
+      16,
+      23
+    ]
+  },
+  {
+    "bonus": 25,
+    "cost": 2400,
+    "build": 2,
+    "biome": "highlands",
+    "doctrine": "war_economy",
+    "wins": [],
+    "waves": [
+      23,
+      23
+    ]
+  }
+]
