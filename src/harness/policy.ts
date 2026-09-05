@@ -1,7 +1,9 @@
+import { BUILD_FAMILIES } from '../data/buildFamilies'
+import { DOCTRINES, type DoctrineId } from '../data/doctrines'
 import type { MetaUpgradeId } from '../data/metaTree'
 import { META_TREE } from '../data/metaTree'
 import { nextInt, type Rng } from '../engine/rng'
-import { BOON_IDS, type BoonId, EXECUTE_THRESHOLD_PCT, TOWERS } from '../data/content'
+import { BOON_IDS, type BoonId, EXECUTE_THRESHOLD_PCT, relicSkipGold, TOWERS } from '../data/content'
 import type { RelicId, RunState, Targeting, TowerType } from '../engine/types'
 import { type Bot, type BuildKnobs, buildActions, RELIC_PRIORITY, waveActions } from './bots'
 import { PLACEMENT_STRATEGIES, type PlacementStrategy } from './placement'
@@ -14,6 +16,8 @@ import { PLACEMENT_STRATEGIES, type PlacementStrategy } from './placement'
 export const TOWER_TYPES: TowerType[] = ['arrow', 'cannon', 'frost', 'tesla', 'sniper', 'mint', 'beacon', 'lance']
 
 export interface PolicyGenome {
+  doctrine?: DoctrineId | null
+  focusRelics?: boolean
   ratio: Record<TowerType, number> // build weights, 0 = never build
   earlyType: TowerType // what to build before wave 3
   upgradeAtTowers: number
@@ -35,8 +39,8 @@ export interface PolicyGenome {
   enhanceFocus?: 'spread' | 'focus' // focus = max ONE tower out
   targetingByType?: Partial<Record<TowerType, Targeting>> // per-type fire doctrine
   // Overcharge doctrine (2026-07, active-play package). The bot plays the
-  // attention-free CEILING — arming every ready tower — so the fuzzer probes
-  // what perfect spam is worth, which no human reaches.
+  // attention-free CEILING — requesting every ready tower, with the engine
+  // enforcing the shared charge pool. Attention-limited pilots live separately.
   overchargePolicy?: 'never' | 'boss' | 'ready'
   // Boon doctrine: preference ranking over BOON_IDS; absent = always skip.
   boonPriority?: BoonId[]
@@ -48,6 +52,7 @@ export interface PolicyGenome {
   beamPolicy?: 'never' | 'lead'
 }
 
+const RUN_DOCTRINES: (DoctrineId | null)[] = [null, ...Object.keys(DOCTRINES) as DoctrineId[]]
 const OVERCHARGE_POLICIES = ['never', 'boss', 'ready'] as const
 
 const META_IDS = META_TREE.map((n) => n.id)
@@ -134,8 +139,14 @@ export function randomGenome(rng: Rng): { genome: PolicyGenome; rng: Rng } {
   r = exec.rng
   const beam = draw(r, 0, 1)
   r = beam.rng
+  const doctrine = pickOne(r, RUN_DOCTRINES)
+  r = doctrine.rng
+  const focusRelics = draw(r, 0, 1)
+  r = focusRelics.rng
   return {
     genome: {
+      doctrine: doctrine.value,
+      focusRelics: focusRelics.value === 1,
       ratio,
       earlyType: early.value,
       upgradeAtTowers: upgradeAt.value,
@@ -170,7 +181,7 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
   const count = draw(r, 1, 3)
   r = count.rng
   for (let i = 0; i < count.value; i++) {
-    const which = draw(r, 0, 14)
+    const which = draw(r, 0, 16)
     r = which.rng
     switch (which.value) {
       case 0: {
@@ -277,6 +288,16 @@ export function mutateGenome(rng: Rng, genome: PolicyGenome): { genome: PolicyGe
         g.executeReady = !(g.executeReady ?? false)
         break
       }
+      case 15: {
+        const pick = pickOne(r, RUN_DOCTRINES)
+        r = pick.rng
+        g.doctrine = pick.value
+        break
+      }
+      case 16: {
+        g.focusRelics = !(g.focusRelics ?? false)
+        break
+      }
       case 14: {
         g.beamPolicy = (g.beamPolicy ?? 'never') === 'never' ? 'lead' : 'never'
         break
@@ -326,6 +347,11 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
   }
   return (state) => {
     if (state.phase === 'build') {
+      if (genome.doctrine && !state.doctrine && state.wave >= 2) return [{type:'choose_doctrine',doctrine:genome.doctrine}]
+      if (genome.focusRelics && state.doctrine && state.relicOffer && !state.relicRerolled) {
+        const family = BUILD_FAMILIES[state.doctrine].relics
+        if (state.gold >= Math.ceil(relicSkipGold(state.wave) * 3 / 2) + 100 && family.some(r => !state.relics.includes(r)) && !state.relicOffer.some(r => family.includes(r))) return [{type:'reroll_relic',focus:state.doctrine}]
+      }
       const acts = buildActions(state, (s) => pickWeighted(s, genome), knobs)
       if (state.boonOffer !== null && genome.boonPriority) {
         const pick = [...state.boonOffer].sort(

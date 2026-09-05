@@ -1,3 +1,4 @@
+import { MAP_WIDTH } from '../data/maps'
 import { TacticalControls } from './TacticalControls'
 import { useGameKeyboard } from './useGameKeyboard'
 import { useRunCheckpoint } from './useRunCheckpoint'
@@ -61,7 +62,7 @@ import { installHarness } from './harness'
 import { CataclysmModal, ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
 import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
-import type { RenderUiState } from './render'
+import { CELL_PX, type RenderUiState } from './render'
 import { clearSave, loadSave, persistSave, getSaveStatus, subscribeSaveStatus } from './save'
 import { useDialogFocus } from './useDialogFocus'
 import { RULES_VERSION, parseRecording } from './validation'
@@ -933,7 +934,7 @@ export default function App() {
         }}
         onExecute={id => session.dispatch({type:'execute_enemy',id})}
         onBeam={() => toggleBeam(!beamModeRef.current)} />
-      <main className="board">
+      <main className="board" style={{width:'100%',maxWidth:MAP_WIDTH * CELL_PX}}>
         <GameCanvas
           onObserve={(state, identity) => sfx.observe(state, identity)}
           session={session}

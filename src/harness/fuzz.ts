@@ -193,7 +193,7 @@ export interface FuzzResult {
 }
 
 // The niche a genome competes in: spatial doctrine × dominant tower ×
-// enhancement concentration. The archive keeps the best genome of EVERY
+// enhancement concentration and persistent run doctrine. The archive keeps the best genome of EVERY
 // niche alive as breeding stock (MAP-elites-lite), so qualitatively
 // different strategies — a mazing mono-arrow, a choke-stacked sniper
 // focus build — keep evolving instead of being culled by this
@@ -208,7 +208,7 @@ export function archetype(genome: PolicyGenome): string {
       dominant = t
     }
   }
-  return `${genome.placement ?? 'pathAdjacent'}:${dominant}:${genome.enhanceFocus ?? 'spread'}`
+  return `${genome.placement ?? 'pathAdjacent'}:${dominant}:${genome.enhanceFocus ?? 'spread'}${genome.doctrine ? `:${genome.doctrine}` : ''}`
 }
 
 interface EvalOutcome {

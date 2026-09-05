@@ -106,9 +106,11 @@ describe('build fuzzer', () => {
     // Chain mutations and require each new gene axis to move at least once
     // — a slot that can never fire silently narrows the search space.
     let { genome, rng } = randomGenome(deriveStream('fuzz-axes', 'build-fuzz'))
-    const seen = { placement: false, spec: false, targeting: false, focus: false }
+    const seen = { placement: false, spec: false, targeting: false, focus: false, doctrine:false, relicFocus:false }
     for (let i = 0; i < 300; i++) {
       const m = mutateGenome(rng, genome)
+      if (m.genome.doctrine !== genome.doctrine) seen.doctrine = true
+      if (m.genome.focusRelics !== genome.focusRelics) seen.relicFocus = true
       if (m.genome.placement !== genome.placement) seen.placement = true
       if (JSON.stringify(m.genome.specByType) !== JSON.stringify(genome.specByType)) seen.spec = true
       if (JSON.stringify(m.genome.targetingByType) !== JSON.stringify(genome.targetingByType)) seen.targeting = true
@@ -116,7 +118,20 @@ describe('build fuzzer', () => {
       genome = m.genome
       rng = m.rng
     }
-    expect(seen).toEqual({ placement: true, spec: true, targeting: true, focus: true })
+    expect(seen).toEqual({ placement: true, spec: true, targeting: true, focus: true, doctrine:true, relicFocus:true })
+  })
+
+  it('the policy searches doctrine selection and paid family drafts while old genomes stay unchanged', () => {
+    const {genome} = randomGenome(deriveStream('doctrine-policy','build-fuzz'))
+    const state = createRun(createMeta(),'policy-doctrine')
+    state.wave = 5; state.gold = 1000
+    state.relicOffer = ['keen_sights','field_medicine','deep_pockets']
+    const bot = makePolicyBot({...genome,doctrine:'storm',focusRelics:true})
+    expect(bot(state)).toEqual([{type:'choose_doctrine',doctrine:'storm'}])
+    state.doctrine = 'storm'
+    expect(bot(state)).toEqual([{type:'reroll_relic',focus:'storm'}])
+    const legacy = {...genome}; delete legacy.doctrine; delete legacy.focusRelics
+    expect(makePolicyBot(legacy)(state)).not.toContainEqual({type:'reroll_relic',focus:'storm'})
   })
 
   it('the oracle classifies runs against the curve contract', () => {

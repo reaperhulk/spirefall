@@ -7,6 +7,7 @@ test('retina phone resolution follows display size, low quality, and rotation', 
   await page.goto('/?seed=retina-resize')
   await page.getByTestId('playfield').waitFor()
   const dimensions = () => page.getByTestId('playfield').evaluate((c:HTMLCanvasElement) => ({backing:c.width,display:c.clientWidth}))
+  await expect.poll(async () => (await dimensions()).display).toBeGreaterThan(340)
   await expect.poll(async () => { const d=await dimensions(); return Math.abs(d.backing - d.display*2) }).toBeLessThan(5)
   await page.getByTestId('open-settings').click()
   await page.getByLabel('Graphics quality',{exact:true}).selectOption('low')
@@ -37,6 +38,7 @@ test('retina phone resolution follows display size, low quality, and rotation', 
 test('paused scenes stop drawing but a placement cursor still updates', async ({page}) => {
   await page.goto('/?seed=idle-frame')
   await page.getByTestId('playfield').waitFor()
+  expect((await page.getByTestId('playfield').boundingBox())!.width).toBeGreaterThanOrEqual(800)
   await page.getByRole('button',{name:'Pause',exact:true}).click()
   await page.waitForTimeout(1100)
   await page.evaluate(() => (window.__harness as GameHarness).resetPerformance())
