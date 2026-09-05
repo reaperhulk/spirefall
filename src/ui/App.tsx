@@ -1,3 +1,4 @@
+import { Icon } from './Icon'
 import { TowerPortrait } from './TowerPortrait'
 import { BuildDoctrine } from './BuildDoctrine'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
@@ -305,6 +306,7 @@ export default function App() {
       if (!data) return false
       const replay = new GameSession(data.initial)
       replay.replayScript = data.log.map((c) => ({ tick: c.tick, command: c.command }))
+      replay.replayEndTick = data.endTick
       replay.setSpeed(2)
       if (!sessionRef.current.replaying) liveSessionRef.current = sessionRef.current
       sessionRef.current = replay
@@ -579,7 +581,8 @@ export default function App() {
         if (beamModeRef.current) sessionRef.current.dispatch({ type: 'set_beam', target: aim })
         return
       }
-      const key = e.key.toLowerCase()
+      const physical = e.key.toLowerCase()
+      const key = Object.entries(settings.keyBindings).find(([,binding]) => binding === physical)?.[0] ?? (Object.keys(settings.keyBindings).includes(physical) ? '' : physical)
       const live = sessionRef.current
       if (key === '[' || key === ']') {
         e.preventDefault()
@@ -594,7 +597,12 @@ export default function App() {
         return
       }
       if (key === 'g' && hoverRef.current) { live.dispatch({ type: 'set_collect', at: cellCenter(hoverRef.current) }); return }
-      if (key === 'v' && hoverRef.current) { handleCellClickRef.current(hoverRef.current); return }
+      if (key === 'v' && hoverRef.current) {
+        const at = cellCenter(hoverRef.current)
+        const enemy = live.state.enemies.filter(en => en.hp > 0 && !en.phased && en.hp * 100 <= en.maxHp * EXECUTE_THRESHOLD_PCT).sort((a,b) => (a.pos.x-at.x)**2+(a.pos.y-at.y)**2 - (b.pos.x-at.x)**2-(b.pos.y-at.y)**2)[0]
+        if (enemy) live.dispatch({ type: 'execute_enemy', id: enemy.id })
+        return
+      }
       if (key === 'u' || key === 'x') {
         // Upgrade / sell the selected tower.
         const id = selectedTowerIdRef.current
@@ -633,7 +641,8 @@ export default function App() {
         setMuted(sfx.toggleMute())
         return
       }
-      if (e.key.toLowerCase() === 'b' && !e.repeat) {
+      if (key === 'b' && !e.repeat) {
+        if (settings.holdBeam) { toggleBeamRef.current(true); return }
         // B toggles the Spire beam; the cursor (or a tap) aims it.
         toggleBeamRef.current(!beamModeRef.current)
         return
@@ -667,8 +676,12 @@ export default function App() {
         }
       }
     }
+    const onKeyUp = (e: KeyboardEvent) => { if (settings.holdBeam && e.key.toLowerCase() === (settings.keyBindings.b ?? 'b')) toggleBeamRef.current(false) }
+    const onBlur = () => { if (settings.holdBeam) toggleBeamRef.current(false) }
+    window.addEventListener('blur', onBlur)
+    window.addEventListener('keyup', onKeyUp)
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKeyUp); window.removeEventListener('blur', onBlur) }
   }, [summary, sfx])
 
   const renderUi: RenderUiState = {
@@ -858,10 +871,10 @@ export default function App() {
               title={
                 state.beamOverheated
                   ? 'Beam OVERHEATED — venting; it unlocks when fully cool'
-                  : 'Spire beam heat — hold B to fire at the cursor; overheat locks it until vented'
+                  : 'Spire beam heat — use the Beam control to fire at the cursor; overheat locks it until vented'
               }
             >
-              🔆
+              <Icon name="beam" />
               <span
                 className="beam-heat-bar"
                 style={{ width: `${Math.round((state.beamHeat / BEAM_HEAT_MAX) * 100)}%` }}
@@ -898,7 +911,7 @@ export default function App() {
               setMuted(sfx.toggleMute())
             }}
           >
-            {muted ? '🔇' : audioLive ? '🔊' : '🔈'}
+            <Icon name={muted ? "muted" : "sound"} />
           </button>
           <div className="speed-controls" role="group" aria-label="Game speed" title="Keys − and = step speed down/up">
             {SPEEDS.map((n) => (
@@ -911,7 +924,7 @@ export default function App() {
                   session.setSpeed(n)
                 }}
               >
-                {n === 0 ? '⏸' : `${n}×`}
+                {n === 0 ? <Icon name="pause" /> : `${n}×`}
               </button>
             ))}
           </div>
@@ -930,7 +943,7 @@ export default function App() {
               )
             }
           >
-            📅{dailyBest ? ` ${dailyBest.waves}` : ''}
+            <Icon name="calendar" />{dailyBest ? ` ${dailyBest.waves}` : ''}
             {(dailyBest?.streak ?? 1) > 1 && <span className="streak-mark">🔥{dailyBest!.streak}</span>}
           </button>
           <button
@@ -940,7 +953,7 @@ export default function App() {
             aria-label="Run stats"
             title="This run's stats so far (S)"
           >
-            📊
+            <Icon name="stats" />
           </button>
           <button
             className="ghost-btn"
@@ -952,7 +965,7 @@ export default function App() {
             aria-label="Codex — enemies, towers, and mechanics"
             title="Codex — enemies, towers & mechanics (C)"
           >
-            📖
+            <Icon name="book" />
           </button>
           <button
             className="ghost-btn"
@@ -969,7 +982,7 @@ export default function App() {
             aria-label="Settings and shortcuts"
             title="Settings & shortcuts (?)"
           >
-            ⚙
+            <Icon name="settings" />
           </button>
           {!summary && (
             <button
@@ -1009,7 +1022,7 @@ export default function App() {
             title={autoStart ? 'Auto-advance is ON — waves send themselves' : 'Auto-advance waves'}
             onClick={() => setUiSettings({ ...updateSettings({ autoStart: !autoStart }) })}
           >
-            ▶▶
+            <Icon name="advance" />
           </button>
         </div>
       </header>
@@ -1245,7 +1258,7 @@ export default function App() {
                 onClick={() => session.dispatch({ type: 'upgrade_tower', id: selectedTower.id })}
               >
                 Upgrade (⛀ {towerTier(selectedTower.type, (selectedTower.tier + 1) as 2 | 3).cost}){' '}
-                <kbd className="key-hint">U</kbd>
+                <kbd className="key-hint">{(settings.keyBindings.u ?? 'u').toUpperCase()}</kbd>
               </button>
               </>
             ) : (
@@ -1270,7 +1283,7 @@ export default function App() {
                 disabled={state.gold < enhanceCost(selectedTower.type, selectedTower.enhance)}
                 onClick={() => session.dispatch({ type: 'upgrade_tower', id: selectedTower.id })}
               >
-                Enhance (⛀ {enhanceCost(selectedTower.type, selectedTower.enhance)}) <kbd className="key-hint">U</kbd>
+                Enhance (⛀ {enhanceCost(selectedTower.type, selectedTower.enhance)}) <kbd className="key-hint">{(settings.keyBindings.u ?? 'u').toUpperCase()}</kbd>
               </button>
               </>
             )}
@@ -1288,7 +1301,7 @@ export default function App() {
                   : (selectedTower.overchargeCd ?? 0) > 0
                     ? `Recharging ${Math.ceil((selectedTower.overchargeCd ?? 0) / 30)}s`
                     : 'Overcharge'}{' '}
-                <kbd className="key-hint">O</kbd>
+                <kbd className="key-hint">{(settings.keyBindings.o ?? 'o').toUpperCase()}</kbd>
               </button>
             )}
             <button
@@ -1309,7 +1322,7 @@ export default function App() {
                 (towerInvested(selectedTower.type, selectedTower.tier) * (selectedTower.shots === 0 ? 100 : SELL_REFUND_PCT)) /
                   100,
               )}
-              {selectedTower.shots === 0 && ' · full refund'}) <kbd className="key-hint">X</kbd>
+              {selectedTower.shots === 0 && ' · full refund'}) <kbd className="key-hint">{(settings.keyBindings.x ?? 'x').toUpperCase()}</kbd>
             </button>
           </aside>
         )}
@@ -1319,10 +1332,10 @@ export default function App() {
       {state.seed.startsWith('daily-') && <p className="doctrine-summary">Daily challenge · fixed arsenal and progression · Crucible 0 · rules 3</p>}
       {state.shrine && <section className="doctrine-panel" aria-label="Relic shrine">
         <strong>Shrine at column {state.shrine.cell.cx + 1}, row {state.shrine.cell.cy + 1}</strong>
-        <p>Station two combat towers within three cells for at least three seconds, and keep enemies outside its ring for one wave to earn {100 + (state.wave + (state.phase === 'build' ? 1 : 0)) * 12} gold. Failure costs no Spire health.</p>
+        <p>Station two combat towers within three cells for at least three seconds, and keep enemies outside its ring for one wave to earn {100 + state.shrine.wave * 12} gold. Failure costs no Spire health.</p>
         {state.shrine.status === 'offered' ? <button className="ghost-btn" onClick={() => session.dispatch({ type: 'defend_shrine' })}>Accept shrine defense</button> : <b>{state.shrine.status === 'active' ? 'Defending this wave' : state.shrine.status === 'won' ? 'Shrine secured' : 'Shrine lost'}</b>}
       </section>}
-      <p className="command-pool" role="status">Command charges: <strong>{state.commandCharges ?? 3}/3</strong> · select a tower, then O · one charge recovers every {Math.max(1, 6 * (100 - state.mods.overchargeCdPct) / 100)}s of combat</p>
+      <p className="command-pool" role="status">Command charges: <strong>{state.commandCharges ?? 3}/3</strong> · select a tower, then {(settings.keyBindings.o ?? 'o').toUpperCase()} · one charge recovers every {Math.max(1, 6 * (100 - state.mods.overchargeCdPct) / 100)}s of combat</p>
       <footer className="shop">
         <div className="shop-towers">
           {TOWER_KEYS.map((type, i) => {
@@ -1412,8 +1425,8 @@ export default function App() {
                 title={`The Spire beam — press B or this button to toggle it, then tap (or hover) the battlefield to aim. Burns EVERYTHING on the line for ${BEAM_DAMAGE_PER_TICK}/tick, wounding down to 1 HP — it never lands the killing blow, so let a tower or an execute finish what it softened. ${BEAM_HEAT_MAX / 30}s of fire overheats it and it stays locked until fully vented. It cools between waves too.`}
                 onClick={() => toggleBeam(!beamModeRef.current)}
               >
-                🔆 Beam
-                <kbd className="key-hint">B</kbd>
+                <Icon name="beam" /> Beam
+                <kbd className="key-hint">{(settings.keyBindings.b ?? 'b').toUpperCase()}</kbd>
                 <span className="cooldown" data-testid="beam-state">
                   {label}
                 </span>
@@ -1454,6 +1467,7 @@ export default function App() {
       )}
       {state.relicOffer && !summary && !victoryPrompt && (
         <RelicModal
+          state={state}
           options={state.relicOffer}
           skipGold={relicSkipGold(state.wave)}
           canReroll={!state.relicRerolled && state.gold >= relicSkipGold(state.wave)}
@@ -1474,6 +1488,9 @@ export default function App() {
             {session.terminal ? ` · over — ${state.phase === 'victory' ? 'the Spire stood' : 'the Spire fell'}` : ''} —
             speed controls work; inputs don't.
           </span>
+          <label>Replay position <input aria-label="Replay position" type="range" min={session.initial.tick} max={Math.max(session.initial.tick + 1, Number.isFinite(session.replayEndTick) ? session.replayEndTick : state.tick)} value={state.tick} onChange={e => { void session.seek(Number(e.target.value)) }} /></label>
+          <span>{session.seeking ? 'Seeking…' : `${Math.floor(state.tick / 30)}s`} {session.initial.tick > 0 && '(checkpoint recording)'}</span>
+          <div className="replay-checkpoints">{session.checkpoints.filter(c => c.wave > 0).map(c => <button key={c.tick} className="ghost-btn" onClick={() => { void session.seek(c.tick) }}>Wave {c.wave}</button>)}</div>
           <button className="ghost-btn" data-testid="exit-replay" onClick={exitReplay}>
             Exit replay
           </button>

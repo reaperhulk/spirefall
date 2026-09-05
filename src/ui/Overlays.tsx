@@ -1,3 +1,6 @@
+import { rewardFit } from './rewardFit'
+import { ControlsSettings } from './ControlsSettings'
+import { RunLessons } from './RunLessons'
 import { useEffect, useRef, useState } from 'react'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { drawRunCard, challengeLink } from './runCard'
@@ -31,12 +34,14 @@ import { exportSave, importSave } from './save'
 import { SpireTreeGraph } from './SpireTreeGraph'
 
 export function RelicModal({
+  state,
   options,
   skipGold,
   canReroll,
   onChoose,
   onReroll,
 }: {
+  state: RunState
   options: RelicId[]
   skipGold: number
   canReroll: boolean
@@ -58,6 +63,7 @@ export function RelicModal({
               <strong>{RELICS[id].name}</strong>
               <em className="relic-rarity">{RELICS[id].rarity}</em>
               <span>{RELICS[id].description}</span>
+              <span className="reward-fit">{rewardFit(id, state)}</span>
             </button>
           ))}
         </div>
@@ -132,7 +138,7 @@ function AscensionPanel({
         disabled={!canAscend(meta)}
         title={
           canAscend(meta)
-            ? 'Reset the Spire Tree and banked Sparks for Embers'
+            ? 'Reset stat upgrades and banked Sparks for Embers; keep tower and ability unlocks'
             : 'Win a run this cycle to unlock Ascension'
         }
         onClick={onAscend}
@@ -535,6 +541,7 @@ export function RunOverOverlay({
             : 'Its embers remember. Spend them, and reach further next time.'}
         </p>
         <div ref={cardHost} className="run-card-host" />
+        <RunLessons summary={summary} />
         <div className="replay-row">
           <button
             className="ghost-btn"
@@ -802,6 +809,7 @@ export function SettingsModal({
   const [importFailed, setImportFailed] = useState(false)
   const [replayCode, setReplayCode] = useState('')
   const [replayFailed, setReplayFailed] = useState(false)
+  const [, refreshControls] = useState(0)
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
@@ -864,6 +872,7 @@ export function SettingsModal({
         </label>
         <label className="settings-row">Reduced combat effects<input type="checkbox" checked={quietEffects} onChange={e => onQuietEffects(e.target.checked)} /><span className="settings-note">Keep danger and ability cues</span></label>
         <label className="settings-row">Calm audio mix<input type="checkbox" checked={quietAudio} onChange={e => onQuietAudio(e.target.checked)} /><span className="settings-note">Fewer, softer routine effects</span></label>
+        <ControlsSettings onChange={() => refreshControls(value => value + 1)} />
         <h3>Records</h3>
         <div className="records-row" data-testid="records">
           <span>Best wave <strong>{meta.bestWave}</strong></span>

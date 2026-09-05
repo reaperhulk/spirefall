@@ -66,3 +66,46 @@ it('pauses the simulation while a planning dialog owns the session', () => {
   session.advance(100)
   expect(session.state.tick).toBeGreaterThan(0)
 })
+
+it('seeks backward and forward through resumed recordings with identical states', async () => {
+  const live = new GameSession(createRun(createMeta(), 'seek'))
+  live.dispatch({ type: 'start_wave' })
+  live.fastForward(1)
+  const at30 = JSON.parse(JSON.stringify(live.state))
+  live.fastForward(1)
+  const resumed = new GameSession(live.state, live.recording())
+  resumed.fastForward(1)
+  const replay = resumed.replaySession()
+  const visualId = replay.renderId
+  await replay.seek(90)
+  expect(replay.state).toEqual(resumed.state)
+  await replay.seek(30)
+  expect(replay.state).toEqual(at30)
+  expect(replay.renderId).not.toBe(visualId)
+  await Promise.all([replay.seek(90), replay.seek(30)])
+  expect(replay.state).toEqual(at30)
+  await replay.seek(999999)
+  replay.fastForward(1)
+  expect(replay.state).toEqual(resumed.state)
+  expect(replay.seeking).toBe(false)
+})
+
+it('rejects broken modifiers, unknown progression and incompatible specializations', async () => {
+  const { validRun } = await import('../validation')
+  const { step } = await import('../../engine/step')
+  const { buildCandidates } = await import('../../harness/placement')
+  let state = createRun(createMeta(), 'specialized-save')
+  state.gold = 10000
+  state = step(state, [{type:'place_tower', tower:'cannon', cell:buildCandidates(state)[0]!}]).state
+  const id = state.towers[0]!.id
+  for (const command of [{type:'upgrade_tower', id}, {type:'upgrade_tower', id}, {type:'specialize_tower', id, spec:'mortar'}] as const) state = step(state, [command]).state
+  expect(validRun(state)).toBe(true)
+  const session = new GameSession(state)
+  session.dispatch({ type:'specialize_tower', id, spec:'mortar' })
+  session.fastForward(0.1)
+  expect(parseRecording(JSON.stringify(session.recording()))).not.toBeNull()
+  expect(validRun({ ...state, mods: { critChancePct: 0 } })).toBe(false)
+  expect(validRun({ ...state, towers: state.towers.map(t => ({...t, spec:'capacitor'})) })).toBe(false)
+  values.set('spirefall-save', JSON.stringify({version:1, meta:{...createMeta(), upgrades:{unknown:1}}, run:null}))
+  expect(loadSave()).toBeNull()
+})

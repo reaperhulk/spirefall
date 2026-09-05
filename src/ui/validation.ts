@@ -1,5 +1,6 @@
 import { DOCTRINES } from '../data/doctrines'
 import { ABILITIES, BOONS, CATACLYSMS, ENEMIES, RELICS, TOWERS, TOWER_SPECS } from '../data/content'
+import { MAPS } from '../data/maps'
 import { BIOME_IDS } from '../data/biomes'
 import { assertInvariants } from '../engine/invariants'
 import type { Command, RunState } from '../engine/types'
@@ -18,15 +19,35 @@ export function finiteTree(value: unknown, depth = 0): boolean {
   if (object(value)) return Object.entries(value).every(([k, v]) => !['__proto__', 'constructor', 'prototype'].includes(k) && finiteTree(v, depth + 1))
   return value === null || typeof value === 'boolean' || typeof value === 'string'
 }
+const specIds = new Set(Object.values(TOWER_SPECS).flat().map(s => s.id))
+const targeting = ['first','last','strongest','weakest','nearest','elites']
+const cell = (v: unknown) => object(v) && nat(v.cx) && nat(v.cy) && v.cx < 24 && v.cy < 14
 export function validRun(value: unknown): value is RunState {
   try {
     if (!object(value) || !finiteTree(value)) return false
     const s = value as unknown as RunState
     if (s.schemaVersion !== 1 || typeof s.seed !== 'string' || s.seed.length > 512 || typeof s.mapSeed !== 'string') return false
-    if (!BIOME_IDS.includes(s.biome) || !nat(s.mapId) || !nat(s.tick)) return false
+    if (!BIOME_IDS.includes(s.biome) || !nat(s.mapId) || !nat(s.tick) || s.mapSeed.length > 512 || (s.mapSeed === '' && s.mapId >= MAPS.length)) return false
+    if (s.layoutVersion !== undefined && ![1,2].includes(s.layoutVersion)) return false
+    const counters = ['wave','startWave','wavesCleared','kills','gold','spireHp','spireMaxHp','waveBudget','hpScalePct','nextEntityId','goldRushTicks','bulwarkTicks','executeCd','beamHeat','crucible','maxRampStacks','combo','comboTicks','bestCombo','repairsThisWave','sparksEarned']
+    if (!counters.every(k => nat(value[k]))) return false
+    if (!['victoryClaimed','relicRerolled','beamOverheated'].every(k => typeof value[k] === 'boolean')) return false
+    if (!object(s.mods) || !(['damagePct','goldPct','sparkPct','critChancePct','abilityCdPct','repairCasts','collectRadius','autoCollectRadius','executeCdPct','overchargeCdPct'] as const).every(k => Number.isSafeInteger(s.mods[k]))) return false
+    if (s.doctrine != null && !(s.doctrine in DOCTRINES)) return false
+    if (s.commandCharges !== undefined && (!nat(s.commandCharges) || s.commandCharges > 3)) return false
+    if (s.commandRecharge !== undefined && !nat(s.commandRecharge)) return false
+    for (const v of [s.beamTarget, s.collectAt]) if (v !== null && (!object(v) || !nat(v.x) || !nat(v.y) || v.x > 24000 || v.y > 14000)) return false
+    if (!s.coins.every(c => nat(c.id) && nat(c.gold) && nat(c.bornTick) && object(c.pos) && nat(c.pos.x) && nat(c.pos.y))) return false
+    if (s.shrine && (!cell(s.shrine.cell) || !['offered','active','won','lost'].includes(s.shrine.status) || !nat(s.shrine.wave) || (s.shrine.guardTicks !== undefined && !nat(s.shrine.guardTicks)))) return false
+    if (s.leaks && (!Array.isArray(s.leaks) || s.leaks.length > 512 || !s.leaks.every(l => l.enemy in ENEMIES && nat(l.tick) && l.tick <= s.tick && nat(l.wave) && nat(l.damage)))) return false
+    if (s.relicOffer !== null && !s.relicOffer.every(r => r in RELICS)) return false
+    if (s.boonOffer !== null && (!Array.isArray(s.boonOffer) || !s.boonOffer.every(b => b in BOONS))) return false
+    if (s.activeBoon !== null && !(s.activeBoon in BOONS)) return false
+    if (!object(s.rng.boons) || !(['a','b','c','d'] as const).every(k => nat(s.rng.boons[k]) && s.rng.boons[k] <= 0xffffffff)) return false
+    if (!Object.keys(s.damageByTower).every(t => t in TOWERS) || !Object.keys(s.killsByEnemy).every(e => e in ENEMIES)) return false
     if (!s.availableTowers.every(t => t in TOWERS) || !s.relics.every(r => r in RELICS)) return false
-    if (!s.towers.every(t => t.type in TOWERS && (t.spec === null || t.spec in TOWER_SPECS))) return false
-    if (!s.enemies.every(e => e.type in ENEMIES) || !s.pendingSpawns.every(e => e.type in ENEMIES && nat(e.tick))) return false
+    if (!s.towers.every(t => t.type in TOWERS && nat(t.id) && cell(t.cell) && targeting.includes(t.targeting) && (t.spec === null || (t.tier === 3 && TOWER_SPECS[t.type]?.some(sp => sp.id === t.spec))))) return false
+    if (!s.enemies.every(e => e.type in ENEMIES && nat(e.id) && typeof e.phased === 'boolean' && ['hp','maxHp','speed','bounty','damage','shield','burnTicks','burnPerTick','overcharge','mechCooldown','mechActiveTicks','brittleTicks'].every(k => nat((e as unknown as Record<string,unknown>)[k])) && (e.targetCell === null || cell(e.targetCell))) || !s.pendingSpawns.every(e => e.type in ENEMIES && nat(e.tick))) return false
     if (!Object.keys(s.abilities).every(a => a in ABILITIES)) return false
     assertInvariants(s)
     return true
@@ -42,7 +63,7 @@ function validCommand(value: unknown): value is Command {
     case 'defend_shrine': case 'start_wave': case 'abandon_run': case 'repair_spire': case 'reroll_relic': return true
     case 'place_tower': return typeof c.tower === 'string' && c.tower in TOWERS && cell(c.cell)
     case 'upgrade_tower': case 'sell_tower': case 'overcharge_tower': case 'execute_enemy': return nat(c.id)
-    case 'specialize_tower': return nat(c.id) && typeof c.spec === 'string' && c.spec in TOWER_SPECS
+    case 'specialize_tower': return nat(c.id) && typeof c.spec === 'string' && specIds.has(c.spec as never)
     case 'choose_boon': return typeof c.boon === 'string' && c.boon in BOONS
     case 'choose_relic': return c.relic === null || (typeof c.relic === 'string' && c.relic in RELICS)
     case 'choose_cataclysm': return typeof c.cataclysm === 'string' && c.cataclysm in CATACLYSMS

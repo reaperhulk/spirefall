@@ -1,3 +1,6 @@
+import { META_TREE } from '../data/metaTree'
+import { EMBER_TREE } from '../data/emberTree'
+import { BIOME_IDS } from '../data/biomes'
 import { measure } from './performance'
 import { MAX_TRANSFER_BYTES, throughStream } from './boundedStream'
 import { COLLECT_RADIUS_BASE } from '../data/content'
@@ -152,6 +155,13 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.meta.upgrades['tower_damage_2'] = Math.min(honed - 8, 8)
         if (honed > 16) data.meta.upgrades['tower_damage_3'] = Math.min(honed - 16, 9)
       }
+      const nat = (n: unknown) => Number.isSafeInteger(n) && (n as number) >= 0
+      const counters = ['sparks','totalSparks','runs','victories','cycleVictories','embers','ascensions','bestWave','lifetimeKills']
+      if (data.meta.schemaVersion !== 1 || !counters.every(k => nat((data.meta as unknown as Record<string,unknown>)[k]))) return null
+      if (!Object.entries(data.meta.upgrades).every(([id,n]) => { const def = META_TREE.find(d => d.id === id); return def && nat(n) && n <= def.maxLevel })) return null
+      if (!Object.entries(data.meta.emberUpgrades).every(([id,n]) => { const def = EMBER_TREE.find(d => d.id === id); return def && nat(n) && n <= def.maxLevel })) return null
+      if (!Object.values(data.meta.bestWaveByMap).every(nat) || !Array.isArray(data.meta.achievements) || !data.meta.achievements.every(a => typeof a === 'string')) return null
+      if (!Array.isArray(data.meta.history) || !data.meta.history.every(h => ['defeat','victory'].includes(h.outcome) && [h.wavesCleared,h.kills,h.sparks].every(nat) && (h.biome === undefined || BIOME_IDS.includes(h.biome)) && (h.crucible === undefined || nat(h.crucible)))) return null
       // Discard finished runs; they only exist mid-play.
       if (data.run && (data.run.phase === 'defeat' || data.run.phase === 'victory')) {
         return { ...data, run: null }

@@ -3,6 +3,8 @@
 // singleton each frame — no React plumbing needed in the render loop.
 
 export interface Settings {
+  keyBindings: Record<string, string>
+  holdBeam: boolean
   quietEffects: boolean
   quietAudio: boolean
   volume: number // 0–100, scales every SFX gain
@@ -15,14 +17,31 @@ export interface Settings {
 
 const KEY = 'spirefall-settings'
 
-const DEFAULTS: Settings = { quietEffects: false, quietAudio: false, volume: 100, musicVolume: 60, reducedMotion: false, autoStart: false, haptics: true, colorAssist: false }
+const DEFAULTS: Settings = { keyBindings: {}, holdBeam: false, quietEffects: false, quietAudio: false, volume: 100, musicVolume: 60, reducedMotion: false, autoStart: false, haptics: true, colorAssist: false }
 
+export const ACTION_KEYS = ['b','v','g','o','r','u','x'] as const
+export const validBinding = (key: string): boolean => /^[a-z]$/.test(key) && !'qwefc tsm'.replaceAll(' ', '').includes(key)
+export function normalizeBindings(value: unknown): Record<string,string> {
+  const bindings: Record<string,string> = {}
+  if (!value || typeof value !== 'object') return bindings
+  // Reconstruct swaps in stable action order, keeping every action reachable.
+  for (const action of ACTION_KEYS) {
+    const key = (value as Record<string, unknown>)[action]
+    if (typeof key !== 'string' || !validBinding(key)) continue
+    const used = ACTION_KEYS.find(a => a !== action && (bindings[a] ?? a) === key)
+    if (used) bindings[used] = bindings[action] ?? action
+    bindings[action] = key
+  }
+  return bindings
+}
 function load(): Settings {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return { ...DEFAULTS }
     const parsed = JSON.parse(raw) as Partial<Settings>
     return {
+      keyBindings: normalizeBindings(parsed.keyBindings),
+      holdBeam: parsed.holdBeam === true,
       quietEffects: parsed.quietEffects === true,
       quietAudio: parsed.quietAudio === true,
       volume: typeof parsed.volume === 'number' ? Math.max(0, Math.min(100, parsed.volume)) : DEFAULTS.volume,

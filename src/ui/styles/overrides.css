@@ -35,3 +35,17 @@
 .tree-detail { position: sticky; bottom: 0; z-index: 2; font-size: 14px; padding: 16px; background: #16222e; }
 .tree-detail strong { font-size: 18px; }
 @media (max-width: 700px) { .tree-modal .tree-graph { height: auto; min-height: 560px; } .tree-gnode-label { font-size: 3px; } }
+
+.control-settings { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; border:1px solid var(--border); border-radius:8px; }
+.control-settings p { flex-basis:100%; }
+.control-settings label { display:flex; gap:10px; align-items:center; }
+.control-settings input:not([type=checkbox]) { width:44px; min-height:44px; text-align:center; text-transform:uppercase; }
+.replay-banner { flex-wrap:wrap; }
+.replay-banner label { display:flex; gap:10px; align-items:center; }
+.replay-checkpoints { display:flex; gap:6px; max-width:100%; overflow:auto; }
+.replay-checkpoints button { white-space:nowrap; }
+.run-lessons { text-align:left; border-top:1px solid #455065; margin-top:16px; padding:12px 0; }
+.run-lessons ol { max-height:180px; overflow:auto; }
+.reward-fit { color:#d4bd88; font-size:12px; }
+
+.game-icon { width:20px; height:20px; vertical-align:middle; flex-shrink:0; }

@@ -302,22 +302,30 @@ function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, 
   // Raised masonry, buttresses, battlements and damage cracks frame the core.
   ctx.fillStyle = '#0b1118'
   ellipse(ctx, cx - 5, cy + 23, 30, 13); ctx.fill()
-  const courses = hpFrac > 0 ? 3 : 1
+  const courses = hpFrac > 0 ? 4 : 1
   for (let floor = 0; floor < courses; floor++) {
     const y = cy + 19 - floor * 16
     ctx.fillStyle = floor % 2 ? '#566978' : '#394b5b'
-    ctx.fillRect(cx - 22, y - 12, 39, 16)
+    ctx.fillRect(cx - 22, y - 12, 34, 16)
     ctx.strokeStyle = '#91a6ae'; ctx.lineWidth = 1
-    ctx.strokeRect(cx - 22, y - 12, 39, 16)
+    ctx.strokeRect(cx - 22, y - 12, 34, 16)
     for (let brick = 0; brick < 3; brick++) {
       ctx.beginPath(); ctx.moveTo(cx - 18 + brick * 12 + (floor % 2) * 5, y - 12); ctx.lineTo(cx - 18 + brick * 12 + (floor % 2) * 5, y + 4); ctx.stroke()
     }
   }
   ctx.fillStyle = '#607886'
   for (const side of [-1, 1]) {
-    const x = cx + side * 20 - 5
-    ctx.fillRect(x, cy - 22, 8, 47)
-    for (let tooth = 0; tooth < 2; tooth++) ctx.fillRect(x + tooth * 5 - 1, cy - 27, 4, 8)
+    const x = cx + side * 17 - 12
+    ctx.fillRect(x, cy - 40, 8, 65)
+    for (let tooth = 0; tooth < 2; tooth++) ctx.fillRect(x + tooth * 5 - 1, cy - 45, 4, 8)
+  }
+  // Gilded arch and a narrow pennant anchor the fortress silhouette.
+  if (hpFrac > 0) {
+    ctx.fillStyle = '#18222f'; ctx.fillRect(cx - 17, cy - 7, 29, 25)
+    ctx.strokeStyle = '#d0b66e'; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.moveTo(cx - 17, cy + 18); ctx.lineTo(cx - 17, cy - 7); ctx.lineTo(cx - 3, cy - 18); ctx.lineTo(cx + 12, cy - 7); ctx.lineTo(cx + 12, cy + 18); ctx.stroke()
+    ctx.fillStyle = '#d0b66e'; ctx.fillRect(cx - 14, cy - 63, 2, 26)
+    ctx.fillStyle = '#467f91'; ctx.beginPath(); ctx.moveTo(cx - 12, cy - 61); ctx.lineTo(cx + 5, cy - 57); ctx.lineTo(cx - 12, cy - 48); ctx.fill()
   }
   if (hpFrac < 0.65) {
     ctx.strokeStyle = '#111820'; ctx.lineWidth = 2

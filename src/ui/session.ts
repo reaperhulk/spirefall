@@ -1,3 +1,4 @@
+import { measure } from './performance'
 import { settings } from './settings'
 import { RULES_VERSION, type Recording } from './validation'
 import { ENEMIES } from '../data/content'
@@ -60,7 +61,7 @@ const TOWER_BEAM_COLORS: Record<string, string> = {
 let nextRenderId = 1
 
 export class GameSession {
-  readonly renderId = nextRenderId++ // rematches and spectators own fresh visual caches
+  renderId = nextRenderId++ // rematches and spectators own fresh visual caches
   state: RunState
   prev: RunState // one tick behind, for render interpolation
   // The run's tick-0 state, kept so the run can be REPLAYED: determinism
@@ -70,6 +71,10 @@ export class GameSession {
   // player dispatches are ignored, and App suppresses meta/save effects.
   replayScript: LoggedCommand[] | null = null
   private scriptIndex = 0
+  replayEndTick = Number.POSITIVE_INFINITY
+  seeking = false
+  private seekToken = 0
+  checkpoints: { tick: number; wave: number; state: RunState }[] = []
   suspended = false
   speed = 1
   effects: VisualEffect[] = []
@@ -89,6 +94,7 @@ export class GameSession {
   // on attach — run_ended must never fall into that gap.
   private pendingEvents: Array<{ events: GameEvent[]; state: RunState }> = []
   private queue: Command[] = []
+  private queuedAt: number | null = null
   private accumulator = 0
   private listeners = new Set<() => void>()
   private lastNotify = 0
@@ -100,6 +106,7 @@ export class GameSession {
     // pins tick 0 against later mutation-by-reference.
     this.initial = JSON.parse(JSON.stringify(recording?.initial ?? initial)) as RunState
     this.commandLog = recording?.log.slice() ?? []
+    this.checkpoints = [{ tick: this.initial.tick, wave: this.initial.wave, state: this.initial }]
   }
 
   recording(): Recording {
@@ -120,11 +127,38 @@ export class GameSession {
   replaySession(): GameSession {
     const replay = new GameSession(JSON.parse(JSON.stringify(this.initial)) as RunState)
     replay.replayScript = this.commandLog.map((c) => ({ tick: c.tick, command: c.command }))
+    replay.replayEndTick = this.state.tick
+    replay.checkpoints = this.checkpoints.slice()
     return replay
+  }
+
+  async seek(tick: number): Promise<void> {
+    if (!this.replaying || !Number.isFinite(tick)) return
+    const token = ++this.seekToken
+    const target = Math.max(this.initial.tick, Math.min(this.replayEndTick, Math.floor(tick)))
+    const checkpoint = this.checkpoints.filter(c => c.tick <= target).at(-1)!
+    this.state = JSON.parse(JSON.stringify(checkpoint.state)) as RunState
+    this.prev = this.state
+    this.scriptIndex = this.replayScript!.findIndex(c => c.tick >= this.state.tick)
+    if (this.scriptIndex < 0) this.scriptIndex = this.replayScript!.length
+    this.accumulator = 0
+    this.seeking = true
+    this.effects = []
+    this.renderId = nextRenderId++
+    this.aim = {}; this.hits.clear(); this.firedAt.clear()
+    try {
+      while (this.state.tick < target && !this.terminal && token === this.seekToken) {
+        const until = Math.min(target, this.state.tick + 300)
+        while (this.state.tick < until && !this.terminal) this.stepOnce()
+        this.notify()
+        await new Promise<void>(resolve => setTimeout(resolve, 0))
+      }
+    } finally { if (token === this.seekToken) { this.seeking = false; this.effects = []; this.notify() } }
   }
 
   dispatch(command: Command): void {
     if (this.replayScript) return // spectators don't get to change history
+    this.queuedAt ??= performance.now()
     this.queue.push(command)
   }
 
@@ -146,7 +180,7 @@ export class GameSession {
 
   // Called once per animation frame with real elapsed milliseconds.
   advance(dtMs: number): void {
-    if (this.suspended || this.speed <= 0 || this.terminal) {
+    if (this.seeking || this.suspended || this.speed <= 0 || this.terminal) {
       return
     }
     this.accumulator += Math.min(dtMs, 1000) * this.speed
@@ -162,7 +196,7 @@ export class GameSession {
 
   // Interpolation factor between prev and state for smooth 60fps rendering.
   get alpha(): number {
-    if (this.suspended || this.speed <= 0 || this.terminal) return 1
+    if (this.seeking || this.suspended || this.speed <= 0 || this.terminal) return 1
     return Math.max(0, Math.min(1, this.accumulator / TICK_MS))
   }
 
@@ -182,6 +216,7 @@ export class GameSession {
   getVersion = (): number => this.version
 
   private stepOnce(): void {
+    if (this.replaying && this.state.tick >= this.replayEndTick) return
     let commands: Command[]
     if (this.replayScript) {
       // Replay: feed the recorded commands at exactly the ticks they were
@@ -192,13 +227,19 @@ export class GameSession {
         this.scriptIndex += 1
       }
     } else {
+      if (this.queuedAt !== null) { measure('input', performance.now() - this.queuedAt); this.queuedAt = null }
       commands = this.queue.splice(0)
       for (const command of commands) this.commandLog.push({ tick: this.state.tick, command })
     }
     const result = step(this.state, commands)
     this.prev = this.state
     this.state = result.state
-    if (result.events.length > 0) {
+    if (result.events.some(e => e.type === 'wave_started') && !this.checkpoints.some(c => c.tick === this.state.tick)) {
+      this.checkpoints.push({ tick: this.state.tick, wave: this.state.wave, state: this.state })
+      this.checkpoints.sort((a,b) => a.tick-b.tick)
+      if (this.checkpoints.length > 64) this.checkpoints.splice(1,1)
+    }
+    if (result.events.length > 0 && !this.seeking) {
       this.collectEffects(result.events)
       if (this.onEvents) this.onEvents(result.events, this.state)
       else this.pendingEvents.push({ events: result.events, state: this.state })
