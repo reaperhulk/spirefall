@@ -1,3 +1,4 @@
+import { performanceReport, resetPerformance } from './performance'
 import { ENEMIES } from '../data/content'
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { Command, Enemy, MetaState, RunState } from '../engine/types'
@@ -20,6 +21,8 @@ export interface HarnessApi {
 }
 
 export interface GameHarness {
+  getPerformance: typeof performanceReport
+  resetPerformance: typeof resetPerformance
   getState: () => RunState
   getMeta: () => MetaState
   // The run's battlefield, summarized for tests: gate positions plus which
@@ -150,6 +153,8 @@ export function installHarness(api: HarnessApi): void {
         runs: meta.runs,
       }
     },
+    getPerformance: performanceReport,
+    resetPerformance,
     getReplay: () => ({ seed: api.getSession().state.seed, log: [...api.getSession().commandLog] }),
     newRun: api.newRun,
     buyMeta: api.buyMeta,

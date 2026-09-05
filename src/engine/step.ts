@@ -1,3 +1,4 @@
+import { navigation } from './navigation'
 import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, DOCTRINES } from '../data/doctrines'
 import {
   ABILITIES,
@@ -94,7 +95,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
   for (const command of commands) applyCommand(s, command, events)
 
   if (s.phase === 'wave') {
-    const field = distanceField(map, blockedGrid(map, s.towers))
+    const field = navigation(map, s.towers).field
     spawnDue(s, events)
     moveEnemies(s, map, field, events)
     if (s.shrine?.status === 'active' && s.towers.filter(t => !TOWERS[t.type].support && distSq(cellCenter(t.cell), cellCenter(s.shrine!.cell)) <= 3000 * 3000).length >= 2) s.shrine.guardTicks = (s.shrine.guardTicks ?? 0) + 1

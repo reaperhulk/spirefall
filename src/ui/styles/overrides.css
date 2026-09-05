@@ -26,3 +26,12 @@
   .command-pool, .doctrine-summary { padding: 0 10px; }
   button { min-height: 40px; }
 }
+.tower-portrait { width: 42px; height: 42px; flex: 0 0 42px; }
+.shop-card-top { flex-wrap: wrap; }
+.shop-card-top .tower-dot { display: none; }
+.tree-modal { width: min(1120px, 94vw); max-width: 1120px; max-height: 94dvh; }
+.tree-modal .tree-graph { height: 64vh; max-height: none; }
+.tree-gnode.state-locked .tree-gnode-label, .tree-gnode.state-locked .tree-gnode-lv { opacity: 0.85; fill: #b0bfd1; }
+.tree-detail { position: sticky; bottom: 0; z-index: 2; font-size: 14px; padding: 16px; background: #16222e; }
+.tree-detail strong { font-size: 18px; }
+@media (max-width: 700px) { .tree-modal .tree-graph { height: auto; min-height: 560px; } .tree-gnode-label { font-size: 3px; } }

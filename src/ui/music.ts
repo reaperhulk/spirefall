@@ -225,7 +225,7 @@ export class Music {
     this.padOsc = []
     this.bus = ctx.createGain()
     this.bus.gain.value = 0.001
-    this.bus.connect(ctx.destination)
+    this.bus.connect(this.sfx.musicDestination() ?? ctx.destination)
     this.padFilter = ctx.createBiquadFilter()
     this.padFilter.type = 'lowpass'
     this.padFilter.frequency.value = 600
@@ -369,6 +369,15 @@ export class Music {
         this.blip(ctx, at, midiHz(toneOf(0, 0) - 12), 1.6, 'sine', 0.25)
       }
       return
+    }
+
+    if (this.totalStep % 64 < 16 && !bossAlive) {
+      const phrase = [0, -1, 4, -1, 2, -1, 1, -1, 0, -1, 2, 4, -1, -1, 0, -1]
+      const degree = phrase[this.totalStep % 64] ?? -1
+      if (degree >= 0) {
+        const hz = midiHz(root + scale[degree % scale.length]! + 12)
+        this.blip(ctx, at, hz, BEAT * 1.8, 'triangle', 0.25, true)
+      }
     }
 
     // A living boss abandons the wandering progression for a two-chord dark

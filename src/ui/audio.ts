@@ -49,6 +49,8 @@ type SoundKind =
   | 'frost_nova'
   | 'gold_rush'
   | 'bulwark'
+  | 'beam_hot'
+  | 'shield'
   | 'carapace'
   | 'gale'
 
@@ -83,6 +85,8 @@ interface Note {
 // sequentially (each starting at 90% of the previous note's duration) for
 // melodic figures like the victory arpeggio.
 const SOUNDS: Record<SoundKind, Note[]> = {
+  beam_hot: [{ freq: 600, dur: 0.35, type: 'noise', gain: 0.035, sweep: 0.3, q: 2 }, { freq: 440, dur: 0.2, type: 'sine', gain: 0.02, sweep: 0.5 }],
+  shield: [{ freq: 1600, dur: 0.07, type: 'fm', gain: 0.025, ratio: 1.4, index: 5 }],
   // Arrow: an actual bowstring — Karplus pluck with a tiny release tick.
   shot_arrow: [
     { freq: 480, dur: 0.16, type: 'pluck', gain: 0.06, at: 0 },
@@ -330,6 +334,7 @@ export class Sfx {
   private reverb: ConvolverNode | null = null
   private noiseBuffer: AudioBuffer | null = null
   private lastPlayed: Partial<Record<SoundKind, number>> = {}
+  private urgentCount = 0
   private recentCount = 0
   private recentWindow = 0
   private reviveGeneration = 0
@@ -342,7 +347,7 @@ export class Sfx {
   tonality: (() => Tonality | null) | null = null
 
   constructor() {
-    this.muted = localStorage.getItem(MUTE_KEY) === '1'
+    try { this.muted = localStorage.getItem(MUTE_KEY) === '1' } catch { this.muted = false }
     // Browsers require a user gesture before audio can start — and can
     // suspend a running context at any time (tab switch, OS interruption).
     // The listeners stay attached for the whole session so every gesture is
@@ -374,6 +379,8 @@ export class Sfx {
 
   // The generative score (music.ts) rides this context so autoplay-unlock
   // and zombie-revival live in exactly one place.
+  musicDestination(): AudioNode | null { return this.master }
+
   currentContext(): AudioContext | null {
     return this.ctx
   }
@@ -432,6 +439,7 @@ export class Sfx {
     for (const e of events) {
       switch (e.type) {
         case 'tower_fired': {
+          if (e.blocked) this.play('shield', panFromX(e.to.x))
           const kind = SHOT_BY_TOWER[e.tower]
           if (kind) this.play(kind, panFromX(e.from.x))
           break
@@ -469,6 +477,15 @@ export class Sfx {
           break
         case 'cataclysm_struck':
           this.play('cataclysm')
+          break
+        case 'beam_overheated':
+          this.play('beam_hot')
+          break
+        case 'boss_warning':
+          this.play('boss')
+          break
+        case 'shrine_resolved':
+          this.play(e.won ? 'relic' : 'spire_hit')
           break
         case 'boss_carapace':
           this.play('carapace')
@@ -625,9 +642,11 @@ export class Sfx {
     if (now - this.recentWindow > 250) {
       this.recentWindow = now
       this.recentCount = 0
+      this.urgentCount = 0
     }
-    if (this.recentCount >= 8) return
-    this.recentCount += 1
+    const urgent = ['beam_hot', 'spire_hit', 'boss', 'carapace', 'gale', 'victory', 'defeat', 'execute', 'meteor', 'frost_nova', 'cataclysm'].includes(kind)
+    if (urgent) { if (this.urgentCount >= 4) return; this.urgentCount += 1 }
+    else { if (this.recentCount >= (settings.quietAudio ? 3 : 8)) return; this.recentCount += 1 }
     this.lastPlayed[kind] = now
 
     const ctx = this.ctx
@@ -659,7 +678,7 @@ export class Sfx {
     for (const note of SOUNDS[kind]) {
       const at = base + (note.at ?? chained)
       if (note.at === undefined) chained += note.dur * 0.9
-      const scaled = (note.gain * Math.max(0, Math.min(100, settings.volume))) / 100
+      const scaled = (note.gain * (settings.quietAudio && !urgent ? 0.55 : 1) * Math.max(0, Math.min(100, settings.volume))) / 100
       if (scaled <= 0) continue
       const gain = ctx.createGain()
       // Real attack ramp: starting a gain at full value clicks. A few ms of

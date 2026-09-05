@@ -6,6 +6,7 @@
 // their last target (session.aim, fed by tower_fired events).
 import { MESA_RANGE_PCT } from '../../data/biomes'
 import { ABILITIES, LANCE_MAX_STACKS, VETERANCY_TIERS, mintStars, towerTier, veterancyStars } from '../../data/content'
+import type { Tower } from '../../engine/types'
 import type { MapDef } from '../../data/maps'
 import { effectiveTowerRange, towerRangeOnBoard } from '../../engine/combat'
 import { blockedGrid, canPlaceTower, cellCenter, cellIndex, distSq, distanceField, pathFrom } from '../../engine/grid'
@@ -31,7 +32,7 @@ export function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, 
 
     // Shared base plate, edged in the tower's color so types read at a
     // glance — tier 3 earns a bright edge, enhancements make it burn.
-    ctx.fillStyle = '#141a28'
+    ctx.fillStyle = '#344453'
     roundRect(ctx, gx + 4.5, gy + 4.5, CELL_PX - 9, CELL_PX - 9, 5)
     ctx.fill()
     ctx.save()
@@ -80,6 +81,182 @@ export function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, 
     ctx.save()
     ctx.translate(cx - Math.cos(aim) * recoil, cy - Math.sin(aim) * recoil)
     ctx.scale(s, s)
+    drawTowerBody(ctx, t, aim, t0)
+    ctx.restore()
+
+    // The lance's ramp reads on the battlefield, not just in the panel: a
+    // rose charge dial fills around the tower as stacks climb, and a tether
+    // thickens toward the held mark. Both drop the instant the climb resets
+    // — the same state the engine keeps, so the tell can't lie.
+    if (t.type === 'lance' && (t.rampStacks ?? 0) > 0) {
+      const stacks = t.rampStacks ?? 0
+      const frac = Math.min(1, stacks / LANCE_MAX_STACKS)
+      const mark = state.enemies.find((e) => e.id === t.rampTarget && e.hp > 0)
+      if (mark && !mark.phased) {
+        ctx.strokeStyle = color
+        ctx.globalAlpha = 0.16 + 0.3 * frac
+        ctx.lineWidth = 0.5 + 1.5 * frac
+        ctx.beginPath()
+        ctx.moveTo(cx, cy)
+        ctx.lineTo(px(mark.pos.x), px(mark.pos.y))
+        ctx.stroke()
+      }
+      ctx.strokeStyle = color
+      ctx.globalAlpha = 0.85
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + frac * 2 * Math.PI)
+      ctx.stroke()
+      ctx.globalAlpha = 1
+      ctx.lineWidth = 1
+      if (frac >= 1) glow(ctx, cx, cy, 16, color, 0.3) // full climb burns
+    }
+
+    // Overcharge: an armed tower burns white-hot until the shot spends it.
+    if (t.overcharged) {
+      glow(ctx, cx, cy, CELL_PX * 0.6, '#ffffff', 0.35 + 0.15 * Math.sin(t0 * 0.25))
+    }
+
+    // Tier pips + enhancement badge, on top of everything.
+    ctx.fillStyle = color
+    for (let i = 0; i < t.tier; i++) ctx.fillRect(gx + 7 + i * 5, gy + CELL_PX - 9, 3, 3)
+
+    // Veterancy: kills earn stars (10/50/150) — a tower's career reads on
+    // the field, and watching a favorite grow up is half the fun of 1x.
+    // Mints earn theirs off gold minted — see MINT_VETERANCY_TIERS.
+    const stars = t.type === 'mint' ? mintStars(t.earned ?? 0) : veterancyStars(t.kills)
+    if (stars > 0) {
+      ctx.fillStyle = '#e0af68'
+      for (let i = 0; i < stars; i++) drawStar(ctx, gx + 7 + i * 7, gy + 8, 3)
+      if (stars >= VETERANCY_TIERS.length) glow(ctx, cx, cy, CELL_PX * 0.5, '#e0af68', 0.12)
+    }
+
+    // A beacon's contribution is not a career, it's live COVERAGE — how many
+    // towers are standing in the aura right now. Pips, not stars, because
+    // the number is meant to move: sell a neighbour and one goes out, which
+    // is exactly the feedback that makes placement legible. Same slot as the
+    // stars so the glance is the same glance; different shape so it cannot
+    // be misread as veterancy. Previously this was visible only while the
+    // beacon was SELECTED, which is precisely when you no longer need it.
+    if (t.type === 'beacon') {
+      const reach = towerTier('beacon', t.tier).range
+      const at = cellCenter(t.cell)
+      let boosted = 0
+      for (const other of state.towers) {
+        if (other.id === t.id || other.type === 'beacon') continue
+        if (distSq(cellCenter(other.cell), at) <= reach * reach) boosted++
+      }
+      ctx.fillStyle = boosted > 0 ? '#ff9e64' : '#5a4436'
+      for (let i = 0; i < Math.max(1, Math.min(boosted, 6)); i++) {
+        circle(ctx, gx + 8 + i * 6, gy + 8, 2)
+        ctx.fill()
+      }
+    }
+    if (t.enhance > 0) {
+      ctx.font = 'bold 9px ui-monospace, monospace'
+      ctx.textAlign = 'right'
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText(`+${t.enhance}`, gx + CELL_PX - 4, gy + 12)
+      ctx.textAlign = 'left'
+    }
+
+    if (ui.selectedTowerId === t.id) {
+      const def = towerTier(t.type, t.tier)
+      const center = cellCenter(t.cell)
+      // The ring is the engine's OWN radius — spec, Longsight, and mesa
+      // included (beacons excepted: their aura reach is raw by design).
+      const ringRange = t.type === 'beacon' ? def.range : towerRangeOnBoard(state, getRunMap(state), t)
+      ctx.fillStyle = COLORS.range
+      ctx.strokeStyle = COLORS.rangeEdge
+      ctx.beginPath()
+      ctx.arc(px(center.x), px(center.y), px(ringRange), 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+
+      // A selected beacon shows its WORK, not just its reach: amber links
+      // to every tower inside the aura, so repositioning decisions are
+      // made by sight instead of radius guesswork.
+      if (t.type === 'beacon') {
+        const rangeSq = def.range * def.range
+        ctx.strokeStyle = '#ff9e64'
+        ctx.globalAlpha = 0.7
+        ctx.setLineDash([4, 4])
+        for (const other of state.towers) {
+          if (other.id === t.id || other.type === 'beacon') continue
+          const oc = cellCenter(other.cell)
+          if (distSq(center, oc) > rangeSq) continue
+          ctx.beginPath()
+          ctx.moveTo(px(center.x), px(center.y))
+          ctx.lineTo(px(oc.x), px(oc.y))
+          ctx.stroke()
+          circle(ctx, px(oc.x), px(oc.y), 6)
+          ctx.stroke()
+        }
+        ctx.setLineDash([])
+        ctx.globalAlpha = 1
+      }
+    }
+    ctx.lineWidth = 1
+  }
+}
+
+
+export function drawPlacementGhost(
+  ctx: CanvasRenderingContext2D,
+  session: GameSession,
+  ui: RenderUiState,
+  map: MapDef,
+): void {
+  if (!ui.hoverCell) return
+  const c = ui.hoverCell
+
+  if (ui.shopSelection) {
+    // Full engine-side validation, including "would this wall off the spire".
+    const ok = canPlaceTower(session.state, map, c).ok
+    ctx.fillStyle = ok ? COLORS.ghostOk : COLORS.ghostBad
+    ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
+    // The ghost ring is the radius the tower would ACTUALLY get here —
+    // Longsight and this very cell's mesa bonus included.
+    let ghostRange = effectiveTowerRange(session.state, ui.shopSelection, 1)
+    if (ui.shopSelection !== 'beacon' && map.mesa.length > 0 && map.mesa[cellIndex(map, c)]) {
+      ghostRange = Math.floor((ghostRange * MESA_RANGE_PCT) / 100)
+    }
+    if (ui.shopSelection === 'beacon') ghostRange = towerTier('beacon', 1).range
+    const center = cellCenter(c)
+    ctx.strokeStyle = COLORS.rangeEdge
+    ctx.beginPath()
+    ctx.arc(px(center.x), px(center.y), px(ghostRange), 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Preview how enemies would re-route around the new tower BEFORE buying:
+    // amber dots trace the would-be path.
+    if (ok) {
+      const field = distanceField(map, blockedGrid(map, session.state.towers, c))
+      const preview = [map.spawn, ...pathFrom(map, field, map.spawn)]
+      ctx.fillStyle = 'rgba(229, 192, 123, 0.8)'
+      for (const cell of preview) {
+        const p = cellCenter(cell)
+        ctx.beginPath()
+        ctx.arc(px(p.x), px(p.y), 2.5, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+  }
+
+  if (ui.abilitySelection && ui.abilitySelection !== 'gold_rush') {
+    const def = ABILITIES[ui.abilitySelection]
+    const center = cellCenter(c)
+    ctx.fillStyle = 'rgba(255, 95, 60, 0.15)'
+    ctx.strokeStyle = 'rgba(255, 95, 60, 0.5)'
+    ctx.beginPath()
+    ctx.arc(px(center.x), px(center.y), px(def.radius), 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+  }
+}
+
+export function drawTowerBody(ctx: CanvasRenderingContext2D, t: Pick<Tower, 'type' | 'tier' | 'id' | 'spec'>, aim: number, t0: number): void {
+  const color = COLORS.towers[t.type]
     switch (t.type) {
       case 'arrow': {
         // Round pedestal, rotating arrowhead + bowstring.
@@ -254,175 +431,12 @@ export function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, 
         break
       }
     }
-    ctx.restore()
-
-    // The lance's ramp reads on the battlefield, not just in the panel: a
-    // rose charge dial fills around the tower as stacks climb, and a tether
-    // thickens toward the held mark. Both drop the instant the climb resets
-    // — the same state the engine keeps, so the tell can't lie.
-    if (t.type === 'lance' && (t.rampStacks ?? 0) > 0) {
-      const stacks = t.rampStacks ?? 0
-      const frac = Math.min(1, stacks / LANCE_MAX_STACKS)
-      const mark = state.enemies.find((e) => e.id === t.rampTarget && e.hp > 0)
-      if (mark && !mark.phased) {
-        ctx.strokeStyle = color
-        ctx.globalAlpha = 0.16 + 0.3 * frac
-        ctx.lineWidth = 0.5 + 1.5 * frac
-        ctx.beginPath()
-        ctx.moveTo(cx, cy)
-        ctx.lineTo(px(mark.pos.x), px(mark.pos.y))
-        ctx.stroke()
-      }
-      ctx.strokeStyle = color
-      ctx.globalAlpha = 0.85
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + frac * 2 * Math.PI)
-      ctx.stroke()
-      ctx.globalAlpha = 1
-      ctx.lineWidth = 1
-      if (frac >= 1) glow(ctx, cx, cy, 16, color, 0.3) // full climb burns
-    }
-
-    // Overcharge: an armed tower burns white-hot until the shot spends it.
-    if (t.overcharged) {
-      glow(ctx, cx, cy, CELL_PX * 0.6, '#ffffff', 0.35 + 0.15 * Math.sin(t0 * 0.25))
-    }
-
-    // Tier pips + enhancement badge, on top of everything.
-    ctx.fillStyle = color
-    for (let i = 0; i < t.tier; i++) ctx.fillRect(gx + 7 + i * 5, gy + CELL_PX - 9, 3, 3)
-
-    // Veterancy: kills earn stars (10/50/150) — a tower's career reads on
-    // the field, and watching a favorite grow up is half the fun of 1x.
-    // Mints earn theirs off gold minted — see MINT_VETERANCY_TIERS.
-    const stars = t.type === 'mint' ? mintStars(t.earned ?? 0) : veterancyStars(t.kills)
-    if (stars > 0) {
-      ctx.fillStyle = '#e0af68'
-      for (let i = 0; i < stars; i++) drawStar(ctx, gx + 7 + i * 7, gy + 8, 3)
-      if (stars >= VETERANCY_TIERS.length) glow(ctx, cx, cy, CELL_PX * 0.5, '#e0af68', 0.12)
-    }
-
-    // A beacon's contribution is not a career, it's live COVERAGE — how many
-    // towers are standing in the aura right now. Pips, not stars, because
-    // the number is meant to move: sell a neighbour and one goes out, which
-    // is exactly the feedback that makes placement legible. Same slot as the
-    // stars so the glance is the same glance; different shape so it cannot
-    // be misread as veterancy. Previously this was visible only while the
-    // beacon was SELECTED, which is precisely when you no longer need it.
-    if (t.type === 'beacon') {
-      const reach = towerTier('beacon', t.tier).range
-      const at = cellCenter(t.cell)
-      let boosted = 0
-      for (const other of state.towers) {
-        if (other.id === t.id || other.type === 'beacon') continue
-        if (distSq(cellCenter(other.cell), at) <= reach * reach) boosted++
-      }
-      ctx.fillStyle = boosted > 0 ? '#ff9e64' : '#5a4436'
-      for (let i = 0; i < Math.max(1, Math.min(boosted, 6)); i++) {
-        circle(ctx, gx + 8 + i * 6, gy + 8, 2)
-        ctx.fill()
-      }
-    }
-    if (t.enhance > 0) {
-      ctx.font = 'bold 9px ui-monospace, monospace'
-      ctx.textAlign = 'right'
-      ctx.fillStyle = '#ffffff'
-      ctx.fillText(`+${t.enhance}`, gx + CELL_PX - 4, gy + 12)
-      ctx.textAlign = 'left'
-    }
-
-    if (ui.selectedTowerId === t.id) {
-      const def = towerTier(t.type, t.tier)
-      const center = cellCenter(t.cell)
-      // The ring is the engine's OWN radius — spec, Longsight, and mesa
-      // included (beacons excepted: their aura reach is raw by design).
-      const ringRange = t.type === 'beacon' ? def.range : towerRangeOnBoard(state, getRunMap(state), t)
-      ctx.fillStyle = COLORS.range
-      ctx.strokeStyle = COLORS.rangeEdge
-      ctx.beginPath()
-      ctx.arc(px(center.x), px(center.y), px(ringRange), 0, Math.PI * 2)
-      ctx.fill()
-      ctx.stroke()
-
-      // A selected beacon shows its WORK, not just its reach: amber links
-      // to every tower inside the aura, so repositioning decisions are
-      // made by sight instead of radius guesswork.
-      if (t.type === 'beacon') {
-        const rangeSq = def.range * def.range
-        ctx.strokeStyle = '#ff9e64'
-        ctx.globalAlpha = 0.7
-        ctx.setLineDash([4, 4])
-        for (const other of state.towers) {
-          if (other.id === t.id || other.type === 'beacon') continue
-          const oc = cellCenter(other.cell)
-          if (distSq(center, oc) > rangeSq) continue
-          ctx.beginPath()
-          ctx.moveTo(px(center.x), px(center.y))
-          ctx.lineTo(px(oc.x), px(oc.y))
-          ctx.stroke()
-          circle(ctx, px(oc.x), px(oc.y), 6)
-          ctx.stroke()
-        }
-        ctx.setLineDash([])
-        ctx.globalAlpha = 1
-      }
-    }
-    ctx.lineWidth = 1
-  }
-}
-
-
-export function drawPlacementGhost(
-  ctx: CanvasRenderingContext2D,
-  session: GameSession,
-  ui: RenderUiState,
-  map: MapDef,
-): void {
-  if (!ui.hoverCell) return
-  const c = ui.hoverCell
-
-  if (ui.shopSelection) {
-    // Full engine-side validation, including "would this wall off the spire".
-    const ok = canPlaceTower(session.state, map, c).ok
-    ctx.fillStyle = ok ? COLORS.ghostOk : COLORS.ghostBad
-    ctx.fillRect(c.cx * CELL_PX, c.cy * CELL_PX, CELL_PX, CELL_PX)
-    // The ghost ring is the radius the tower would ACTUALLY get here —
-    // Longsight and this very cell's mesa bonus included.
-    let ghostRange = effectiveTowerRange(session.state, ui.shopSelection, 1)
-    if (ui.shopSelection !== 'beacon' && map.mesa.length > 0 && map.mesa[cellIndex(map, c)]) {
-      ghostRange = Math.floor((ghostRange * MESA_RANGE_PCT) / 100)
-    }
-    if (ui.shopSelection === 'beacon') ghostRange = towerTier('beacon', 1).range
-    const center = cellCenter(c)
-    ctx.strokeStyle = COLORS.rangeEdge
-    ctx.beginPath()
-    ctx.arc(px(center.x), px(center.y), px(ghostRange), 0, Math.PI * 2)
-    ctx.stroke()
-
-    // Preview how enemies would re-route around the new tower BEFORE buying:
-    // amber dots trace the would-be path.
-    if (ok) {
-      const field = distanceField(map, blockedGrid(map, session.state.towers, c))
-      const preview = [map.spawn, ...pathFrom(map, field, map.spawn)]
-      ctx.fillStyle = 'rgba(229, 192, 123, 0.8)'
-      for (const cell of preview) {
-        const p = cellCenter(cell)
-        ctx.beginPath()
-        ctx.arc(px(p.x), px(p.y), 2.5, 0, Math.PI * 2)
-        ctx.fill()
-      }
-    }
-  }
-
-  if (ui.abilitySelection && ui.abilitySelection !== 'gold_rush') {
-    const def = ABILITIES[ui.abilitySelection]
-    const center = cellCenter(c)
-    ctx.fillStyle = 'rgba(255, 95, 60, 0.15)'
-    ctx.strokeStyle = 'rgba(255, 95, 60, 0.5)'
-    ctx.beginPath()
-    ctx.arc(px(center.x), px(center.y), px(def.radius), 0, Math.PI * 2)
-    ctx.fill()
-    ctx.stroke()
+  // Specializations change the silhouette as well as the badge.
+  if (t.spec) {
+    ctx.strokeStyle = '#e6d5ac'; ctx.lineWidth = 2
+    const paired = ['volley', 'mortar', 'blizzard', 'lattice', 'overpenetrator', 'momentum'].includes(t.spec)
+    if (paired) {
+      for (const side of [-1, 1]) { ctx.beginPath(); ctx.moveTo(-7, side * 10); ctx.lineTo(9, side * 10); ctx.stroke() }
+    } else { ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(7, -6); ctx.lineTo(0, 0); ctx.lineTo(-7, -6); ctx.closePath(); ctx.stroke() }
   }
 }

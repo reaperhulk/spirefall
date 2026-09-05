@@ -1,3 +1,4 @@
+import { measure } from './performance'
 import { MAX_TRANSFER_BYTES, throughStream } from './boundedStream'
 import { COLLECT_RADIUS_BASE } from '../data/content'
 import { finiteTree, parseRecording, validRun, type Recording } from './validation'
@@ -50,6 +51,7 @@ export function loadSave(): SaveData | null {
   return null
 }
 export function persistSave(data: SaveData): boolean {
+  const started = performance.now()
   try {
     const recording = data.run ? recordingProvider?.() : undefined
     const payload = recording?.endTick === data.run?.tick && recording?.initial.seed === data.run?.seed ? { ...data, recording } : data
@@ -59,6 +61,7 @@ export function persistSave(data: SaveData): boolean {
     localStorage.setItem(KEY, raw)
     lastGoodRaw = raw
     report('')
+    measure('save', performance.now() - started)
     return true
   } catch {
     report('Progress could not be saved. Free browser storage or export your progress in Settings.')

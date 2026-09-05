@@ -1,7 +1,8 @@
+import { navigation } from '../engine/navigation'
 import { BEAM_HEAT_MAX, COIN_FLASH_TICKS, COIN_LIFETIME_TICKS, ENEMIES } from '../data/content'
 import { settings } from './settings'
 import type { MapDef } from '../data/maps'
-import { blockedGrid, cellCenter, distanceField, pathFrom } from '../engine/grid'
+import { cellCenter } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
 import type { RunState } from '../engine/types'
 import type { GameSession } from './session'
@@ -192,8 +193,7 @@ function drawBossBar(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef
 }
 
 function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef, t0: number, theme: MapTheme): void {
-  const field = distanceField(map, blockedGrid(map, state.towers))
-  const path = [map.spawn, ...pathFrom(map, field, map.spawn)]
+  const path = navigation(map, state.towers).path
 
   // A brushed road: two rounded strokes through the cell centers — a soft
   // dark trench with a worn core — instead of hard checkerboard rectangles.
@@ -217,7 +217,7 @@ function drawPathHighlight(ctx: CanvasRenderingContext2D, state: RunState, map: 
   }
 
   // Drifting chevrons make the flow direction legible at a glance.
-  ctx.strokeStyle = '#2a3248'
+  ctx.strokeStyle = '#9bada3'
   ctx.lineWidth = 1.5
   for (let i = 0; i + 1 < path.length; i++) {
     const a = path[i]!
@@ -299,6 +299,36 @@ function drawGates(ctx: CanvasRenderingContext2D, map: MapDef, state: RunState, 
   const breathe = 1 + 0.05 * Math.sin(t0 * 0.07)
   // The Spire lights its surroundings; the pool of light shrinks as it dies.
   glow(ctx, cx, cy, CELL_PX * (1.1 + 1.5 * hpFrac) * breathe, COLORS.spire, 0.35 + 0.4 * hpFrac)
+  // Raised masonry, buttresses, battlements and damage cracks frame the core.
+  ctx.fillStyle = '#0b1118'
+  ellipse(ctx, cx - 5, cy + 23, 30, 13); ctx.fill()
+  const courses = hpFrac > 0 ? 3 : 1
+  for (let floor = 0; floor < courses; floor++) {
+    const y = cy + 19 - floor * 16
+    ctx.fillStyle = floor % 2 ? '#566978' : '#394b5b'
+    ctx.fillRect(cx - 22, y - 12, 39, 16)
+    ctx.strokeStyle = '#91a6ae'; ctx.lineWidth = 1
+    ctx.strokeRect(cx - 22, y - 12, 39, 16)
+    for (let brick = 0; brick < 3; brick++) {
+      ctx.beginPath(); ctx.moveTo(cx - 18 + brick * 12 + (floor % 2) * 5, y - 12); ctx.lineTo(cx - 18 + brick * 12 + (floor % 2) * 5, y + 4); ctx.stroke()
+    }
+  }
+  ctx.fillStyle = '#607886'
+  for (const side of [-1, 1]) {
+    const x = cx + side * 20 - 5
+    ctx.fillRect(x, cy - 22, 8, 47)
+    for (let tooth = 0; tooth < 2; tooth++) ctx.fillRect(x + tooth * 5 - 1, cy - 27, 4, 8)
+  }
+  if (hpFrac < 0.65) {
+    ctx.strokeStyle = '#111820'; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.moveTo(cx - 17, cy - 21); ctx.lineTo(cx - 8, cy - 5); ctx.lineTo(cx - 14, cy + 3); ctx.lineTo(cx - 5, cy + 15); ctx.stroke()
+  }
+  if (hpFrac < 0.3) { ctx.fillStyle = '#181d25'; ctx.fillRect(cx + 11, cy - 22, 11, 18) }
+  if (hpFrac <= 0) {
+    ctx.fillStyle = '#657078'
+    for (let stone = 0; stone < 7; stone++) ctx.fillRect(cx - 26 + stone * 7, cy + 14 + (stone % 3) * 4, 6, 5)
+    return
+  }
   ctx.fillStyle = COLORS.spire
   ctx.beginPath()
   ctx.moveTo(cx, cy - r * breathe)

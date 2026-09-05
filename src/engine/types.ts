@@ -267,7 +267,7 @@ export type GameEvent =
   | { type: 'cataclysm_struck'; cataclysm: CataclysmId; wave: number }
   | { type: 'cataclysm_offered'; options: CataclysmId[]; wave: number }
   | { type: 'tower_sold'; id: number; refund: number }
-  | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[]; crit: boolean }
+  | { type: 'tower_fired'; id: number; tower: TowerType; from: Vec; to: Vec; targets: number[]; crit: boolean; blocked?: boolean }
   | { type: 'tower_specialized'; id: number; spec: TowerSpecId; cost: number }
   | { type: 'ability_cast'; ability: AbilityId; cell: CellPos }
   | { type: 'wave_cleared'; wave: number; goldAwarded: number }

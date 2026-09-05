@@ -771,8 +771,18 @@ export function SettingsModal({
   onColorAssist,
   onWatchReplay,
   onClose,
+  quietEffects,
+  quietAudio,
+  onQuietEffects,
+  onQuietAudio,
+  onHardReset,
   askConfirm,
 }: {
+  quietEffects: boolean
+  quietAudio: boolean
+  onQuietEffects: (value: boolean) => void
+  onQuietAudio: (value: boolean) => void
+  onHardReset: () => void
   meta: MetaState
   volume: number
   musicVolume: number
@@ -852,6 +862,8 @@ export function SettingsModal({
           />
           <span className="settings-note">colorblind-safe enemy palette</span>
         </label>
+        <label className="settings-row">Reduced combat effects<input type="checkbox" checked={quietEffects} onChange={e => onQuietEffects(e.target.checked)} /><span className="settings-note">Keep danger and ability cues</span></label>
+        <label className="settings-row">Calm audio mix<input type="checkbox" checked={quietAudio} onChange={e => onQuietAudio(e.target.checked)} /><span className="settings-note">Fewer, softer routine effects</span></label>
         <h3>Records</h3>
         <div className="records-row" data-testid="records">
           <span>Best wave <strong>{meta.bestWave}</strong></span>
@@ -950,6 +962,7 @@ export function SettingsModal({
             That code didn't parse as a Spirefall save.
           </p>
         )}
+        <details><summary>Reset progress</summary><p>This removes Sparks and upgrades. Accessibility settings remain.</p><button className="ghost-btn danger" data-testid="hard-reset" onClick={() => askConfirm('Wipe all saved progress and start over?', onHardReset)}>Wipe all progress</button></details>
         <h3>Shared replay</h3>
         <p className="replay-hint">
           Paste a copied replay (run-over → Copy replay) — anyone's — and watch that exact run live.
@@ -1005,8 +1018,6 @@ export function SpireTreeModal({
   onBuyEmber,
   onAscend,
   onClose,
-  askConfirm,
-  onHardReset,
 }: {
   meta: MetaState
   onBuy: (id: MetaUpgradeId) => void
@@ -1014,28 +1025,18 @@ export function SpireTreeModal({
   onBuyEmber: (id: EmberUpgradeId) => void
   onAscend: () => void
   onClose: () => void
-  askConfirm: (message: string, action: () => void) => void
-  onHardReset: () => void
 }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Spire Tree">
+      <div className="modal tree-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Spire Tree">
         <h2>The Spire Tree — ✦ {meta.sparks}</h2>
-        <p className="run-flavor">Permanent upgrades. New purchases take effect on your next run.</p>
+        <p className="run-flavor">New purchases take effect next run. Spend within a branch to open its next tier; connecting lines show related upgrades, not prerequisites.</p>
         <SpireTreeGraph meta={meta} onBuy={onBuy} onRespec={onRespec} />
         <AscensionPanel meta={meta} onBuyEmber={onBuyEmber} onAscend={onAscend} />
         <button className="ghost-btn" onClick={onClose}>
           Close
         </button>
-        <button
-          className="ghost-btn danger"
-          data-testid="hard-reset"
-          onClick={() => {
-            askConfirm('Wipe ALL progress — every Spark and upgrade — and start over?', onHardReset)
-          }}
-        >
-          Hard reset (wipe all progress)
-        </button>
+
       </div>
     </div>
   )

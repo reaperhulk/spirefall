@@ -37,6 +37,9 @@ const headings = new Map<number, number>()
 // First time the renderer saw each enemy id, for the spawn pop-in. Wall
 // clock is fine: it's a one-shot 220ms flourish, not sim state.
 const firstSeen = new Map<number, number>()
+let previousSession = -1
+let previousFrame: import('../../engine/types').RunState | null = null
+const prevById = new Map<number, Enemy>()
 
 
 // Enemies are little creatures now: bodies orient along their movement
@@ -46,8 +49,12 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
   const t0 = animTime(session)
   const state = session.state
   const alpha = session.alpha
-  const prevById = new Map<number, Enemy>()
-  for (const p of session.prev.enemies) prevById.set(p.id, p)
+  if (previousSession !== session.renderId) { headings.clear(); firstSeen.clear(); previousSession = session.renderId }
+  if (previousFrame !== session.prev) {
+    prevById.clear()
+    for (const p of session.prev.enemies) prevById.set(p.id, p)
+    previousFrame = session.prev
+  }
   if (headings.size > 600) headings.clear()
   if (firstSeen.size > 600) firstSeen.clear()
   const wallNow = performance.now()

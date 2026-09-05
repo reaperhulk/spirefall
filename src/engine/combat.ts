@@ -470,6 +470,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // scalePct: secondary hits (Ricochet Strings) land at a fraction of the
     // shot's weight — shields judge the SCALED pre-crit damage, so a weak
     // bounce can bounce off a shield the primary punched through.
+    let blocked = false
     const hit = (enemy: Enemy, scalePct = 100): void => {
       let bonus = bonusPctVs(tower.type, enemy) + (shatter && enemy.slowTicks > 0 ? SHATTER_BONUS_PCT : 0)
       if (state.doctrine === 'shatter' && enemy.slowTicks > 0) bonus += 20
@@ -477,7 +478,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       let preCrit = bonus > 0 ? Math.floor((baseDamage * (100 + bonus)) / 100) : baseDamage
       if (scalePct !== 100) preCrit = Math.floor((preCrit * scalePct) / 100)
       if (stormCoils) enemy.overcharge = Math.min(STORM_COILS_MAX_STACKS, enemy.overcharge + 1)
-      if (!pierceShield && preCrit <= enemy.shield) return // fully blocked
+      if (!pierceShield && preCrit <= enemy.shield) { blocked = true; return } // fully blocked
       const dmg = crit ? Math.floor((preCrit * critPct) / 100) : preCrit
       const dealt = applyHit(enemy, dmg, pierceShield)
       tower.damageDealt += dealt
@@ -687,6 +688,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       to: { ...target.pos },
       targets: hitIds,
       crit,
+      ...(blocked ? { blocked: true } : {}),
     })
   }
 }

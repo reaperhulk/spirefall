@@ -157,9 +157,8 @@ test('boots clean: canvas, HUD, and harness all present, no console errors', asy
 test('placing a tower via real shop + canvas clicks spends gold', async ({ page }) => {
   const errors = await boot(page, 'e2e-place')
   await page.getByTestId('shop-arrow').click()
-  await clickCell(page, 7, 5)
-  await clickCell(page, 8, 5)
-  await clickCell(page, 9, 5)
+  const cells = await findBuildCells(page, 3)
+  for (const [cx, cy] of cells) await clickCell(page, cx, cy)
   // Commands apply on the session's next animation frame — poll the count
   // first. (An early toContainText('50') would match the transient '150'.)
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(3)
@@ -167,7 +166,7 @@ test('placing a tower via real shop + canvas clicks spends gold', async ({ page 
   // Clicking a tower opens its panel; upgrade button is visible but too
   // expensive right now (50 gold left, upgrade costs 60).
   await page.keyboard.press('Escape')
-  await clickCell(page, 7, 5)
+  await clickCell(page, ...cells[0]!)
   await expect(page.getByTestId('tower-panel')).toBeVisible()
   await expect(page.getByTestId('upgrade-tower')).toBeDisabled()
   // The price shows its goods: the preview states the tier-2 arrow delta

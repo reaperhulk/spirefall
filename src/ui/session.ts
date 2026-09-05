@@ -1,3 +1,4 @@
+import { settings } from './settings'
 import { RULES_VERSION, type Recording } from './validation'
 import { ENEMIES } from '../data/content'
 import { cellCenter } from '../engine/grid'
@@ -46,7 +47,7 @@ export interface LoggedCommand {
 }
 
 const TICK_MS = 1000 / TICKS_PER_SECOND
-const MAX_STEPS_PER_FRAME = 300
+const MAX_STEPS_PER_FRAME = 24
 const TOWER_BEAM_COLORS: Record<string, string> = {
   arrow: '#9ece6a',
   cannon: '#e0af68',
@@ -140,12 +141,12 @@ export class GameSession {
 
   setSpeed(n: number): void {
     this.speed = Math.max(0, Math.min(100, n))
+    this.notify()
   }
 
   // Called once per animation frame with real elapsed milliseconds.
   advance(dtMs: number): void {
     if (this.suspended || this.speed <= 0 || this.terminal) {
-      this.maybeNotify(true)
       return
     }
     this.accumulator += Math.min(dtMs, 1000) * this.speed
@@ -209,6 +210,7 @@ export class GameSession {
     for (const e of events) {
       switch (e.type) {
         case 'tower_fired': {
+          if (e.blocked && this.speed <= 3) this.effects.push({ kind: 'float', at: e.to, text: 'BLOCK', color: '#c8d8f0', t0: now, dur: 400 })
           this.aim[e.id] = Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x)
           this.firedAt.set(e.id, now)
           if (this.firedAt.size > 400) this.firedAt.clear()
@@ -218,10 +220,10 @@ export class GameSession {
           this.effects.push({ kind: 'flash', at: e.from, color, t0: now, dur: 90 })
           switch (e.tower) {
             case 'cannon': {
-              // Shell flies, THEN the splash lands.
-              const flight = 240
-              this.effects.push({ kind: 'shell', from: e.from, to: e.to, crit: e.crit, t0: now, dur: flight })
-              this.effects.push({ kind: 'splash', at: e.to, t0: now + flight, dur: 250 })
+              // Damage resolves on this tick: the trail ends at the impact.
+              const flight = 80
+              this.effects.push({ kind: 'shell', from: e.from, to: e.to, crit: e.crit, t0: now - flight * 0.85, dur: flight })
+              this.effects.push({ kind: 'splash', at: e.to, t0: now, dur: 250 })
               break
             }
             case 'sniper':
@@ -439,7 +441,9 @@ export class GameSession {
       }
     }
     // Drop expired effects so the array never grows without bound.
-    this.effects = this.effects.filter((fx) => now - fx.t0 < fx.dur + 100)
+    const alive = this.effects.filter(fx => now - fx.t0 < fx.dur + 100)
+    const important = (fx: VisualEffect) => ['spire_hit', 'meteor', 'nova', 'gold_rush', 'heal'].includes(fx.kind) || (fx.kind === 'float' && !/^[+-]?[0-9]/.test(fx.text ?? ''))
+    this.effects = [...(settings.quietEffects ? [] : alive.filter(fx => !important(fx)).slice(-192)), ...alive.filter(important).slice(-64)]
   }
 
   private maybeNotify(changed: boolean): void {

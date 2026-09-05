@@ -1,3 +1,4 @@
+import { measure } from './performance'
 import { useEffect, useRef } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { sameCell } from '../engine/grid'
@@ -48,9 +49,15 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
 
     let raf = 0
     let last = performance.now()
+    const visibility = () => { last = performance.now() }
+    document.addEventListener('visibilitychange', visibility)
     const frame = (now: number) => {
       if (document.hidden) { last = now; raf = requestAnimationFrame(frame); return }
+      measure('frame', now - last)
+      const simStart = performance.now()
       session.advance(now - last)
+      measure('simulation', performance.now() - simStart)
+      const renderStart = performance.now()
       last = now
       ctx.save()
       ctx.scale(dpr, dpr)
@@ -63,12 +70,14 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
       }
       draw(ctx, session, uiRef.current)
       ctx.restore()
+      measure('render', performance.now() - renderStart)
+      measure('effects', session.effects.length)
       // The loupe copies from this frame's pixels, so it repaints after.
       if (aimRef.current && loupeRef.current) renderLoupe(loupeRef.current, canvas, aimRef.current, dpr)
       raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
-    return () => cancelAnimationFrame(raf)
+    return () => { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', visibility) }
   }, [session])
 
   const cellFromEvent = (e: { clientX: number; clientY: number }): CellPos => {

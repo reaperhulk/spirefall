@@ -1,3 +1,4 @@
+import { TowerPortrait } from './TowerPortrait'
 import { useEffect, useRef, useState } from 'react'
 import {
   AA_TOWER_LIST,
@@ -344,7 +345,7 @@ export function CodexModal({
                 return (
                   <div key={type} className="codex-entry" data-testid={`codex-tower-${type}`}>
                     <div className="codex-entry-head">
-                      <span className={`tower-dot tower-${type}`} />
+                      <TowerPortrait type={type} />
                       <strong>{def.name}</strong>
                       {def.hitsAir ? <span className="air-mark" title="Can target fliers">✈</span> : <span className="codex-noair">ground only</span>}
                     </div>

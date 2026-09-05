@@ -1,3 +1,4 @@
+import { TowerPortrait } from './TowerPortrait'
 import { BuildDoctrine } from './BuildDoctrine'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
@@ -1343,7 +1344,7 @@ export default function App() {
               >
                 <span className="shop-card-top">
                   <span className={`tower-dot tower-${type}`} />
-                  <span className="shop-card-name">{TOWERS[type].name}</span>
+                  <TowerPortrait type={type} /><span className="shop-card-name">{TOWERS[type].name}</span>
                   {TOWERS[type].hitsAir && (
                     <span className="air-mark" title="Can hit fliers">
                       ✈
@@ -1519,6 +1520,11 @@ export default function App() {
       )}
       {showSettings && (
         <SettingsModal
+          quietEffects={uiSettings.quietEffects}
+          quietAudio={uiSettings.quietAudio}
+          onQuietEffects={value => setUiSettings({ ...updateSettings({ quietEffects: value }) })}
+          onQuietAudio={value => setUiSettings({ ...updateSettings({ quietAudio: value }) })}
+          onHardReset={() => { clearSave(); window.location.reload() }}
           meta={meta}
           volume={uiSettings.volume}
           musicVolume={uiSettings.musicVolume}
@@ -1554,11 +1560,6 @@ export default function App() {
           onBuyEmber={buyEmber}
           onAscend={doAscend}
           onClose={() => setShowTree(false)}
-          askConfirm={askConfirm}
-          onHardReset={() => {
-            clearSave()
-            window.location.reload()
-          }}
         />
       )}
       {/* Rendered last: the confirm dialog must stack over every other modal. */}
