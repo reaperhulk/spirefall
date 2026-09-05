@@ -3,6 +3,7 @@
 .play-layout, .battlefield-column, .battlefield-space, .control-column { display: contents; }
 .board { width: min(100%, calc((100svh - 80px) * 24 / 14)); }
 .construction-panel { width: 100%; position: relative; }
+.shop-abilities { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; overflow: visible; }
 .run-context { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 12px; }
 .planning-modal { max-width: 900px; }
 .planning-modal .doctrine-panel, .planning-modal .doctrine-summary { margin: 0; max-width: none; }
@@ -13,6 +14,10 @@
 /* Smaller windows keep the established flowing layout and bottom inspector. */
 @media (max-width: 999px), (max-height: 539px) {
   .tower-panel { position: fixed; top: auto; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; }
+  /* Health and a priced repair button cannot share a tiny remainder beside
+     late-run badges. Wrap the group before its button text spills out. */
+  .hud-spire { min-width: min(100%, 280px); }
+  .hud-spire .btn-repair { flex-shrink: 0; }
 }
 
 @media (min-width: 1000px) and (min-height: 540px) {

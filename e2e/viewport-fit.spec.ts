@@ -37,8 +37,10 @@ async function expectDesktopFit(page: Page, phase: string) {
         reachable: hit === el || (hit !== null && el.contains(hit))}
     })
     const canvas = document.querySelector('[data-testid="playfield"]')!.getBoundingClientRect()
-    const corners = [[canvas.left + 2, canvas.top + 2], [canvas.right - 2, canvas.top + 2],
-      [canvas.left + 2, canvas.bottom - 2], [canvas.right - 2, canvas.bottom - 2]]
+    // Probe the corner cells, inside the canvas's decorative rounded edge.
+    const dx = canvas.width / 48, dy = canvas.height / 28
+    const corners = [[canvas.left + dx, canvas.top + dy], [canvas.right - dx, canvas.top + dy],
+      [canvas.left + dx, canvas.bottom - dy], [canvas.right - dx, canvas.bottom - dy]]
       .map(([x, y]) => document.elementFromPoint(x!, y!)?.getAttribute('data-testid'))
     return {width: innerWidth, height: innerHeight, scrollX, scrollY,
       scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight,
@@ -147,6 +149,18 @@ async function expectVisibleBounds(page: Page, selector: string) {
   expect(await el.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `${selector}: internal horizontal overflow`).toBe(true)
 }
 
+async function expectNoHorizontalOverflow(page: Page) {
+  const result = await page.evaluate(() => ({
+    width: innerWidth, scrollWidth: document.documentElement.scrollWidth,
+    outside: [...document.querySelectorAll('body *')].filter(el => {
+      const r = el.getBoundingClientRect()
+      // Ignore content intentionally scrolled inside a bounded container.
+      return r.width && r.right > innerWidth + 1 && !el.closest('.boon-strip,.shop-abilities,.modal,.wave-preview')
+    }).map(el => ({tag: el.tagName, class: el.className, text: el.textContent?.slice(0, 100)})),
+  }))
+  expect(result.scrollWidth, JSON.stringify(result.outside)).toBeLessThanOrEqual(page.viewportSize()!.width)
+}
+
 for (const [width, height] of TOUCH_SCREENS) {
   test.describe(`touch fits ${width}×${height}`, () => {
     test.use({viewport: {width, height}, hasTouch: true, isMobile: true, deviceScaleFactor: 2})
@@ -154,7 +168,7 @@ for (const [width, height] of TOUCH_SCREENS) {
       await boot(page)
       await page.getByTestId('playfield').scrollIntoViewIfNeeded()
       await expectVisibleBounds(page, '[data-testid="playfield"]')
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+      await expectNoHorizontalOverflow(page)
       for (const id of ['shop-arrow', 'cycle-target', 'execute-target', 'beam-toggle', 'open-plan']) {
         const r = (await page.getByTestId(id).boundingBox())!
         expect(r.width, `${id} touch width`).toBeGreaterThanOrEqual(44)
@@ -177,6 +191,8 @@ for (const [width, height] of TOUCH_SCREENS) {
       await page.getByTestId('doctrine-storm').tap()
       await expect(page.getByRole('dialog')).not.toBeVisible()
       await lateRun(page)
+      await expectNoHorizontalOverflow(page)
+      expect(await page.locator('.shop-abilities').evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true)
       await page.getByTestId('open-shrine').tap()
       await expectVisibleBounds(page, '.planning-modal')
       await page.getByTestId('accept-shrine').tap()
@@ -189,7 +205,7 @@ for (const [width, height] of TOUCH_SCREENS) {
       await page.setViewportSize({width: height, height: width})
       await page.getByTestId('playfield').scrollIntoViewIfNeeded()
       await expectVisibleBounds(page, '[data-testid="playfield"]')
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(height)
+      await expectNoHorizontalOverflow(page)
     })
   })
 }

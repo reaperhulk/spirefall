@@ -544,7 +544,7 @@ export default function App() {
   let hint: string | null = null
   if (!hintsDismissed && meta.runs === 0 && !summary) {
     if (state.wave === 0 && state.towers.length < 2) {
-      hint = 'Pick a tower below (or press 1) and click beside the glowing path to build. Two towers is a start.'
+      hint = 'Pick a tower (or press 1) and click beside the glowing path to build. Two towers is a start.'
     } else if (state.wave === 0 && state.phase === 'build') {
       hint = 'Send the wave when ready (Space). Enemies march the lit path — leaks hit the Spire, and it only has 10 HP.'
     } else if (state.wave === 1 && state.phase === 'build') {

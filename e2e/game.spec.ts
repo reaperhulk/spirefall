@@ -78,6 +78,8 @@ async function boot(page: Page, seed: string) {
 }
 
 async function cellPoint(page: Page, cx: number, cy: number) {
+  // On short phones, choosing a shop card can scroll the board away.
+  await page.getByTestId('playfield').scrollIntoViewIfNeeded()
   const box = (await page.locator('[data-testid="playfield"]').boundingBox())!
   return { x: box.x + ((cx + 0.5) * box.width) / MAP_W, y: box.y + ((cy + 0.5) * box.height) / MAP_H }
 }
@@ -759,6 +761,7 @@ test('an armed but unaffordable shop selection never traps you', async ({ page }
   await expect(page.getByTestId('tower-panel')).toBeVisible() // click selects, not places
 
   // ...and clicking an existing tower while re-armed inspects it directly.
+  await page.getByTestId('close-tower-panel').click()
   await page.getByTestId('shop-arrow').click()
   await clickCell(page, 4, 7)
   await expect(page.getByTestId('tower-panel')).toBeVisible()
