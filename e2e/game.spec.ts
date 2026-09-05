@@ -498,7 +498,7 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
   // Jump the schedule to wave 9's build phase: the preview now scouts the
   // wave-10 boss (Spirebreaker, carapace) and must warn about the shell.
   await page.evaluate(() => {
-    window.__harness.getState().wave = 9
+    window.__harness.getState().wave = 5
     window.__harness.fastForward(1) // one tick republishes the preview
   })
   await expect(page.getByTestId('preview-unit-boss')).toBeVisible()
@@ -507,7 +507,7 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
 
   // Gravemind at wave 19: the report warns it splits on death AND broods.
   await page.evaluate(() => {
-    window.__harness.getState().wave = 19
+    window.__harness.getState().wave = 11
     window.__harness.fastForward(1)
   })
   await expect(page.getByTestId('split-mark-boss2')).toBeVisible()

@@ -121,7 +121,7 @@ export function ascend(meta: MetaState): MetaState {
   return {
     ...meta,
     sparks: emberLevel(meta, 'ashen_legacy') * EMBER_LEGACY_SPARKS_PER_LEVEL,
-    upgrades: {},
+    upgrades: Object.fromEntries(Object.entries(meta.upgrades).filter(([id]) => id.startsWith('unlock_'))),
     cycleVictories: 0,
     embers: meta.embers + emberGainOnAscend(meta),
     ascensions: meta.ascensions + 1,
@@ -214,6 +214,12 @@ function bestKey(run: RunState): string {
 // trials are opt-in handicaps: their effects apply here (spire, gold) or at
 // spawn time (enemy stats), and computeSparks pays their bonus.
 export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials?: TrialId[]): RunState {
+  if (seed.startsWith('daily-')) {
+    // One challenge ruleset across accounts. The saved personal meta is never mutated.
+    meta = { ...createMeta(), upgrades: { tower_damage: 8, tower_damage_2: 8, spire_hp: 6, starting_gold: 4, gold_income: 4, crit_chance: 3, magnet_reach: 2, steady_aim: 2, quick_hands: 2, unlock_tesla: 1, unlock_lance: 1, unlock_mint: 1, unlock_beacon: 1, unlock_bulwark: 1, unlock_gold_rush: 1 } }
+    biome = undefined
+    trials = []
+  }
   // Biome roll: dailies share one roll across every player (a shared seed
   // means a shared battlefield); normal runs draw from UNLOCKED biomes. An
   // explicit biome (picker, harness, tests) overrides the roll — the roll
@@ -278,11 +284,14 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     mapId: 0, // legacy field; generated runs resolve through (biome, mapSeed)
     biome: chosenBiome,
     mapSeed: seed,
+    layoutVersion: 2,
+    shrine: null,
+    leaks: [],
     wave: startWave,
     startWave,
     wavesCleared: startWave,
     kills: 0,
-    gold: STARTING_GOLD + metaLevel(meta, 'starting_gold') * META_STARTING_GOLD_PER_LEVEL + catchUpGold,
+    gold: STARTING_GOLD + metaLevel(meta, 'starting_gold') * META_STARTING_GOLD_PER_LEVEL + Math.floor(catchUpGold * 125 / 100) + (metaLevel(meta, 'ks_treasury') ? 150 : 0),
     spireHp,
     spireMaxHp: spireHp,
     waveBudget,
@@ -340,11 +349,11 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
         DAMAGE_NODE_IDS.reduce((sum, id) => sum + metaLevel(meta, id), 0) * META_TOWER_DAMAGE_PCT_PER_LEVEL +
         (metaLevel(meta, 'ks_glassforge') > 0 ? KEYSTONE_GLASSFORGE_DAMAGE_PCT : 0) -
         (metaLevel(meta, 'ks_bastion') > 0 ? KEYSTONE_BASTION_DAMAGE_PCT : 0) +
-        emberLevel(meta, 'kindled_arsenal') * EMBER_DAMAGE_PCT_PER_LEVEL,
+        emberLevel(meta, 'kindled_arsenal') * EMBER_DAMAGE_PCT_PER_LEVEL - (metaLevel(meta, 'ks_patron') ? 10 : 0),
       goldPct:
         metaLevel(meta, 'gold_income') * META_GOLD_INCOME_PCT_PER_LEVEL +
         emberLevel(meta, 'molten_vaults') * EMBER_GOLD_PCT_PER_LEVEL +
-        (chosenTrials.includes('famine') ? TRIAL_FAMINE_GOLD_PCT : 0),
+        (chosenTrials.includes('famine') ? TRIAL_FAMINE_GOLD_PCT : 0) + (metaLevel(meta, 'ks_patron') ? 25 : 0) - (metaLevel(meta, 'ks_treasury') ? 15 : 0),
       sparkPct:
         metaLevel(meta, 'spark_gain') * META_SPARK_GAIN_PCT_PER_LEVEL +
         emberLevel(meta, 'ember_memory') * EMBER_SPARK_PCT_PER_LEVEL,
@@ -354,8 +363,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
       collectRadius: COLLECT_RADIUS_BASE + metaLevel(meta, 'magnet_reach') * META_MAGNET_RADIUS_PER_LEVEL,
       autoCollectRadius: metaLevel(meta, 'spire_magnet') * META_SPIRE_MAGNET_RADIUS_PER_LEVEL,
       // Ash: the verbs the game teaches finally have somewhere to grow.
-      executeCdPct: metaLevel(meta, 'quick_hands') * META_EXECUTE_CD_PCT_PER_LEVEL,
-      overchargeCdPct: metaLevel(meta, 'steady_aim') * META_OVERCHARGE_CD_PCT_PER_LEVEL,
+      executeCdPct: metaLevel(meta, 'quick_hands') * META_EXECUTE_CD_PCT_PER_LEVEL + (metaLevel(meta, 'ks_executioner') ? 20 : 0) - (metaLevel(meta, 'ks_conductor') ? 15 : 0),
+      overchargeCdPct: metaLevel(meta, 'steady_aim') * META_OVERCHARGE_CD_PCT_PER_LEVEL + (metaLevel(meta, 'ks_conductor') ? 20 : 0) - (metaLevel(meta, 'ks_executioner') ? 15 : 0),
     },
     sparksEarned: 0,
   }
@@ -381,6 +390,7 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     sparks: run.sparksEarned + bounty,
     damageByTower: { ...run.damageByTower },
     killsByEnemy: { ...run.killsByEnemy },
+    leaks: (run.leaks ?? []).map(leak => ({ ...leak })),
     bestCombo: run.bestCombo,
     hpByWave: [...run.hpByWave],
     trials: [...run.trials],

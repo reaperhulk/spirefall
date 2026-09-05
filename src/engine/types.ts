@@ -27,6 +27,7 @@ export type EnemyType =
   | 'boss4'
   | 'boss5'
   | 'boss6'
+  | 'boss_final'
 export type AbilityId = 'meteor' | 'frost_nova' | 'gold_rush' | 'bulwark'
 export type RelicId =
   | 'piercing_arrows'
@@ -168,6 +169,9 @@ export interface RunState {
   rng: RngStreams
   mapId: number // legacy fixed-map index (used only when mapSeed === '')
   biome: BiomeId // battlefield rules; structure generates from mapSeed
+  layoutVersion?: number
+  shrine?: { cell: CellPos; status: 'offered' | 'active' | 'won' | 'lost'; wave: number; guardTicks?: number } | null
+  leaks?: { tick: number; wave: number; enemy: EnemyType; damage: number }[]
   mapSeed: string // '' = legacy fixed map, else seed for generateMap
   wave: number // wave currently active or last started
   startWave: number // waves skipped via meta (sparks only pay past this)
@@ -225,6 +229,7 @@ export interface RunState {
 }
 
 export type Command =
+  | { type: 'defend_shrine' }
   | { type: 'choose_doctrine'; doctrine: DoctrineId }
   | { type: 'start_wave' }
   | { type: 'abandon_run' }
@@ -245,6 +250,8 @@ export type Command =
   | { type: 'choose_cataclysm'; cataclysm: CataclysmId }
 
 export type GameEvent =
+  | { type: 'shrine_resolved'; won: boolean; gold: number }
+  | { type: 'boss_warning'; id: number }
   | { type: 'doctrine_chosen'; doctrine: DoctrineId }
   | { type: 'wave_started'; wave: number; spawnCount: number; affix: AffixId | null }
   | { type: 'enemy_spawned'; id: number; enemy: EnemyType }
@@ -287,6 +294,7 @@ export interface StepResult {
 }
 
 export interface RunSummary {
+  leaks?: { tick: number; wave: number; enemy: EnemyType; damage: number }[]
   outcome: 'defeat' | 'victory'
   seed: string // shareable challenge: ?seed=<seed> replays this battlefield
   biome: BiomeId

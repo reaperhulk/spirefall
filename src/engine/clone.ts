@@ -5,6 +5,8 @@ import type { RunState } from './types'
 export function cloneRun(s: RunState): RunState {
   return {
     ...s,
+    ...(s.shrine ? { shrine: { ...s.shrine, cell: { ...s.shrine.cell } } } : {}),
+    ...(s.leaks ? { leaks: s.leaks.map(leak => ({ ...leak })) } : {}),
     rng: {
       waves: { ...s.rng.waves },
       combat: { ...s.rng.combat },

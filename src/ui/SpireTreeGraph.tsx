@@ -169,7 +169,7 @@ export function SpireTreeGraph({
     <div className="tree-graph-wrap" data-testid="tree-graph">
       <svg
         className="tree-graph"
-        viewBox={`${-PAD} ${-PAD} ${100 + PAD * 2} ${100 + PAD * 2}`}
+        viewBox={`${-PAD} ${-PAD} ${100 + PAD * 2} ${(compact ? 115 : 100) + PAD * 2}`}
         role="group"
         aria-label="The Spire Tree"
       >

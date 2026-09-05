@@ -481,7 +481,7 @@ describe('wave preview', () => {
   })
 
   it('marks boss waves and returns null outside the build phase', () => {
-    const s = { ...freshRun('scout-boss'), wave: 9, waveBudget: 2000, hpScalePct: 300 }
+    const s = { ...freshRun('scout-boss'), wave: 5, waveBudget: 2000, hpScalePct: 300 }
     const preview = previewNextWave(s)!
     expect(preview.boss).toBe(true)
     expect(preview.counts['boss']).toBe(1)

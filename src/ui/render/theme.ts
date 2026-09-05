@@ -26,6 +26,7 @@ export const ENEMY_COLORS: Record<string, string> = {
   boss4: '#b39dff',
   boss5: '#7fbf5f',
   boss6: '#8fd6e8',
+  boss_final: '#ffe6ad',
 }
 
 

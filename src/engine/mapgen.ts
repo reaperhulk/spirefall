@@ -132,17 +132,38 @@ export function generateMap(biome: BiomeId, mapSeed: string): MapDef {
   return fallback
 }
 
+// Authored strategic structures over seeded biome detail. Broad openings
+// retain build freedom; failed combinations fall back to the original roll.
+export function authoredMap(biome: BiomeId, seed: string): MapDef {
+  const map = generateMap(biome, seed)
+  const original = map.rocks.slice()
+  const pattern = nextInt(rngFromSeed(`${seed}:structure`), 0, 2).value
+  for (let y = 1; y < map.height - 1; y++) {
+    if (pattern === 0) {
+      if (y < 8) map.rocks[y * map.width + 9] = true
+      if (y > 5) map.rocks[y * map.width + 16] = true
+    } else if (pattern === 1) {
+      if (y < 5 || y > 9) map.rocks[y * map.width + 12] = true
+    } else if (y > 4 && y < 10) {
+      map.rocks[y * map.width + 12] = true
+      map.mesa[y * map.width + 10] = !map.marsh[y * map.width + 10]
+    }
+  }
+  if (!playable(map)) map.rocks = original
+  return map
+}
+
 // The run's battlefield. Generated maps are pure functions of (biome, seed),
 // memoized because callers ask every tick; legacy saves (mapSeed === '')
 // still resolve through the fixed-map registry.
 const genCache = new Map<string, MapDef>()
 
-export function getRunMap(s: { mapId: number; biome: BiomeId; mapSeed: string }): MapDef {
+export function getRunMap(s: { mapId: number; biome: BiomeId; mapSeed: string; layoutVersion?: number }): MapDef {
   if (s.mapSeed === '') return getMap(s.mapId)
-  const key = `${s.biome}:${s.mapSeed}`
+  const key = `${s.layoutVersion ?? 1}:${s.biome}:${s.mapSeed}`
   let map = genCache.get(key)
   if (!map) {
-    map = generateMap(s.biome, s.mapSeed)
+    map = s.layoutVersion === 2 ? authoredMap(s.biome, s.mapSeed) : generateMap(s.biome, s.mapSeed)
     if (genCache.size > 64) genCache.clear() // long sessions: bots churn seeds
     genCache.set(key, map)
   }

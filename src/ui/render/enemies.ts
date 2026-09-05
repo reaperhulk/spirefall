@@ -25,6 +25,7 @@ const ENEMY_RADIUS: Record<string, number> = {
   boss4: 17,
   boss5: 18,
   boss6: 18,
+  boss_final: 22,
 }
 
 
@@ -242,6 +243,7 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
         ctx.fill()
         break
       }
+      case 'boss_final':
       case 'boss':
       case 'boss2':
       case 'boss3':

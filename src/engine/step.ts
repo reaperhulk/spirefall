@@ -4,7 +4,6 @@ import {
   specForTower,
   BASE_WAVE_BUDGET,
   AFFIX_SHIELD_BONUS,
-  BOSS_WAVE_INTERVAL,
   CATACLYSM_IDS,
   CATACLYSM_WAVE_INTERVAL,
   ENEMIES,
@@ -57,7 +56,7 @@ import {
 } from './combat'
 import { cloneRun } from './clone'
 import { VENT_DAMAGE_BASE, VENT_PERIOD_TICKS, VENT_RADIUS } from '../data/biomes'
-import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, inBounds } from './grid'
+import { blockedGrid, canPlaceTower, cellCenter, distanceField, distSq, inBounds, pathFrom } from './grid'
 import { getRunMap } from './mapgen'
 import type { MapDef } from '../data/maps'
 import type {
@@ -72,7 +71,7 @@ import type {
   Targeting,
 } from './types'
 import { nextInt } from './rng'
-import { affixHpPct, affixSpeedPct, drawBoonOffer, generateWave, scaledHp } from './waves'
+import { encounterHp, bossForWave, affixHpPct, affixSpeedPct, drawBoonOffer, generateWave } from './waves'
 
 export const TICKS_PER_SECOND = 30
 
@@ -98,6 +97,11 @@ export function step(state: RunState, commands: Command[]): StepResult {
     const field = distanceField(map, blockedGrid(map, s.towers))
     spawnDue(s, events)
     moveEnemies(s, map, field, events)
+    if (s.shrine?.status === 'active' && s.towers.filter(t => !TOWERS[t.type].support && distSq(cellCenter(t.cell), cellCenter(s.shrine!.cell)) <= 3000 * 3000).length >= 2) s.shrine.guardTicks = (s.shrine.guardTicks ?? 0) + 1
+    if (s.shrine?.status === 'active' && s.enemies.some(e => e.hp > 0 && distSq(e.pos, cellCenter(s.shrine!.cell)) < 1200 * 1200)) {
+      s.shrine.status = 'lost'
+      events.push({ type: 'shrine_resolved', won: false, gold: 0 })
+    }
     ventsErupt(s, map, events)
     if (s.spireHp === 0) {
       endRun(s, events)
@@ -135,6 +139,10 @@ export function step(state: RunState, commands: Command[]): StepResult {
   // build pause, but the clock never stops for them.
   if (s.phase === 'build' || s.phase === 'wave') tickCoins(s, map, events)
 
+  for (const event of events) if (event.type === 'enemy_reached_spire') {
+    s.leaks ??= []
+    if (s.leaks.length < 512) s.leaks.push({ tick: s.tick, wave: s.wave, enemy: event.enemy, damage: event.damage })
+  }
   tickStatuses(s)
   return { state: s, events }
 }
@@ -159,6 +167,12 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       return
     }
 
+    case 'defend_shrine': {
+      if (s.phase !== 'build' || s.shrine?.status !== 'offered') return reject(command, 'no shrine available', events)
+      s.shrine.status = 'active'
+      s.shrine.wave = s.wave + 1
+      return
+    }
     case 'choose_doctrine': {
       if (s.phase !== 'build' || s.wave < 2 || s.doctrine) return reject(command, 'choose one doctrine during planning after wave 2', events)
       if (!(command.doctrine in DOCTRINES)) return reject(command, 'unknown doctrine', events)
@@ -489,7 +503,7 @@ export function previewNextWave(s: RunState): WavePreview | null {
     totalHp += Math.max(
       1,
       Math.floor(
-        (Math.floor((Math.floor((scaledHp(spawn.type, nextHpScale) * affixHpPct(generated.affix) * juggernaut) / 10_000) * iron) / 100) *
+        (Math.floor((Math.floor((encounterHp(spawn.type, nextHpScale, wave) * affixHpPct(generated.affix) * juggernaut) / 10_000) * iron) / 100) *
           crucible) /
           100,
       ),
@@ -499,7 +513,7 @@ export function previewNextWave(s: RunState): WavePreview | null {
   return {
     wave,
     affix: generated.affix,
-    boss: wave % BOSS_WAVE_INTERVAL === 0,
+    boss: bossForWave(wave) !== null,
     counts,
     total: generated.spawns.length,
     totalHp,
@@ -548,7 +562,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
     const hp = Math.max(
       1,
       Math.floor(
-        (Math.floor((Math.floor((scaledHp(spawn.type, s.hpScalePct) * affixHpPct(s.activeAffix) * juggernaut) / 10_000) * iron) / 100) *
+        (Math.floor((Math.floor((encounterHp(spawn.type, s.hpScalePct, s.wave) * affixHpPct(s.activeAffix) * juggernaut) / 10_000) * iron) / 100) *
           crucible) /
           100,
       ),
@@ -712,6 +726,18 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   }
 
   s.phase = 'build'
+  if (s.shrine?.status === 'active') {
+    const won = (s.shrine.guardTicks ?? 0) >= 90
+    const shrineGold = won ? 100 + s.wave * 12 : 0
+    s.gold += shrineGold
+    s.shrine.status = won ? 'won' : 'lost'
+    events.push({ type: 'shrine_resolved', won, gold: shrineGold })
+  }
+  if (s.wave === 4 && !s.shrine) {
+    const map = getRunMap(s)
+    const path = pathFrom(map, distanceField(map, blockedGrid(map, s.towers)), map.spawn)
+    s.shrine = { cell: path[Math.floor(path.length * 0.65)] ?? { cx: 16, cy: map.spire.cy }, status: 'offered', wave: 5, guardTicks: 0 }
+  }
   // Ashen Road pays its skipped offers back, one per build phase, before the
   // regular cadence resumes.
   if ((s.relicDebt ?? 0) > 0 && s.wave % RELIC_WAVE_INTERVAL !== 0) {

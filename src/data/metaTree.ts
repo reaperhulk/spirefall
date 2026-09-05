@@ -29,6 +29,10 @@ export type MetaUpgradeId =
   | 'spire_magnet'
   | 'quick_hands'
   | 'steady_aim'
+  | 'ks_patron'
+  | 'ks_treasury'
+  | 'ks_executioner'
+  | 'ks_conductor'
   | 'ks_glassforge'
   | 'ks_bastion'
   | 'unlock_tesla'
@@ -360,6 +364,10 @@ export const META_TREE: MetaNodeDef[] = [
     wide: { x: 92, y: 50 },
     compact: { x: 68, y: 99 },
   },
+  { id: 'ks_patron', name: 'Patron of Ruin', description: 'KEYSTONE — +25% gold income, but -10% tower damage. Buy tomorrow with today’s risk.', maxLevel: 1, costs: [1400], branch: 'gold', tier: 3, keystone: true, short: 'Patron', parent: 'gold_income', wide: { x: 44, y: 12 }, compact: { x: 25, y: 79 } },
+  { id: 'ks_treasury', name: 'War Treasury', description: 'KEYSTONE — +150 starting gold, but -15% gold income. Front-load your defense.', maxLevel: 1, costs: [1400], branch: 'gold', tier: 3, keystone: true, short: 'War', parent: 'spire_magnet', wide: { x: 64, y: 12 }, compact: { x: 75, y: 79 } },
+  { id: 'ks_executioner', name: 'Executioner', description: 'KEYSTONE — execute recovers 20% faster; command charges recover 15% slower.', maxLevel: 1, costs: [1400], branch: 'ash', tier: 3, keystone: true, short: 'Executioner', parent: 'quick_hands', wide: { x: 80, y: 25 }, compact: { x: 25, y: 110 } },
+  { id: 'ks_conductor', name: 'Conductor', description: 'KEYSTONE — command charges recover 20% faster; execute recovers 15% slower.', maxLevel: 1, costs: [1400], branch: 'ash', tier: 3, keystone: true, short: 'Conductor', parent: 'steady_aim', wide: { x: 94, y: 25 }, compact: { x: 75, y: 110 } },
 ]
 
 export const META_STARTING_GOLD_PER_LEVEL = 30

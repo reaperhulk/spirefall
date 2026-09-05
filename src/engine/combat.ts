@@ -164,6 +164,7 @@ export function effectiveCritDamagePct(state: RunState): number {
 export function applyHit(enemy: Enemy, damage: number, pierceShield = false): number {
   // Permafrost brittleness amplifies EVERYTHING — the hit is judged (and
   // dealt) at its amplified weight.
+  if (enemy.type === 'boss_final' && enemy.mechActiveTicks === 0 && enemy.mechCooldown > 90) damage = Math.floor(damage * 135 / 100)
   if (enemy.brittleTicks > 0) damage = Math.floor((damage * (100 + PERMAFROST_BONUS_PCT)) / 100)
   if (!pierceShield && damage <= enemy.shield) return 0 // shieldbearers ignore weak hits entirely
   // Spirebreaker's carapace: while raised, everything lands for 1 — except
@@ -829,6 +830,7 @@ export function bossMechanics(state: RunState, events: GameEvent[]): void {
     const mech = ENEMIES[boss.type].mech
     if (!mech || boss.hp <= 0) continue
     if (boss.mechActiveTicks > 0) boss.mechActiveTicks -= 1
+    if (boss.mechCooldown === 30) events.push({ type: 'boss_warning', id: boss.id })
     if (boss.mechCooldown > 0) {
       boss.mechCooldown -= 1
       continue

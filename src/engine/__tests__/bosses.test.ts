@@ -98,7 +98,7 @@ describe('endless-tier bosses (Veilwarden, Blightmother)', () => {
     expect(generateWave(rng, 50, 12_000).spawns.some((sp) => sp.type === 'boss5')).toBe(true)
     expect(generateWave(rng, 60, 14_000).spawns.some((sp) => sp.type === 'boss6')).toBe(true)
     // Waves 10–50 keep their exact bosses: the roster only GREW.
-    expect(generateWave(rng, 10, 400).spawns[0]!.type).toBe('boss')
+    expect(generateWave(rng, 6, 400).spawns[0]!.type).toBe('boss')
   })
 
   it('Zephyrhost is an airborne carrier: it flies and broods fliers', () => {

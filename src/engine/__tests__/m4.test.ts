@@ -1,3 +1,4 @@
+import { bossForWave } from '../waves'
 import { describe, expect, it } from 'vitest'
 import {
   AA_TOWER_NAMES,
@@ -335,7 +336,7 @@ describe('wave affixes', () => {
     let found = 0
     for (let wave = 1; wave <= 30; wave++) {
       const { affix } = generateWave(deriveStream('affix-seed', 'waves'), wave, 500)
-      if (wave < AFFIX_FIRST_WAVE || wave % 10 === 0) {
+      if (wave < AFFIX_FIRST_WAVE || bossForWave(wave) !== null) {
         expect(affix, `wave ${wave}`).toBeNull()
       } else if (affix !== null) {
         found += 1

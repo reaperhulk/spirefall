@@ -393,7 +393,7 @@ export default function App() {
   const doAscend = () => {
     if (!canAscend(metaRef.current)) return
     const gain = emberGainOnAscend(metaRef.current)
-    askConfirm(`Ascend for ❖ ${gain}? The Spire Tree, unlocks, and banked Sparks burn. Ember upgrades are forever.`, () => {
+    askConfirm(`Ascend for ❖ ${gain}? Spark stat upgrades and banked Sparks burn. Tower and ability unlocks remain. Ember upgrades are forever.`, () => {
       const next = ascend(metaRef.current)
       metaRef.current = next
       setMeta(next)
@@ -1315,6 +1315,12 @@ export default function App() {
       </main>
 
       {!watching && <BuildDoctrine state={state} choose={doctrine => session.dispatch({ type: 'choose_doctrine', doctrine })} />}
+      {state.seed.startsWith('daily-') && <p className="doctrine-summary">Daily challenge · fixed arsenal and progression · Crucible 0 · rules 3</p>}
+      {state.shrine && <section className="doctrine-panel" aria-label="Relic shrine">
+        <strong>Shrine at column {state.shrine.cell.cx + 1}, row {state.shrine.cell.cy + 1}</strong>
+        <p>Station two combat towers within three cells for at least three seconds, and keep enemies outside its ring for one wave to earn {100 + (state.wave + (state.phase === 'build' ? 1 : 0)) * 12} gold. Failure costs no Spire health.</p>
+        {state.shrine.status === 'offered' ? <button className="ghost-btn" onClick={() => session.dispatch({ type: 'defend_shrine' })}>Accept shrine defense</button> : <b>{state.shrine.status === 'active' ? 'Defending this wave' : state.shrine.status === 'won' ? 'Shrine secured' : 'Shrine lost'}</b>}
+      </section>}
       <p className="command-pool" role="status">Command charges: <strong>{state.commandCharges ?? 3}/3</strong> · select a tower, then O · one charge recovers every {Math.max(1, 6 * (100 - state.mods.overchargeCdPct) / 100)}s of combat</p>
       <footer className="shop">
         <div className="shop-towers">

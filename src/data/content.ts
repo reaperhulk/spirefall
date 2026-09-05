@@ -48,6 +48,7 @@ export interface EnemyDef {
 // match — total wave threat and income stay on the pinned curve, but losing
 // feels like being overrun and winning like mowing down a flood.
 export const ENEMIES: Record<EnemyType, EnemyDef> = {
+  boss_final: { name: 'The Hollow Sovereign', hp: 280, speed: 34, cost: 0, pack: 1, spacing: 0, bounty: 120, damage: 10, shield: 0, armor: 1, unlockWave: 24, elite: true, mech: { kind: 'carapace', everyTicks: 210, durationTicks: 45 }, brood: { type: 'splitling', count: 2, everyTicks: 240 } },
   // Consolidation rebalance (2026-07, staged): the death-spread probe showed
   // 92% of fresh-account kills landing in the first 20% of the path — the
   // entrance was a woodchipper and the maze was decoration. The mid/heavy
@@ -65,9 +66,9 @@ export const ENEMIES: Record<EnemyType, EnemyDef> = {
   splitling: { name: 'Shard', hp: 13, speed: 115, cost: 0, pack: 1, spacing: 0, bounty: 1, damage: 1, shield: 0, unlockWave: 99 },
   wraith: { name: 'Wraith', hp: 77, speed: 76, cost: 26, pack: 1, spacing: 12, bounty: 6, damage: 2, shield: 0, unlockWave: 12, phasing: { visibleTicks: 60, hiddenTicks: 45 } },
   carrier: { name: 'Broodmother', hp: 170, speed: 36, cost: 70, pack: 1, spacing: 26, bounty: 20, damage: 4, shield: 3, armor: 1, unlockWave: 18, elite: true, brood: { type: 'swarmling', count: 2, everyTicks: 180 } },
-  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, armor: 1, unlockWave: 10, elite: true, mech: { kind: 'carapace', everyTicks: 240, durationTicks: 60 } },
-  boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, armor: 1, unlockWave: 20, elite: true, splitInto: { type: 'splitter', count: 2 }, brood: { type: 'splitling', count: 2, everyTicks: 180 } },
-  boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, armor: 1, unlockWave: 30, elite: true, flying: true, mech: { kind: 'gale', everyTicks: 210, durationTicks: 45 } },
+  boss: { name: 'Spirebreaker', hp: 500, speed: 46, cost: 0, pack: 1, spacing: 0, bounty: 40, damage: 8, shield: 0, armor: 1, unlockWave: 6, elite: true, mech: { kind: 'carapace', everyTicks: 240, durationTicks: 60 } },
+  boss2: { name: 'Gravemind', hp: 420, speed: 42, cost: 0, pack: 1, spacing: 0, bounty: 45, damage: 8, shield: 0, armor: 1, unlockWave: 12, elite: true, splitInto: { type: 'splitter', count: 2 }, brood: { type: 'splitling', count: 2, everyTicks: 180 } },
+  boss3: { name: 'Stormcaller', hp: 380, speed: 55, cost: 0, pack: 1, spacing: 0, bounty: 50, damage: 10, shield: 0, armor: 1, unlockWave: 18, elite: true, flying: true, mech: { kind: 'gale', everyTicks: 210, durationTicks: 45 } },
   // Endless-tier bosses (waves 40 and 50 in the cycle): pure data — they
   // ride the wraith-phasing and healer machinery the engine already has.
   boss4: { name: 'Veilwarden', hp: 560, speed: 44, cost: 0, pack: 1, spacing: 0, bounty: 55, damage: 10, shield: 0, armor: 2, unlockWave: 40, elite: true, phasing: { visibleTicks: 120, hiddenTicks: 50 } },

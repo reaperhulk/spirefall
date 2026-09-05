@@ -1,8 +1,8 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
-import { BOSS_WAVE_INTERVAL, ENEMIES } from '../../data/content'
+import { ENEMIES } from '../../data/content'
 import { deriveStream } from '../rng'
-import { generateWave, scaledHp, waveUnitCap } from '../waves'
+import { bossForWave, generateWave, scaledHp, waveUnitCap } from '../waves'
 
 describe('wave generation', () => {
   it('is deterministic for the same rng state', () => {
@@ -43,13 +43,14 @@ describe('wave generation', () => {
   })
 
   it('boss waves lead with a boss', () => {
-    const { spawns } = generateWave(deriveStream('boss', 'waves'), BOSS_WAVE_INTERVAL, 400)
+    const { spawns } = generateWave(deriveStream('boss', 'waves'), 6, 400)
     expect(spawns[0]!.type).toBe('boss')
     expect(spawns.filter((s) => s.type === 'boss')).toHaveLength(1)
   })
 
   it('non-boss waves never contain a boss', () => {
-    for (let wave = 1; wave < BOSS_WAVE_INTERVAL; wave++) {
+    for (let wave = 1; wave < 24; wave++) {
+      if (bossForWave(wave)) continue
       const { spawns } = generateWave(deriveStream('noboss', 'waves'), wave, 1000)
       expect(spawns.every((s) => s.type !== 'boss')).toBe(true)
     }
@@ -60,7 +61,7 @@ describe('wave generation', () => {
       fc.property(fc.string(), fc.integer({ min: 1, max: 40 }), fc.integer({ min: 30, max: 20_000 }), (seed, wave, budget) => {
         const { spawns } = generateWave(deriveStream(seed, 'waves'), wave, budget)
         if (spawns.length >= waveUnitCap(wave)) return
-        const effective = wave % BOSS_WAVE_INTERVAL === 0 ? Math.floor(budget / 2) : budget
+        const effective = bossForWave(wave) !== null ? Math.floor(budget / 2) : budget
         const spent = spawns.filter((s) => s.type !== 'boss').reduce((sum, s) => sum + ENEMIES[s.type].cost, 0)
         const maxGroupCost = 30 // shieldbearer, the priciest single group
         expect(effective - spent).toBeLessThan(maxGroupCost)
@@ -84,8 +85,8 @@ describe('boss roster', () => {
       expect(bosses.length, `wave ${wave}`).toBe(1)
       return bosses[0]!.type
     }
-    expect(bossOf(10)).toBe('boss')
-    expect(bossOf(20)).toBe('boss2')
+    expect(bossOf(6)).toBe('boss')
+    expect(bossOf(12)).toBe('boss2')
     expect(bossOf(30)).toBe('boss3')
     expect(bossOf(40)).toBe('boss4') // endless tier begins
     expect(bossOf(50)).toBe('boss5')

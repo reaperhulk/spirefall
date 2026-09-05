@@ -96,7 +96,7 @@ function enemyTraits(type: EnemyType, def: EnemyDef): string[] {
   if (def.mech?.kind === 'gale')
     traits.push('Gale Surge — periodically hastens the whole horde. Slows override the haste: frost coverage cancels the storm')
   if (type === 'splitling') traits.push('Only appears when an Amalgam dies')
-  if (type.startsWith('boss')) traits.push(`Boss — leads every ${BOSS_WAVE_INTERVAL}th wave (the roster rotates)`)
+  if (type.startsWith('boss')) traits.push(`Boss — act guardians at 6/12/18/24; the endless roster rotates every ${BOSS_WAVE_INTERVAL} waves`)
   return traits
 }
 
@@ -145,7 +145,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'Elites & bosses',
-    body: `Heavy units marked ⚔ are elites — Snipers deal +${SNIPER_ELITE_BONUS_PCT}% damage to them. Every ${BOSS_WAVE_INTERVAL}th wave is led by a boss, and the boss roster rotates as you go deeper.`,
+    body: `Heavy units marked ⚔ are elites — Snipers deal +${SNIPER_ELITE_BONUS_PCT}% damage to them. Waves 6, 12, 18 and 24 close an act; every ${BOSS_WAVE_INTERVAL}th wave after victory is led by a boss, and the boss roster rotates as you go deeper.`,
   },
   {
     title: 'Flying',

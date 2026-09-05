@@ -204,6 +204,7 @@ describe('settleRun', () => {
       damageByTower: { arrow: 900 },
       killsByEnemy: { runner: 40 },
       bestCombo: 0,
+      leaks: [],
       hpByWave: [],
       trials: [],
       relics: [],
@@ -356,7 +357,7 @@ describe('ascension', () => {
     const after = ascend(meta)
     expect(after.embers).toBe(2)
     expect(after.ascensions).toBe(1)
-    expect(after.upgrades).toEqual({}) // spark tree burned
+    expect(after.upgrades).toEqual({ unlock_tesla: 1 }) // learned variety survives
     expect(after.sparks).toBe(0) // no Ashen Legacy yet
     expect(after.cycleVictories).toBe(0)
     expect(after.victories).toBe(1) // lifetime record survives

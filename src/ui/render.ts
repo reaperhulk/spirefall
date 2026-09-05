@@ -43,6 +43,14 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   drawDecals(ctx, session.renderId)
   drawAmbient(ctx, map, animTime(session), theme)
   drawGates(ctx, map, state, animTime(session))
+  if (state.shrine) {
+    const at = cellCenter(state.shrine.cell)
+    ctx.strokeStyle = state.shrine.status === 'lost' ? '#a96868' : '#c3aceb'
+    ctx.setLineDash([4, 4]); ctx.lineWidth = 2
+    circle(ctx, px(at.x), px(at.y), px(1200)); ctx.stroke(); ctx.setLineDash([])
+    ctx.font = '10px ui-monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#e0cef5'
+    ctx.fillText('SHRINE', px(at.x), px(at.y) - 44); ctx.textAlign = 'left'
+  }
   drawTowers(ctx, session, ui)
   drawCoins(ctx, session, map)
   drawEnemies(ctx, session)
@@ -178,7 +186,7 @@ function drawBossBar(ctx: CanvasRenderingContext2D, state: RunState, map: MapDef
   const label =
     boss.mechActiveTicks > 0 && ENEMIES[boss.type].mech?.kind === 'carapace'
       ? `${ENEMIES[boss.type].name.toUpperCase()} — CARAPACE UP — ${boss.hp}/${boss.maxHp}`
-      : `${ENEMIES[boss.type].name.toUpperCase()} — ${boss.hp}/${boss.maxHp}`
+      : `${ENEMIES[boss.type].name.toUpperCase()} — ${boss.mechCooldown <= 30 ? 'BRACE IN ' + Math.ceil(boss.mechCooldown / 30) + 's — ' : boss.type === 'boss_final' && boss.mechCooldown > 90 ? 'CORE EXPOSED — ' : ''}${boss.hp}/${boss.maxHp}`
   ctx.fillText(label, w / 2, y + 7)
   ctx.textAlign = 'left'
 }

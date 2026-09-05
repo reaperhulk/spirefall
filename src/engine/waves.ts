@@ -19,6 +19,14 @@ const SPAWNABLE: EnemyType[] = ['runner', 'swarmling', 'brute', 'flier', 'shield
 
 // Early waves are capped in unit count so seed variance can't triple the
 // pressure on a fresh two-tower defense; the cap fades out by mid-game.
+export function bossForWave(wave: number): EnemyType | null {
+  if (wave === 24) return 'boss_final'
+  if (wave === 6) return 'boss'
+  if (wave === 12) return 'boss2'
+  if (wave === 18) return 'boss3'
+  return wave > 24 && wave % BOSS_WAVE_INTERVAL === 0 ? BOSS_ROSTER[(wave / BOSS_WAVE_INTERVAL - 1) % BOSS_ROSTER.length]! : null
+}
+
 export function waveUnitCap(wave: number): number {
   return Math.min(MAX_UNITS_PER_WAVE, 10 + wave * 8)
 }
@@ -38,7 +46,7 @@ export function generateWave(rng: Rng, wave: number, budget: number): GeneratedW
   // Affixes appear from AFFIX_FIRST_WAVE on (never on boss waves) and make
   // escalation legible: this wave is fast, or armored, or a horde.
   let affix: AffixId | null = null
-  if (wave >= AFFIX_FIRST_WAVE && wave % BOSS_WAVE_INTERVAL !== 0) {
+  if (wave >= AFFIX_FIRST_WAVE && bossForWave(wave) === null) {
     const roll = nextInt(r, 1, 100)
     r = roll.rng
     if (roll.value <= AFFIX_CHANCE_PCT) {
@@ -54,8 +62,8 @@ export function generateWave(rng: Rng, wave: number, budget: number): GeneratedW
   let units = 0
   const unitCap = waveUnitCap(wave)
 
-  if (wave % BOSS_WAVE_INTERVAL === 0) {
-    const boss = BOSS_ROSTER[(wave / BOSS_WAVE_INTERVAL - 1) % BOSS_ROSTER.length]!
+  if (bossForWave(wave) !== null) {
+    const boss = bossForWave(wave)!
     spawns.push({ type: boss, tick: t })
     units += 1
     t += 40
@@ -125,4 +133,9 @@ export function affixHpPct(affix: AffixId | null): number {
 
 export function affixSpeedPct(affix: AffixId | null): number {
   return affix === 'frenzied' ? 130 : 100
+}
+
+export function encounterHp(type: EnemyType, hpScalePct: number, wave: number): number {
+  const pct = type.startsWith('boss') ? (wave === 6 ? 45 : wave === 12 ? 65 : wave === 18 ? 80 : 100) : 100
+  return scaledHp(type, Math.floor(hpScalePct * pct / 100))
 }
