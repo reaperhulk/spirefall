@@ -921,7 +921,7 @@ test.describe('touch', () => {
 // Standard-viewport layout matrix: the standing guard against layout
 // regressions on real device sizes. For every viewport: the document must
 // never overflow horizontally (an overflowing child lets the whole page pan
-// sideways on touch), and every HUD control must sit fully on screen —
+// sideways on touch), and every HUD control must fit horizontally —
 // at boot, with the tower panel open, and during a live wave.
 const STANDARD_VIEWPORTS: [string, number, number][] = [
   // 320 is the floor of the real world (iPhone SE 1st gen, older Androids,
@@ -955,7 +955,7 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
   test.describe(`layout @ ${name} (${width}×${height})`, () => {
     test.use({ viewport: { width, height } })
 
-    test('no horizontal overflow; every control fully on screen', async ({ page }) => {
+    test('no horizontal overflow; every control fits the screen width', async ({ page }) => {
       // Same seed everywhere: the map (and thus buildable cells) stays
       // fixed, so the viewport is the only variable under test.
       const errors = await boot(page, 'e2e-wave')
@@ -968,6 +968,9 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
         }))
         expect(m.scrollW, `${phase}: page overflows horizontally`).toBeLessThanOrEqual(m.innerW)
         for (const id of HUD_CONTROLS) {
+          // Desktop management replaces the palette; spells and tactical
+          // controls remain visible beside it (viewport-fit.spec.ts).
+          if (id.startsWith('shop-') && width >= 1000 && height >= 540 && await page.getByTestId('tower-panel').isVisible()) continue
           const box = await page.getByTestId(id).boundingBox()
           expect(box, `${phase}: ${id} not rendered`).not.toBeNull()
           expect(box!.x, `${phase}: ${id} clipped left`).toBeGreaterThanOrEqual(-0.5)

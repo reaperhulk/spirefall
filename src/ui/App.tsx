@@ -1,10 +1,11 @@
-import { MAP_WIDTH } from '../data/maps'
+import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { TacticalControls } from './TacticalControls'
 import { useGameKeyboard } from './useGameKeyboard'
 import { useRunCheckpoint } from './useRunCheckpoint'
 import { Icon } from './Icon'
 import { TowerPortrait } from './TowerPortrait'
-import { BuildDoctrine } from './BuildDoctrine'
+import { RunPlanning } from './RunPlanning'
+import { DOCTRINES } from '../data/doctrines'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ABILITIES,
@@ -114,6 +115,7 @@ export default function App() {
   const [showTree, setShowTree] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showStats, setShowStats] = useState(false)
+  const [showPlan, setShowPlan] = useState(false)
   const [showCodex, setShowCodex] = useState(false)
   const [codexFocus, setCodexFocus] = useState<EnemyType | null>(null)
   const [uiSettings, setUiSettings] = useState(() => ({ ...settings }))
@@ -175,9 +177,9 @@ export default function App() {
 
   useSyncExternalStore(session.subscribe, session.getVersion)
   useEffect(() => {
-    session.setSuspended(showTree || showSettings || showStats || showCodex || confirm !== null)
+    session.setSuspended(showTree || showSettings || showStats || showCodex || showPlan || confirm !== null)
     return () => { session.setSuspended(false) }
-  }, [session, showTree, showSettings, showStats, showCodex, confirm, victoryPrompt])
+  }, [session, showTree, showSettings, showStats, showCodex, showPlan, confirm, victoryPrompt])
   const state = session.state
   const saveStatus = useSyncExternalStore(subscribeSaveStatus, getSaveStatus)
 
@@ -334,6 +336,7 @@ export default function App() {
     setAbilitySelection(null)
     setSelectedTowerId(null)
     setShowTree(false)
+    setShowPlan(false)
     beamModeRef.current = false
     setBeamMode(false)
     persistSave({ version: 1, meta: metaRef.current, run })
@@ -493,7 +496,7 @@ export default function App() {
   // victory prompt, run over).
   const autoStart = uiSettings.autoStart
   useEffect(() => {
-    if (!autoStart || summary || victoryPrompt || showTree || showSettings || showStats || showCodex || confirm) return
+    if (!autoStart || summary || victoryPrompt || showTree || showSettings || showStats || showCodex || showPlan || confirm) return
     // A pending relic or cataclysm choice pauses the conveyor — firing
     // start_wave into the gate would just spam rejections into the log.
     if (state.phase !== 'build' || state.relicOffer !== null || state.cataclysmOffer !== null) return
@@ -503,9 +506,9 @@ export default function App() {
         sessionRef.current.dispatch({ type: 'start_wave' })
     }, 1200)
     return () => clearTimeout(timer)
-  }, [autoStart, state.phase, state.relicOffer, state.cataclysmOffer, state.wave, summary, victoryPrompt, showTree, showSettings, showStats, showCodex, confirm])
+  }, [autoStart, state.phase, state.relicOffer, state.cataclysmOffer, state.wave, summary, victoryPrompt, showTree, showSettings, showStats, showCodex, showPlan, confirm])
 
-  useGameKeyboard({summary, sfx, sessionRef, beginNextRunRef, handleCellClickRef, hoverRef, keyboardEnemyRef, beamModeRef, toggleBeamRef, selectedTowerIdRef, setShopSelection, setAbilitySelection, setSelectedTowerId, setShowTree, setShowSettings, setShowStats, setShowCodex, setCodexFocus, setConfirm, setSrMessage, setMuted})
+  useGameKeyboard({summary, sfx, sessionRef, beginNextRunRef, handleCellClickRef, hoverRef, keyboardEnemyRef, beamModeRef, toggleBeamRef, selectedTowerIdRef, setShopSelection, setAbilitySelection, setSelectedTowerId, setShowTree, setShowSettings, setShowStats, setShowCodex, setShowPlan, setCodexFocus, setConfirm, setSrMessage, setMuted})
 
   const renderUi: RenderUiState = {
     get hoverCell() {
@@ -870,6 +873,8 @@ export default function App() {
         {srMessage}
       </div>
       {saveStatus && <p role="status" className="save-warning">{saveStatus}</p>}
+      <div className="play-layout">
+      <section className="battlefield-column" aria-label="Battlefield and wave planning">
       {!hintsDismissed && meta.runs === 0 && (
         <div className="hint-banner" data-testid="hint">
           <span>{hint ?? 'Sweep gold with your pointer. B toggles the beam; select a tower and press O to spend a command charge.'}</span>
@@ -924,17 +929,8 @@ export default function App() {
         </div>
       )}
 
-      <TacticalControls state={state} beamMode={beamMode} getTargetId={() => keyboardEnemyRef.current}
-        onTarget={id => {
-          const target = sessionRef.current.state.enemies.find(e => e.id === id)
-          if (!target) return
-          keyboardEnemyRef.current = id
-          hoverRef.current = {cx:Math.floor(target.pos.x / 1000),cy:Math.floor(target.pos.y / 1000)}
-          setSrMessage(`${target.type}, ${target.hp} health`)
-        }}
-        onExecute={id => session.dispatch({type:'execute_enemy',id})}
-        onBeam={() => toggleBeam(!beamModeRef.current)} />
-      <main className="board" style={{width:'100%',maxWidth:MAP_WIDTH * CELL_PX}}>
+      <div className="battlefield-space">
+      <main className="board" style={{maxWidth:MAP_WIDTH * CELL_PX}}>
         <GameCanvas
           onObserve={(state, identity) => sfx.observe(state, identity)}
           session={session}
@@ -963,8 +959,8 @@ export default function App() {
             className="tower-tooltip"
             data-testid="tower-tooltip"
             style={{
-              left: Math.min(hoveredTower.cell.cx * 34 + 42, 24 * 34 - 190),
-              top: Math.max(4, hoveredTower.cell.cy * 34 - 10),
+              left: `clamp(4px, ${(hoveredTower.cell.cx + 1) * 100 / MAP_WIDTH}%, calc(100% - 190px))`,
+              top: `clamp(4px, ${hoveredTower.cell.cy * 100 / MAP_HEIGHT}%, calc(100% - 150px))`,
             }}
           >
             <strong>
@@ -1008,6 +1004,32 @@ export default function App() {
             <span>targets {hoveredTower.targeting} · click to manage</span>
           </div>
         )}
+      </main>
+      </div>
+
+      <div className="run-context">
+        <button className={`ghost-btn${!state.doctrine && state.wave >= 2 ? ' primary-btn' : ''}`} data-testid="open-plan" onClick={() => setShowPlan(true)}>
+          {state.doctrine ? `${DOCTRINES[state.doctrine].name} · Build guide` : state.wave >= 2 ? 'Choose a build doctrine' : 'Build & objectives'}
+        </button>
+        {state.shrine && <button className="ghost-btn" data-testid="open-shrine" onClick={() => setShowPlan(true)}>
+          {state.shrine.status === 'offered' ? 'Shrine available' : state.shrine.status === 'active' ? 'Defending shrine' : state.shrine.status === 'won' ? 'Shrine secured' : 'Shrine lost'}
+        </button>}
+        {state.seed.startsWith('daily-') && <span>Daily · fixed progression · rules {RULES_VERSION}</span>}
+      </div>
+      </section>
+      <section className="control-column" aria-label="Defense controls">
+      <TacticalControls state={state} beamMode={beamMode} getTargetId={() => keyboardEnemyRef.current}
+        onTarget={id => {
+          const target = sessionRef.current.state.enemies.find(e => e.id === id)
+          if (!target) return
+          keyboardEnemyRef.current = id
+          hoverRef.current = {cx:Math.floor(target.pos.x / 1000),cy:Math.floor(target.pos.y / 1000)}
+          setSrMessage(`${target.type}, ${target.hp} health`)
+        }}
+        onExecute={id => session.dispatch({type:'execute_enemy',id})}
+        onBeam={() => toggleBeam(!beamModeRef.current)} />
+      <p className="command-pool" role="status">Command charges: <strong>{state.commandCharges ?? 3}/3</strong> · select a tower, then {(settings.keyBindings.o ?? 'o').toUpperCase()} · one charge recovers every {Math.max(1, 6 * (100 - state.mods.overchargeCdPct) / 100)}s of combat</p>
+      <div className="construction-panel">
         {selectedTower && (
           <aside className="tower-panel" data-testid="tower-panel">
             <button
@@ -1018,6 +1040,7 @@ export default function App() {
             >
               ✕
             </button>
+            <div className="tower-panel-info">
             <h3>
               {TOWERS[selectedTower.type].name} · Tier {selectedTower.tier}
               {selectedTower.spec !== null && ` · ${specForTower(selectedTower.type, selectedTower.spec)?.name ?? ''}`}
@@ -1077,6 +1100,8 @@ export default function App() {
                 {critChance > 0 && ` · ${critChance}% crit`}
               </p>
             )}
+            </div>
+            <div className="tower-panel-actions">
             <label>
               Target:{' '}
               <select
@@ -1174,18 +1199,9 @@ export default function App() {
               )}
               {selectedTower.shots === 0 && ' · full refund'}) <kbd className="key-hint">{(settings.keyBindings.x ?? 'x').toUpperCase()}</kbd>
             </button>
+            </div>
           </aside>
         )}
-      </main>
-
-      {!watching && <BuildDoctrine state={state} choose={doctrine => session.dispatch({ type: 'choose_doctrine', doctrine })} />}
-      {state.seed.startsWith('daily-') && <p className="doctrine-summary">Daily challenge · fixed arsenal and progression · Crucible 0 · rules {RULES_VERSION}</p>}
-      {state.shrine && <section className="doctrine-panel" aria-label="Relic shrine">
-        <strong>Shrine at column {state.shrine.cell.cx + 1}, row {state.shrine.cell.cy + 1}</strong>
-        <p>Station two combat towers within three cells for at least three seconds, and keep enemies outside its ring for one wave to earn {100 + state.shrine.wave * 12} gold. Failure costs no Spire health.</p>
-        {state.shrine.status === 'offered' ? <button className="ghost-btn" onClick={() => session.dispatch({ type: 'defend_shrine' })}>Accept shrine defense</button> : <b>{state.shrine.status === 'active' ? 'Defending this wave' : state.shrine.status === 'won' ? 'Shrine secured' : 'Shrine lost'}</b>}
-      </section>}
-      <p className="command-pool" role="status">Command charges: <strong>{state.commandCharges ?? 3}/3</strong> · select a tower, then {(settings.keyBindings.o ?? 'o').toUpperCase()} · one charge recovers every {Math.max(1, 6 * (100 - state.mods.overchargeCdPct) / 100)}s of combat</p>
       <footer className="shop">
         <div className="shop-towers">
           {TOWER_KEYS.map((type, i) => {
@@ -1222,6 +1238,8 @@ export default function App() {
             )
           })}
         </div>
+      </footer>
+      </div>
         <div className="shop-abilities">
           {ABILITY_KEYS.filter((a) => a in state.abilities).map((ability, i) => {
             const cd = state.abilities[ability] ?? 0
@@ -1260,7 +1278,8 @@ export default function App() {
           })}
 
         </div>
-      </footer>
+      </section>
+      </div>
 
       {victoryPrompt && !summary && (
         <div className="modal-backdrop" data-testid="victory-prompt">
@@ -1370,6 +1389,10 @@ export default function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+      {showPlan && !summary && <RunPlanning state={state} watching={watching}
+        onChoose={doctrine => { session.dispatch({type:'choose_doctrine', doctrine}); setShowPlan(false) }}
+        onShrine={() => { session.dispatch({type:'defend_shrine'}); setShowPlan(false) }}
+        onClose={() => setShowPlan(false)} />}
       {showStats && !summary && <RunStatsModal state={state} onClose={() => setShowStats(false)} />}
       {showCodex && !summary && (
         <CodexModal

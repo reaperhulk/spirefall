@@ -97,6 +97,15 @@ The dev harness is exposed at `window.__harness` in the browser console:
 `./node_modules/.bin/vite-node scripts/profile-release.ts` to reproduce the
 held-out pilot and geography report in `docs/release-profile.json`.
 
+`npx playwright test e2e/viewport-fit.spec.ts` checks desktop sizes from
+1024×600 through 1920×1080, plus touch phones and tablets from 320×568 through
+1024×768 in both orientations. Desktop checks require zero document scrolling
+and unobscured battlefield, HUD, construction, upgrade and spell controls,
+with first-run hints visible and with late-run content. Touch checks exercise
+placement, upgrades, doctrines, shrine dialogs and rotation; the entire board
+must fit in view, while the surrounding phone controls use vertical scrolling.
+Screenshots are attached to the Playwright report in CI.
+
 ## Deploying
 
 CI runs lint/typecheck/tests/build plus the Playwright suite on every push and PR.

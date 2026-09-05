@@ -27,6 +27,7 @@ interface KeyboardOptions {
   setShowSettings: Setter<boolean>
   setShowStats: Setter<boolean>
   setShowCodex: Setter<boolean>
+  setShowPlan: Setter<boolean>
   setCodexFocus: Setter<EnemyType | null>
   setConfirm: Setter<{message:string;action:()=>void} | null>
   setSrMessage: Setter<string>
@@ -38,7 +39,7 @@ export function useGameKeyboard(options: KeyboardOptions): void {
   useEffect(() => { latest.current = options })
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const {summary, sfx, sessionRef, beginNextRunRef, handleCellClickRef, hoverRef, keyboardEnemyRef, beamModeRef, toggleBeamRef, selectedTowerIdRef, setShopSelection, setAbilitySelection, setSelectedTowerId, setShowTree, setShowSettings, setShowStats, setShowCodex, setCodexFocus, setConfirm, setSrMessage, setMuted} = latest.current
+      const {summary, sfx, sessionRef, beginNextRunRef, handleCellClickRef, hoverRef, keyboardEnemyRef, beamModeRef, toggleBeamRef, selectedTowerIdRef, setShopSelection, setAbilitySelection, setSelectedTowerId, setShowTree, setShowSettings, setShowStats, setShowCodex, setShowPlan, setCodexFocus, setConfirm, setSrMessage, setMuted} = latest.current
       // Escape always works, even from inside a form control.
       if (e.key === 'Escape') {
         setShopSelection(null)
@@ -48,6 +49,7 @@ export function useGameKeyboard(options: KeyboardOptions): void {
         setShowSettings(false)
         setShowStats(false)
         setShowCodex(false)
+        setShowPlan(false)
         setCodexFocus(null)
         setConfirm(null)
         return

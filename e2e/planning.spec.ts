@@ -32,6 +32,7 @@ test('a doctrine guide leads to a paid focused relic choice', async ({page}) => 
   expect(offer!.some(r => ['storm_coils','echo_chamber','overcharge','prism_lens'].includes(r))).toBe(true)
   expect(await page.evaluate(() => (window.__harness as GameHarness).getState().gold)).toBeLessThan(1000)
   await page.locator('.relic-card').first().click()
+  await page.getByTestId('open-plan').click()
   await page.getByText('Build guide', {exact:true}).click()
   await expect(page.locator('.doctrine-summary')).toContainText('Shield')
 })

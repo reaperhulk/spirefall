@@ -1,0 +1,77 @@
+/* The desktop play surface budgets BOTH dimensions. Optional reference text
+   belongs in dialogs; combat never depends on scrolling to another control. */
+.play-layout, .battlefield-column, .battlefield-space, .control-column { display: contents; }
+.board { width: min(100%, calc((100svh - 80px) * 24 / 14)); }
+.construction-panel { width: 100%; position: relative; }
+.run-context { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 12px; }
+.planning-modal { max-width: 900px; }
+.planning-modal .doctrine-panel, .planning-modal .doctrine-summary { margin: 0; max-width: none; }
+.tower-panel-info { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.tower-panel-actions { flex: none; display: flex; flex-direction: column; gap: 6px; }
+.tower-panel { max-height: calc(100dvh - 32px); }
+
+/* Smaller windows keep the established flowing layout and bottom inspector. */
+@media (max-width: 999px), (max-height: 539px) {
+  .tower-panel { position: fixed; top: auto; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; }
+}
+
+@media (min-width: 1000px) and (min-height: 540px) {
+  .app { height: 100dvh; max-width: 1440px; gap: 10px; }
+  .app > .hud, .app > .replay-banner, .app > .save-warning { flex: none; }
+  .hud { gap: 6px 12px; }
+  .hud-right { gap: 6px; }
+  .hud button { font-size: 13px; padding: 5px 8px; min-height: 32px; }
+  .hud .speed-controls button { padding: 4px 7px; min-height: 32px; }
+  .hud-gold { min-width: 60px; }
+  .hud-sparks { min-width: 50px; }
+  .play-layout { display: grid; grid-template-columns: minmax(0, 1fr) 304px; gap: 16px; width: 100%; flex: 1; min-height: 0; }
+  .battlefield-column { display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 0; }
+  .battlefield-column > :not(.battlefield-space) { flex: none; }
+  .battlefield-column .hint-banner { width: 100%; min-height: 48px; padding: 8px 36px 8px 12px; }
+  .battlefield-column .wave-preview { min-height: 36px; padding: 2px 8px; }
+  .battlefield-column .boon-strip { width: 100%; padding: 2px 8px; height: 32px; overflow-x: auto; }
+  .boon-label, .boon-skip { display: none; }
+  .battlefield-space { display: grid; place-items: center; min-height: 0; min-width: 0; flex: 1; container-type: size; }
+  /* Reserve the placement report below the 24×14 board. Container units use
+     the space left after the real header, hints, wave info and plan button. */
+  .battlefield-space .board { width: min(100cqw, calc((100cqh - 48px) * 24 / 14)); }
+  .placement-report { height: 40px; min-height: 40px; margin: 8px 0 0; }
+  .run-context { min-height: 36px; flex-wrap: nowrap; }
+  .run-context button { min-height: 36px; font-size: 12px; padding: 4px 8px; }
+  .control-column { display: flex; flex-direction: column; gap: 8px; min-height: 0; min-width: 0; }
+  .tactical-bar { flex: none; padding: 0; min-height: 0; gap: 6px; }
+  .target-status { min-height: 32px; }
+  .tactical-buttons { gap: 4px; }
+  .tactical-buttons .ability-btn { min-width: 0; padding: 5px 3px; font-size: 12px; }
+  .tactical-buttons .cooldown { display: block; margin: 2px 0 0; }
+  .command-pool { flex: none; margin: 0; min-height: 48px; font-size: 12px; line-height: 1.4; }
+  .construction-panel { flex: 1; min-height: 0; }
+  .shop { gap: 10px; }
+  .shop-towers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; overflow: visible; }
+  .shop-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 52px; padding: 6px; gap: 2px; }
+  .shop-card-top { flex-wrap: nowrap; justify-content: flex-start; gap: 4px; }
+  .shop-card-bottom { flex-direction: column; gap: 4px; }
+  .shop-card-name { font-size: 12px; }
+  .shop-card .tower-portrait { width: 24px; height: 24px; flex-basis: 24px; }
+  .shop-card .air-mark { position: absolute; top: 0; right: 2px; font-size: 8px; margin-left: 0; }
+  .shop-abilities { flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; overflow: visible; gap: 6px; }
+  .shop-abilities .ability-btn { min-height: 40px; padding: 4px; font-size: 12px; }
+  .shop-abilities .cooldown { margin-left: 4px; }
+  /* The inspector replaces the palette in its own column. Its statistics
+     scroll independently; targeting, upgrade, charge and sell stay visible. */
+  .construction-panel .tower-panel { inset: 0; width: 100%; max-height: 100%; padding: 10px; }
+  .construction-panel:has(.tower-panel) .shop { visibility: hidden; }
+  .tower-panel-info { padding-right: 20px; }
+  .tower-panel-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); font-size: 12px; }
+  .tower-panel-actions > label, .tower-panel-actions > .upgrade-preview,
+  .tower-panel-actions > .primary-btn { grid-column: 1 / -1; }
+  .tower-panel-actions button { min-height: 32px; padding: 4px 6px; font-size: 12px; }
+  .tower-panel-actions .upgrade-preview { font-size: 11px; }
+}
+
+@media (pointer: coarse) {
+  .run-context button, .tower-panel-actions button, .tower-panel-actions select,
+  .planning-modal button, .planning-modal summary { min-height: 44px; }
+  .hud button, .hud .speed-controls button { min-height: 44px; min-width: 44px; }
+  .shop-abilities .ability-btn { min-height: 44px; }
+}

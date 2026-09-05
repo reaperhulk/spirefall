@@ -3,8 +3,8 @@
 
    ORDER IS LOAD-BEARING and these imports are that order: the cascade
    resolves later rules over earlier ones at equal specificity, which is why
-   `responsive` follows the layouts it narrows and `overrides` is dead last —
-   it carries the rules that must outrank everything above them. Adding a
+   `responsive` follows the layouts it narrows and `play-layout` follows
+   the surface overrides to budget the available viewport. Adding a
    file anywhere but the end of this list changes what wins. */
 @import './styles/base.css';
 @import './styles/hud.css';
@@ -20,3 +20,5 @@
 @import './styles/badges.css';
 @import './styles/run-over.css';
 @import './styles/overrides.css';
+
+@import './styles/play-layout.css';

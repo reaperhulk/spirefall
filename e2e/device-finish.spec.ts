@@ -26,8 +26,7 @@ test('retina phone resolution follows display size, low quality, and rotation', 
   await page.getByTestId('shop-arrow').tap()
   const cell = await page.evaluate(() => {
     const map=(window.__harness as GameHarness).getMapInfo()
-    // The landscape canvas is taller than the viewport. Select a central
-    // visible cell, rather than tapping an offscreen top-row coordinate.
+    // Use a central buildable cell to exercise touch after rotation.
     return map.buildable.map((yes,i) => ({yes,i,d:(i%map.width-map.width/2)**2+(Math.floor(i/map.width)-map.height/2)**2}))
       .filter(c => c.yes && !map.path.some(p => p.cy*map.width+p.cx===c.i)).sort((a,b) => a.d-b.d)[0]!.i
   })
@@ -43,7 +42,8 @@ test('retina phone resolution follows display size, low quality, and rotation', 
 test('paused scenes stop drawing but a placement cursor still updates', async ({page}) => {
   await page.goto('/?seed=idle-frame')
   await page.getByTestId('playfield').waitFor()
-  expect((await page.getByTestId('playfield').boundingBox())!.width).toBeGreaterThanOrEqual(800)
+  // Desktop sizing also reserves height for the HUD and wave planning.
+  expect((await page.getByTestId('playfield').boundingBox())!.width).toBeGreaterThanOrEqual(500)
   await page.getByRole('button',{name:'Pause',exact:true}).click()
   await page.waitForTimeout(1100)
   await page.evaluate(() => (window.__harness as GameHarness).resetPerformance())
