@@ -1,3 +1,4 @@
+import { DefenseCoverage } from './DefenseCoverage'
 import { rewardFit } from './rewardFit'
 import { ControlsSettings } from './ControlsSettings'
 import { RunLessons } from './RunLessons'
@@ -28,7 +29,7 @@ import {
   metaUpgradeCost,
 } from '../engine/meta'
 import { computeSparks } from '../engine/step'
-import type { CataclysmId, MetaState, RelicId, RunState, RunSummary } from '../engine/types'
+import type { CataclysmId, MetaState, RelicId, RunState, RunSummary, Tower } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
 import { exportSave, importSave } from './save'
 import { SpireTreeGraph } from './SpireTreeGraph'
@@ -369,6 +370,7 @@ export function RunStatsModal({ state, onClose }: { state: RunState; onClose: ()
             color={() => '#f7768e'}
           />
         </div>
+        <DefenseCoverage towers={state.towers} />
         <button className="ghost-btn" onClick={onClose} data-testid="close-stats">
           Close
         </button>
@@ -378,6 +380,7 @@ export function RunStatsModal({ state, onClose }: { state: RunState; onClose: ()
 }
 
 export function RunOverOverlay({
+  towers,
   summary,
   meta,
   replay,
@@ -395,6 +398,7 @@ export function RunOverOverlay({
   onRematch,
   reducedMotion,
 }: {
+  towers: Tower[]
   summary: RunSummary
   meta: MetaState
   replay: () => string
@@ -542,6 +546,7 @@ export function RunOverOverlay({
         </p>
         <div ref={cardHost} className="run-card-host" />
         <RunLessons summary={summary} />
+        <DefenseCoverage towers={towers} />
         <div className="replay-row">
           <button
             className="ghost-btn"

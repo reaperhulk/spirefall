@@ -250,7 +250,27 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
         ctx.fill()
         break
       }
-      case 'boss_final':
+      case 'boss_final': {
+        // The finale has a broken halo and orbiting armor, distinct from
+        // the crowned act guardians. The core opens with the engine window.
+        const exposed = e.mechActiveTicks === 0 && e.mechCooldown > 90
+        ctx.strokeStyle = exposed ? '#fff6d0' : '#94784d'
+        ctx.lineWidth = 3
+        for (let shard=0; shard<6; shard++) {
+          const angle = shard*Math.PI/3 + phase*0.08
+          ctx.beginPath(); ctx.arc(0,0,r*1.15,angle,angle+0.55); ctx.stroke()
+          ctx.save(); ctx.rotate(angle)
+          ctx.fillStyle = e.mechActiveTicks > 0 ? '#ced5dd' : '#70624f'
+          ctx.beginPath(); ctx.moveTo(r*0.65,-4); ctx.lineTo(r*1.0,-7); ctx.lineTo(r*1.2,0); ctx.lineTo(r*0.8,5); ctx.closePath(); ctx.fill()
+          ctx.restore()
+        }
+        ctx.fillStyle = '#171622'; circle(ctx,0,0,r*0.72); ctx.fill()
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke()
+        ctx.fillStyle = exposed ? '#fff9de' : '#c38154'
+        ctx.beginPath(); ctx.moveTo(0,-r*0.58); ctx.lineTo(r*0.32,0); ctx.lineTo(0,r*0.58); ctx.lineTo(-r*0.32,0); ctx.closePath(); ctx.fill()
+        if (exposed) glow(ctx,0,0,r*0.7,'#ffe8a3',0.6)
+        break
+      }
       case 'boss':
       case 'boss2':
       case 'boss3':

@@ -4,14 +4,14 @@ import type { Sfx } from '../audio'
 import { Music } from '../music'
 
 it('unmuting after ten minutes only schedules the normal future lookahead', () => {
-  const sfx = { muted: true } as Sfx
+  const sfx = { muted: true, musicDuck: 1 } as Sfx
   const music = new Music(sfx)
   const clock = { currentTime: 1 }
   const schedule = vi.fn()
   const probe = music as unknown as { tick: () => void; ensureGraph: () => unknown; getState: () => unknown; bus: unknown; scheduleStep: typeof schedule }
   probe.ensureGraph = () => clock
   probe.getState = () => createRun(createMeta(), 'audio-recovery')
-  probe.bus = { gain: { setTargetAtTime: vi.fn() } }
+  probe.bus = { gain: { setTargetAtTime: vi.fn((value: number) => { expect(Number.isFinite(value)).toBe(true) }) } }
   probe.scheduleStep = schedule
   probe.tick()
   clock.currentTime = 601

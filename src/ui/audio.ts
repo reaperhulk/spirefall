@@ -1,3 +1,4 @@
+import { measure } from './performance'
 import { MAP_WIDTH } from '../data/maps'
 import type { GameEvent, TowerType } from '../engine/types'
 import { settings } from './settings'
@@ -337,6 +338,9 @@ export class Sfx {
   private urgentCount = 0
   private recentCount = 0
   private recentWindow = 0
+  private duckUntil = 0
+  private voiceEnds: number[] = []
+  get musicDuck(): number { return performance.now() < this.duckUntil ? 0.55 : 1 }
   private reviveGeneration = 0
   private probeGeneration = 0
   private liveFlag = false
@@ -648,6 +652,7 @@ export class Sfx {
     if (urgent) { if (this.urgentCount >= 4) return; this.urgentCount += 1 }
     else { if (this.recentCount >= (settings.quietAudio ? 3 : 8)) return; this.recentCount += 1 }
     this.lastPlayed[kind] = now
+    if (urgent) this.duckUntil = now + 500
 
     const ctx = this.ctx
     // Per-sound bus: notes -> (panner) -> master, with a parallel send into
@@ -678,8 +683,11 @@ export class Sfx {
     for (const note of SOUNDS[kind]) {
       const at = base + (note.at ?? chained)
       if (note.at === undefined) chained += note.dur * 0.9
-      const scaled = (note.gain * (settings.quietAudio && !urgent ? 0.55 : 1) * Math.max(0, Math.min(100, settings.volume))) / 100
+      const scaled = (note.gain * (!urgent && now < this.duckUntil ? 0.5 : 1) * (settings.quietAudio && !urgent ? 0.55 : 1) * Math.max(0, Math.min(100, settings.volume))) / 100
       if (scaled <= 0) continue
+      this.voiceEnds = this.voiceEnds.filter(end => end > ctx.currentTime)
+      this.voiceEnds.push(at + note.dur + 0.02)
+      measure('sfxVoices', this.voiceEnds.length)
       const gain = ctx.createGain()
       // Real attack ramp: starting a gain at full value clicks. A few ms of
       // linear rise reads as the same transient without the pop.

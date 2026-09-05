@@ -49,3 +49,5 @@
 .reward-fit { color:#d4bd88; font-size:12px; }
 
 .game-icon { width:20px; height:20px; vertical-align:middle; flex-shrink:0; }
+
+.replay-banner { position:static; inset:auto; transform:none; width:100%; box-sizing:border-box; margin:0 0 12px; }

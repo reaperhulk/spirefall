@@ -129,8 +129,9 @@ export function SpireTreeGraph({
   const timers = useRef<number[]>([])
 
   useEffect(() => {
+    const pending = timers.current
     return () => {
-      for (const t of timers.current) window.clearTimeout(t)
+      for (const t of pending) window.clearTimeout(t)
     }
   }, [])
 

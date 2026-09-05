@@ -261,7 +261,7 @@ export class Music {
 
     // Master music level: player slider × mute, eased so changes glide.
     const muted = this.sfx.muted || settings.musicVolume <= 0
-    const level = muted ? 0.0001 : 0.05 * (settings.musicVolume / 100)
+    const level = muted ? 0.0001 : 0.05 * (settings.musicVolume / 100) * this.sfx.musicDuck
     this.bus.gain.setTargetAtTime(level, ctx.currentTime, 0.4)
     if (muted) { this.nextNoteAt = ctx.currentTime + 0.1; return }
     // Resume at the present beat after suspension; never schedule a backlog.

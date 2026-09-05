@@ -1160,18 +1160,18 @@ test('sound button reflects PROBED audio state: pending on load, live after a ge
   const errors = await boot(page, 'e2e-audio-state')
   // No gesture has happened (boot drives the page via evaluate) — the
   // button must not claim working audio it cannot have.
-  await expect(page.getByTestId('mute')).toHaveText('🔈')
+  await expect(page.getByTestId('mute')).toHaveAttribute('aria-label', 'Enable sound')
   expect(await page.evaluate(() => window.__harness.audioLive())).toBe(false)
 
   // Clicking the pending button means "I want sound": the click unlocks the
   // context and the probe flips the icon — it must NOT mute instead.
   await page.getByTestId('mute').click()
-  await expect(page.getByTestId('mute')).toHaveText('🔊')
+  await expect(page.getByTestId('mute')).toHaveAttribute('aria-label', 'Mute sound')
   await expect.poll(() => page.evaluate(() => window.__harness.audioLive())).toBe(true)
 
   // Live now: the same button is a plain mute toggle again.
   await page.getByTestId('mute').click()
-  await expect(page.getByTestId('mute')).toHaveText('🔇')
+  await expect(page.getByTestId('mute')).toHaveAttribute('aria-label', 'Unmute sound')
   await expect(page.getByTestId('mute')).toHaveAttribute('aria-pressed', 'true')
   expect(errors).toEqual([])
 })

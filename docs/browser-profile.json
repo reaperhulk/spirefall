@@ -1,0 +1,151 @@
+{
+  "commit": "671f8ba5e97e4bae16985da89984d9a22008b877",
+  "runner": "GitHub Actions Ubuntu / headless Chromium",
+  "notes": "Five-second synthetic dense scenes; 40 towers, 300 high-HP slow enemies, 100 coin drops, beam, Web Audio context running. Input is command-queue delay, with only two samples. Heap values are quantized and cannot establish a leak rate. This is not physical-device validation.",
+  "profiles": [
+    {
+      "speed": 1,
+      "before": {
+        "towers": 40,
+        "enemies": 300,
+        "heap": 10000000
+      },
+      "metrics": {
+        "frame": {
+          "samples": 288,
+          "p50": 16.699999999999818,
+          "p95": 16.800000000000182,
+          "p99": 33.39999999999998
+        },
+        "simulation": {
+          "samples": 288,
+          "p50": 0.10000000000582077,
+          "p95": 0.7999999999956344,
+          "p99": 3.2999999999956344
+        },
+        "render": {
+          "samples": 288,
+          "p50": 2.900000000001455,
+          "p95": 5.80000000000291,
+          "p99": 10.200000000004366
+        },
+        "effects": {
+          "samples": 288,
+          "p50": 6,
+          "p95": 22,
+          "p99": 22
+        },
+        "input": {
+          "samples": 2,
+          "p50": 37.599999999998545,
+          "p95": 37.599999999998545,
+          "p99": 37.599999999998545
+        },
+        "save": {
+          "samples": 1,
+          "p50": 0.9000000000087311,
+          "p95": 0.9000000000087311,
+          "p99": 0.9000000000087311
+        }
+      },
+      "audio": "running",
+      "heap": 10000000
+    },
+    {
+      "speed": 3,
+      "before": {
+        "towers": 40,
+        "enemies": 300,
+        "heap": 10000000
+      },
+      "metrics": {
+        "frame": {
+          "samples": 294,
+          "p50": 16.699999999999818,
+          "p95": 16.799999999999727,
+          "p99": 16.800000000000182
+        },
+        "input": {
+          "samples": 2,
+          "p50": 2.400000000008731,
+          "p95": 2.400000000008731,
+          "p99": 2.400000000008731
+        },
+        "simulation": {
+          "samples": 294,
+          "p50": 0.3000000000029104,
+          "p95": 0.8999999999941792,
+          "p99": 3.099999999991269
+        },
+        "render": {
+          "samples": 294,
+          "p50": 2.8999999999941792,
+          "p95": 5.100000000005821,
+          "p99": 6.100000000005821
+        },
+        "effects": {
+          "samples": 294,
+          "p50": 4,
+          "p95": 22,
+          "p99": 22
+        },
+        "save": {
+          "samples": 1,
+          "p50": 1.1000000000058208,
+          "p95": 1.1000000000058208,
+          "p99": 1.1000000000058208
+        }
+      },
+      "audio": "running",
+      "heap": 10000000
+    },
+    {
+      "speed": 10,
+      "before": {
+        "towers": 40,
+        "enemies": 300,
+        "heap": 10000000
+      },
+      "metrics": {
+        "frame": {
+          "samples": 293,
+          "p50": 16.699999999999818,
+          "p95": 16.799999999999727,
+          "p99": 33.19999999999999
+        },
+        "input": {
+          "samples": 2,
+          "p50": 3,
+          "p95": 3,
+          "p99": 3
+        },
+        "simulation": {
+          "samples": 293,
+          "p50": 0.8000000000029104,
+          "p95": 2.3999999999941792,
+          "p99": 5.5
+        },
+        "render": {
+          "samples": 293,
+          "p50": 2.8000000000029104,
+          "p95": 5.400000000008731,
+          "p99": 8.299999999988358
+        },
+        "effects": {
+          "samples": 293,
+          "p50": 4,
+          "p95": 13,
+          "p99": 15
+        },
+        "save": {
+          "samples": 1,
+          "p50": 0.9000000000087311,
+          "p95": 0.9000000000087311,
+          "p99": 0.9000000000087311
+        }
+      },
+      "audio": "running",
+      "heap": 10000000
+    }
+  ]
+}

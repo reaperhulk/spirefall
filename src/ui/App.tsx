@@ -1,3 +1,4 @@
+import { useRunCheckpoint } from './useRunCheckpoint'
 import { Icon } from './Icon'
 import { TowerPortrait } from './TowerPortrait'
 import { BuildDoctrine } from './BuildDoctrine'
@@ -62,7 +63,7 @@ import { CataclysmModal, ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal
 import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
-import { clearSave, loadSave, persistSave, registerRecording, getSaveStatus, subscribeSaveStatus, saveReloadPending } from './save'
+import { clearSave, loadSave, persistSave, getSaveStatus, subscribeSaveStatus } from './save'
 import { useDialogFocus } from './useDialogFocus'
 import { parseRecording } from './validation'
 import { GameSession } from './session'
@@ -121,6 +122,7 @@ export default function App() {
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null)
   const [hoveredTowerId, setHoveredTowerId] = useState<number | null>(null)
   const hoverRef = useRef<CellPos | null>(null)
+  const keyboardEnemyRef = useRef<number | null>(null)
   // Beam mode is a LATCH (B key or the Beam button), not a held chord —
   // the same control works identically with a mouse or a thumb.
   const beamModeRef = useRef(false)
@@ -185,17 +187,7 @@ export default function App() {
     music.attach(() => sessionRef.current.state)
   }, [music])
 
-  useEffect(() => registerRecording(() => sessionRef.current.replaying ? undefined : sessionRef.current.recording()), [])
-  useEffect(() => {
-    const checkpoint = () => {
-      const live = sessionRef.current
-      if (!live.replaying && !saveReloadPending()) persistSave({ version: 1, meta: metaRef.current, run: live.terminal ? null : live.state })
-    }
-    const timer = window.setInterval(checkpoint, 5000)
-    window.addEventListener('pagehide', checkpoint)
-    document.addEventListener('visibilitychange', checkpoint)
-    return () => { window.clearInterval(timer); window.removeEventListener('pagehide', checkpoint); document.removeEventListener('visibilitychange', checkpoint) }
-  }, [])
+  useRunCheckpoint(sessionRef, metaRef)
 
   // Engine events drive meta settlement and saves.
   useEffect(() => {
@@ -405,6 +397,9 @@ export default function App() {
     })
   }
 
+  const beginNextRunRef = useRef(beginNextRun)
+  useEffect(() => { beginNextRunRef.current = beginNextRun })
+
   // Dev/test harness on window.__game / window.__harness.
   useEffect(() => {
     installHarness({
@@ -412,7 +407,7 @@ export default function App() {
       getMeta: () => metaRef.current,
       audioState: () => sfx.currentContext()?.state ?? 'none',
       audioLive: () => sfx.live,
-      newRun: (seed) => beginNextRun(seed),
+      newRun: (seed) => beginNextRunRef.current(seed),
       buyMeta,
       reset: () => {
         clearSave()
@@ -539,7 +534,7 @@ export default function App() {
       if (e.key === ' ') {
         e.preventDefault()
         const s = sessionRef.current.state
-        if (summary) beginNextRun()
+        if (summary) beginNextRunRef.current()
         else if (s.phase === 'build' && s.relicOffer === null && s.cataclysmOffer === null)
           // A pending choice modal owns the moment — Space shouldn't queue
           // rejected start_waves into the log behind it.
@@ -572,6 +567,7 @@ export default function App() {
         }
         const [dx, dy] = deltas[e.key]!
         const cur = hoverRef.current ?? { cx: Math.floor(MAP_WIDTH / 2), cy: Math.floor(MAP_HEIGHT / 2) }
+        keyboardEnemyRef.current = null
         hoverRef.current = {
           cx: Math.max(0, Math.min(MAP_WIDTH - 1, cur.cx + dx)),
           cy: Math.max(0, Math.min(MAP_HEIGHT - 1, cur.cy + dy)),
@@ -587,10 +583,10 @@ export default function App() {
       if (key === '[' || key === ']') {
         e.preventDefault()
         const targets = live.state.enemies.filter(enemy => enemy.hp > 0 && !enemy.phased)
-        const at = hoverRef.current
-        const index = targets.findIndex(enemy => Math.floor(enemy.pos.x / 1000) === at?.cx && Math.floor(enemy.pos.y / 1000) === at?.cy)
-        const target = targets[(index + (key === ']' ? 1 : targets.length - 1)) % targets.length]
+        const index = targets.findIndex(enemy => enemy.id === keyboardEnemyRef.current)
+        const target = targets[index < 0 ? (key === ']' ? 0 : targets.length - 1) : (index + (key === ']' ? 1 : targets.length - 1)) % targets.length]
         if (target) {
+          keyboardEnemyRef.current = target.id
           hoverRef.current = { cx: Math.floor(target.pos.x / 1000), cy: Math.floor(target.pos.y / 1000) }
           setSrMessage(`${target.type}, ${target.hp} health`)
         }
@@ -599,7 +595,8 @@ export default function App() {
       if (key === 'g' && hoverRef.current) { live.dispatch({ type: 'set_collect', at: cellCenter(hoverRef.current) }); return }
       if (key === 'v' && hoverRef.current) {
         const at = cellCenter(hoverRef.current)
-        const enemy = live.state.enemies.filter(en => en.hp > 0 && !en.phased && en.hp * 100 <= en.maxHp * EXECUTE_THRESHOLD_PCT).sort((a,b) => (a.pos.x-at.x)**2+(a.pos.y-at.y)**2 - (b.pos.x-at.x)**2-(b.pos.y-at.y)**2)[0]
+        const candidates = live.state.enemies.filter(en => en.hp > 0 && !en.phased && en.hp * 100 <= en.maxHp * EXECUTE_THRESHOLD_PCT).sort((a,b) => (a.pos.x-at.x)**2+(a.pos.y-at.y)**2 - (b.pos.x-at.x)**2-(b.pos.y-at.y)**2)
+        const enemy = candidates.find(en => en.id === keyboardEnemyRef.current) ?? candidates[0]
         if (enemy) live.dispatch({ type: 'execute_enemy', id: enemy.id })
         return
       }
@@ -740,6 +737,21 @@ export default function App() {
 
   return (
     <div className="app">
+      {watching && (
+        <div className="replay-banner" data-testid="replay-banner">
+          <span>
+            ▶ REPLAY · wave {state.wave}
+            {session.terminal ? ` · over — ${state.phase === 'victory' ? 'the Spire stood' : 'the Spire fell'}` : ''} —
+            speed controls work; inputs don't.
+          </span>
+          <label>Replay position <input aria-label="Replay position" type="range" min={session.initial.tick} max={Math.max(session.initial.tick + 1, Number.isFinite(session.replayEndTick) ? session.replayEndTick : state.tick)} value={state.tick} onChange={e => { void session.seek(Number(e.target.value)) }} /></label>
+          <span>{session.seeking ? 'Seeking…' : `${Math.floor(state.tick / 30)}s`} {session.initial.tick > 0 && '(checkpoint recording)'}</span>
+          <div className="replay-checkpoints">{session.checkpoints.filter(c => c.wave > 0).map(c => <button key={c.tick} className="ghost-btn" onClick={() => { void session.seek(c.tick) }}>Wave {c.wave}</button>)}</div>
+          <button className="ghost-btn" data-testid="exit-replay" onClick={exitReplay}>
+            Exit replay
+          </button>
+        </div>
+      )}
       <header className="hud">
         <div className="hud-title">
           SPIREFALL
@@ -1096,6 +1108,7 @@ export default function App() {
           onCellClick={handleCellClick}
           onHover={(c) => {
             const prev = hoverRef.current
+            keyboardEnemyRef.current = null
             hoverRef.current = c
             // In beam mode the ray follows the cursor (or a touch drag).
             if (beamModeRef.current && c) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(c) })
@@ -1465,7 +1478,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {state.relicOffer && !summary && !victoryPrompt && (
+      {state.relicOffer && !watching && !summary && !victoryPrompt && (
         <RelicModal
           state={state}
           options={state.relicOffer}
@@ -1475,29 +1488,15 @@ export default function App() {
           onReroll={() => session.dispatch({ type: 'reroll_relic' })}
         />
       )}
-      {state.cataclysmOffer && !summary && (
+      {state.cataclysmOffer && !watching && !summary && (
         <CataclysmModal
           options={state.cataclysmOffer}
           onChoose={(cataclysm) => session.dispatch({ type: 'choose_cataclysm', cataclysm })}
         />
       )}
-      {watching && (
-        <div className="replay-banner" data-testid="replay-banner">
-          <span>
-            ▶ REPLAY · wave {state.wave}
-            {session.terminal ? ` · over — ${state.phase === 'victory' ? 'the Spire stood' : 'the Spire fell'}` : ''} —
-            speed controls work; inputs don't.
-          </span>
-          <label>Replay position <input aria-label="Replay position" type="range" min={session.initial.tick} max={Math.max(session.initial.tick + 1, Number.isFinite(session.replayEndTick) ? session.replayEndTick : state.tick)} value={state.tick} onChange={e => { void session.seek(Number(e.target.value)) }} /></label>
-          <span>{session.seeking ? 'Seeking…' : `${Math.floor(state.tick / 30)}s`} {session.initial.tick > 0 && '(checkpoint recording)'}</span>
-          <div className="replay-checkpoints">{session.checkpoints.filter(c => c.wave > 0).map(c => <button key={c.tick} className="ghost-btn" onClick={() => { void session.seek(c.tick) }}>Wave {c.wave}</button>)}</div>
-          <button className="ghost-btn" data-testid="exit-replay" onClick={exitReplay}>
-            Exit replay
-          </button>
-        </div>
-      )}
       {summary && !watching && (
         <RunOverOverlay
+          towers={state.towers}
           summary={summary}
           meta={meta}
           onWatchReplay={watchReplay}

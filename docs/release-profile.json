@@ -1,0 +1,1725 @@
+{
+  "rules": 3,
+  "progression": {
+    "schemaVersion": 1,
+    "sparks": 18,
+    "totalSparks": 0,
+    "runs": 0,
+    "victories": 0,
+    "cycleVictories": 0,
+    "embers": 0,
+    "ascensions": 0,
+    "upgrades": {
+      "spire_hp": 12,
+      "unlock_tesla": 1,
+      "tower_damage": 8,
+      "tower_damage_2": 4,
+      "starting_gold": 4,
+      "unlock_gold_rush": 1,
+      "unlock_mint": 1,
+      "unlock_beacon": 1,
+      "unlock_lance": 1
+    },
+    "emberUpgrades": {},
+    "bestWave": 0,
+    "bestWaveByMap": {},
+    "lifetimeKills": 0,
+    "achievements": [],
+    "history": []
+  },
+  "notes": "Synthetic pilots at 10k reference progression plus all tower unlocks; six held-out seeds. Attention/families: one action every 400ms. Times are simulation seconds, not wall-clock playtime. No universal win-rate or human-usability claim.",
+  "runs": [
+    {
+      "pilot": "passive",
+      "seed": "release-cedar",
+      "biome": "verdant",
+      "waves": 16,
+      "victory": false,
+      "seconds": 338.7,
+      "commands": 2998,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 34.3
+      }
+    },
+    {
+      "pilot": "passive",
+      "seed": "release-moon",
+      "biome": "verdant",
+      "waves": 17,
+      "victory": false,
+      "seconds": 361.3,
+      "commands": 3587,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 30.633333333333333
+      }
+    },
+    {
+      "pilot": "passive",
+      "seed": "release-amber",
+      "biome": "verdant",
+      "waves": 16,
+      "victory": false,
+      "seconds": 325.46666666666664,
+      "commands": 3405,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 30.566666666666666
+      }
+    },
+    {
+      "pilot": "passive",
+      "seed": "release-river",
+      "biome": "verdant",
+      "waves": 21,
+      "victory": false,
+      "seconds": 671.2,
+      "commands": 3426,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 34.13333333333333,
+        "specialization": 322.3333333333333
+      }
+    },
+    {
+      "pilot": "passive",
+      "seed": "release-owl",
+      "biome": "verdant",
+      "waves": 24,
+      "victory": true,
+      "seconds": 755.2333333333333,
+      "commands": 3430,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 32.8,
+        "specialization": 455.3333333333333,
+        "victory": 755.2
+      }
+    },
+    {
+      "pilot": "passive",
+      "seed": "release-stone",
+      "biome": "verdant",
+      "waves": 19,
+      "victory": false,
+      "seconds": 473.1333333333333,
+      "commands": 2844,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 30.766666666666666,
+        "specialization": 349.6666666666667
+      }
+    },
+    {
+      "pilot": "attention",
+      "seed": "release-cedar",
+      "biome": "verdant",
+      "waves": 18,
+      "victory": false,
+      "seconds": 455,
+      "commands": 1112,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.53333333333333
+      }
+    },
+    {
+      "pilot": "attention",
+      "seed": "release-moon",
+      "biome": "verdant",
+      "waves": 22,
+      "victory": false,
+      "seconds": 723.6333333333333,
+      "commands": 1772,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 41.733333333333334,
+        "specialization": 506.03333333333336
+      }
+    },
+    {
+      "pilot": "attention",
+      "seed": "release-amber",
+      "biome": "verdant",
+      "waves": 20,
+      "victory": false,
+      "seconds": 582.1333333333333,
+      "commands": 1430,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 40.93333333333333,
+        "specialization": 246.03333333333333
+      }
+    },
+    {
+      "pilot": "attention",
+      "seed": "release-river",
+      "biome": "verdant",
+      "waves": 23,
+      "victory": false,
+      "seconds": 836.7,
+      "commands": 2055,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 44.93333333333333,
+        "specialization": 526.8333333333334
+      }
+    },
+    {
+      "pilot": "attention",
+      "seed": "release-owl",
+      "biome": "verdant",
+      "waves": 24,
+      "victory": true,
+      "seconds": 778.4,
+      "commands": 1910,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 43.333333333333336,
+        "specialization": 272.43333333333334,
+        "victory": 778.3666666666667
+      }
+    },
+    {
+      "pilot": "attention",
+      "seed": "release-stone",
+      "biome": "verdant",
+      "waves": 21,
+      "victory": false,
+      "seconds": 632.0333333333333,
+      "commands": 1550,
+      "milestones": {
+        "upgrade": 2.033333333333333,
+        "boss": 40.93333333333333,
+        "specialization": 590.8333333333334
+      }
+    },
+    {
+      "pilot": "active",
+      "seed": "release-cedar",
+      "biome": "verdant",
+      "waves": 18,
+      "victory": false,
+      "seconds": 405.23333333333335,
+      "commands": 8893,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 34.3,
+        "specialization": 267.6666666666667
+      }
+    },
+    {
+      "pilot": "active",
+      "seed": "release-moon",
+      "biome": "verdant",
+      "waves": 23,
+      "victory": false,
+      "seconds": 727.4333333333333,
+      "commands": 17733,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 30.333333333333332,
+        "specialization": 248.1
+      }
+    },
+    {
+      "pilot": "active",
+      "seed": "release-amber",
+      "biome": "verdant",
+      "waves": 22,
+      "victory": false,
+      "seconds": 668.1,
+      "commands": 19154,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 30.566666666666666,
+        "specialization": 322.46666666666664
+      }
+    },
+    {
+      "pilot": "active",
+      "seed": "release-river",
+      "biome": "verdant",
+      "waves": 24,
+      "victory": true,
+      "seconds": 801.2666666666667,
+      "commands": 19537,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 34.13333333333333,
+        "specialization": 409.1666666666667,
+        "victory": 801.2333333333333
+      }
+    },
+    {
+      "pilot": "active",
+      "seed": "release-owl",
+      "biome": "verdant",
+      "waves": 24,
+      "victory": true,
+      "seconds": 716.4,
+      "commands": 16788,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 32.8,
+        "specialization": 233.36666666666667,
+        "victory": 716.3666666666667
+      }
+    },
+    {
+      "pilot": "active",
+      "seed": "release-stone",
+      "biome": "verdant",
+      "waves": 21,
+      "victory": false,
+      "seconds": 576.7333333333333,
+      "commands": 15261,
+      "milestones": {
+        "upgrade": 0.16666666666666666,
+        "boss": 30.466666666666665,
+        "specialization": 535.9
+      }
+    },
+    {
+      "pilot": "shatter",
+      "seed": "release-cedar",
+      "biome": "verdant",
+      "waves": 16,
+      "victory": false,
+      "seconds": 342.4,
+      "commands": 836,
+      "milestones": {
+        "upgrade": 7.233333333333333,
+        "boss": 46.93333333333333
+      }
+    },
+    {
+      "pilot": "shatter",
+      "seed": "release-moon",
+      "biome": "verdant",
+      "waves": 20,
+      "victory": false,
+      "seconds": 601.3,
+      "commands": 1470,
+      "milestones": {
+        "upgrade": 7.233333333333333,
+        "boss": 47.733333333333334
+      }
+    },
+    {
+      "pilot": "shatter",
+      "seed": "release-amber",
+      "biome": "verdant",
+      "waves": 19,
+      "victory": false,
+      "seconds": 539,
+      "commands": 1314,
+      "milestones": {
+        "upgrade": 11.233333333333333,
+        "boss": 50.13333333333333,
+        "specialization": 425.6333333333333
+      }
+    },
+    {
+      "pilot": "shatter",
+      "seed": "release-river",
+      "biome": "verdant",
+      "waves": 23,
+      "victory": false,
+      "seconds": 860.9666666666667,
+      "commands": 2126,
+      "milestones": {
+        "upgrade": 6.833333333333333,
+        "boss": 49.333333333333336,
+        "specialization": 799.6333333333333
+      }
+    },
+    {
+      "pilot": "shatter",
+      "seed": "release-owl",
+      "biome": "verdant",
+      "waves": 24,
+      "victory": true,
+      "seconds": 842.8333333333334,
+      "commands": 2071,
+      "milestones": {
+        "upgrade": 6.833333333333333,
+        "boss": 51.333333333333336,
+        "specialization": 446.43333333333334,
+        "victory": 842.8
+      }
+    },
+    {
+      "pilot": "shatter",
+      "seed": "release-stone",
+      "biome": "verdant",
+      "waves": 16,
+      "victory": false,
+      "seconds": 368.1,
+      "commands": 911,
+      "milestones": {
+        "upgrade": 7.233333333333333,
+        "boss": 46.93333333333333
+      }
+    },
+    {
+      "pilot": "siege",
+      "seed": "release-cedar",
+      "biome": "verdant",
+      "waves": 14,
+      "victory": false,
+      "seconds": 279.8333333333333,
+      "commands": 688,
+      "milestones": {
+        "upgrade": 34.833333333333336,
+        "boss": 61.733333333333334
+      }
+    },
+    {
+      "pilot": "siege",
+      "seed": "release-moon",
+      "biome": "verdant",
+      "waves": 14,
+      "victory": false,
+      "seconds": 262.2,
+      "commands": 636,
+      "milestones": {
+        "upgrade": 31.633333333333333,
+        "boss": 58.53333333333333
+      }
+    },
+    {
+      "pilot": "siege",
+      "seed": "release-amber",
+      "biome": "verdant",
+      "waves": 13,
+      "victory": false,
+      "seconds": 225.23333333333332,
+      "commands": 550,
+      "milestones": {
+        "upgrade": 29.233333333333334,
+        "boss": 50.53333333333333
+      }
+    },
+    {
+      "pilot": "siege",
+      "seed": "release-river",
+      "biome": "verdant",
+      "waves": 13,
+      "victory": false,
+      "seconds": 254.83333333333334,
+      "commands": 612,
+      "milestones": {
+        "upgrade": 37.63333333333333,
+        "boss": 62.13333333333333
+      }
+    },
+    {
+      "pilot": "siege",
+      "seed": "release-owl",
+      "biome": "verdant",
+      "waves": 14,
+      "victory": false,
+      "seconds": 294.06666666666666,
+      "commands": 706,
+      "milestones": {
+        "upgrade": 35.233333333333334,
+        "boss": 59.333333333333336
+      }
+    },
+    {
+      "pilot": "siege",
+      "seed": "release-stone",
+      "biome": "verdant",
+      "waves": 13,
+      "victory": false,
+      "seconds": 239.73333333333332,
+      "commands": 584,
+      "milestones": {
+        "upgrade": 31.633333333333333,
+        "boss": 53.333333333333336
+      }
+    },
+    {
+      "pilot": "storm",
+      "seed": "release-cedar",
+      "biome": "verdant",
+      "waves": 15,
+      "victory": false,
+      "seconds": 329.9,
+      "commands": 804,
+      "milestones": {
+        "upgrade": 1.2333333333333334,
+        "boss": 47.333333333333336
+      }
+    },
+    {
+      "pilot": "storm",
+      "seed": "release-moon",
+      "biome": "verdant",
+      "waves": 18,
+      "victory": false,
+      "seconds": 451.93333333333334,
+      "commands": 1108,
+      "milestones": {
+        "upgrade": 1.2333333333333334,
+        "boss": 44.53333333333333
+      }
+    },
+    {
+      "pilot": "storm",
+      "seed": "release-amber",
+      "biome": "verdant",
+      "waves": 16,
+      "victory": false,
+      "seconds": 350.46666666666664,
+      "commands": 849,
+      "milestones": {
+        "upgrade": 1.2333333333333334,
+        "boss": 44.93333333333333
+      }
+    },
+    {
+      "pilot": "storm",
+      "seed": "release-river",
+      "biome": "verdant",
+      "waves": 18,
+      "victory": false,
+      "seconds": 475.73333333333335,
+      "commands": 1168,
+      "milestones": {
+        "upgrade": 1.2333333333333334,
+        "boss": 52.53333333333333
+      }
+    },
+    {
+      "pilot": "storm",
+      "seed": "release-owl",
+      "biome": "verdant",
+      "waves": 24,
+      "victory": true,
+      "seconds": 851,
+      "commands": 2100,
+      "milestones": {
+        "upgrade": 1.2333333333333334,
+        "boss": 49.733333333333334,
+        "specialization": 774.4333333333333,
+        "victory": 850.9666666666667
+      }
+    },
+    {
+      "pilot": "storm",
+      "seed": "release-stone",
+      "biome": "verdant",
+      "waves": 16,
+      "victory": false,
+      "seconds": 375,
+      "commands": 922,
+      "milestones": {
+        "upgrade": 1.2333333333333334,
+        "boss": 45.333333333333336
+      }
+    },
+    {
+      "pilot": "war_economy",
+      "seed": "release-cedar",
+      "biome": "verdant",
+      "waves": 15,
+      "victory": false,
+      "seconds": 344.43333333333334,
+      "commands": 850,
+      "milestones": {
+        "upgrade": 11.633333333333333,
+        "boss": 67.33333333333333
+      }
+    },
+    {
+      "pilot": "war_economy",
+      "seed": "release-moon",
+      "biome": "verdant",
+      "waves": 15,
+      "victory": false,
+      "seconds": 347.3,
+      "commands": 845,
+      "milestones": {
+        "upgrade": 11.633333333333333,
+        "boss": 60.93333333333333
+      }
+    },
+    {
+      "pilot": "war_economy",
+      "seed": "release-amber",
+      "biome": "verdant",
+      "waves": 15,
+      "victory": false,
+      "seconds": 344.3666666666667,
+      "commands": 842,
+      "milestones": {
+        "upgrade": 11.233333333333333,
+        "boss": 58.13333333333333
+      }
+    },
+    {
+      "pilot": "war_economy",
+      "seed": "release-river",
+      "biome": "verdant",
+      "waves": 18,
+      "victory": false,
+      "seconds": 515.2333333333333,
+      "commands": 1268,
+      "milestones": {
+        "upgrade": 12.033333333333333,
+        "boss": 59.733333333333334
+      }
+    },
+    {
+      "pilot": "war_economy",
+      "seed": "release-owl",
+      "biome": "verdant",
+      "waves": 19,
+      "victory": false,
+      "seconds": 618.7333333333333,
+      "commands": 1498,
+      "milestones": {
+        "upgrade": 13.233333333333333,
+        "boss": 74.13333333333334
+      }
+    },
+    {
+      "pilot": "war_economy",
+      "seed": "release-stone",
+      "biome": "verdant",
+      "waves": 15,
+      "victory": false,
+      "seconds": 368.43333333333334,
+      "commands": 897,
+      "milestones": {
+        "upgrade": 11.633333333333333,
+        "boss": 54.53333333333333
+      }
+    }
+  ],
+  "maps": [
+    {
+      "biome": "verdant",
+      "seed": 0,
+      "routeCells": 27,
+      "buildable": 311,
+      "nearRoute": 163
+    },
+    {
+      "biome": "verdant",
+      "seed": 1,
+      "routeCells": 30,
+      "buildable": 312,
+      "nearRoute": 166
+    },
+    {
+      "biome": "verdant",
+      "seed": 2,
+      "routeCells": 29,
+      "buildable": 312,
+      "nearRoute": 170
+    },
+    {
+      "biome": "verdant",
+      "seed": 3,
+      "routeCells": 29,
+      "buildable": 316,
+      "nearRoute": 169
+    },
+    {
+      "biome": "verdant",
+      "seed": 4,
+      "routeCells": 30,
+      "buildable": 308,
+      "nearRoute": 167
+    },
+    {
+      "biome": "verdant",
+      "seed": 5,
+      "routeCells": 34,
+      "buildable": 304,
+      "nearRoute": 178
+    },
+    {
+      "biome": "verdant",
+      "seed": 6,
+      "routeCells": 29,
+      "buildable": 307,
+      "nearRoute": 169
+    },
+    {
+      "biome": "verdant",
+      "seed": 7,
+      "routeCells": 31,
+      "buildable": 306,
+      "nearRoute": 171
+    },
+    {
+      "biome": "verdant",
+      "seed": 8,
+      "routeCells": 33,
+      "buildable": 309,
+      "nearRoute": 157
+    },
+    {
+      "biome": "verdant",
+      "seed": 9,
+      "routeCells": 26,
+      "buildable": 319,
+      "nearRoute": 160
+    },
+    {
+      "biome": "verdant",
+      "seed": 10,
+      "routeCells": 26,
+      "buildable": 315,
+      "nearRoute": 158
+    },
+    {
+      "biome": "verdant",
+      "seed": 11,
+      "routeCells": 30,
+      "buildable": 314,
+      "nearRoute": 172
+    },
+    {
+      "biome": "verdant",
+      "seed": 12,
+      "routeCells": 26,
+      "buildable": 308,
+      "nearRoute": 155
+    },
+    {
+      "biome": "verdant",
+      "seed": 13,
+      "routeCells": 31,
+      "buildable": 302,
+      "nearRoute": 171
+    },
+    {
+      "biome": "verdant",
+      "seed": 14,
+      "routeCells": 35,
+      "buildable": 297,
+      "nearRoute": 179
+    },
+    {
+      "biome": "verdant",
+      "seed": 15,
+      "routeCells": 27,
+      "buildable": 314,
+      "nearRoute": 163
+    },
+    {
+      "biome": "verdant",
+      "seed": 16,
+      "routeCells": 33,
+      "buildable": 302,
+      "nearRoute": 175
+    },
+    {
+      "biome": "verdant",
+      "seed": 17,
+      "routeCells": 28,
+      "buildable": 308,
+      "nearRoute": 168
+    },
+    {
+      "biome": "verdant",
+      "seed": 18,
+      "routeCells": 26,
+      "buildable": 310,
+      "nearRoute": 164
+    },
+    {
+      "biome": "verdant",
+      "seed": 19,
+      "routeCells": 28,
+      "buildable": 314,
+      "nearRoute": 163
+    },
+    {
+      "biome": "verdant",
+      "seed": 20,
+      "routeCells": 27,
+      "buildable": 312,
+      "nearRoute": 161
+    },
+    {
+      "biome": "verdant",
+      "seed": 21,
+      "routeCells": 27,
+      "buildable": 306,
+      "nearRoute": 159
+    },
+    {
+      "biome": "verdant",
+      "seed": 22,
+      "routeCells": 34,
+      "buildable": 304,
+      "nearRoute": 181
+    },
+    {
+      "biome": "verdant",
+      "seed": 23,
+      "routeCells": 28,
+      "buildable": 316,
+      "nearRoute": 171
+    },
+    {
+      "biome": "verdant",
+      "seed": 24,
+      "routeCells": 25,
+      "buildable": 311,
+      "nearRoute": 159
+    },
+    {
+      "biome": "verdant",
+      "seed": 25,
+      "routeCells": 25,
+      "buildable": 308,
+      "nearRoute": 161
+    },
+    {
+      "biome": "verdant",
+      "seed": 26,
+      "routeCells": 29,
+      "buildable": 302,
+      "nearRoute": 159
+    },
+    {
+      "biome": "verdant",
+      "seed": 27,
+      "routeCells": 33,
+      "buildable": 299,
+      "nearRoute": 178
+    },
+    {
+      "biome": "verdant",
+      "seed": 28,
+      "routeCells": 33,
+      "buildable": 307,
+      "nearRoute": 180
+    },
+    {
+      "biome": "verdant",
+      "seed": 29,
+      "routeCells": 27,
+      "buildable": 317,
+      "nearRoute": 167
+    },
+    {
+      "biome": "verdant",
+      "seed": 30,
+      "routeCells": 29,
+      "buildable": 308,
+      "nearRoute": 162
+    },
+    {
+      "biome": "verdant",
+      "seed": 31,
+      "routeCells": 30,
+      "buildable": 306,
+      "nearRoute": 162
+    },
+    {
+      "biome": "verdant",
+      "seed": 32,
+      "routeCells": 32,
+      "buildable": 299,
+      "nearRoute": 169
+    },
+    {
+      "biome": "verdant",
+      "seed": 33,
+      "routeCells": 31,
+      "buildable": 304,
+      "nearRoute": 182
+    },
+    {
+      "biome": "verdant",
+      "seed": 34,
+      "routeCells": 27,
+      "buildable": 304,
+      "nearRoute": 158
+    },
+    {
+      "biome": "verdant",
+      "seed": 35,
+      "routeCells": 30,
+      "buildable": 304,
+      "nearRoute": 174
+    },
+    {
+      "biome": "verdant",
+      "seed": 36,
+      "routeCells": 29,
+      "buildable": 316,
+      "nearRoute": 171
+    },
+    {
+      "biome": "verdant",
+      "seed": 37,
+      "routeCells": 29,
+      "buildable": 311,
+      "nearRoute": 166
+    },
+    {
+      "biome": "verdant",
+      "seed": 38,
+      "routeCells": 30,
+      "buildable": 308,
+      "nearRoute": 174
+    },
+    {
+      "biome": "verdant",
+      "seed": 39,
+      "routeCells": 32,
+      "buildable": 303,
+      "nearRoute": 167
+    },
+    {
+      "biome": "frostfen",
+      "seed": 0,
+      "routeCells": 27,
+      "buildable": 303,
+      "nearRoute": 168
+    },
+    {
+      "biome": "frostfen",
+      "seed": 1,
+      "routeCells": 30,
+      "buildable": 296,
+      "nearRoute": 162
+    },
+    {
+      "biome": "frostfen",
+      "seed": 2,
+      "routeCells": 28,
+      "buildable": 311,
+      "nearRoute": 162
+    },
+    {
+      "biome": "frostfen",
+      "seed": 3,
+      "routeCells": 30,
+      "buildable": 296,
+      "nearRoute": 155
+    },
+    {
+      "biome": "frostfen",
+      "seed": 4,
+      "routeCells": 32,
+      "buildable": 298,
+      "nearRoute": 166
+    },
+    {
+      "biome": "frostfen",
+      "seed": 5,
+      "routeCells": 31,
+      "buildable": 297,
+      "nearRoute": 165
+    },
+    {
+      "biome": "frostfen",
+      "seed": 6,
+      "routeCells": 27,
+      "buildable": 288,
+      "nearRoute": 158
+    },
+    {
+      "biome": "frostfen",
+      "seed": 7,
+      "routeCells": 29,
+      "buildable": 291,
+      "nearRoute": 150
+    },
+    {
+      "biome": "frostfen",
+      "seed": 8,
+      "routeCells": 26,
+      "buildable": 305,
+      "nearRoute": 150
+    },
+    {
+      "biome": "frostfen",
+      "seed": 9,
+      "routeCells": 27,
+      "buildable": 297,
+      "nearRoute": 157
+    },
+    {
+      "biome": "frostfen",
+      "seed": 10,
+      "routeCells": 26,
+      "buildable": 290,
+      "nearRoute": 145
+    },
+    {
+      "biome": "frostfen",
+      "seed": 11,
+      "routeCells": 29,
+      "buildable": 300,
+      "nearRoute": 160
+    },
+    {
+      "biome": "frostfen",
+      "seed": 12,
+      "routeCells": 25,
+      "buildable": 298,
+      "nearRoute": 154
+    },
+    {
+      "biome": "frostfen",
+      "seed": 13,
+      "routeCells": 34,
+      "buildable": 285,
+      "nearRoute": 131
+    },
+    {
+      "biome": "frostfen",
+      "seed": 14,
+      "routeCells": 32,
+      "buildable": 289,
+      "nearRoute": 167
+    },
+    {
+      "biome": "frostfen",
+      "seed": 15,
+      "routeCells": 31,
+      "buildable": 297,
+      "nearRoute": 155
+    },
+    {
+      "biome": "frostfen",
+      "seed": 16,
+      "routeCells": 32,
+      "buildable": 295,
+      "nearRoute": 160
+    },
+    {
+      "biome": "frostfen",
+      "seed": 17,
+      "routeCells": 29,
+      "buildable": 299,
+      "nearRoute": 159
+    },
+    {
+      "biome": "frostfen",
+      "seed": 18,
+      "routeCells": 27,
+      "buildable": 291,
+      "nearRoute": 143
+    },
+    {
+      "biome": "frostfen",
+      "seed": 19,
+      "routeCells": 28,
+      "buildable": 306,
+      "nearRoute": 164
+    },
+    {
+      "biome": "frostfen",
+      "seed": 20,
+      "routeCells": 30,
+      "buildable": 303,
+      "nearRoute": 165
+    },
+    {
+      "biome": "frostfen",
+      "seed": 21,
+      "routeCells": 28,
+      "buildable": 289,
+      "nearRoute": 150
+    },
+    {
+      "biome": "frostfen",
+      "seed": 22,
+      "routeCells": 34,
+      "buildable": 293,
+      "nearRoute": 186
+    },
+    {
+      "biome": "frostfen",
+      "seed": 23,
+      "routeCells": 28,
+      "buildable": 298,
+      "nearRoute": 150
+    },
+    {
+      "biome": "frostfen",
+      "seed": 24,
+      "routeCells": 25,
+      "buildable": 291,
+      "nearRoute": 144
+    },
+    {
+      "biome": "frostfen",
+      "seed": 25,
+      "routeCells": 25,
+      "buildable": 293,
+      "nearRoute": 141
+    },
+    {
+      "biome": "frostfen",
+      "seed": 26,
+      "routeCells": 25,
+      "buildable": 292,
+      "nearRoute": 153
+    },
+    {
+      "biome": "frostfen",
+      "seed": 27,
+      "routeCells": 32,
+      "buildable": 291,
+      "nearRoute": 165
+    },
+    {
+      "biome": "frostfen",
+      "seed": 28,
+      "routeCells": 27,
+      "buildable": 293,
+      "nearRoute": 153
+    },
+    {
+      "biome": "frostfen",
+      "seed": 29,
+      "routeCells": 25,
+      "buildable": 308,
+      "nearRoute": 163
+    },
+    {
+      "biome": "frostfen",
+      "seed": 30,
+      "routeCells": 25,
+      "buildable": 307,
+      "nearRoute": 156
+    },
+    {
+      "biome": "frostfen",
+      "seed": 31,
+      "routeCells": 30,
+      "buildable": 300,
+      "nearRoute": 165
+    },
+    {
+      "biome": "frostfen",
+      "seed": 32,
+      "routeCells": 27,
+      "buildable": 302,
+      "nearRoute": 159
+    },
+    {
+      "biome": "frostfen",
+      "seed": 33,
+      "routeCells": 30,
+      "buildable": 295,
+      "nearRoute": 150
+    },
+    {
+      "biome": "frostfen",
+      "seed": 34,
+      "routeCells": 27,
+      "buildable": 296,
+      "nearRoute": 155
+    },
+    {
+      "biome": "frostfen",
+      "seed": 35,
+      "routeCells": 29,
+      "buildable": 302,
+      "nearRoute": 164
+    },
+    {
+      "biome": "frostfen",
+      "seed": 36,
+      "routeCells": 28,
+      "buildable": 300,
+      "nearRoute": 157
+    },
+    {
+      "biome": "frostfen",
+      "seed": 37,
+      "routeCells": 29,
+      "buildable": 300,
+      "nearRoute": 164
+    },
+    {
+      "biome": "frostfen",
+      "seed": 38,
+      "routeCells": 35,
+      "buildable": 303,
+      "nearRoute": 185
+    },
+    {
+      "biome": "frostfen",
+      "seed": 39,
+      "routeCells": 33,
+      "buildable": 289,
+      "nearRoute": 168
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 0,
+      "routeCells": 25,
+      "buildable": 319,
+      "nearRoute": 159
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 1,
+      "routeCells": 33,
+      "buildable": 310,
+      "nearRoute": 178
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 2,
+      "routeCells": 29,
+      "buildable": 311,
+      "nearRoute": 167
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 3,
+      "routeCells": 33,
+      "buildable": 316,
+      "nearRoute": 177
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 4,
+      "routeCells": 32,
+      "buildable": 300,
+      "nearRoute": 169
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 5,
+      "routeCells": 30,
+      "buildable": 301,
+      "nearRoute": 163
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 6,
+      "routeCells": 36,
+      "buildable": 298,
+      "nearRoute": 151
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 7,
+      "routeCells": 28,
+      "buildable": 303,
+      "nearRoute": 165
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 8,
+      "routeCells": 31,
+      "buildable": 315,
+      "nearRoute": 175
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 9,
+      "routeCells": 24,
+      "buildable": 316,
+      "nearRoute": 166
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 10,
+      "routeCells": 25,
+      "buildable": 315,
+      "nearRoute": 156
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 11,
+      "routeCells": 30,
+      "buildable": 316,
+      "nearRoute": 172
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 12,
+      "routeCells": 24,
+      "buildable": 309,
+      "nearRoute": 159
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 13,
+      "routeCells": 33,
+      "buildable": 312,
+      "nearRoute": 180
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 14,
+      "routeCells": 31,
+      "buildable": 312,
+      "nearRoute": 168
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 15,
+      "routeCells": 29,
+      "buildable": 315,
+      "nearRoute": 178
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 16,
+      "routeCells": 30,
+      "buildable": 309,
+      "nearRoute": 174
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 17,
+      "routeCells": 29,
+      "buildable": 319,
+      "nearRoute": 174
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 18,
+      "routeCells": 25,
+      "buildable": 318,
+      "nearRoute": 162
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 19,
+      "routeCells": 29,
+      "buildable": 314,
+      "nearRoute": 170
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 20,
+      "routeCells": 29,
+      "buildable": 310,
+      "nearRoute": 161
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 21,
+      "routeCells": 26,
+      "buildable": 316,
+      "nearRoute": 162
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 22,
+      "routeCells": 32,
+      "buildable": 307,
+      "nearRoute": 177
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 23,
+      "routeCells": 29,
+      "buildable": 310,
+      "nearRoute": 165
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 24,
+      "routeCells": 25,
+      "buildable": 319,
+      "nearRoute": 163
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 25,
+      "routeCells": 25,
+      "buildable": 316,
+      "nearRoute": 162
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 26,
+      "routeCells": 24,
+      "buildable": 314,
+      "nearRoute": 161
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 27,
+      "routeCells": 30,
+      "buildable": 308,
+      "nearRoute": 171
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 28,
+      "routeCells": 37,
+      "buildable": 308,
+      "nearRoute": 167
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 29,
+      "routeCells": 27,
+      "buildable": 311,
+      "nearRoute": 162
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 30,
+      "routeCells": 28,
+      "buildable": 318,
+      "nearRoute": 164
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 31,
+      "routeCells": 28,
+      "buildable": 315,
+      "nearRoute": 174
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 32,
+      "routeCells": 35,
+      "buildable": 303,
+      "nearRoute": 190
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 33,
+      "routeCells": 27,
+      "buildable": 322,
+      "nearRoute": 165
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 34,
+      "routeCells": 27,
+      "buildable": 311,
+      "nearRoute": 158
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 35,
+      "routeCells": 30,
+      "buildable": 305,
+      "nearRoute": 162
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 36,
+      "routeCells": 28,
+      "buildable": 315,
+      "nearRoute": 163
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 37,
+      "routeCells": 31,
+      "buildable": 307,
+      "nearRoute": 169
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 38,
+      "routeCells": 30,
+      "buildable": 303,
+      "nearRoute": 165
+    },
+    {
+      "biome": "emberwaste",
+      "seed": 39,
+      "routeCells": 31,
+      "buildable": 299,
+      "nearRoute": 158
+    },
+    {
+      "biome": "highlands",
+      "seed": 0,
+      "routeCells": 28,
+      "buildable": 320,
+      "nearRoute": 165
+    },
+    {
+      "biome": "highlands",
+      "seed": 1,
+      "routeCells": 31,
+      "buildable": 318,
+      "nearRoute": 175
+    },
+    {
+      "biome": "highlands",
+      "seed": 2,
+      "routeCells": 32,
+      "buildable": 321,
+      "nearRoute": 154
+    },
+    {
+      "biome": "highlands",
+      "seed": 3,
+      "routeCells": 35,
+      "buildable": 323,
+      "nearRoute": 198
+    },
+    {
+      "biome": "highlands",
+      "seed": 4,
+      "routeCells": 30,
+      "buildable": 311,
+      "nearRoute": 168
+    },
+    {
+      "biome": "highlands",
+      "seed": 5,
+      "routeCells": 33,
+      "buildable": 315,
+      "nearRoute": 185
+    },
+    {
+      "biome": "highlands",
+      "seed": 6,
+      "routeCells": 31,
+      "buildable": 316,
+      "nearRoute": 177
+    },
+    {
+      "biome": "highlands",
+      "seed": 7,
+      "routeCells": 36,
+      "buildable": 312,
+      "nearRoute": 197
+    },
+    {
+      "biome": "highlands",
+      "seed": 8,
+      "routeCells": 31,
+      "buildable": 329,
+      "nearRoute": 190
+    },
+    {
+      "biome": "highlands",
+      "seed": 9,
+      "routeCells": 26,
+      "buildable": 321,
+      "nearRoute": 162
+    },
+    {
+      "biome": "highlands",
+      "seed": 10,
+      "routeCells": 27,
+      "buildable": 323,
+      "nearRoute": 165
+    },
+    {
+      "biome": "highlands",
+      "seed": 11,
+      "routeCells": 34,
+      "buildable": 320,
+      "nearRoute": 151
+    },
+    {
+      "biome": "highlands",
+      "seed": 12,
+      "routeCells": 28,
+      "buildable": 318,
+      "nearRoute": 169
+    },
+    {
+      "biome": "highlands",
+      "seed": 13,
+      "routeCells": 34,
+      "buildable": 312,
+      "nearRoute": 177
+    },
+    {
+      "biome": "highlands",
+      "seed": 14,
+      "routeCells": 28,
+      "buildable": 318,
+      "nearRoute": 171
+    },
+    {
+      "biome": "highlands",
+      "seed": 15,
+      "routeCells": 29,
+      "buildable": 321,
+      "nearRoute": 171
+    },
+    {
+      "biome": "highlands",
+      "seed": 16,
+      "routeCells": 31,
+      "buildable": 314,
+      "nearRoute": 177
+    },
+    {
+      "biome": "highlands",
+      "seed": 17,
+      "routeCells": 29,
+      "buildable": 327,
+      "nearRoute": 176
+    },
+    {
+      "biome": "highlands",
+      "seed": 18,
+      "routeCells": 26,
+      "buildable": 321,
+      "nearRoute": 162
+    },
+    {
+      "biome": "highlands",
+      "seed": 19,
+      "routeCells": 29,
+      "buildable": 326,
+      "nearRoute": 175
+    },
+    {
+      "biome": "highlands",
+      "seed": 20,
+      "routeCells": 32,
+      "buildable": 326,
+      "nearRoute": 172
+    },
+    {
+      "biome": "highlands",
+      "seed": 21,
+      "routeCells": 26,
+      "buildable": 317,
+      "nearRoute": 163
+    },
+    {
+      "biome": "highlands",
+      "seed": 22,
+      "routeCells": 33,
+      "buildable": 312,
+      "nearRoute": 186
+    },
+    {
+      "biome": "highlands",
+      "seed": 23,
+      "routeCells": 29,
+      "buildable": 327,
+      "nearRoute": 181
+    },
+    {
+      "biome": "highlands",
+      "seed": 24,
+      "routeCells": 27,
+      "buildable": 322,
+      "nearRoute": 168
+    },
+    {
+      "biome": "highlands",
+      "seed": 25,
+      "routeCells": 29,
+      "buildable": 322,
+      "nearRoute": 171
+    },
+    {
+      "biome": "highlands",
+      "seed": 26,
+      "routeCells": 27,
+      "buildable": 324,
+      "nearRoute": 168
+    },
+    {
+      "biome": "highlands",
+      "seed": 27,
+      "routeCells": 32,
+      "buildable": 317,
+      "nearRoute": 184
+    },
+    {
+      "biome": "highlands",
+      "seed": 28,
+      "routeCells": 32,
+      "buildable": 316,
+      "nearRoute": 182
+    },
+    {
+      "biome": "highlands",
+      "seed": 29,
+      "routeCells": 24,
+      "buildable": 320,
+      "nearRoute": 160
+    },
+    {
+      "biome": "highlands",
+      "seed": 30,
+      "routeCells": 24,
+      "buildable": 324,
+      "nearRoute": 162
+    },
+    {
+      "biome": "highlands",
+      "seed": 31,
+      "routeCells": 32,
+      "buildable": 325,
+      "nearRoute": 179
+    },
+    {
+      "biome": "highlands",
+      "seed": 32,
+      "routeCells": 37,
+      "buildable": 311,
+      "nearRoute": 168
+    },
+    {
+      "biome": "highlands",
+      "seed": 33,
+      "routeCells": 29,
+      "buildable": 325,
+      "nearRoute": 177
+    },
+    {
+      "biome": "highlands",
+      "seed": 34,
+      "routeCells": 25,
+      "buildable": 320,
+      "nearRoute": 166
+    },
+    {
+      "biome": "highlands",
+      "seed": 35,
+      "routeCells": 33,
+      "buildable": 314,
+      "nearRoute": 191
+    },
+    {
+      "biome": "highlands",
+      "seed": 36,
+      "routeCells": 29,
+      "buildable": 324,
+      "nearRoute": 168
+    },
+    {
+      "biome": "highlands",
+      "seed": 37,
+      "routeCells": 27,
+      "buildable": 317,
+      "nearRoute": 166
+    },
+    {
+      "biome": "highlands",
+      "seed": 38,
+      "routeCells": 32,
+      "buildable": 315,
+      "nearRoute": 176
+    },
+    {
+      "biome": "highlands",
+      "seed": 39,
+      "routeCells": 36,
+      "buildable": 314,
+      "nearRoute": 156
+    }
+  ]
+}

@@ -8,6 +8,11 @@ power. Each run reaches further than the last. Failure *is* the progression loop
 This document is the blueprint: game design, engine architecture, the deterministic
 test harness that everything hangs off of, the UI layer, tooling/CI, and milestones.
 
+The September release and its measured limits are tracked in
+[roadmap-implementation.md](docs/roadmap-implementation.md). Historical balance
+tables below describe their original tuning revision; use current test envelopes
+and the release profile for current measurements.
+
 > **Shipped-systems index (kept current).** The contract below described the v1
 > plan; everything in it shipped, and these systems shipped on top of it, each
 > honoring the same determinism rules:
@@ -27,18 +32,20 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 >   interest, crit auras).
 > - **Boss encounters**: carapace break-windows, mid-life broods, gale surges,
 >   endless-tier phasing (Veilwarden) and horde-mending (Blightmother) — each
->   with explicit counterplay; every 10th wave, 6-boss cycle (Zephyrhost's air armada at 60).
+>   with explicit counterplay; guardians at 6/12/18, Hollow Sovereign at 24,
+>   then the endless roster every ten waves.
 > - **The Crucible**: post-victory escalation — each cycle victory hardens the
 >   next run (+10% HP) and sweetens it (+15% sparks, +1 ember at ascension);
 >   rank milestones add NAMED tiers (Seething/Ironbound/Unrelenting texture).
 > - **Replays** (`session.replaySession()`): determinism as a feature — watch
->   your last run, paste anyone's v2 replay JSON, or open a ?replay= link;
->   spectator sessions never touch meta or saves.
+>   your last run, import compatible v3/rules-versioned replay JSON, or open a ?replay= link;
+>   spectator sessions never touch meta or saves. Original starts survive reloads;
+>   wave checkpoints and seeking support review.
 > - **The Codex** (`src/ui/Codex.tsx`): in-game reference rendered from the same
 >   data objects the engine reads; quotes EFFECTIVE numbers via engine helpers.
 > - **Generative score** (`src/ui/music.ts`): biome-keyed two-progression
 >   32-bar form, intensity- and event-driven (boss vamps, defeat collapse,
->   victory bloom), zero assets, UI-layer only; tonal SFX quantize to the
+>   victory bloom), a recurring authored Spire motif, UI-layer only; tonal SFX quantize to the
 >   score's live key (`src/ui/tonality.ts`).
 > - **Run cards + endless milestones**: shareable canvas cards (damage profile
 >   + relic loadout) with ?seed= challenge links (biome + trials ride along);
@@ -59,17 +66,17 @@ test harness that everything hangs off of, the UI layer, tooling/CI, and milesto
 >   that make 1× worth playing instead of a 10× chore — veterancy stars,
 >   physical coin payouts, the kill-streak combo (reward is TEMPO — ability
 >   haste at 25+ — never gold, by hard-won lesson), the overcharge tap
->   (next shot ×2, attention as the cost), wave boons (two single-wave
+>   (next shot ×2.5, three shared command charges; one recharges every 6s), wave boons (two single-wave
 >   blessings every build phase, never gating, own RNG stream), execute
 >   windows (click the gold-ringed wounded for bonus gold, one 2s blade),
->   and the steerable Spire beam (hold B; heat rhythm, armor/shield
+>   and the steerable Spire beam (toggle B by default, optional hold/remapping; heat rhythm, armor/shield
 >   counterplay). Every verb is a serializable command with a fuzzer gene
 >   probing its attention-free ceiling.
 > - **Physical gold**: kill bounties drop as coin ENTITIES that live 20s
 >   (flashing near expiry) — sweep the cursor/finger to collect within a
 >   radius; Collector's Reach widens it, Spire Magnet reels coins home
->   visibly. NO auto-collection, ever: leftovers persist through the build
->   phase until collected or expired — collect-or-lose is the whole deal.
+>   visibly. Leftovers persist through the build
+>   phase with expiry frozen until combat resumes; nearby payouts merge.
 >   Wave-clear income and mints stay direct.
 > - **The consolidation**: the mid/heavy roster is fewer/tankier/slower/
 >   richer bodies (per-cost bounty held, per-cost HP slightly below the old
@@ -157,8 +164,8 @@ choose loadout → BUILD phase (place towers, no timer)
   max HP, unlock tower types / ability slots / relic rarities, gold income %, tower
   damage %, crit chance %, Spark gain % (the compounding incremental node),
   starting-wave skip.
-- **Ascension (shipped):** after any victory, the Spire Tree (and banked Sparks,
-  and unlocks) can be burned for **Embers** — 1 + 1 per victory that cycle. The
+- **Ascension (shipped):** after any victory, stat upgrades and banked Sparks
+  can be burned (tower and ability unlocks remain) for **Embers** — 1 + 1 per victory that cycle. The
   Ember Tree (damage, Spire HP, Spark gain, a banked-Spark head start, gold,
   ability cooldowns) survives every ascension and compounds with the rebuilt
   Spire Tree.
