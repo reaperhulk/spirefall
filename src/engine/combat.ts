@@ -1,3 +1,4 @@
+import { doctrineDamage } from '../data/doctrines'
 import type { MapDef } from '../data/maps'
 import {
   ABILITIES,
@@ -81,7 +82,7 @@ import { scaledHp } from './waves'
 // cloned — mutation never escapes the step boundary.
 
 export function effectiveDamagePct(state: RunState, tower: Tower['type']): number {
-  let pct = 100 + state.mods.damagePct
+  let pct = 100 + state.mods.damagePct + doctrineDamage(state.doctrine, tower)
   if (state.activeBoon === 'sharpened') pct += BOON_DAMAGE_PCT // wave boon, dies with the wave
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += PIERCING_ARROWS_PCT
   if (state.relics.includes('glass_cannon')) pct += GLASS_CANNON_PCT
@@ -106,6 +107,8 @@ export function damageBreakdown(
 ): { base: number; parts: DamagePart[]; totalPct: number; specPct: number; effective: number } {
   const base = towerTier(tower.type, tower.tier).damage
   const parts: DamagePart[] = []
+  const doctrinePct = doctrineDamage(state.doctrine, tower.type)
+  if (doctrinePct) parts.push({ source: `${state.doctrine} doctrine`, pct: doctrinePct })
   if (state.activeBoon === 'sharpened') parts.push({ source: 'Sharpened Steel (boon, this wave)', pct: BOON_DAMAGE_PCT })
   if (state.mods.damagePct > 0) parts.push({ source: 'Honed Arsenal (Spire Tree)', pct: state.mods.damagePct })
   else if (state.mods.damagePct < 0) parts.push({ source: 'Dampening Field (cataclysm)', pct: state.mods.damagePct })
@@ -468,6 +471,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // bounce can bounce off a shield the primary punched through.
     const hit = (enemy: Enemy, scalePct = 100): void => {
       let bonus = bonusPctVs(tower.type, enemy) + (shatter && enemy.slowTicks > 0 ? SHATTER_BONUS_PCT : 0)
+      if (state.doctrine === 'shatter' && enemy.slowTicks > 0) bonus += 20
       if (stormCoils) bonus += STORM_COILS_PCT_PER_STACK * enemy.overcharge
       let preCrit = bonus > 0 ? Math.floor((baseDamage * (100 + bonus)) / 100) : baseDamage
       if (scalePct !== 100) preCrit = Math.floor((preCrit * scalePct) / 100)
@@ -1000,6 +1004,8 @@ export function tickCoins(state: RunState, map: MapDef, events: GameEvent[]): vo
   const autoSq = state.mods.autoCollectRadius * state.mods.autoCollectRadius
   const kept: Coin[] = []
   for (const coin of state.coins) {
+    // Planning never costs a bounty. Collection still works.
+    if (state.phase === 'build' && coin.bornTick < state.tick) coin.bornTick += 1
     // Manual collection wins ties: the hand is faster than the magnet.
     if (state.collectAt !== null && distSq(coin.pos, state.collectAt) <= collectSq) {
       state.gold += coin.gold
@@ -1071,7 +1077,9 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     // or lose it — the floor of the economy (wave clears, mints) stays
     // direct; the bounty layer rewards presence.
     if (bounty > 0) {
-      state.coins.push({ id: state.nextEntityId, pos: { ...e.pos }, gold: bounty, bornTick: state.tick, pulling: false })
+      const pile = state.coins.find(c => c.bornTick === state.tick && !c.pulling && distSq(c.pos, e.pos) <= 350 * 350)
+      if (pile) pile.gold += bounty
+      else state.coins.push({ id: state.nextEntityId, pos: { ...e.pos }, gold: bounty, bornTick: state.tick, pulling: false })
       state.nextEntityId += 1
     }
     state.kills += 1

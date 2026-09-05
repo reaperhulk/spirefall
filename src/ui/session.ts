@@ -102,7 +102,7 @@ export class GameSession {
   }
 
   recording(): Recording {
-    return { v: 3, rules: RULES_VERSION, initial: this.initial, log: this.commandLog, endTick: this.state.tick }
+    return { v: 3, seed: this.state.seed, rules: RULES_VERSION, initial: this.initial, log: this.commandLog, endTick: this.state.tick }
   }
 
   get terminal(): boolean {

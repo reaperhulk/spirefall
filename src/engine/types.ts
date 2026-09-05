@@ -1,3 +1,4 @@
+import type { DoctrineId } from '../data/doctrines'
 import type { BiomeId } from '../data/biomes'
 import type { BoonId, TowerSpecId } from '../data/content'
 import type { Rng } from './rng'
@@ -193,6 +194,9 @@ export interface RunState {
   cataclysmOffer: CataclysmId[] | null // endless: two dooms offered, pick one (gates start_wave)
   boonOffer: BoonId[] | null // build phase: two single-wave perks; skipping is free
   activeBoon: BoonId | null // the perk blessing the current wave (cleared at wave end)
+  doctrine?: DoctrineId | null
+  commandCharges?: number
+  commandRecharge?: number
   executeCd: number // global execute-window cooldown (ticks, wave-time only)
   coins: Coin[] // dropped bounty on the field, ascending id order
   collectAt: Vec | null // the player's collector (cursor/finger); null = away
@@ -221,6 +225,7 @@ export interface RunState {
 }
 
 export type Command =
+  | { type: 'choose_doctrine'; doctrine: DoctrineId }
   | { type: 'start_wave' }
   | { type: 'abandon_run' }
   | { type: 'repair_spire' }
@@ -240,6 +245,7 @@ export type Command =
   | { type: 'choose_cataclysm'; cataclysm: CataclysmId }
 
 export type GameEvent =
+  | { type: 'doctrine_chosen'; doctrine: DoctrineId }
   | { type: 'wave_started'; wave: number; spawnCount: number; affix: AffixId | null }
   | { type: 'enemy_spawned'; id: number; enemy: EnemyType }
   | { type: 'enemy_killed'; id: number; enemy: EnemyType; at: Vec; bounty: number; lucky: boolean }

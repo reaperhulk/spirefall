@@ -1,3 +1,4 @@
+import { COMMAND_CHARGES } from '../data/doctrines'
 import {
   BASE_WAVE_BUDGET,
   COLLECT_RADIUS_BASE,
@@ -308,6 +309,9 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     // opening bell. Skipping is always free; start_wave never gates on it.
     boonOffer: firstBoons.offer,
     activeBoon: null,
+    doctrine: null,
+    commandCharges: COMMAND_CHARGES,
+    commandRecharge: 0,
     executeCd: 0,
     coins: [],
     collectAt: null,

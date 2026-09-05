@@ -16,6 +16,8 @@ export interface SaveData {
 
 const KEY = 'spirefall-save'
 const BACKUP = `${KEY}-backup`
+let reloadPending = false
+export const saveReloadPending = () => reloadPending
 let lastGoodRaw: string | null = null
 let status = ''
 const listeners = new Set<() => void>()
@@ -64,6 +66,7 @@ export function persistSave(data: SaveData): boolean {
   }
 }
 export function clearSave(): void {
+  reloadPending = true
   try { localStorage.removeItem(KEY); localStorage.removeItem(BACKUP); lastGoodRaw = null } catch { /* blocked storage */ }
 }
 
@@ -110,7 +113,9 @@ export async function importSave(code: string): Promise<boolean> {
     const parsed = JSON.parse(raw) as { version?: number }
     const data = migrate(parsed)
     if (!data) return false
-    return persistSave(data)
+    const saved = persistSave(data)
+    if (saved) reloadPending = true
+    return saved
   } catch {
     return false
   }
@@ -200,6 +205,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.run.boonOffer ??= null
         data.run.activeBoon ??= null
         data.run.rng.boons ??= deriveStream(data.run.seed, 'boons')
+        data.run.doctrine ??= null
+        data.run.commandCharges ??= 3
+        data.run.commandRecharge ??= 0
         data.run.executeCd ??= 0
         data.run.beamTarget ??= null
         data.run.beamHeat ??= 0

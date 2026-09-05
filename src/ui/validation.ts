@@ -1,3 +1,4 @@
+import { DOCTRINES } from '../data/doctrines'
 import { ABILITIES, BOONS, CATACLYSMS, ENEMIES, RELICS, TOWERS, TOWER_SPECS } from '../data/content'
 import { BIOME_IDS } from '../data/biomes'
 import { assertInvariants } from '../engine/invariants'
@@ -6,8 +7,8 @@ import type { LoggedCommand } from './session'
 import { MAX_TRANSFER_BYTES } from './boundedStream'
 
 // Gameplay rules are part of a recording, separate from the save schema.
-export const RULES_VERSION = 1
-export interface Recording { v: 3; rules: number; initial: RunState; log: LoggedCommand[]; endTick: number }
+export const RULES_VERSION: number = 2
+export interface Recording { seed?: string; v: 3; rules: number; initial: RunState; log: LoggedCommand[]; endTick: number }
 const object = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const nat = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0
 export function finiteTree(value: unknown, depth = 0): boolean {
@@ -37,6 +38,7 @@ function validCommand(value: unknown): value is Command {
   const cell = (v: unknown) => object(v) && nat(v.cx) && nat(v.cy) && v.cx < 24 && v.cy < 14
   const vec = (v: unknown) => v === null || (object(v) && nat(v.x) && nat(v.y) && v.x <= 24000 && v.y <= 14000)
   switch (c.type) {
+    case 'choose_doctrine': return typeof c.doctrine === 'string' && c.doctrine in DOCTRINES
     case 'start_wave': case 'abandon_run': case 'repair_spire': case 'reroll_relic': return true
     case 'place_tower': return typeof c.tower === 'string' && c.tower in TOWERS && cell(c.cell)
     case 'upgrade_tower': case 'sell_tower': case 'overcharge_tower': case 'execute_enemy': return nat(c.id)

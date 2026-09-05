@@ -319,9 +319,12 @@ export const activeBot: Bot = (state) => {
   }
   if (state.phase === 'wave') {
     const acts = waveActions(state)
-    for (const t of state.towers) {
+    let charges = state.commandCharges ?? 3
+    for (const t of [...state.towers].sort((a,b) => towerTier(b.type,b.tier).damage - towerTier(a.type,a.tier).damage || a.id-b.id)) {
+      if (charges <= 0) break
       if (TOWERS[t.type].support || t.overcharged || (t.overchargeCd ?? 0) > 0) continue
       acts.push({ type: 'overcharge_tower', id: t.id })
+      charges -= 1
     }
     if (state.executeCd === 0) {
       const wounded = state.enemies.find(
@@ -353,5 +356,15 @@ export const arrowOnlyBot: Bot = (state) => {
   return []
 }
 
-export const BOTS = { afk: afkBot, greedy: greedyBot, balanced: balancedBot, active: activeBot, arrowOnly: arrowOnlyBot } as const
+// One deliberate action every 400ms. Rotation prevents collector/beam
+// updates from starving abilities; no superhuman all-towers-in-one-tick input.
+export const attentionBot: Bot = (state) => {
+  if (state.tick % 12 !== 0) return []
+  const options = activeBot(state)
+  if (options.length === 0) return []
+  if (state.phase === 'build') return options.slice(0, 1)
+  return [options[Math.floor(state.tick / 12) % options.length]!]
+}
+
+export const BOTS = { afk: afkBot, greedy: greedyBot, balanced: balancedBot, active: activeBot, attention: attentionBot, arrowOnly: arrowOnlyBot } as const
 export type BotName = keyof typeof BOTS

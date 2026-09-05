@@ -487,7 +487,7 @@ export const SPLASH_MIN_PCT = 40
 // cooldown — the cost is your attention. ×2 on a 10s cycle caps the perfect
 // -spam ceiling around +12% for one tower and far less across a board, so
 // the verb rewards presence without becoming the economy.
-export const OVERCHARGE_DAMAGE_PCT = 150 // the armed shot lands at half again
+export const OVERCHARGE_DAMAGE_PCT = 250 // shared charges make each chosen shot consequential
 export const OVERCHARGE_COOLDOWN_TICKS = 450 // 15s per tower, wave-time only
 
 // Combo: unbroken kills build a streak. The reward is TEMPO, not gold —

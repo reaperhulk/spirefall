@@ -123,16 +123,18 @@ describe('physical gold', () => {
     expect(r.events.some((e) => e.type === 'coin_collected')).toBe(false)
   })
 
-  it('coins keep ticking (and can be swept) during the build phase', () => {
+  it('coins can be swept during planning without expiring', () => {
     let s = createRun(createMeta(), 'coin-lab')
     s.coins = [{ id: 1, pos: { ...AT }, gold: 3, bornTick: 0, pulling: false }]
     const gold = s.gold
     s = step(s, [{ type: 'set_collect', at: { ...AT } }]).state
     expect(s.gold).toBe(gold + 3)
-    // And an ignored build-phase coin still ages out.
-    s.coins = [{ id: 2, pos: { x: 0, y: 0 }, gold: 3, bornTick: s.tick - COIN_LIFETIME_TICKS, pulling: false }]
+    // An ignored build-phase coin keeps its remaining lifetime.
+    s.coins = [{ id: 2, pos: { x: 0, y: 0 }, gold: 3, bornTick: s.tick - COIN_LIFETIME_TICKS + 1, pulling: false }]
     s = step(s, [{ type: 'set_collect', at: null }]).state
-    expect(s.coins).toHaveLength(0)
+    for (let i = 0; i < 100; i++) s = step(s, []).state
+    expect(s.coins).toHaveLength(1)
+    expect(s.tick - s.coins[0]!.bornTick).toBe(COIN_LIFETIME_TICKS - 1)
   })
 
   it('Collector’s Reach and Spire Magnet meta levels widen the mods', () => {

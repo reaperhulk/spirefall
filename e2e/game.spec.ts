@@ -598,7 +598,7 @@ test('watch replay: the last run replays deterministically to the same outcome',
   // import and watch it — it must land on the same outcome again.
   await page.getByTestId('copy-replay').click()
   const shared = await page.getByTestId('replay-json').inputValue()
-  expect(JSON.parse(shared).v).toBe(2)
+  expect(JSON.parse(shared).v).toBe(3)
   await page.getByTestId('tab-next').click()
   await page.getByTestId('next-run').click()
   await expect(page.getByTestId('run-over')).not.toBeVisible()
@@ -1269,9 +1269,9 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
   const code = await page.getByTestId('transfer-code').inputValue()
   expect(code.length).toBeGreaterThan(50)
 
-  // Nuke everything, then import the code back.
-  await page.evaluate(() => localStorage.clear())
-  await page.reload()
+  // Use the reset lifecycle so pagehide cannot restore the old run.
+  await page.evaluate(() => window.__harness.reset())
+  await page.waitForLoadState()
   await page.waitForSelector('[data-testid="playfield"]')
   expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(0)
   await page.getByTestId('open-settings').click()

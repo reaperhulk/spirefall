@@ -1,3 +1,4 @@
+import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, DOCTRINES } from '../data/doctrines'
 import {
   ABILITIES,
   specForTower,
@@ -117,6 +118,14 @@ export function step(state: RunState, commands: Command[]): StepResult {
     s.comboTicks -= 1
     if (s.comboTicks === 0) s.combo = 0
   }
+  if (s.phase === 'wave' && (s.commandCharges ?? COMMAND_CHARGES) < COMMAND_CHARGES) {
+    s.commandRecharge = (s.commandRecharge ?? 0) + 1
+    const recovery = Math.max(30, Math.floor(COMMAND_RECHARGE_TICKS * (100 - s.mods.overchargeCdPct) / 100))
+    if (s.commandRecharge >= recovery) {
+      s.commandCharges = (s.commandCharges ?? 0) + 1
+      s.commandRecharge = 0
+    }
+  }
   // The execute blade recovers on wave time, like everything active.
   if (s.phase === 'wave' && s.executeCd > 0) s.executeCd -= 1
   // The beam barrel doesn't care what phase the war is in: build-phase
@@ -150,6 +159,19 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       return
     }
 
+    case 'choose_doctrine': {
+      if (s.phase !== 'build' || s.wave < 2 || s.doctrine) return reject(command, 'choose one doctrine during planning after wave 2', events)
+      if (!(command.doctrine in DOCTRINES)) return reject(command, 'unknown doctrine', events)
+      s.doctrine = command.doctrine
+      if (s.doctrine === 'storm' && !s.availableTowers.includes('tesla')) s.availableTowers.push('tesla')
+      if (s.doctrine === 'war_economy') {
+        s.mods.goldPct += 15
+        s.mods.damagePct -= 5
+        if (!s.availableTowers.includes('mint')) s.availableTowers.push('mint')
+      }
+      events.push({ type: 'doctrine_chosen', doctrine: s.doctrine })
+      return
+    }
     case 'start_wave': {
       if (s.phase !== 'build') return reject(command, `phase is ${s.phase}`, events)
       // The world must settle before the next wave fields under it.
@@ -298,6 +320,8 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       if (TOWERS[tower.type].support) return reject(command, 'support towers cannot overcharge', events)
       if (tower.overcharged) return reject(command, 'already overcharged', events)
       if ((tower.overchargeCd ?? 0) > 0) return reject(command, 'overcharge recharging', events)
+      if ((s.commandCharges ?? COMMAND_CHARGES) <= 0) return reject(command, 'command charges recharging', events)
+      s.commandCharges = (s.commandCharges ?? COMMAND_CHARGES) - 1
       tower.overcharged = true
       events.push({ type: 'tower_overcharged', id: tower.id, cell: tower.cell })
       return

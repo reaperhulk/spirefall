@@ -1,3 +1,4 @@
+import { BuildDoctrine } from './BuildDoctrine'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import {
@@ -16,7 +17,6 @@ import {
   COMBO_HASTE_THRESHOLD,
   EXECUTE_THRESHOLD_PCT,
   COMBO_WINDOW_TICKS,
-  OVERCHARGE_COOLDOWN_TICKS,
   OVERCHARGE_DAMAGE_PCT,
   CRUCIBLE_HP_PCT_PER_RANK,
   CRUCIBLE_SPARK_PCT_PER_RANK,
@@ -60,7 +60,7 @@ import { CataclysmModal, ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal
 import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
 import type { RenderUiState } from './render'
-import { clearSave, loadSave, persistSave, registerRecording, getSaveStatus, subscribeSaveStatus } from './save'
+import { clearSave, loadSave, persistSave, registerRecording, getSaveStatus, subscribeSaveStatus, saveReloadPending } from './save'
 import { useDialogFocus } from './useDialogFocus'
 import { parseRecording } from './validation'
 import { GameSession } from './session'
@@ -171,7 +171,7 @@ export default function App() {
 
   useSyncExternalStore(session.subscribe, session.getVersion)
   useEffect(() => {
-    session.setSuspended(showTree || showSettings || showStats || showCodex || confirm !== null || victoryPrompt)
+    session.setSuspended(showTree || showSettings || showStats || showCodex || confirm !== null)
     return () => { session.setSuspended(false) }
   }, [session, showTree, showSettings, showStats, showCodex, confirm, victoryPrompt])
   const state = session.state
@@ -187,7 +187,7 @@ export default function App() {
   useEffect(() => {
     const checkpoint = () => {
       const live = sessionRef.current
-      if (!live.replaying) persistSave({ version: 1, meta: metaRef.current, run: live.terminal ? null : live.state })
+      if (!live.replaying && !saveReloadPending()) persistSave({ version: 1, meta: metaRef.current, run: live.terminal ? null : live.state })
     }
     const timer = window.setInterval(checkpoint, 5000)
     window.addEventListener('pagehide', checkpoint)
@@ -339,6 +339,8 @@ export default function App() {
     setAbilitySelection(null)
     setSelectedTowerId(null)
     setShowTree(false)
+    beamModeRef.current = false
+    setBeamMode(false)
     persistSave({ version: 1, meta: metaRef.current, run })
   }
 
@@ -439,7 +441,8 @@ export default function App() {
       setAbilitySelection(null)
       return
     }
-    const tower = state.towers.find((t) => sameCell(t.cell, cell))
+    const live = sessionRef.current.state
+    const tower = live.towers.find((t) => sameCell(t.cell, cell))
     if (shopSelection) {
       // Clicking an existing tower while armed inspects it instead of
       // uselessly attempting a placement on an occupied cell.
@@ -460,15 +463,14 @@ export default function App() {
     // Execute window: mid-wave, unarmed, clicking a cell holding a wounded
     // enemy finishes it (the render marks them with a gold ring while the
     // blade is ready). Towers still win the click if one shares the cell.
-    if (!tower && state.phase === 'wave' && state.executeCd === 0) {
-      const wounded = state.enemies
+    if (!tower && live.phase === 'wave' && live.executeCd === 0) {
+      const wounded = live.enemies
         .filter(
           (e) =>
             e.hp > 0 &&
             !e.phased &&
             e.hp * 100 <= e.maxHp * EXECUTE_THRESHOLD_PCT &&
-            Math.floor(e.pos.x / 1000) === cell.cx &&
-            Math.floor(e.pos.y / 1000) === cell.cy,
+            (e.pos.x - (cell.cx * 1000 + 500)) ** 2 + (e.pos.y - (cell.cy * 1000 + 500)) ** 2 <= 1200 ** 2,
         )
         .sort((a, b) => a.hp - b.hp)[0]
       if (wounded) {
@@ -483,11 +485,9 @@ export default function App() {
   // closure would otherwise capture a stale first-render handler.
   const handleCellClickRef = useRef(handleCellClick)
   const toggleBeamRef = useRef(toggleBeam)
-  const keyAimArmedRef = useRef(false)
   useEffect(() => {
     handleCellClickRef.current = handleCellClick
     toggleBeamRef.current = toggleBeam
-    keyAimArmedRef.current = shopSelection !== null || abilitySelection !== null
   })
 
   // Auto-advance: with the toggle on, the build phase sends the next wave
@@ -495,7 +495,7 @@ export default function App() {
   // victory prompt, run over).
   const autoStart = uiSettings.autoStart
   useEffect(() => {
-    if (!autoStart || summary || victoryPrompt) return
+    if (!autoStart || summary || victoryPrompt || showTree || showSettings || showStats || showCodex || confirm) return
     // A pending relic or cataclysm choice pauses the conveyor — firing
     // start_wave into the gate would just spam rejections into the log.
     if (state.phase !== 'build' || state.relicOffer !== null || state.cataclysmOffer !== null) return
@@ -505,7 +505,7 @@ export default function App() {
         sessionRef.current.dispatch({ type: 'start_wave' })
     }, 1200)
     return () => clearTimeout(timer)
-  }, [autoStart, state.phase, state.relicOffer, state.cataclysmOffer, state.wave, summary, victoryPrompt])
+  }, [autoStart, state.phase, state.relicOffer, state.cataclysmOffer, state.wave, summary, victoryPrompt, showTree, showSettings, showStats, showCodex, confirm])
 
   // Keyboard shortcuts.
   useEffect(() => {
@@ -523,11 +523,16 @@ export default function App() {
         setConfirm(null)
         return
       }
-      if (document.querySelector('[aria-modal="true"]')) return
       // Never hijack typing/selects (e.g. the targeting dropdown).
       const t = e.target
       if (t instanceof HTMLSelectElement || t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) return
       if (e.metaKey || e.ctrlKey || e.altKey) return
+      const dialog = [...document.querySelectorAll<HTMLElement>('[aria-modal="true"]')].at(-1)
+      if (dialog) {
+        if (e.key === '?' && summary) setShowSettings(v => !v)
+        else if (e.key.toLowerCase() === 'c' && dialog.getAttribute('aria-label') === 'Codex') setShowCodex(false)
+        return
+      }
       if (e.key === ' ') {
         e.preventDefault()
         const s = sessionRef.current.state
@@ -548,14 +553,13 @@ export default function App() {
       if (e.key === 'Enter') {
         // A focused button's native Enter-click must not double-fire a place.
         if (t instanceof HTMLButtonElement) return
-        if (keyAimArmedRef.current && hoverRef.current) {
+        if (hoverRef.current) {
           e.preventDefault()
           handleCellClickRef.current(hoverRef.current)
         }
         return
       }
       if (e.key.startsWith('Arrow')) {
-        if (!keyAimArmedRef.current) return
         e.preventDefault()
         const deltas: Record<string, [number, number]> = {
           ArrowUp: [0, -1],
@@ -569,9 +573,27 @@ export default function App() {
           cx: Math.max(0, Math.min(MAP_WIDTH - 1, cur.cx + dx)),
           cy: Math.max(0, Math.min(MAP_HEIGHT - 1, cur.cy + dy)),
         }
+        const aim = cellCenter(hoverRef.current)
+        sessionRef.current.dispatch({ type: 'set_collect', at: aim })
+        if (beamModeRef.current) sessionRef.current.dispatch({ type: 'set_beam', target: aim })
         return
       }
       const key = e.key.toLowerCase()
+      const live = sessionRef.current
+      if (key === '[' || key === ']') {
+        e.preventDefault()
+        const targets = live.state.enemies.filter(enemy => enemy.hp > 0 && !enemy.phased)
+        const at = hoverRef.current
+        const index = targets.findIndex(enemy => Math.floor(enemy.pos.x / 1000) === at?.cx && Math.floor(enemy.pos.y / 1000) === at?.cy)
+        const target = targets[(index + (key === ']' ? 1 : targets.length - 1)) % targets.length]
+        if (target) {
+          hoverRef.current = { cx: Math.floor(target.pos.x / 1000), cy: Math.floor(target.pos.y / 1000) }
+          setSrMessage(`${target.type}, ${target.hp} health`)
+        }
+        return
+      }
+      if (key === 'g' && hoverRef.current) { live.dispatch({ type: 'set_collect', at: cellCenter(hoverRef.current) }); return }
+      if (key === 'v' && hoverRef.current) { handleCellClickRef.current(hoverRef.current); return }
       if (key === 'u' || key === 'x') {
         // Upgrade / sell the selected tower.
         const id = selectedTowerIdRef.current
@@ -996,9 +1018,9 @@ export default function App() {
         {srMessage}
       </div>
       {saveStatus && <p role="status" className="save-warning">{saveStatus}</p>}
-      {hint && (
+      {!hintsDismissed && meta.runs === 0 && (
         <div className="hint-banner" data-testid="hint">
-          <span>{hint}</span>
+          <span>{hint ?? 'Sweep gold with your pointer. B toggles the beam; select a tower and press O to spend a command charge.'}</span>
           <button className="panel-close hint-close" aria-label="Dismiss hints" onClick={dismissHints}>
             ✕
           </button>
@@ -1255,13 +1277,13 @@ export default function App() {
               <button
                 className={`ghost-btn overcharge-btn${selectedTower.overcharged ? ' armed' : ''}`}
                 data-testid="overcharge-tower"
-                title={`Supercharge the next shot (×${OVERCHARGE_DAMAGE_PCT / 100}) — free; each tower recharges over ${OVERCHARGE_COOLDOWN_TICKS / 30}s of wave time. The cost is your attention.`}
-                disabled={selectedTower.overcharged === true || (selectedTower.overchargeCd ?? 0) > 0}
+                title={`Spend one shared command charge for a ×${OVERCHARGE_DAMAGE_PCT / 100} shot. Save charges for priority targets.`}
+                disabled={selectedTower.overcharged === true || (selectedTower.overchargeCd ?? 0) > 0 || (state.commandCharges ?? 3) === 0}
                 onClick={() => session.dispatch({ type: 'overcharge_tower', id: selectedTower.id })}
               >
                 ⚡{' '}
                 {selectedTower.overcharged
-                  ? 'Overcharged — next shot ×2'
+                  ? `Overcharged — next shot ×${OVERCHARGE_DAMAGE_PCT / 100}`
                   : (selectedTower.overchargeCd ?? 0) > 0
                     ? `Recharging ${Math.ceil((selectedTower.overchargeCd ?? 0) / 30)}s`
                     : 'Overcharge'}{' '}
@@ -1292,6 +1314,8 @@ export default function App() {
         )}
       </main>
 
+      {!watching && <BuildDoctrine state={state} choose={doctrine => session.dispatch({ type: 'choose_doctrine', doctrine })} />}
+      <p className="command-pool" role="status">Command charges: <strong>{state.commandCharges ?? 3}/3</strong> · select a tower, then O · one charge recovers every {Math.max(1, 6 * (100 - state.mods.overchargeCdPct) / 100)}s of combat</p>
       <footer className="shop">
         <div className="shop-towers">
           {TOWER_KEYS.map((type, i) => {
@@ -1412,7 +1436,7 @@ export default function App() {
                 <strong>+{CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks</strong>. The Crucible deepens with each win.
               </p>
             </div>
-            <button className="primary-btn" data-testid="claim-victory" onClick={() => session.dispatch({ type: 'abandon_run' })}>
+            <button className="primary-btn" data-testid="claim-victory" onClick={() => { setVictoryPrompt(false); session.dispatch({ type: 'abandon_run' }) }}>
               Claim victory & end run
             </button>
             <button className="ghost-btn" data-testid="continue-endless" onClick={() => setVictoryPrompt(false)}>
