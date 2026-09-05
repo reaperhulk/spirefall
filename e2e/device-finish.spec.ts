@@ -26,11 +26,16 @@ test('retina phone resolution follows display size, low quality, and rotation', 
   await page.getByTestId('shop-arrow').tap()
   const cell = await page.evaluate(() => {
     const map=(window.__harness as GameHarness).getMapInfo()
-    return map.buildable.findIndex((yes,i) => yes && !map.path.some(c => c.cy*map.width+c.cx===i))
+    // The landscape canvas is taller than the viewport. Select a central
+    // visible cell, rather than tapping an offscreen top-row coordinate.
+    return map.buildable.map((yes,i) => ({yes,i,d:(i%map.width-map.width/2)**2+(Math.floor(i/map.width)-map.height/2)**2}))
+      .filter(c => c.yes && !map.path.some(p => p.cy*map.width+p.cx===c.i)).sort((a,b) => a.d-b.d)[0]!.i
   })
   await page.getByTestId('playfield').scrollIntoViewIfNeeded()
   const field = (await page.getByTestId('playfield').boundingBox())!
-  await page.touchscreen.tap(field.x+(cell%24+0.5)*field.width/24,field.y+(Math.floor(cell/24)+0.5)*field.height/14)
+  const at = {x:field.x+(cell%24+0.5)*field.width/24,y:field.y+(Math.floor(cell/24)+0.5)*field.height/14}
+  expect(await page.evaluate(at => document.elementFromPoint(at.x,at.y)?.getAttribute('data-testid'),at)).toBe('playfield')
+  await page.touchscreen.tap(at.x,at.y)
   await expect.poll(() => page.evaluate(() => (window.__harness as GameHarness).getState().towers.length)).toBe(1)
   await context.close()
 })
