@@ -157,7 +157,7 @@ export function installHarness(api: HarnessApi): void {
       }
     },
     getPerformance: performanceReport,
-    resetPerformance,
+    resetPerformance: () => { resetPerformance(); api.getSession().resetInputMeasurements() },
     getReplay: () => ({ seed: api.getSession().state.seed, log: [...api.getSession().commandLog] }),
     newRun: api.newRun,
     buyMeta: api.buyMeta,

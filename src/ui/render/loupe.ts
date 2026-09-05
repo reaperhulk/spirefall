@@ -40,7 +40,7 @@ export function renderLoupe(
   aim: TouchAim,
   sourceDpr: number,
 ): void {
-  const dpr = window.devicePixelRatio || 1
+  const dpr = Math.min(2, window.devicePixelRatio || 1)
   const px = Math.round(LOUPE_D * dpr)
   if (loupe.width !== px) {
     loupe.width = px

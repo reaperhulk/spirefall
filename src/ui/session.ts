@@ -1,3 +1,4 @@
+import { graphicsState } from './graphics'
 import { measure } from './performance'
 import { settings } from './settings'
 import { RULES_VERSION, type Recording } from './validation'
@@ -96,7 +97,13 @@ export class GameSession {
   // on attach — run_ended must never fall into that gap.
   private pendingEvents: Array<{ events: GameEvent[]; state: RunState }> = []
   private queue: Command[] = []
-  private queuedAt: number | null = null
+  private queuedAt: number[] = []
+  private renderedInputs: number[] = []
+  resetInputMeasurements(): void { this.queuedAt = []; this.renderedInputs = [] }
+  markRendered(): void {
+    for (const at of this.renderedInputs) measure('inputToRender', performance.now() - at)
+    this.renderedInputs = []
+  }
   private accumulator = 0
   private listeners = new Set<() => void>()
   private lastNotify = 0
@@ -160,7 +167,7 @@ export class GameSession {
 
   dispatch(command: Command): void {
     if (this.replayScript) return // spectators don't get to change history
-    this.queuedAt ??= performance.now()
+    if (this.queuedAt.length < 256) this.queuedAt.push(performance.now())
     this.queue.push(command)
   }
 
@@ -229,7 +236,10 @@ export class GameSession {
         this.scriptIndex += 1
       }
     } else {
-      if (this.queuedAt !== null) { measure('input', performance.now() - this.queuedAt); this.queuedAt = null }
+      for (const at of this.queuedAt) measure('input', performance.now() - at)
+      this.renderedInputs.push(...this.queuedAt)
+      if (this.renderedInputs.length > 256) this.renderedInputs.splice(0,this.renderedInputs.length-256)
+      this.queuedAt = []
       commands = this.queue.splice(0)
       for (const command of commands) this.commandLog.push({ tick: this.state.tick, command })
     }
@@ -488,7 +498,7 @@ export class GameSession {
     // Drop expired effects so the array never grows without bound.
     const alive = this.effects.filter(fx => now - fx.t0 < fx.dur + 100)
     const important = (fx: VisualEffect) => ['spire_hit', 'meteor', 'nova', 'gold_rush', 'heal'].includes(fx.kind) || (fx.kind === 'float' && !/^[+-]?[0-9]/.test(fx.text ?? ''))
-    this.effects = [...(settings.quietEffects ? [] : alive.filter(fx => !important(fx)).slice(-192)), ...alive.filter(important).slice(-64)]
+    this.effects = [...(settings.quietEffects ? [] : alive.filter(fx => !important(fx)).slice(graphicsState.reduced ? -48 : -192)), ...alive.filter(important).slice(-64)]
   }
 
   private maybeNotify(changed: boolean): void {

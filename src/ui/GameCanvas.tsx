@@ -1,3 +1,4 @@
+import { AdaptiveResolution, backingScale, graphicsState } from './graphics'
 import { placementPreview, placementSummary } from './placementPreview'
 import { measure } from './performance'
 import { useEffect, useRef } from 'react'
@@ -48,9 +49,15 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
   useEffect(() => {
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
-    const dpr = Math.min(2, window.devicePixelRatio || 1)
-    canvas.width = MAP_WIDTH * CELL_PX * dpr
-    canvas.height = MAP_HEIGHT * CELL_PX * dpr
+    const adaptive = new AdaptiveResolution()
+    let dpr = 1, displayWidth = canvas.getBoundingClientRect().width
+    let dirty = true, lastSignature = '', lastState = session.state
+    let observedState: RunState | null = null
+    const resized = new ResizeObserver(entries => {
+      displayWidth = entries[0]?.contentRect.width ?? displayWidth
+      dirty = true
+    })
+    resized.observe(canvas)
 
     let raf = 0
     let last = performance.now()
@@ -62,7 +69,30 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
       const simStart = performance.now()
       session.advance(now - last)
       measure('simulation', performance.now() - simStart)
-      if (!session.suspended && session.speed > 0) observeRef.current?.(session.state, session.renderId)
+      if (!session.suspended && session.speed > 0 && observedState !== session.state) {
+        observeRef.current?.(session.state, session.renderId)
+        observedState = session.state
+      }
+      const wantedScale = backingScale(displayWidth, MAP_WIDTH * CELL_PX, window.devicePixelRatio, settings.graphicsQuality, adaptive.scale)
+      const width = Math.round(MAP_WIDTH * CELL_PX * wantedScale)
+      if (width !== canvas.width) {
+        canvas.width = width
+        canvas.height = Math.round(MAP_HEIGHT * CELL_PX * wantedScale)
+        dirty = true
+      }
+      dpr = canvas.width / (MAP_WIDTH * CELL_PX)
+      graphicsState.reduced = settings.graphicsQuality === 'low' || (settings.graphicsQuality === 'auto' && adaptive.scale < 1)
+      const liveUi = uiRef.current
+      const signature = [liveUi.shopSelection,liveUi.abilitySelection,liveUi.selectedTowerId,liveUi.hoverCell?.cx,liveUi.hoverCell?.cy,settings.colorAssist,settings.reducedMotion,settings.quietEffects,settings.graphicsQuality].join(':')
+      const frozen = session.suspended || session.speed <= 0 || session.terminal || session.seeking
+      const animating = session.effects.some(fx => now < fx.t0 + fx.dur)
+      last = now
+      if (frozen && !animating && !dirty && signature === lastSignature && lastState === session.state) {
+        measure('idleFrame', 1)
+        raf = requestAnimationFrame(frame)
+        return
+      }
+      lastSignature = signature; lastState = session.state; dirty = false
       const renderStart = performance.now()
       last = now
       ctx.save()
@@ -74,21 +104,25 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
         const strength = 3 * (1 - (now - hit.t0) / hit.dur)
         ctx.translate((Math.random() - 0.5) * 2 * strength, (Math.random() - 0.5) * 2 * strength)
       }
-      draw(ctx, session, uiRef.current)
+      draw(ctx, session, uiRef.current, dpr)
       const {shopSelection,hoverCell} = uiRef.current
       if (previewRef.current) {
         const text = shopSelection && hoverCell ? placementSummary(placementPreview(session.state,shopSelection,hoverCell),shopSelection) : shopSelection ? 'Aim to compare the new route and coverage. Green squares gain coverage; crossed cells lose it.' : ''
         if (previewRef.current.textContent !== text) previewRef.current.textContent = text
       }
       ctx.restore()
-      measure('render', performance.now() - renderStart)
+      session.markRendered()
+      const renderMs = performance.now() - renderStart
+      measure('render', renderMs)
+      measure('backingScale', dpr)
+      if (!frozen && settings.graphicsQuality === 'auto') adaptive.sample(renderMs + renderStart - simStart)
       measure('effects', session.effects.length)
       // The loupe copies from this frame's pixels, so it repaints after.
       if (aimRef.current && loupeRef.current) renderLoupe(loupeRef.current, canvas, aimRef.current, dpr)
       raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
-    return () => { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', visibility) }
+    return () => { resized.disconnect(); cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', visibility) }
   }, [session])
 
   const cellFromEvent = (e: { clientX: number; clientY: number }): CellPos => {

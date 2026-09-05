@@ -1,3 +1,4 @@
+import { graphicsState } from './graphics'
 import { navigation } from '../engine/navigation'
 import { BEAM_HEAT_MAX, COIN_FLASH_TICKS, COIN_LIFETIME_TICKS, ENEMIES } from '../data/content'
 import { settings } from './settings'
@@ -32,17 +33,17 @@ export { LOUPE_D, LOUPE_GAP, renderLoupe, type TouchAim } from './render/loupe'
 
 
 
-export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: RenderUiState): void {
+export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: RenderUiState, backingDpr?: number): void {
   const state = session.state
   const map = getRunMap(state)
   const w = map.width * CELL_PX
   const h = map.height * CELL_PX
 
   const theme = mapTheme(map)
-  ctx.drawImage(terrainLayer(map, theme), 0, 0, w, h)
+  ctx.drawImage(terrainLayer(map, theme, backingDpr), 0, 0, w, h)
   drawPathHighlight(ctx, state, map, animTime(session), theme)
   drawDecals(ctx, session.renderId)
-  drawAmbient(ctx, map, animTime(session), theme)
+  if (!graphicsState.reduced) drawAmbient(ctx, map, animTime(session), theme)
   drawGates(ctx, map, state, animTime(session))
   if (state.shrine) {
     const at = cellCenter(state.shrine.cell)

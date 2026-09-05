@@ -53,3 +53,12 @@
 .replay-banner { position:static; inset:auto; transform:none; width:100%; box-sizing:border-box; margin:0 0 12px; }
 .placement-report { min-height:36px; margin:8px 0 0; color:#c1d3d7; font-size:12px; line-height:1.4; }
 @media (max-width:700px) { .placement-report { min-height:52px; } }
+.tactical-bar { min-height: 80px; padding: 4px 0 8px; display:flex; flex-direction:column; gap:5px; }
+.target-status { min-height:18px; color:#bfcadd; font-size:12px; }
+.tactical-buttons { display:flex; gap:6px; }
+.tactical-buttons .ability-btn { min-height:44px; min-width:90px; flex:1; justify-content:center; }
+@media (max-width: 600px) {
+  .boon-strip { height:48px; min-height:48px; overflow-x:auto; }
+  .settings-row select { min-height:44px; }
+  .ability-btn, .ghost-btn, .primary-btn, .boon-btn { min-height:44px; }
+}

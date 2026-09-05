@@ -1,8 +1,10 @@
+import type { GraphicsQuality } from './graphics'
 // Player-facing presentation settings. Persisted separately from the save so
 // wiping progress never wipes accessibility choices. Consumers read the live
 // singleton each frame — no React plumbing needed in the render loop.
 
 export interface Settings {
+  graphicsQuality: GraphicsQuality
   keyBindings: Record<string, string>
   holdBeam: boolean
   quietEffects: boolean
@@ -17,7 +19,7 @@ export interface Settings {
 
 const KEY = 'spirefall-settings'
 
-const DEFAULTS: Settings = { keyBindings: {}, holdBeam: false, quietEffects: false, quietAudio: false, volume: 100, musicVolume: 60, reducedMotion: false, autoStart: false, haptics: true, colorAssist: false }
+const DEFAULTS: Settings = { graphicsQuality: 'auto', keyBindings: {}, holdBeam: false, quietEffects: false, quietAudio: false, volume: 100, musicVolume: 60, reducedMotion: false, autoStart: false, haptics: true, colorAssist: false }
 
 export const ACTION_KEYS = ['b','v','g','o','r','u','x'] as const
 export const validBinding = (key: string): boolean => /^[a-z]$/.test(key) && !'qwefc tsm'.replaceAll(' ', '').includes(key)
@@ -40,6 +42,7 @@ function load(): Settings {
     if (!raw) return { ...DEFAULTS }
     const parsed = JSON.parse(raw) as Partial<Settings>
     return {
+      graphicsQuality: parsed.graphicsQuality === 'high' || parsed.graphicsQuality === 'low' ? parsed.graphicsQuality : 'auto',
       keyBindings: normalizeBindings(parsed.keyBindings),
       holdBeam: parsed.holdBeam === true,
       quietEffects: parsed.quietEffects === true,

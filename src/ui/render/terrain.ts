@@ -156,8 +156,7 @@ function drawProp(g: CanvasRenderingContext2D, kind: PropKind, x: number, y: num
 }
 
 
-export function terrainLayer(map: MapDef, theme: MapTheme): HTMLCanvasElement {
-  const dpr = Math.min(2, window.devicePixelRatio || 1)
+export function terrainLayer(map: MapDef, theme: MapTheme, dpr = Math.min(2, window.devicePixelRatio || 1)): HTMLCanvasElement {
   // Maps are immutable, memoized engine values. Counts and display names
   // cannot identify their geometry: two different seeds can share both.
   if (TERRAIN_CACHE.canvas && TERRAIN_CACHE.map === map && TERRAIN_CACHE.theme === theme && TERRAIN_CACHE.dpr === dpr) return TERRAIN_CACHE.canvas

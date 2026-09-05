@@ -37,8 +37,14 @@ for (const speed of [1, 3, 10]) test(`dense browser profile ${speed}x`, async ({
     return { towers:s.towers.length, enemies:s.enemies.length, heap:memory?.usedJSHeapSize ?? null }
   }, speed)
   await expect.poll(async () => page.evaluate(() => (window.__harness as GameHarness).getPerformance().frame?.samples ?? 0), {timeout:30000}).toBeGreaterThan(90)
-  // Include a real keyboard action while the scene is busy.
-  await page.keyboard.press('ArrowRight')
+  // Repeated real key events through the UI, spread across simulation ticks.
+  // These measure command dispatch to engine application and completed draw;
+  // OS input queues and physical display scan-out are outside the measurement.
+  for (let i=0; i<120; i++) {
+    await page.keyboard.press(i%2 ? 'ArrowLeft' : 'ArrowRight')
+    await page.waitForTimeout(35)
+  }
+  await expect.poll(() => page.evaluate(() => (window.__harness as GameHarness).getPerformance().inputToRender?.samples ?? 0)).toBeGreaterThanOrEqual(120)
   // One checkpoint cycle includes real serialization/storage in the profile.
   await expect.poll(async () => page.evaluate(() => (window.__harness as GameHarness).getPerformance().save?.samples ?? 0), {timeout:15000}).toBeGreaterThan(0)
   const result = await page.evaluate(() => {
@@ -50,7 +56,8 @@ for (const speed of [1, 3, 10]) test(`dense browser profile ${speed}x`, async ({
   expect(before.enemies).toBe(300)
   expect(result.metrics.effects!.p99).toBeLessThanOrEqual(256)
   expect(result.metrics.render!.p95).toBeGreaterThan(0)
-  expect(result.metrics.input!.samples).toBeGreaterThan(0)
+  expect(result.metrics.input!.samples).toBeGreaterThanOrEqual(120)
+  expect(result.metrics.inputToRender!.p95).toBeLessThan(150)
   console.log('BROWSER_PROFILE', JSON.stringify({speed,before,...result}))
   await testInfo.attach(`browser-profile-${speed}x.json`, {body:JSON.stringify({speed,before,...result},null,2),contentType:'application/json'})
 })
