@@ -15,11 +15,10 @@ import type { Vec } from '../../engine/types'
 import { circle, ellipse, px } from './primitives'
 import { CELL_PX } from './theme'
 import type { MapTheme, PropKind } from './theme'
-const DECALS = { key: '', canvas: null as HTMLCanvasElement | null, lastFade: 0 }
+const DECALS = { key: -1, canvas: null as HTMLCanvasElement | null, lastFade: 0 }
 
 
-export function stampDecal(mapKey: string, seed: string, at: Vec, color: string): void {
-  const key = `${mapKey}:${seed}`
+export function stampDecal(key: number, at: Vec, color: string): void {
   if (!DECALS.canvas || DECALS.key !== key) {
     DECALS.canvas = document.createElement('canvas')
     DECALS.canvas.width = MAP_WIDTH * CELL_PX
@@ -49,8 +48,8 @@ export function stampDecal(mapKey: string, seed: string, at: Vec, color: string)
 }
 
 
-export function drawDecals(ctx: CanvasRenderingContext2D, map: MapDef, seed: string): void {
-  if (!DECALS.canvas || DECALS.key !== `${map.id}:${seed}`) return
+export function drawDecals(ctx: CanvasRenderingContext2D, runId: number): void {
+  if (!DECALS.canvas || DECALS.key !== runId) return
   // The battlefield forgets slowly: every ~1.5s the layer loses a little.
   const now = performance.now()
   if (now - DECALS.lastFade > 1500) {
@@ -72,7 +71,7 @@ export function drawDecals(ctx: CanvasRenderingContext2D, map: MapDef, seed: str
 // and blitted per frame. Richer than the old per-cell loop, and cheaper.
 // Everything is seeded by integer hashes: same map, same ground, no RNG.
 
-const TERRAIN_CACHE = { key: '', canvas: null as HTMLCanvasElement | null }
+const TERRAIN_CACHE = { map: null as MapDef | null, theme: null as MapTheme | null, dpr: 0, canvas: null as HTMLCanvasElement | null }
 
 
 function hash01(a: number, b: number, salt = 0): number {
@@ -159,8 +158,9 @@ function drawProp(g: CanvasRenderingContext2D, kind: PropKind, x: number, y: num
 
 export function terrainLayer(map: MapDef, theme: MapTheme): HTMLCanvasElement {
   const dpr = Math.min(2, window.devicePixelRatio || 1)
-  const key = `${map.id}:${map.name}:${map.spawn.cy}:${map.rocks.filter(Boolean).length}:${dpr}`
-  if (TERRAIN_CACHE.canvas && TERRAIN_CACHE.key === key) return TERRAIN_CACHE.canvas
+  // Maps are immutable, memoized engine values. Counts and display names
+  // cannot identify their geometry: two different seeds can share both.
+  if (TERRAIN_CACHE.canvas && TERRAIN_CACHE.map === map && TERRAIN_CACHE.theme === theme && TERRAIN_CACHE.dpr === dpr) return TERRAIN_CACHE.canvas
   const w = map.width * CELL_PX
   const h = map.height * CELL_PX
   const canvas = document.createElement('canvas')
@@ -340,7 +340,9 @@ export function terrainLayer(map: MapDef, theme: MapTheme): HTMLCanvasElement {
   g.fillStyle = vig
   g.fillRect(0, 0, w, h)
 
-  TERRAIN_CACHE.key = key
+  TERRAIN_CACHE.map = map
+  TERRAIN_CACHE.theme = theme
+  TERRAIN_CACHE.dpr = dpr
   TERRAIN_CACHE.canvas = canvas
   return canvas
 }

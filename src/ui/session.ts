@@ -55,7 +55,10 @@ const TOWER_BEAM_COLORS: Record<string, string> = {
   lance: '#f7768e',
 }
 
+let nextRenderId = 1
+
 export class GameSession {
+  readonly renderId = nextRenderId++ // rematches and spectators own fresh visual caches
   state: RunState
   prev: RunState // one tick behind, for render interpolation
   // The run's tick-0 state, kept so the run can be REPLAYED: determinism
@@ -234,7 +237,7 @@ export class GameSession {
         }
         case 'enemy_killed':
           this.effects.push({ kind: 'death', at: e.at, t0: now, dur: 300 })
-          stampDecal(`${this.state.biome}:${this.state.mapId}`, this.state.seed, e.at, enemyColor(e.enemy))
+          stampDecal(this.renderId, e.at, enemyColor(e.enemy))
           if (this.speed <= 3) {
             this.effects.push({ kind: 'burst', at: e.at, color: enemyColor(e.enemy), t0: now, dur: 380 })
             // The bounty itself lands as a REAL coin entity (engine state)

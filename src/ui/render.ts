@@ -40,7 +40,7 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   const theme = mapTheme(map)
   ctx.drawImage(terrainLayer(map, theme), 0, 0, w, h)
   drawPathHighlight(ctx, state, map, animTime(session), theme)
-  drawDecals(ctx, map, state.seed)
+  drawDecals(ctx, session.renderId)
   drawAmbient(ctx, map, animTime(session), theme)
   drawGates(ctx, map, state, animTime(session))
   drawTowers(ctx, session, ui)
