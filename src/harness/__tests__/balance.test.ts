@@ -201,7 +201,7 @@ describe('balance envelope', () => {
     }
   }, 600_000)
 
-  it('a longer career eventually breaks the cycle — after a real grind', () => {
+  it('a longer reference career wins while active mastery can win much earlier', () => {
     // 22 runs, not 18: the transformative tier diluted the relic pool (30
     // relics, several comp-dependent), which stretched the reference bot's
     // first win from run ~15 to run ~20. Humans adapt comps around drawn
@@ -211,5 +211,9 @@ describe('balance envelope', () => {
     // The first win takes real investment: no earlier than run 8.
     const firstWin = history.findIndex((h) => h.outcome === 'victory') + 1
     expect(firstWin).toBeGreaterThanOrEqual(8)
+    // Guardian milestones accelerate earned progress. The active reference
+    // now wins on run 6; welcome this skill ceiling instead of nerfing it.
+    const active = playProgression(8, 'career', BOTS.active, DEFAULT_BUY_PRIORITY)
+    expect(active.history.some(h => h.outcome === 'victory')).toBe(true)
   }, 600_000)
 })

@@ -1,0 +1,308 @@
+{
+  "rules": 5,
+  "note": "Deterministic reference careers, not human win rates.",
+  "results": [
+    {
+      "pilot": "balanced",
+      "firstVictory": 17,
+      "totalSparks": 12337,
+      "history": [
+        {
+          "waves": 12,
+          "biome": "verdant",
+          "sparks": 594,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 12,
+          "biome": "verdant",
+          "sparks": 325,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 12,
+          "biome": "verdant",
+          "sparks": 281,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 15,
+          "biome": "emberwaste",
+          "sparks": 463,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 14,
+          "biome": "frostfen",
+          "sparks": 259,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 18,
+          "biome": "frostfen",
+          "sparks": 373,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 14,
+          "biome": "emberwaste",
+          "sparks": 264,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 15,
+          "biome": "emberwaste",
+          "sparks": 284,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 14,
+          "biome": "emberwaste",
+          "sparks": 261,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 14,
+          "biome": "verdant",
+          "sparks": 330,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 18,
+          "biome": "emberwaste",
+          "sparks": 666,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 18,
+          "biome": "frostfen",
+          "sparks": 373,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 18,
+          "biome": "highlands",
+          "sparks": 361,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 19,
+          "biome": "verdant",
+          "sparks": 402,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "emberwaste",
+          "sparks": 855,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 23,
+          "biome": "highlands",
+          "sparks": 530,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 24,
+          "biome": "frostfen",
+          "sparks": 1520,
+          "outcome": "victory"
+        },
+        {
+          "waves": 23,
+          "biome": "emberwaste",
+          "sparks": 629,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 21,
+          "biome": "frostfen",
+          "sparks": 572,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 20,
+          "biome": "verdant",
+          "sparks": 636,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 18,
+          "biome": "emberwaste",
+          "sparks": 461,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 23,
+          "biome": "verdant",
+          "sparks": 679,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "verdant",
+          "sparks": 589,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "emberwaste",
+          "sparks": 630,
+          "outcome": "defeat"
+        }
+      ]
+    },
+    {
+      "pilot": "active",
+      "firstVictory": 6,
+      "totalSparks": 20544,
+      "history": [
+        {
+          "waves": 13,
+          "biome": "verdant",
+          "sparks": 716,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 18,
+          "biome": "verdant",
+          "sparks": 771,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 16,
+          "biome": "highlands",
+          "sparks": 398,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 18,
+          "biome": "verdant",
+          "sparks": 612,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "emberwaste",
+          "sparks": 686,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 24,
+          "biome": "highlands",
+          "sparks": 1788,
+          "outcome": "victory"
+        },
+        {
+          "waves": 23,
+          "biome": "frostfen",
+          "sparks": 610,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 23,
+          "biome": "emberwaste",
+          "sparks": 612,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 19,
+          "biome": "frostfen",
+          "sparks": 447,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "frostfen",
+          "sparks": 688,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "verdant",
+          "sparks": 583,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 23,
+          "biome": "frostfen",
+          "sparks": 614,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "highlands",
+          "sparks": 526,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 23,
+          "biome": "verdant",
+          "sparks": 577,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "emberwaste",
+          "sparks": 548,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 24,
+          "biome": "highlands",
+          "sparks": 1243,
+          "outcome": "victory"
+        },
+        {
+          "waves": 24,
+          "biome": "frostfen",
+          "sparks": 1603,
+          "outcome": "victory"
+        },
+        {
+          "waves": 23,
+          "biome": "emberwaste",
+          "sparks": 860,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 24,
+          "biome": "frostfen",
+          "sparks": 2196,
+          "outcome": "victory"
+        },
+        {
+          "waves": 20,
+          "biome": "verdant",
+          "sparks": 841,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "emberwaste",
+          "sparks": 864,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 23,
+          "biome": "verdant",
+          "sparks": 920,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "verdant",
+          "sparks": 917,
+          "outcome": "defeat"
+        },
+        {
+          "waves": 22,
+          "biome": "emberwaste",
+          "sparks": 924,
+          "outcome": "defeat"
+        }
+      ]
+    }
+  ]
+}

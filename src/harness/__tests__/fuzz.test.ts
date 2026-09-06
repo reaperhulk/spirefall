@@ -165,7 +165,7 @@ describe('build fuzzer', () => {
     expect(doubled?.reason).toMatch(/2\.0x intended play/)
   })
 
-  it('calibration: single-seed cheap wins demote to warnings, multi-seed stay breaking', () => {
+  it('calibration: occasional specialist wins are welcome; four-seed dominance still fails', () => {
     const g1 = { marker: 'lucky' } as unknown as PolicyGenome
     const g2 = { marker: 'robust' } as unknown as PolicyGenome
     const finding = (genome: PolicyGenome, seed: string): FuzzFinding => ({
@@ -178,11 +178,11 @@ describe('build fuzzer', () => {
       referenceWaves: 17,
       genome,
     })
-    const findings = [finding(g1, 'gamma'), finding(g2, 'alpha'), finding(g2, 'delta')]
+    const findings = [finding(g1, 'gamma'), ...['alpha','beta','delta','epsilon'].map(seed => finding(g2, seed))]
     calibrateFindings(findings)
     expect(findings[0]!.severity).toBe('warning') // one lucky seed — dice, not strategy
-    expect(findings[0]!.reason).toMatch(/single-seed/)
-    expect(findings[1]!.severity).toBe('breaking') // converts on two seeds — a real exploit
+    expect(findings[0]!.reason).toMatch(/limited-seed/)
+    expect(findings[1]!.severity).toBe('breaking') // converts on four seeds — a dominant strategy
     expect(findings[2]!.severity).toBe('breaking')
   })
 
@@ -215,9 +215,9 @@ describe('build fuzzer', () => {
       enhanceStrategy: 'frost',
     } as Partial<PolicyGenome>
 
-    const independent = [finding(beamCarry, 'alpha'), finding(cannonWall, 'delta')]
+    const independent = [finding(beamCarry, 'alpha'), finding(cannonWall, 'delta'), finding(beamCarry, 'beta'), finding(cannonWall, 'epsilon')]
     calibrateFindings(independent)
-    expect(independent.map((f) => f.severity)).toEqual(['breaking', 'breaking'])
+    expect(independent.map((f) => f.severity)).toEqual(['breaking', 'breaking', 'breaking', 'breaking'])
     expect(independent[0]!.reason).toMatch(/BUDGET is soft/)
 
     // Still dice when it is one genome, or when the wins pile onto a single

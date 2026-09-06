@@ -10,6 +10,8 @@ import type { BiomeId } from './biomes'
 export interface MapDef {
   id: number
   name: string
+  situation?: string
+  tactic?: string
   width: number
   height: number
   rocks: boolean[] // index = cy * width + cx

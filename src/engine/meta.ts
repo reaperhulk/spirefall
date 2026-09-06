@@ -1,3 +1,4 @@
+import { bankGuardianMilestones } from './campaign'
 import { COMMAND_CHARGES } from '../data/doctrines'
 import {
   BASE_WAVE_BUDGET,
@@ -294,7 +295,13 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     mapId: 0, // legacy field; generated runs resolve through (biome, mapSeed)
     biome: chosenBiome,
     mapSeed: seed,
-    layoutVersion: 2,
+    layoutVersion: 3,
+    rulesVersion: 5,
+    commissionUsed: false,
+    bountyRemainder: 0,
+    supply: 0,
+    assault: null,
+    assaultOffer: false,
     shrine: null,
     leaks: [],
     wave: startWave,
@@ -385,6 +392,7 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
   if (run.phase !== 'defeat' && run.phase !== 'victory') {
     throw new Error(`settleRun: run is not over (phase=${run.phase})`)
   }
+  meta = bankGuardianMilestones(meta, run)
   // Achievements: first run to satisfy a predicate earns its spark bounty.
   const unlocked = ACHIEVEMENTS.filter((a) => !meta.achievements.includes(a.id) && a.earned(run, meta)).map(
     (a) => ({ id: a.id, name: a.name, sparks: a.sparks }),

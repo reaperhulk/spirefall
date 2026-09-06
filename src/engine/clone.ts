@@ -5,8 +5,10 @@ import type { RunState } from './types'
 export function cloneRun(s: RunState): RunState {
   return {
     ...s,
+    ...(s.waveStats ? { waveStats: { ...s.waveStats } } : {}),
+    ...(s.assault ? { assault: { ...s.assault } } : {}),
     ...(s.shrine ? { shrine: { ...s.shrine, cell: { ...s.shrine.cell } } } : {}),
-    ...(s.leaks ? { leaks: s.leaks.map(leak => ({ ...leak })) } : {}),
+    ...(s.leaks ? { leaks: s.leaks.slice() } : {}),
     rng: {
       waves: { ...s.rng.waves },
       combat: { ...s.rng.combat },

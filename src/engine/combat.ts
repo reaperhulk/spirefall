@@ -1,3 +1,4 @@
+import { addFrostBrittleness, isHeavy, modernRules, stormNetwork } from './campaign'
 import { doctrineDamage } from '../data/doctrines'
 import type { MapDef } from '../data/maps'
 import {
@@ -82,7 +83,7 @@ import { scaledHp } from './waves'
 // cloned — mutation never escapes the step boundary.
 
 export function effectiveDamagePct(state: RunState, tower: Tower['type']): number {
-  let pct = 100 + state.mods.damagePct + doctrineDamage(state.doctrine, tower)
+  let pct = 100 + state.mods.damagePct + doctrineDamage(state.doctrine, tower, modernRules(state))
   if (state.activeBoon === 'sharpened') pct += BOON_DAMAGE_PCT // wave boon, dies with the wave
   if (tower === 'arrow' && state.relics.includes('piercing_arrows')) pct += PIERCING_ARROWS_PCT
   if (state.relics.includes('glass_cannon')) pct += GLASS_CANNON_PCT
@@ -107,7 +108,7 @@ export function damageBreakdown(
 ): { base: number; parts: DamagePart[]; totalPct: number; specPct: number; effective: number } {
   const base = towerTier(tower.type, tower.tier).damage
   const parts: DamagePart[] = []
-  const doctrinePct = doctrineDamage(state.doctrine, tower.type)
+  const doctrinePct = doctrineDamage(state.doctrine, tower.type, modernRules(state))
   if (doctrinePct) parts.push({ source: `${state.doctrine} doctrine`, pct: doctrinePct })
   if (state.activeBoon === 'sharpened') parts.push({ source: 'Sharpened Steel (boon, this wave)', pct: BOON_DAMAGE_PCT })
   if (state.mods.damagePct > 0) parts.push({ source: 'Honed Arsenal (Spire Tree)', pct: state.mods.damagePct })
@@ -386,6 +387,11 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
   for (const tower of state.towers) {
     if (TOWERS[tower.type].support) continue // support towers don't fight
     if ((tower.overchargeCd ?? 0) > 0) tower.overchargeCd = tower.overchargeCd! - 1
+    if (modernRules(state) && state.doctrine === 'siege' && (tower.type === 'sniper' || tower.type === 'lance')) {
+      const held = state.enemies.find(e => e.id === tower.siegeTarget && e.hp > 0 && !e.phased)
+      if (held && distSq(held.pos, cellCenter(tower.cell)) <= towerRangeOnBoard(state, map, tower) ** 2) tower.siegeAim = Math.min(45, (tower.siegeAim ?? 0) + 1)
+      else tower.siegeAim = 0
+    }
     if (tower.cooldown > 0) {
       tower.cooldown -= 1
       continue
@@ -399,6 +405,22 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     const target = selectTarget(tower, alive, map, field, rangeSq)
     if (target === null) continue
 
+    let siegeBurst = false
+    let stormBurst = false
+    if (modernRules(state) && state.doctrine === 'siege' && (tower.type === 'sniper' || tower.type === 'lance')) {
+      siegeBurst = tower.siegeTarget === target.id && (tower.siegeAim ?? 0) >= 45
+      if (tower.siegeTarget !== target.id || siegeBurst) tower.siegeAim = 0
+      tower.siegeTarget = target.id
+    }
+    if (modernRules(state) && state.doctrine === 'storm' && tower.type === 'tesla') {
+      const network = stormNetwork(state, tower)
+      if (network.length >= 2) {
+        const store = network[0]!
+        store.stormCharge = (store.stormCharge ?? 0) + 1
+        if (store.stormCharge >= 6) { store.stormCharge = 0; stormBurst = true }
+      }
+    }
+    if (siegeBurst || stormBurst) events.push({ type: 'doctrine_trigger', doctrine: siegeBurst ? 'siege' : 'storm', id: tower.id, at: origin })
     const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance + beaconAuraPct(state, tower)
     let baseDamage = Math.floor((def.damage * pct) / 100)
     if (tower.spec === 'mortar') baseDamage = Math.floor((baseDamage * MORTAR_DAMAGE_PCT) / 100)
@@ -473,15 +495,23 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     let blocked = false
     const hit = (enemy: Enemy, scalePct = 100): void => {
       let bonus = bonusPctVs(tower.type, enemy) + (shatter && enemy.slowTicks > 0 ? SHATTER_BONUS_PCT : 0)
-      if (state.doctrine === 'shatter' && enemy.slowTicks > 0) bonus += 20
+      if (state.doctrine === 'shatter' && enemy.slowTicks > 0 && !modernRules(state)) bonus += 20
+      const crystals = modernRules(state) && state.doctrine === 'shatter' && isHeavy(tower.type) ? enemy.frostStacks ?? 0 : 0
+      bonus += crystals * 20
+      if (enemy.id === target.id) bonus += (siegeBurst ? 40 : 0) + (stormBurst ? 75 : 0)
       if (stormCoils) bonus += STORM_COILS_PCT_PER_STACK * enemy.overcharge
       let preCrit = bonus > 0 ? Math.floor((baseDamage * (100 + bonus)) / 100) : baseDamage
       if (scalePct !== 100) preCrit = Math.floor((preCrit * scalePct) / 100)
       if (stormCoils) enemy.overcharge = Math.min(STORM_COILS_MAX_STACKS, enemy.overcharge + 1)
-      if (!pierceShield && preCrit <= enemy.shield) { blocked = true; return } // fully blocked
+      if (!pierceShield && preCrit <= enemy.shield) { blocked = true; if (modernRules(state)) tower.waveBlocked = (tower.waveBlocked ?? 0) + 1; return } // fully blocked
       const dmg = crit ? Math.floor((preCrit * critPct) / 100) : preCrit
       const dealt = applyHit(enemy, dmg, pierceShield)
       tower.damageDealt += dealt
+      if (modernRules(state)) tower.waveDamage = (tower.waveDamage ?? 0) + dealt
+      if (crystals > 0 && dealt > 0) {
+        enemy.frostStacks = 0
+        events.push({ type: 'doctrine_trigger', doctrine: 'shatter', id: tower.id, at: { ...enemy.pos } })
+      }
       if (dealt > 0) state.damageByTower[tower.type] = (state.damageByTower[tower.type] ?? 0) + dealt
       if (dealt > 0 && enemy.hp === 0) tower.kills += 1
       // Cinder Shells: part of the blow keeps burning. Refresh keeps the
@@ -627,6 +657,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       case 'frost': {
         hit(target)
         applySlow(target, def.slowFactor!, def.slowTicks!, state)
+        addFrostBrittleness(state, target)
         if (tower.spec === 'permafrost') target.brittleTicks = Math.max(target.brittleTicks, def.slowTicks!)
         // Blizzard: the cold lands on everyone near the impact — at half
         // duration. A chill, not a lock: massed blizzards perma-freezing the
@@ -636,7 +667,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
           const splashTicks = Math.max(1, Math.floor((def.slowTicks! * BLIZZARD_SPLASH_TICKS_PCT) / 100))
           for (const e of alive) {
             if (e.hp <= 0 || e.id === target.id) continue
-            if (distSq(target.pos, e.pos) <= radiusSq) applySlow(e, def.slowFactor!, splashTicks, state)
+            if (distSq(target.pos, e.pos) <= radiusSq) { applySlow(e, def.slowFactor!, splashTicks, state); addFrostBrittleness(state, e) }
           }
         }
         break
@@ -680,6 +711,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
 
     tower.cooldown = effectiveTowerCooldown(state, tower.type, tower.tier, tower.spec)
     tower.shots += 1
+    if (modernRules(state)) tower.waveShots = (tower.waveShots ?? 0) + 1
     events.push({
       type: 'tower_fired',
       id: tower.id,
@@ -790,7 +822,7 @@ export function tickStatuses(state: RunState): void {
     if (e.brittleTicks > 0) e.brittleTicks -= 1
     if (e.slowTicks > 0) {
       e.slowTicks -= 1
-      if (e.slowTicks === 0) e.slowFactor = 100
+      if (e.slowTicks === 0) { e.slowFactor = 100; if (e.frostStacks !== undefined) e.frostStacks = 0 }
     }
     // Wraiths flicker: corporeal for visibleTicks, phased for hiddenTicks.
     const phasing = ENEMIES[e.type].phasing
@@ -1013,6 +1045,7 @@ export function tickCoins(state: RunState, map: MapDef, events: GameEvent[]): vo
     // Manual collection wins ties: the hand is faster than the magnet.
     if (state.collectAt !== null && distSq(coin.pos, state.collectAt) <= collectSq) {
       state.gold += coin.gold
+      if (state.waveStats) state.waveStats.bonusCollected += coin.gold
       events.push({ type: 'coin_collected', from: { ...coin.pos }, to: { ...state.collectAt }, gold: coin.gold, auto: false })
       continue
     }
@@ -1025,6 +1058,7 @@ export function tickCoins(state: RunState, map: MapDef, events: GameEvent[]): vo
       const dist = Math.max(1, Math.floor(Math.sqrt(dx * dx + dy * dy)))
       if (dist <= AUTO_COLLECT_PULL_SPEED) {
         state.gold += coin.gold
+      if (state.waveStats) state.waveStats.bonusCollected += coin.gold
         events.push({ type: 'coin_collected', from: { ...coin.pos }, to: { ...spire }, gold: coin.gold, auto: true })
         continue
       }
@@ -1034,6 +1068,7 @@ export function tickCoins(state: RunState, map: MapDef, events: GameEvent[]): vo
       continue
     }
     if (state.tick - coin.bornTick >= COIN_LIFETIME_TICKS) {
+      if (state.waveStats) state.waveStats.bonusMissed += coin.gold
       events.push({ type: 'coin_expired', at: { ...coin.pos }, gold: coin.gold })
       continue
     }
@@ -1080,10 +1115,22 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     // COIN_LIFETIME_TICKS. Collect it (cursor/finger, or the Spire Magnet)
     // or lose it — the floor of the economy (wave clears, mints) stays
     // direct; the bounty layer rewards presence.
-    if (bounty > 0) {
+    let dropped = bounty
+    if (modernRules(state)) {
+      // 95% guaranteed, 5% optional. Carry fractional gold across kills so
+      // small bounties keep their exact value; perfect pickup stays at the
+      // previous economy ceiling, without making collection mandatory.
+      const guaranteed = bounty * 95 + (state.bountyRemainder ?? 0)
+      const banked = Math.floor(guaranteed / 100)
+      state.bountyRemainder = guaranteed % 100
+      dropped = bounty - banked
+      state.gold += banked
+      if (state.waveStats) { state.waveStats.bankedGold += banked; state.waveStats.kills += 1 }
+    }
+    if (dropped > 0) {
       const pile = state.coins.find(c => c.bornTick === state.tick && !c.pulling && distSq(c.pos, e.pos) <= 350 * 350)
-      if (pile) pile.gold += bounty
-      else state.coins.push({ id: state.nextEntityId, pos: { ...e.pos }, gold: bounty, bornTick: state.tick, pulling: false })
+      if (pile) pile.gold += dropped
+      else state.coins.push({ id: state.nextEntityId, pos: { ...e.pos }, gold: dropped, bornTick: state.tick, pulling: false })
       state.nextEntityId += 1
     }
     state.kills += 1

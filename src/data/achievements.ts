@@ -1,3 +1,4 @@
+import { GUARDIAN_MILESTONES, modernRules } from '../engine/campaign'
 import { BIOME_IDS } from './biomes'
 import { LANCE_MAX_STACKS } from './content'
 import type { MetaState, RunState } from '../engine/types'
@@ -15,6 +16,12 @@ export interface AchievementDef {
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
+  ...GUARDIAN_MILESTONES.map((m, i) => ({
+    id: `guardian_${m.enemy}`, name: m.name,
+    description: `Defeat the wave ${m.wave} guardian. Unlock ${m.unlock} permanently.`,
+    sparks: (i + 1) * 100,
+    earned: (run: RunState) => modernRules(run) && (run.killsByEnemy[m.enemy] ?? 0) > 0,
+  })),
   {
     id: 'first_blood',
     name: 'First Blood',

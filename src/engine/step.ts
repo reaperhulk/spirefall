@@ -1,3 +1,4 @@
+import { ASSAULTS, assaultActive, canSpecialize, modernRules, specializationCost, warSupply } from './campaign'
 import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { navigation } from './navigation'
 import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, DOCTRINES } from '../data/doctrines'
@@ -144,6 +145,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
 
   for (const event of events) if (event.type === 'enemy_reached_spire') {
     s.leaks ??= []
+    if (s.waveStats) s.waveStats.damageTaken += event.damage
     if (s.leaks.length < 512) s.leaks.push({ tick: s.tick, wave: s.wave, enemy: event.enemy, damage: event.damage })
   }
   tickStatuses(s)
@@ -170,6 +172,22 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       return
     }
 
+    case 'choose_assault': {
+      if (!modernRules(s) || s.phase !== 'build' || !s.assaultOffer || !Object.hasOwn(ASSAULTS, command.assault)) return reject(command, 'no assault choice available', events)
+      s.assault = { id: command.assault, fromWave: s.wave, untilWave: s.wave + 3 }
+      s.assaultOffer = false
+      events.push({ type: 'assault_chosen', assault: command.assault })
+      return
+    }
+    case 'requisition': {
+      const tower = s.towers.find(t => t.id === command.id)
+      if (s.phase !== 'wave' || warSupply(s) < 1 || !tower || TOWERS[tower.type].support || tower.overcharged) return reject(command, 'requires a supply crate and an unarmed combat tower during combat', events)
+      s.supply = warSupply(s) - 1
+      tower.cooldown = 0
+      tower.overcharged = true
+      events.push({ type: 'doctrine_trigger', doctrine: 'war_economy', id: tower.id, at: cellCenter(tower.cell) })
+      return
+    }
     case 'defend_shrine': {
       if (s.phase !== 'build' || s.shrine?.status !== 'offered') return reject(command, 'no shrine available', events)
       s.shrine.status = 'active'
@@ -202,6 +220,11 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       s.activeAffix = generated.affix
       s.pendingSpawns = generated.spawns.map((p) => ({ type: p.type, tick: s.tick + p.tick }))
       s.phase = 'wave'
+      if (modernRules(s)) {
+        s.assaultOffer = false // sending the standard assault is a valid choice
+        s.waveStats = { wave, kills: 0, bankedGold: 0, bonusCollected: 0, bonusMissed: 0, damageTaken: 0 }
+        for (const t of s.towers) { t.waveShots = 0; t.waveDamage = 0; t.waveBlocked = 0 }
+      }
       s.repairsThisWave = 0
       s.boonOffer = null // starting unchosen forfeits the offer — skipping is free
       // A streak carried across the break gets a fresh window — the build
@@ -268,14 +291,16 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
     case 'specialize_tower': {
       const tower = s.towers.find((t) => t.id === command.id)
       if (!tower) return reject(command, 'no such tower', events)
-      if (tower.tier < 3) return reject(command, 'specializations open at tier 3', events)
+      if (!canSpecialize(s, tower)) return reject(command, modernRules(s) ? 'specializations open at tier 2' : 'specializations open at tier 3', events)
       if (tower.spec !== null) return reject(command, 'already specialized', events)
       const def = specForTower(tower.type, command.spec)
       if (!def) return reject(command, 'unknown specialization for this tower', events)
-      if (s.gold < def.cost) return reject(command, 'not enough gold', events)
-      s.gold -= def.cost
+      const cost = specializationCost(s, tower, def.id)
+      if (s.gold < cost) return reject(command, 'not enough gold', events)
+      s.gold -= cost
+      if (modernRules(s) && s.wave >= 2) s.commissionUsed = true
       tower.spec = def.id
-      events.push({ type: 'tower_specialized', id: tower.id, spec: def.id, cost: def.cost })
+      events.push({ type: 'tower_specialized', id: tower.id, spec: def.id, cost })
       return
     }
 
@@ -483,7 +508,7 @@ function nextWaveBudget(s: RunState): { wave: number; waveBudget: number; fielde
   const wave = s.wave + 1
   const waveBudget = wave === 1 ? BASE_WAVE_BUDGET : Math.floor((s.waveBudget * WAVE_BUDGET_GROWTH_PCT) / 100)
   const budgetPct = wave === 1 ? 50 : wave === 2 ? 65 : wave === 3 ? 80 : wave === 4 ? 90 : 100
-  const swarm = 100 + 25 * cataclysmCount(s, 'swarm')
+  const swarm = 100 + 25 * cataclysmCount(s, 'swarm') + (assaultActive(s, wave) && s.assault?.id === 'swift_swarm' ? 20 : 0)
   return { wave, waveBudget, fielded: Math.floor((waveBudget * budgetPct * swarm) / 10_000) }
 }
 
@@ -509,7 +534,7 @@ export function previewNextWave(s: RunState): WavePreview | null {
   // Mirror spawnDue's HP math exactly so the threat estimate can never lie.
   const nextHpScale = wave === 1 ? 100 : Math.floor((s.hpScalePct * hpGrowthPct(wave)) / 100)
   const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
-  const iron = s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100
+  const iron = Math.floor((s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100) * (assaultActive(s, s.phase === 'build' ? s.wave + 1 : s.wave) && s.assault?.id === 'iron_column' ? 120 : 100) / 100)
   const crucible = 100 + CRUCIBLE_HP_PCT_PER_RANK * s.crucible
   let totalHp = 0
   let elites = 0
@@ -569,8 +594,8 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
   const juggernaut = 100 + 30 * cataclysmCount(s, 'juggernaut')
   const surge = 100 + 20 * cataclysmCount(s, 'surge')
   const ironclad = 100 + 50 * cataclysmCount(s, 'ironclad')
-  const iron = s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100
-  const swift = s.trials.includes('swift_horde') ? TRIAL_SWIFT_SPEED_PCT : 100
+  const iron = Math.floor((s.trials.includes('iron_horde') ? TRIAL_IRON_HP_PCT : 100) * (assaultActive(s, s.phase === 'build' ? s.wave + 1 : s.wave) && s.assault?.id === 'iron_column' ? 120 : 100) / 100)
+  const swift = Math.floor((s.trials.includes('swift_horde') ? TRIAL_SWIFT_SPEED_PCT : 100) * (assaultActive(s) && s.assault?.id === 'swift_swarm' ? 115 : 100) / 100)
   const crucible = 100 + CRUCIBLE_HP_PCT_PER_RANK * s.crucible
   for (const spawn of due) {
     const def = ENEMIES[spawn.type]
@@ -607,7 +632,7 @@ function spawnDue(s: RunState, events: GameEvent[]): void {
     // knife's edge), ~1 point by wave 8, a third of every arrow by the late
     // teens while heavy shells barely notice. Gradual midgame composition
     // pressure, never an early-game cliff; min 1 damage always lands.
-    const armor = (def.armor ? Math.floor((def.armor * Math.max(0, s.hpScalePct - 100)) / 100) : 0) + crucibleArmor
+    const armor = (def.armor ? Math.floor((def.armor * Math.max(0, s.hpScalePct - 100)) / 100) : 0) + crucibleArmor + (assaultActive(s) && s.assault?.id === 'iron_column' ? 2 : 0)
     const id = s.nextEntityId
     s.nextEntityId += 1
     s.enemies.push({
@@ -703,6 +728,20 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     t.earned = (t.earned ?? 0) + amount // lifetime ledger: is this mint paying for itself?
     events.push({ type: 'mint_income', id: t.id, amount })
   }
+
+  if (modernRules(s) && s.doctrine === 'war_economy' && s.towers.some(t => t.type === 'mint')) s.supply = Math.min(3, (s.supply ?? 0) + 1)
+  if (s.assault && s.wave === s.assault.untilWave) {
+    const id = s.assault.id
+    const gold = id === 'swift_swarm' ? 180 + 12 * s.wave : 0
+    s.gold += gold
+    if (id === 'iron_column') {
+      if (!s.relics.includes('stoneskin')) s.relics.push('stoneskin')
+      else if (!s.trials.includes('no_mercy')) s.spireHp = Math.min(s.spireMaxHp, s.spireHp + 5)
+    }
+    events.push({ type: 'assault_reward', assault: id, gold })
+    s.assault = null
+  }
+  if (modernRules(s) && [6, 12, 18].includes(s.wave)) s.assaultOffer = true
 
   // Golden Ledger: interest on whatever survived the wave unspent — paid
   // AFTER mints so hoarding compounds. The cap keeps banked fortunes from

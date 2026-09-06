@@ -153,6 +153,39 @@ export function authoredMap(biome: BiomeId, seed: string): MapDef {
   return map
 }
 
+// Six recognizable tactical situations. Terrain is versioned independently
+// of random streams, so imported runs never silently receive a new maze.
+export function tacticalMap(biome: BiomeId, seed: string): MapDef {
+  const pattern = nextInt(rngFromSeed(`${seed}:tactics`), 0, 5).value
+  const map = pattern < 3 ? authoredMap(biome, seed) : generateMap(biome, seed)
+  const original = { rocks: map.rocks.slice(), mesa: map.mesa.slice(), marsh: map.marsh.slice() }
+  const situations = [
+    ['Broken ramparts', 'Use the gaps as firing lanes; reserve a rear line for fliers.'],
+    ['The watchroad', 'Choose which bend to fortify, then cover the exposed final approach.'],
+    ['Old fort', 'Use the central fort as an anchor; leave room for splash coverage.'],
+    ['Forked causeway', 'A central island creates two approaches. Your placements decide which remains open.'],
+    ['Twin overlooks', 'Build on raised ground at both ends to cover the entrance and protect the Spire.'],
+    ['The sluice', 'Staggered baffles create repeated firing windows; spread control between turns.'],
+  ]
+  const set = (x: number, y: number, raised = false) => {
+    const n = y * map.width + x
+    map.rocks[n] = !raised; map.mesa[n] = raised; map.marsh[n] = false
+  }
+  if (pattern === 3) {
+    for (let x = 10; x <= 13; x++) for (let y = 5; y <= 8; y++) set(x, y)
+    set(8, 4, true); set(15, 9, true)
+  } else if (pattern === 4) {
+    for (const x of [6, 17]) for (const y of [3, 4, 9, 10]) set(x, y, true)
+  } else if (pattern === 5) {
+    for (let y = 3; y <= 7; y++) set(8, y)
+    for (let y = 7; y <= 11; y++) set(16, y)
+  }
+  if (!playable(map)) Object.assign(map, original)
+  map.situation = situations[pattern]![0]!
+  map.tactic = situations[pattern]![1]!
+  return map
+}
+
 // The run's battlefield. Generated maps are pure functions of (biome, seed),
 // memoized because callers ask every tick; legacy saves (mapSeed === '')
 // still resolve through the fixed-map registry.
@@ -163,7 +196,7 @@ export function getRunMap(s: { mapId: number; biome: BiomeId; mapSeed: string; l
   const key = `${s.layoutVersion ?? 1}:${s.biome}:${s.mapSeed}`
   let map = genCache.get(key)
   if (!map) {
-    map = s.layoutVersion === 2 ? authoredMap(s.biome, s.mapSeed) : generateMap(s.biome, s.mapSeed)
+    map = s.layoutVersion === 3 ? tacticalMap(s.biome, s.mapSeed) : s.layoutVersion === 2 ? authoredMap(s.biome, s.mapSeed) : generateMap(s.biome, s.mapSeed)
     if (genCache.size > 64) genCache.clear() // long sessions: bots churn seeds
     genCache.set(key, map)
   }

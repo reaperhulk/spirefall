@@ -1,3 +1,4 @@
+import { bankGuardianMilestones, canSpecialize, specializationCost, warSupply } from '../engine/campaign'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { TacticalControls } from './TacticalControls'
 import { useGameKeyboard } from './useGameKeyboard'
@@ -226,6 +227,15 @@ export default function App() {
       // for victory, or touch the save — the run already happened.
       if (session.replaying) return
       let saveNeeded = false
+      if (events.some(e => e.type === 'enemy_killed')) {
+        const earned = bankGuardianMilestones(metaRef.current, s)
+        if (earned !== metaRef.current) {
+          metaRef.current = earned
+          setMeta(earned)
+          saveNeeded = true
+          setSrMessage('Guardian milestone earned. A new biome is permanently unlocked.')
+        }
+      }
       for (const e of events) {
         if (e.type === 'run_ended') {
           if (s.seed === dailySeed()) {
@@ -1094,6 +1104,16 @@ export default function App() {
               )}
               {selectedTower.kills} kills · {selectedTower.damageDealt} dmg dealt
             </p>
+            {canSpecialize(state, selectedTower) && (TOWER_SPECS[selectedTower.type] ?? []).map(sp => (
+              <button key={sp.id} className="ghost-btn spec-btn" data-testid={`spec-${sp.id}`} title={sp.description}
+                disabled={state.gold < specializationCost(state, selectedTower, sp.id)}
+                onClick={() => session.dispatch({ type: 'specialize_tower', id: selectedTower.id, spec: sp.id })}>
+                ★ {sp.name} (⛀ {specializationCost(state, selectedTower, sp.id)})
+              </button>
+            ))}
+            {warSupply(state) > 0 && !TOWERS[selectedTower.type].support && <button className="ghost-btn" data-testid="requisition"
+              disabled={state.phase !== 'wave' || selectedTower.overcharged}
+              onClick={() => session.dispatch({ type: 'requisition', id: selectedTower.id })}>Requisition · {warSupply(state)} crates</button>}
             {!TOWERS[selectedTower.type].support && (
               <p className="tower-air-note">
                 {towerRole(selectedTower.type)}
@@ -1138,19 +1158,7 @@ export default function App() {
               </>
             ) : (
               <>
-                {selectedTower.spec === null &&
-                  (TOWER_SPECS[selectedTower.type] ?? []).map((sp) => (
-                    <button
-                      key={sp.id}
-                      className="ghost-btn spec-btn"
-                      data-testid={`spec-${sp.id}`}
-                      title={sp.description}
-                      disabled={state.gold < sp.cost}
-                      onClick={() => session.dispatch({ type: 'specialize_tower', id: selectedTower.id, spec: sp.id })}
-                    >
-                      ★ {sp.name} (⛀ {sp.cost})
-                    </button>
-                  ))}
+
               <button
                 className="primary-btn"
                 data-testid="upgrade-tower"
@@ -1391,6 +1399,7 @@ export default function App() {
       )}
       {showPlan && !summary && <RunPlanning state={state} watching={watching}
         onChoose={doctrine => { session.dispatch({type:'choose_doctrine', doctrine}); setShowPlan(false) }}
+        onAssault={assault => { session.dispatch({type:'choose_assault', assault}); setShowPlan(false) }}
         onShrine={() => { session.dispatch({type:'defend_shrine'}); setShowPlan(false) }}
         onClose={() => setShowPlan(false)} />}
       {showStats && !summary && <RunStatsModal state={state} onClose={() => setShowStats(false)} />}

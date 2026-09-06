@@ -39,7 +39,7 @@ export const BIOMES: Record<BiomeId, BiomeDef> = {
     name: 'Frostfen',
     description:
       'Half-frozen marshland. Ground enemies wade through the pools at 80% speed — but nothing can be built on soft ground.',
-    unlockHint: 'Reach wave 8 in any run',
+    unlockHint: 'Defeat the wave 6 guardian (or reach wave 8)',
     rockClusters: [2, 5],
     rockClusterSize: [2, 4],
     marshBlobs: [4, 7],
@@ -52,7 +52,7 @@ export const BIOMES: Record<BiomeId, BiomeDef> = {
     name: 'Ember Waste',
     description:
       'Scorched ground riven with fissures that erupt every few seconds, searing ground enemies near them. Slag heaps break the open ground — the land fights, and it will not be walled.',
-    unlockHint: 'Win a run',
+    unlockHint: 'Defeat the wave 12 guardian (or win a run)',
     rockClusters: [4, 7],
     rockClusterSize: [2, 5],
     marshBlobs: [0, 0],
@@ -65,7 +65,7 @@ export const BIOMES: Record<BiomeId, BiomeDef> = {
     name: 'The Highlands',
     description:
       'Mesa country. High ground is impassable to the horde but buildable — a tower on a mesa sees 20% further. The overlooks are the battlefield.',
-    unlockHint: 'Ascend once',
+    unlockHint: 'Defeat the wave 18 guardian (or ascend)',
     rockClusters: [2, 4],
     rockClusterSize: [2, 4],
     marshBlobs: [0, 0],
@@ -93,11 +93,11 @@ export function biomeUnlocked(meta: MetaState, id: BiomeId): boolean {
     case 'verdant':
       return true
     case 'frostfen':
-      return meta.bestWave >= 8
+      return (meta.guardianMilestones ?? []).includes('boss') || meta.bestWave >= 8
     case 'emberwaste':
-      return meta.victories >= 1
+      return (meta.guardianMilestones ?? []).includes('boss2') || meta.victories >= 1
     case 'highlands':
-      return meta.ascensions >= 1
+      return (meta.guardianMilestones ?? []).includes('boss3') || meta.ascensions >= 1
   }
 }
 

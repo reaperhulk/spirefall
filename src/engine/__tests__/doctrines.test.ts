@@ -12,7 +12,7 @@ it('offers a persistent build identity after wave two and permits only one choic
   s.wave = s.wavesCleared = 2
   s = step(s, [{ type: 'choose_doctrine', doctrine: 'storm' }]).state
   expect(s.availableTowers).toContain('tesla')
-  expect(effectiveDamagePct(s, 'tesla')).toBe(120)
+  expect(effectiveDamagePct(s, 'tesla')).toBe(100) // power comes from connected discharges
   expect(step(s, [{ type: 'choose_doctrine', doctrine: 'siege' }]).state.doctrine).toBe('storm')
 })
 it('war economy exchanges damage for income and grants access to Mint', () => {

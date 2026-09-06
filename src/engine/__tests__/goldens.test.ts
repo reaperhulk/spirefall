@@ -23,10 +23,14 @@ interface Golden {
 const FIXTURE = join(import.meta.dirname, '..', '..', '..', 'fixtures', 'goldens.json')
 const UPDATE = process.env['UPDATE_GOLDENS'] === '1'
 
-function playAll(): Record<string, Golden> {
+function playAll(legacy = false): Record<string, Golden> {
   const results: Record<string, Golden> = {}
   for (const scenario of SCENARIOS) {
     const run = createRun(scenario.meta(), scenario.seed)
+    if (legacy) {
+      run.layoutVersion = 2
+      for (const key of ['rulesVersion','commissionUsed','bountyRemainder','supply','assault','assaultOffer'] as const) delete run[key]
+    }
     const { state } = autoplay(run, BOT_FOR[scenario.bot], scenario.maxTicks)
     results[scenario.name] = {
       ticks: state.tick,
@@ -41,6 +45,10 @@ function playAll(): Record<string, Golden> {
 }
 
 describe('golden playthroughs', () => {
+  it('preserves all seven rules-4 outcomes and complete state hashes', () => {
+    const expected = JSON.parse(readFileSync(join(dirname(FIXTURE), 'rules-4-goldens.json'), 'utf8'))
+    expect(playAll(true)).toEqual(expected)
+  }, 120_000)
   it(
     'match the pinned outcomes (run `npm run goldens:update` to accept changes)',
     () => {

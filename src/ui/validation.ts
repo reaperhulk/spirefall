@@ -1,3 +1,4 @@
+import { ASSAULTS } from '../engine/campaign'
 import { DOCTRINES } from '../data/doctrines'
 import { ABILITIES, BOONS, CATACLYSMS, ENEMIES, RELICS, TOWERS, TOWER_SPECS } from '../data/content'
 import { MAPS } from '../data/maps'
@@ -8,7 +9,7 @@ import type { LoggedCommand } from './session'
 import { MAX_TRANSFER_BYTES } from './boundedStream'
 
 // Gameplay rules are part of a recording, separate from the save schema.
-export const RULES_VERSION: number = 4
+export const RULES_VERSION: number = 5
 export interface Recording { seed?: string; v: 3; rules: number; initial: RunState; log: LoggedCommand[]; endTick: number }
 const object = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const nat = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0
@@ -29,7 +30,14 @@ export function validRun(value: unknown): value is RunState {
     const s = value as unknown as RunState
     if (s.schemaVersion !== 1 || typeof s.seed !== 'string' || s.seed.length > 512 || typeof s.mapSeed !== 'string') return false
     if (!BIOME_IDS.includes(s.biome) || !nat(s.mapId) || !nat(s.tick) || s.mapSeed.length > 512 || (s.mapSeed === '' && s.mapId >= MAPS.length)) return false
-    if (s.layoutVersion !== undefined && ![1,2].includes(s.layoutVersion)) return false
+    if (s.layoutVersion !== undefined && ![1,2,3].includes(s.layoutVersion)) return false
+    if (s.rulesVersion !== undefined && ![4, 5].includes(s.rulesVersion)) return false
+    if (s.commissionUsed !== undefined && typeof s.commissionUsed !== 'boolean') return false
+    if (s.assaultOffer !== undefined && typeof s.assaultOffer !== 'boolean') return false
+    if (s.assault && (!known(ASSAULTS, s.assault.id) || !nat(s.assault.fromWave) || !nat(s.assault.untilWave) || s.assault.untilWave !== s.assault.fromWave + 3)) return false
+    if (s.supply !== undefined && (!nat(s.supply) || s.supply > 3)) return false
+    if (s.bountyRemainder !== undefined && (!nat(s.bountyRemainder) || s.bountyRemainder > 99)) return false
+    if (s.waveStats && (!object(s.waveStats) || !['wave','kills','bankedGold','bonusCollected','bonusMissed','damageTaken'].every(k => nat((s.waveStats as unknown as Record<string,unknown>)[k])))) return false
     const counters = ['wave','startWave','wavesCleared','kills','gold','spireHp','spireMaxHp','waveBudget','hpScalePct','nextEntityId','goldRushTicks','bulwarkTicks','executeCd','beamHeat','crucible','maxRampStacks','combo','comboTicks','bestCombo','repairsThisWave','sparksEarned']
     if (!counters.every(k => nat(value[k]))) return false
     if (!['victoryClaimed','relicRerolled','beamOverheated'].every(k => typeof value[k] === 'boolean')) return false
@@ -47,7 +55,7 @@ export function validRun(value: unknown): value is RunState {
     if (!object(s.rng.boons) || !(['a','b','c','d'] as const).every(k => nat(s.rng.boons[k]) && s.rng.boons[k] <= 0xffffffff)) return false
     if (!Object.keys(s.damageByTower).every(t => known(TOWERS, t)) || !Object.keys(s.killsByEnemy).every(e => known(ENEMIES, e))) return false
     if (!s.availableTowers.every(t => known(TOWERS, t)) || !s.relics.every(r => known(RELICS, r))) return false
-    if (!s.towers.every(t => known(TOWERS, t.type) && nat(t.id) && cell(t.cell) && targeting.includes(t.targeting) && (t.spec === null || (t.tier === 3 && TOWER_SPECS[t.type]?.some(sp => sp.id === t.spec))))) return false
+    if (!s.towers.every(t => known(TOWERS, t.type) && nat(t.id) && cell(t.cell) && targeting.includes(t.targeting) && (t.spec === null || (t.tier >= ((s.rulesVersion ?? 4) >= 5 ? 2 : 3) && TOWER_SPECS[t.type]?.some(sp => sp.id === t.spec))))) return false
     if (!s.enemies.every(e => known(ENEMIES, e.type) && nat(e.id) && typeof e.phased === 'boolean' && ['hp','maxHp','speed','bounty','damage','shield','burnTicks','burnPerTick','overcharge','mechCooldown','mechActiveTicks','brittleTicks'].every(k => nat((e as unknown as Record<string,unknown>)[k])) && (e.targetCell === null || cell(e.targetCell))) || !s.pendingSpawns.every(e => known(ENEMIES, e.type) && nat(e.tick))) return false
     if (!Object.keys(s.abilities).every(a => known(ABILITIES, a))) return false
     assertInvariants(s)
@@ -60,6 +68,8 @@ function validCommand(value: unknown): value is Command {
   const cell = (v: unknown) => object(v) && nat(v.cx) && nat(v.cy) && v.cx < 24 && v.cy < 14
   const vec = (v: unknown) => v === null || (object(v) && nat(v.x) && nat(v.y) && v.x <= 24000 && v.y <= 14000)
   switch (c.type) {
+    case 'choose_assault': return known(ASSAULTS, c.assault)
+    case 'requisition': return nat(c.id)
     case 'choose_doctrine': return typeof c.doctrine === 'string' && known(DOCTRINES, c.doctrine)
     case 'defend_shrine': case 'start_wave': case 'abandon_run': case 'repair_spire': return true
     case 'reroll_relic': return c.focus === undefined || (typeof c.focus === 'string' && known(DOCTRINES, c.focus))
@@ -82,9 +92,9 @@ export function parseRecording(text: string): Recording | null {
     const d = JSON.parse(text) as Recording
     // v2 has no rules marker; only accept it while these original rules run.
     const legacy = (d as {v: number}).v === 2 && RULES_VERSION === 1
-    // Rules 4 adds an opt-in focused reroll; rules-3 commands retain exactly
-    // their prior semantics and RNG consumption. Explicit compatibility.
-    if ((!legacy && (d.v !== 3 || ![3, RULES_VERSION].includes(d.rules))) || !validRun(d.initial) || !Array.isArray(d.log) || d.log.length > 120000) return null
+    // Rules 5 snapshots new mechanics in initial.rulesVersion. Absent markers
+    // preserve all rules-3/4 command semantics and RNG consumption.
+    if ((!legacy && (d.v !== 3 || ![3, 4, RULES_VERSION].includes(d.rules))) || !validRun(d.initial) || !Array.isArray(d.log) || d.log.length > 120000) return null
     let previous = d.initial.tick
     for (const c of d.log) {
       if (!object(c) || !nat(c.tick) || c.tick < previous || !validCommand(c.command)) return null

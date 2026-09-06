@@ -18,94 +18,13 @@ import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYP
 // findings. A finding carries its full genome, budget, and map seed, so any
 // break is a one-liner to reproduce and pin as a regression.
 
-// The curve contract (PLAN §2.3): a mixed comp needs ~20k sparks to win.
-//
-// Both thresholds below are MEASURED, not argued from the design doc.
-//
-// The breaking line sat at 10k on the strength of that doc, and no sweep
-// had ever searched 10k to check — the smoke test ran 8000 and the deep
-// hunt 0/5000/8000/14000, so the one budget the contract actually named was
-// the one nobody looked at. The moment 10k was added, a cannon-dominant
-// comp (see CANNON_TEN_K below) won there on ALL FOUR seeds. Not seed luck,
-// not one lucky lineage: a robust, map-independent 10k victory that had
-// been sitting inside the gap the whole time.
-//
-// Sliding the line down to the sweep's reported floor would have been wrong,
-// and finding out why is what fixed the hunt: running that comp DIRECTLY
-// down the ladder won at 8000 on three biomes and as low as 4000 on
-// highlands, while the sweep serenely reported 20-23 waves there. It
-// searched each budget from a FRESH random population, so a build found at
-// 14k was never once tried at 8k. See the descent phase in fuzzBuildsSteps.
-//
-// With the hunt able to see downhill, the curve was rebalanced against it
-// (splash falloff, overcharge trimmed to its documented weight and taken off
-// splash). What that moved, running THAT ONE PINNED COMP down the ladder:
-//
-//   biome        BEFORE wins at        AFTER wins at
-//   verdant      6000+                 8000, 10000 (one seed)
-//   frostfen     8000+                 never
-//   emberwaste   6000+                 never
-//   highlands    4000+                 never
-//
-// And for the SEARCH, best-wave per budget across all four biomes:
-//
-//   biome        0     5000  8000  10000  14000
-//   verdant      14    21    23    25 W   23
-//   frostfen     14    23    23    26 W   22
-//   emberwaste   15    24 W  24 W  24 W   22
-//   highlands    13    23    23    24 W   23
-//
-// So 10000 is robustly winnable and the line cannot sit there: a contract
-// boundary resting exactly ON the floor can only ever read as failure. 8000
-// is one step below what the search reaches on three of four biomes.
-//
-// Emberwaste is the honest asterisk — it reaches 24 at 5000 and 8000, on a
-// single seed each, which calibrateFindings demotes as seed softness rather
-// than strategy. That is the same rule the repo has always applied (the
-// curve is defended against strategies, not dice), so this is a known soft
-// spot on one biome, NOT a claim that nothing wins below 8000 anywhere. If
-// a build ever converts those on two seeds, it escalates and fails the job,
-// which is exactly what should happen.
-// --- Re-derivation, 2026-07 (the eight-seed biome hunt) --------------------
-//
-// Everything above was measured when the reference player was PASSIVE. Two
-// changes since then moved the thing the boundary is measured against, and
-// neither triggered a re-derivation:
-//   - the overperformance reference became `activeBot` (it uses the four
-//     verbs the game teaches), and
-//   - `relicDebt` landed, so every build that buys Ashen Road — including
-//     the reference, whose DEFAULT_BUY_PRIORITY contains wave_skip — got the
-//     relic offers the skipped waves used to swallow.
-//
-// The eight-seed hunt (pop 14, gens 4, all five budgets, 2352 runs/biome)
-// then found 8000-spark victories on frostfen and highlands, multi-seed, so
-// not demotable as dice. Before touching a line of content, both floors were
-// measured across the FULL grid — 4 biomes × 8 seeds, victories out of 32:
-//
-//   budget   intended active play   optimized genome (the hunt's winner)
-//   5000     0/32                   1/32   (emberwaste/beta)
-//   6500     3/32                   1/32   (emberwaste/beta)
-//   8000     1/32                   5/32
-//   10000    10/32                  —
-//   14000    7/32                   —
-//
-// Intended play wins at 6500. So a boundary at 8000 was not measuring a
-// broken build — it was declaring the reference player broken, and would fire
-// on any hunt forever while the curve underneath was healthy. The gap that
-// matters is optimal-vs-intended, and it is ~1.5 budget steps wide (5/32 vs
-// 1/32 at 8000, 10/32 for intended play one step up), which is the skill
-// headroom an incremental wants, not drift.
-//
-// So the oracle calibrates and the curve stays — the same call iteration 98
-// made when an HP wall steep enough to stop lucky-seed wins broke the
-// deep-tree guarantee. The line moves to 5000: the measured budget below
-// which intended active play NEVER wins, on any biome, on any seed. The
-// single-cell 5000 win above is emberwaste/beta, and beta is the friendly
-// map seed across the board (at 10000 intended play wins beta on all four
-// biomes) — one cell, one genome family, which calibrateFindings demotes as
-// seed softness. Wins in the 6500–14000 band now surface on the WARNING
-// channel, where an expert ceiling belongs.
-export const BREAKING_VICTORY_BUDGET = 5_000 // below intended active play's measured floor — a win here is a broken build
+// September review: specialist early wins are welcome. Cheap victories are
+// candidates for investigation, not automatic defects. Calibration requires
+// four distinct seeds before declaring a dominant strategy or a soft budget.
+// This is half the eight-seed deep sweep; one or two clever wins stay warnings.
+// Repair limits, income conservation and composition checks remain hard gates.
+export const DOMINANT_WIN_SEEDS = 4
+export const BREAKING_VICTORY_BUDGET = 5_000
 export const WARNING_VICTORY_BUDGET = 14_000 // the optimized ceiling — expected, worth watching
 // Overperformance is measured against the ACTIVE bot — a competent player who
 // also uses the verbs the game teaches (overcharge, execute, beam, boons).
@@ -253,11 +172,11 @@ export function classify(
   if (run.outcome === 'victory' && budget <= BREAKING_VICTORY_BUDGET) {
     return {
       severity: 'breaking',
-      reason: `victory at ${budget} sparks — the curve says a win costs ~20k`,
+      reason: `early victory at ${budget} sparks — investigate repeatability`,
     }
   }
   if (run.outcome === 'victory' && budget <= WARNING_VICTORY_BUDGET) {
-    return { severity: 'warning', reason: `suspiciously cheap victory at ${budget} sparks` }
+    return { severity: 'warning', reason: `specialist victory at ${budget} sparks` }
   }
   if (run.wavesCleared >= WARNING_ENDLESS_WAVES) {
     return {
@@ -456,7 +375,7 @@ export function calibrateFindings(findings: FuzzFinding[]): void {
     if (!seedsOf.has(key(f))) seedsOf.set(key(f), new Set())
     seedsOf.get(key(f))!.add(f.seed)
   }
-  const lucky = cheapWins.filter((f) => seedsOf.get(key(f))!.size < 2)
+  const lucky = cheapWins.filter((f) => seedsOf.get(key(f))!.size < DOMINANT_WIN_SEEDS)
 
   // Seed softness is a claim about ONE genome drawing a friendly map. When
   // several INDEPENDENT genomes each convert a cheap win on DIFFERENT seeds,
@@ -480,15 +399,15 @@ export function calibrateFindings(findings: FuzzFinding[]): void {
     for (const f of atBudget) {
       if (families.every((g) => geneDistance(g, f.genome) >= MIN_INDEPENDENT_GENES)) families.push(f.genome)
     }
-    if (families.length >= 2 && seeds.size >= 2) softBudgets.add(budget)
+    if (families.length >= 2 && seeds.size >= DOMINANT_WIN_SEEDS) softBudgets.add(budget)
   }
 
   for (const f of lucky) {
     if (softBudgets.has(f.budget)) {
-      f.reason += ' (single-seed, but independent builds also win here — the BUDGET is soft)'
+      f.reason += ' (independent builds win across four seeds — the BUDGET is soft)'
       continue
     }
     f.severity = 'warning'
-    f.reason += ' (single-seed — seed softness, not a robust exploit)'
+    f.reason += ' (limited-seed specialist win — no demonstrated dominance)'
   }
 }

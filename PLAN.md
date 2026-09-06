@@ -8,6 +8,11 @@ power. Each run reaches further than the last. Failure *is* the progression loop
 This document is the blueprint: game design, engine architecture, the deterministic
 test harness that everything hangs off of, the UI layer, tooling/CI, and milestones.
 
+The follow-up review is tracked in
+[second-review-implementation.md](docs/second-review-implementation.md). Rules 5
+adds automatic bounty, mechanical doctrines, early specialization, guardian
+milestones and act assault choices; archived rules-4 runs retain their semantics.
+
 The September release and its measured limits are tracked in
 [roadmap-implementation.md](docs/roadmap-implementation.md). Historical balance
 tables below describe their original tuning revision; use current test envelopes

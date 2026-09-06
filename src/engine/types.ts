@@ -1,3 +1,4 @@
+import type { AssaultId } from './campaign'
 import type { DoctrineId } from '../data/doctrines'
 import type { BiomeId } from '../data/biomes'
 import type { BoonId, TowerSpecId } from '../data/content'
@@ -109,6 +110,12 @@ export interface Tower {
   damageDealt: number // total damage dealt (lifetime)
   shots: number // shots fired (mints: payouts made); 0 = full sell refund
   earned?: number // mints only: lifetime gold paid out (optional — backfills lazily)
+  waveShots?: number
+  waveDamage?: number
+  waveBlocked?: number
+  siegeTarget?: number
+  siegeAim?: number
+  stormCharge?: number
   overcharged?: boolean // armed: the next shot lands at OVERCHARGE_DAMAGE_PCT
   overchargeCd?: number // ticks until this tower can be overcharged again
   rampTarget?: number // lances only: enemy id the ramp is locked onto
@@ -137,6 +144,7 @@ export interface Enemy {
   overcharge: number // Storm Coils: stacked tesla hits on this enemy
   mechCooldown: number // bosses: ticks until the signature mechanic triggers
   mechActiveTicks: number // bosses: ticks the mechanic stays active (carapace)
+  frostStacks?: number // Shatter doctrine: consumed by heavy hits
   brittleTicks: number // Permafrost: +25% damage taken while > 0
   targetCell: CellPos | null // next waypoint; null = needs (re)pathing (unused by fliers)
 }
@@ -169,6 +177,13 @@ export interface RunState {
   rng: RngStreams
   mapId: number // legacy fixed-map index (used only when mapSeed === '')
   biome: BiomeId // battlefield rules; structure generates from mapSeed
+  rulesVersion?: number // absent = rules 4; snapshotted so old runs keep their rules
+  commissionUsed?: boolean
+  bountyRemainder?: number
+  supply?: number // War Economy: maximum three field requisitions
+  assaultOffer?: boolean
+  assault?: { id: AssaultId; fromWave: number; untilWave: number } | null
+  waveStats?: { wave: number; kills: number; bankedGold: number; bonusCollected: number; bonusMissed: number; damageTaken: number }
   layoutVersion?: number
   shrine?: { cell: CellPos; status: 'offered' | 'active' | 'won' | 'lost'; wave: number; guardTicks?: number } | null
   leaks?: { tick: number; wave: number; enemy: EnemyType; damage: number }[]
@@ -229,6 +244,8 @@ export interface RunState {
 }
 
 export type Command =
+  | { type: 'choose_assault'; assault: AssaultId }
+  | { type: 'requisition'; id: number }
   | { type: 'defend_shrine' }
   | { type: 'choose_doctrine'; doctrine: DoctrineId }
   | { type: 'start_wave' }
@@ -250,6 +267,9 @@ export type Command =
   | { type: 'choose_cataclysm'; cataclysm: CataclysmId }
 
 export type GameEvent =
+  | { type: 'assault_chosen'; assault: AssaultId }
+  | { type: 'assault_reward'; assault: AssaultId; gold: number }
+  | { type: 'doctrine_trigger'; doctrine: DoctrineId; id: number; at: Vec }
   | { type: 'shrine_resolved'; won: boolean; gold: number }
   | { type: 'boss_warning'; id: number }
   | { type: 'doctrine_chosen'; doctrine: DoctrineId }
@@ -324,6 +344,7 @@ export interface MetaState {
   ascensions: number
   upgrades: Record<string, number> // MetaUpgradeId -> level (wiped on ascension)
   emberUpgrades: Record<string, number> // EmberUpgradeId -> level (permanent)
+  guardianMilestones?: string[] // banked immediately; survives defeat and ascension
   bestWave: number // furthest wave ever cleared
   bestWaveByMap: Record<string, number> // mapId (as string key) -> furthest wave cleared there
   lifetimeKills: number

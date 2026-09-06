@@ -1,3 +1,4 @@
+import { canSpecialize, modernRules, specializationCost } from '../engine/campaign'
 import { enhanceCost, EXECUTE_THRESHOLD_PCT, TOWER_SPECS, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
 import { cellCenter, distSq, sameCell } from '../engine/grid'
@@ -193,6 +194,15 @@ export function buildActions(
     return [...collect, { type: 'upgrade_tower', id: upgrade.id }]
   }
 
+  if (modernRules(state) && state.wave >= 2 && !state.commissionUsed) {
+    const t = state.towers.find(t => canSpecialize(state, t) && TOWER_SPECS[t.type]?.length)
+    if (t) {
+      const choice = typeof knobs.specChoice === 'number' ? knobs.specChoice : (knobs.specChoice[t.type] ?? 0)
+      const pick = TOWER_SPECS[t.type]![choice]!
+      if (state.gold >= specializationCost(state, t, pick.id)) return [...collect, { type: 'specialize_tower', id: t.id, spec: pick.id }]
+    }
+  }
+
   const targetTowers = Math.min(knobs.targetBase + state.wave * knobs.targetPerWave, knobs.targetMax)
   if (state.towers.length < targetTowers) {
     const type = pickType(state)
@@ -206,12 +216,12 @@ export function buildActions(
 
   // Tier-3 towers commit to a path once the gold is there.
   for (const t of state.towers) {
-    if (t.tier !== 3 || t.spec !== null) continue
+    if (!canSpecialize(state, t)) continue
     const options = TOWER_SPECS[t.type]
     if (!options) continue
     const choice = typeof knobs.specChoice === 'number' ? knobs.specChoice : (knobs.specChoice[t.type] ?? 0)
     const pick = options[choice]!
-    if (state.gold >= pick.cost) return [...collect, { type: 'specialize_tower', id: t.id, spec: pick.id }]
+    if (state.gold >= specializationCost(state, t, pick.id)) return [...collect, { type: 'specialize_tower', id: t.id, spec: pick.id }]
   }
 
   // Patch the spire up between waves before banking gold.

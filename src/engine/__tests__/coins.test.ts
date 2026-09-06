@@ -44,6 +44,7 @@ function makeEnemy(state: RunState, overrides: Partial<Enemy> & { id: number }):
 
 function waveState(): RunState {
   const s = createRun(createMeta(), 'coin-lab')
+  s.rulesVersion = 4
   s.phase = 'wave'
   s.wave = 5
   s.pendingSpawns = [{ type: 'runner', tick: 1_000_000 }]
@@ -52,7 +53,7 @@ function waveState(): RunState {
 
 const AT = cellCenter({ cx: 10, cy: 6 })
 
-describe('physical gold', () => {
+describe('legacy physical gold compatibility', () => {
   it('a kill drops its full bounty as a coin where the enemy fell', () => {
     let s = waveState()
     s.enemies = [makeEnemy(s, { id: 1 })]

@@ -1,0 +1,58 @@
+{
+  "glassforge-active": {
+    "ticks": 23775,
+    "wavesCleared": 23,
+    "kills": 2289,
+    "outcome": "defeat",
+    "sparks": 535,
+    "stateHash": "493df872"
+  },
+  "afk-fresh": {
+    "ticks": 211,
+    "wavesCleared": 0,
+    "kills": 0,
+    "outcome": "defeat",
+    "sparks": 0,
+    "stateHash": "88beb4c3"
+  },
+  "greedy-fresh": {
+    "ticks": 1552,
+    "wavesCleared": 4,
+    "kills": 99,
+    "outcome": "defeat",
+    "sparks": 68,
+    "stateHash": "a4618fa8"
+  },
+  "balanced-fresh": {
+    "ticks": 6151,
+    "wavesCleared": 12,
+    "kills": 508,
+    "outcome": "defeat",
+    "sparks": 222,
+    "stateHash": "0e2a9b3f"
+  },
+  "balanced-rich": {
+    "ticks": 6699,
+    "wavesCleared": 13,
+    "kills": 618,
+    "outcome": "defeat",
+    "sparks": 246,
+    "stateHash": "fb5883c4"
+  },
+  "active-fresh": {
+    "ticks": 8368,
+    "wavesCleared": 15,
+    "kills": 803,
+    "outcome": "defeat",
+    "sparks": 291,
+    "stateHash": "57e283a4"
+  },
+  "active-rich": {
+    "ticks": 8290,
+    "wavesCleared": 14,
+    "kills": 776,
+    "outcome": "defeat",
+    "sparks": 274,
+    "stateHash": "8dc9bbdc"
+  }
+}
