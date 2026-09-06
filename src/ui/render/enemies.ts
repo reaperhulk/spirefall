@@ -101,8 +101,7 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
     ctx.scale(pop, pop)
     switch (e.type) {
       case 'runner':
-        drawLegs(ctx, heading, r, phase, color)
-        drawCritter(ctx, heading, r, phase, color)
+        drawWalker(ctx, heading, r, phase, color)
         break
       case 'swarmling':
       case 'splitling': {
@@ -322,8 +321,7 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
         break
       }
       default:
-        drawLegs(ctx, heading, r, phase, color)
-        drawCritter(ctx, heading, r, phase, color)
+        drawWalker(ctx, heading, r, phase, color)
         break
     }
     ctx.restore()
@@ -443,43 +441,22 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
 }
 
 
-// Four scissoring legs, drawn under the body. Assumes ctx is at the enemy
-// center, unrotated.
-function drawLegs(ctx: CanvasRenderingContext2D, heading: number, r: number, phase: number, color: string): void {
-  ctx.save()
+// The dense-scene profile identified walkers as the largest draw pass.
+// Share one rotation/sine between legs and body under the caller's saved
+// transform, and reuse leg geometry instead of allocating four tuples per foe.
+const LEG_POSES = [[0.45,1,1],[0.45,-1,1],[-0.45,1,-1],[-0.45,-1,1]] as const
+function drawWalker(ctx:CanvasRenderingContext2D, heading:number, r:number, phase:number, color:string): void {
   ctx.rotate(heading)
-  ctx.strokeStyle = color
-  ctx.lineWidth = 1.5
-  ctx.beginPath()
   const swing = Math.sin(phase * 2)
-  for (const [ox, side, dir] of [
-    [r * 0.45, 1, 1],
-    [r * 0.45, -1, -1],
-    [-r * 0.45, 1, -1],
-    [-r * 0.45, -1, 1],
-  ] as const) {
-    ctx.moveTo(ox, side * r * 0.4)
-    ctx.lineTo(ox + dir * swing * r * 0.5, side * (r * 0.4 + r * 0.55))
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.beginPath()
+  for (const [ox,side,dir] of LEG_POSES) {
+    ctx.moveTo(ox*r,side*r*0.4)
+    ctx.lineTo(ox*r+dir*swing*r*0.5,side*r*0.95)
   }
-  ctx.stroke()
-  ctx.lineWidth = 1
-  ctx.restore()
-}
-
-
-// The default body: an ellipse along the heading with a bobbing gait and a
-// forward eye. Assumes ctx is at the enemy center, unrotated.
-function drawCritter(ctx: CanvasRenderingContext2D, heading: number, r: number, phase: number, color: string): void {
-  ctx.save()
-  ctx.rotate(heading)
-  const bob = 1 + 0.08 * Math.sin(phase * 2)
+  ctx.stroke(); ctx.lineWidth = 1
   ctx.fillStyle = color
-  ellipse(ctx, 0, 0, r * 1.2, r * 0.75 * bob)
-  ctx.fill()
-  ctx.fillStyle = '#0b0e14'
-  circle(ctx, r * 0.65, 0, 1.6)
-  ctx.fill()
-  ctx.restore()
+  ellipse(ctx,0,0,r*1.2,r*0.75*(1+0.08*swing));ctx.fill()
+  ctx.fillStyle = '#0b0e14';circle(ctx,r*0.65,0,1.6);ctx.fill()
 }
 
 

@@ -190,6 +190,10 @@ const MECHANICS: MechanicEntry[] = [
     body: `Kills earn a tower its stars — ${VETERANCY_TIERS.join(', then ')} kills for the first, second, and third. Recognition only, no stat change: the stars are the run's story written on the battlefield.`,
   },
   {
+    title: 'Tower specialization',
+    body: 'At tier 3, a combat tower can commit to one of two specialized paths. The choice lasts for that tower’s lifetime and changes its attacks.',
+  },
+  {
     title: 'Selling & enhancing',
     body: `Selling a tower refunds ${SELL_REFUND_PCT}% of everything invested in it. Past tier 3, towers can be enhanced forever: +${ENHANCE_DAMAGE_PCT}% damage per level, each level costing ${ENHANCE_COST_GROWTH_PCT}% of the last — the unbounded late-game gold sink.`,
   },

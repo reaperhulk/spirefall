@@ -150,6 +150,9 @@ async function expectVisibleBounds(page: Page, selector: string) {
 }
 
 async function expectTouchPlayFit(page: Page) {
+  // Rotation moves scouting between React columns after the media query
+  // changes. Wait for the actual board and hit targets to settle.
+  await expect(async () => {
   const layout = await page.evaluate(() => {
     const elements = [...document.querySelectorAll<HTMLElement>('[data-testid="playfield"], .hud button, .command-dock button, .command-dock select, .combat-dock button')].filter(el => el.getClientRects().length)
     return {width: innerWidth, height: innerHeight, scrollHeight: document.documentElement.scrollHeight, scrollX, scrollY,
@@ -168,6 +171,7 @@ async function expectTouchPlayFit(page: Page) {
   const board = layout.controls.find(c => c.id === 'playfield')!
   expect(board.width).toBeGreaterThanOrEqual(Math.min(layout.width - 32, 280))
   expect(board.width / board.height).toBeCloseTo(24 / 14, 1)
+  }).toPass({timeout:3000,intervals:[16,50,100]})
 }
 
 async function expectNoHorizontalOverflow(page: Page) {

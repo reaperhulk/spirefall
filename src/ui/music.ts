@@ -51,8 +51,8 @@ const BIOME_ROOT: Record<BiomeId, number> = {
 // on the 7-note mode and open quartal colors on the pentatonics. Each is
 // two 4-bar phrases — an antecedent that wanders and a consequent that
 // cadences home. Every biome owns TWO progressions; passes alternate
-// A → B → A-lift → B-lift, a 32-bar macro-form (~87s) before any literal
-// harmonic repeat.
+// A → B → A-lift → B-lift, then a lower bridge and return: a 64-bar
+// macro-form (~175s) before any literal harmonic repeat.
 const BIOME_PROGRESSIONS: Record<BiomeId, number[][]> = {
   verdant: [
     [0, 3, 4, 1, 2, 4, 3, 0], // I–V–vi–ii, then out through iii to a V–I close

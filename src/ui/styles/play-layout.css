@@ -172,3 +172,10 @@
   .control-column .hint-banner { height: 40px; min-height: 40px; overflow-y: auto; }
   .control-column .boon-effect { font-size: 8px; line-height: 10px; }
 }
+
+@media (pointer: coarse) {
+  .command-dock button, .command-dock select, .hud button,
+  .combat-dock button, .tower-panel-actions button, .tower-panel-actions select {
+    min-height: 44px;
+  }
+}
