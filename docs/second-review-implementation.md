@@ -123,3 +123,10 @@ canvas to fill its allocated board in every desktop viewport test, enlarges
 shop portraits, prevents card wrapping, and places phone boards nearer the dock.
 Physical heat, battery use, speaker quality and extended human listening remain
 outside these automated and browser-based checks.
+
+The live mixed Arrow/Cannon/Frost opening also verified automatic bounty and a
+wave-one report linking a Swarmling leak to a gap on the final approach. That
+playthrough exposed a retained build cursor hiding the report. Wave clear now
+retires build/ability selection and closes the Build drawer, revealing the report
+without requiring an extra Escape or deselection; the defended-wave browser
+scenario pins that behavior.

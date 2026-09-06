@@ -198,6 +198,8 @@ test('a defended wave plays out: enemies die, bounties arrive, build phase retur
   expect(snap.kills).toBeGreaterThan(5) // a horde died out there
   expect(snap.spireHp).toBeGreaterThanOrEqual(8) // a defended spire stays near-intact
   await expect(page.getByTestId('sr-status')).toContainText('Wave cleared')
+  await expect(page.getByTestId('shop-arrow')).not.toHaveClass(/selected/)
+  await expect(page.getByTestId('wave-debrief')).toBeVisible()
 
   // Mid-run stats: the S key opens live analytics with a sparks estimate.
   await page.keyboard.press('s')

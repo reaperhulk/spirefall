@@ -211,6 +211,11 @@ export default function App() {
           setReviewFocus(null)
           setSrMessage(`Wave ${e.wave} started — ${e.spawnCount} enemies${e.affix ? `, ${AFFIXES[e.affix].name} affix` : ''}.`)
         } else if (e.type === 'wave_cleared') {
+          // Retire the combat/build cursor so the debrief is discoverable
+          // immediately, even after placing several towers during the wave.
+          setShopSelection(null)
+          setAbilitySelection(null)
+          setBuildOpen(false)
           setSrMessage(`Wave cleared. Spire at ${s.spireHp} of ${s.spireMaxHp} HP, ${s.gold} gold.`)
         } else if (e.type === 'enemy_reached_spire') {
           setSrMessage(`The Spire takes ${e.damage} damage — ${e.spireHp} HP left.`)
