@@ -2,6 +2,7 @@
 // spawn-pop caches that make them move like creatures instead of sprites.
 
 
+import { getRunMap } from '../../engine/mapgen'
 import { ENEMIES, EXECUTE_THRESHOLD_PCT } from '../../data/content'
 import type { Enemy, Vec } from '../../engine/types'
 import type { GameSession } from '../session'
@@ -58,6 +59,7 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
   if (headings.size > 600) headings.clear()
   if (firstSeen.size > 600) firstSeen.clear()
   const wallNow = performance.now()
+  const spire = getRunMap(state).spire
 
   for (const e of session.state.enemies) {
     const prev = prevById.get(e.id)
@@ -377,6 +379,23 @@ export function drawEnemies(ctx: CanvasRenderingContext2D, session: GameSession)
         circle(ctx, x, y, r)
         ctx.fill()
         ctx.globalAlpha = 1
+      }
+    }
+    // Small threats stay plain. Heavy creatures get corner brackets;
+    // imminent leaks get an arrow, so urgency does not depend on hue.
+    if (e.type.startsWith('boss') || ENEMIES[e.type].elite) {
+      ctx.strokeStyle = e.type.startsWith('boss') ? '#ffe6ad' : '#f0bccb'
+      ctx.lineWidth = 1.5
+      for (const side of [-1,1]) { ctx.beginPath();ctx.moveTo(x+side*(r+4),y-4);ctx.lineTo(x+side*(r+4),y-r-3);ctx.lineTo(x+side*(r-1),y-r-3);ctx.stroke() }
+    }
+    if ((e.pos.x-(spire.cx*1000+500))**2+(e.pos.y-(spire.cy*1000+500))**2 < 2500**2) {
+      ctx.fillStyle = '#fff0d0';ctx.beginPath();ctx.moveTo(x-4,y-r-14);ctx.lineTo(x+4,y-r-14);ctx.lineTo(x,y-r-9);ctx.closePath();ctx.fill()
+    }
+    if ((e.frostStacks ?? 0) > 0) {
+      ctx.fillStyle = '#c8f8ff';ctx.strokeStyle = '#244d68';ctx.lineWidth = 1
+      for (let i=0;i<(e.frostStacks ?? 0);i++) {
+        const sx = x + (i-((e.frostStacks ?? 0)-1)/2)*6
+        ctx.beginPath();ctx.moveTo(sx,y+r+1);ctx.lineTo(sx+2.5,y+r+5);ctx.lineTo(sx,y+r+9);ctx.lineTo(sx-2.5,y+r+5);ctx.closePath();ctx.fill();ctx.stroke()
       }
     }
     drawBossMechRing(ctx, e, x, y, r)

@@ -327,6 +327,48 @@ export function terrainLayer(map: MapDef, theme: MapTheme, dpr = Math.min(2, win
     }
   }
 
+  // Landmarks occupy existing rock cells only: decoration never changes or
+  // disguises a legal route. Two separated anchors give each biome a material
+  // identity. All geometry is baked once with the terrain, not every frame.
+  const landmarks: number[] = []
+  for (let i=0;i<map.rocks.length;i++) {
+    if (!map.rocks[i] || !map.rocks[i+1] || i % map.width >= map.width-2) continue
+    if (landmarks.some(at => Math.abs(at%map.width-i%map.width)+Math.abs(Math.floor(at/map.width)-Math.floor(i/map.width)) < 9)) continue
+    landmarks.push(i)
+    if (landmarks.length === 2) break
+  }
+  for (const at of landmarks) {
+    const x = at%map.width*CELL_PX, y = Math.floor(at/map.width)*CELL_PX
+    g.save(); g.translate(x,y)
+    g.fillStyle = '#101820';g.fillRect(4,6,60,25)
+    if (map.biome === 'frostfen') {
+      // Split ice obelisk, with pale facets and dark seams.
+      for (const [cx,top] of [[14,2],[32,6],[51,0]]) {
+        g.fillStyle = '#729aae';g.beginPath();g.moveTo(cx!-8,30);g.lineTo(cx!-5,top!+6);g.lineTo(cx!,top!);g.lineTo(cx!+7,top!+11);g.lineTo(cx!+9,30);g.closePath();g.fill()
+        g.strokeStyle = '#bcdee8';g.lineWidth = 2;g.beginPath();g.moveTo(cx!,top!+2);g.lineTo(cx!-1,27);g.stroke()
+      }
+    } else if (map.biome === 'emberwaste') {
+      // A ruined forge: basalt teeth around a banked orange furnace.
+      g.fillStyle = '#5a4242';g.fillRect(5,9,58,21)
+      for (let n=0;n<4;n++) g.fillRect(6+n*15,3,9,10)
+      g.fillStyle = '#281d24';g.fillRect(23,14,22,16)
+      g.fillStyle = '#e38a54';g.fillRect(27,22,14,5)
+      g.strokeStyle = '#a2664e';g.beginPath();g.moveTo(14,11);g.lineTo(20,19);g.lineTo(15,29);g.stroke()
+    } else if (map.biome === 'highlands') {
+      // Wind-cut cairn and torn pennant, low enough to respect cell bounds.
+      g.fillStyle = '#98765d';g.fillRect(8,24,52,7);g.fillRect(16,16,38,7);g.fillRect(23,8,23,7)
+      g.strokeStyle = '#cfb293';g.lineWidth = 2;g.beginPath();g.moveTo(11,25);g.lineTo(56,25);g.moveTo(20,17);g.lineTo(49,17);g.moveTo(39,0);g.lineTo(39,12);g.stroke()
+      g.fillStyle = '#bcb392';g.beginPath();g.moveTo(40,1);g.lineTo(62,4);g.lineTo(53,8);g.lineTo(40,6);g.closePath();g.fill()
+    } else {
+      // Mossed gate remains: an arch over a sealed, unwalkable foundation.
+      g.fillStyle = '#6a7e79';g.fillRect(7,8,13,22);g.fillRect(48,8,13,22);g.fillRect(15,3,38,9)
+      g.fillStyle = '#384c4b';g.fillRect(22,13,24,17)
+      g.strokeStyle = '#adba9c';g.lineWidth = 2;g.beginPath();g.moveTo(10,9);g.lineTo(10,26);g.moveTo(17,5);g.lineTo(49,5);g.stroke()
+      g.fillStyle = '#6c935d';g.fillRect(5,24,20,5);g.fillRect(45,27,18,4);g.fillRect(29,5,10,3)
+    }
+    g.restore()
+  }
+
   // Vignette + a whisper of top-left light: the field reads lit, not flat.
   const light = g.createLinearGradient(0, 0, w, h)
   light.addColorStop(0, 'rgba(255, 255, 255, 0.045)')

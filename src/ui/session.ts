@@ -262,6 +262,14 @@ export class GameSession {
     const now = performance.now()
     for (const e of events) {
       switch (e.type) {
+        case 'doctrine_trigger': {
+          const color = e.doctrine === 'shatter' ? '#b5f0ff' : e.doctrine === 'storm' ? '#d6b5ff' : '#ffe1a1'
+          if (this.speed <= 3) {
+            this.effects.push({kind:'burst',at:e.at,color,t0:now,dur:260})
+            this.effects.push({kind:'float',at:e.at,color,text:e.doctrine === 'shatter' ? 'SHATTER' : e.doctrine === 'storm' ? 'DISCHARGE' : e.doctrine === 'siege' ? 'AIMED' : 'SUPPLIED',t0:now,dur:500})
+          }
+          break
+        }
         case 'tower_fired': {
           if (e.blocked && this.speed <= 3) this.effects.push({ kind: 'float', at: e.to, text: 'BLOCK', color: '#c8d8f0', t0: now, dur: 400 })
           this.aim[e.id] = Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x)

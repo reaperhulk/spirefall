@@ -585,7 +585,7 @@ export default function App() {
   const scouting = <>
       {!hintsDismissed && meta.runs === 0 && (
         <div className="hint-banner" data-testid="hint">
-          <span>{hint ?? 'Bounty banks automatically. Build a mixed defense; B aims the beam and O overcharges a selected tower.'}</span>
+          <span>{hint ?? ((state.rulesVersion ?? 4) >= 5 ? 'Bounty banks automatically. B aims the beam; O overcharges a tower.' : 'Sweep coins for gold. B aims the beam; O overcharges a tower.')}</span>
           <button className="panel-close hint-close" aria-label="Dismiss hints" onClick={dismissHints}>
             ✕
           </button>

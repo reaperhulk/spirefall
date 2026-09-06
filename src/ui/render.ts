@@ -1,3 +1,4 @@
+import { measure } from './performance'
 import { graphicsState } from './graphics'
 import { navigation } from '../engine/navigation'
 import { BEAM_HEAT_MAX, COIN_FLASH_TICKS, COIN_LIFETIME_TICKS, ENEMIES } from '../data/content'
@@ -53,11 +54,17 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
     ctx.font = '10px ui-monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#e0cef5'
     ctx.fillText('SHRINE', px(at.x), px(at.y) - 44); ctx.textAlign = 'left'
   }
+  const towerStart = performance.now()
   drawTowers(ctx, session, ui)
+  measure('renderTowers', performance.now()-towerStart)
   drawCoins(ctx, session, map)
+  const enemyStart = performance.now()
   drawEnemies(ctx, session)
+  measure('renderEnemies', performance.now()-enemyStart)
   drawBeam(ctx, session, map)
+  const effectStart = performance.now()
   drawEffects(ctx, session)
+  measure('renderEffects', performance.now()-effectStart)
   drawAtmosphere(ctx, session, map, theme)
   drawPlacementGhost(ctx, session, ui, map)
   if (ui.reviewCell && state.phase === 'build') {

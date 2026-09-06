@@ -81,7 +81,7 @@
   .wave-preview .preview-unit { min-height: 28px; }
   .battlefield-column .boon-strip { height: 44px; min-height: 44px; }
   .boon-btn { min-height: 44px; font-size: 11px; padding: 4px; }
-  .boon-effect { display: none; }
+  .boon-effect { display: block; font-size: 9px; line-height: 11px; }
   .boon-strip > span { display: flex; align-items: center; min-height: 44px; font-size: 11px; }
   .battlefield-space .board { width: min(100cqw, calc((100cqh - 40px) * 24 / 14)); }
   .command-dock { min-height: 44px; gap: 4px; }
@@ -165,3 +165,10 @@
 .beam-meter { position: absolute; inset: auto 3px 2px; height: 3px; background: #384659; border-radius: 3px; overflow: hidden; pointer-events: none; }
 .beam-meter > span { display: block; height: 100%; background: #ffba70; }
 .overheated .beam-meter > span { background: #ff5c68; }
+
+/* Cancel the old tactical strip's 90px minimum inside the shared grid. */
+.combat-dock .ability-btn { min-width: 0; width: 100%; }
+@media (orientation: landscape) and (max-height: 539px) {
+  .control-column .hint-banner { height: 40px; min-height: 40px; overflow-y: auto; }
+  .control-column .boon-effect { font-size: 8px; line-height: 10px; }
+}

@@ -775,7 +775,7 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   page,
 }) => {
   const errors = await boot(page, 'e2e-giveup')
-  await page.getByRole('button', { name: '10×' }).click()
+  await page.getByTestId('game-speed').selectOption('10')
   expect(await page.evaluate(() => window.__harness.getSpeed())).toBe(10)
 
   // Cancel first: the dialog must be a real question, not a speed bump.
@@ -1287,7 +1287,7 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
 
 test('first-run hints guide placement, then retire forever', async ({ page }) => {
   const errors = await boot(page, 'e2e-hints')
-  await expect(page.getByTestId('hint')).toContainText('Pick a tower')
+  await expect(page.getByTestId('hint')).toContainText('Build beside the lit path')
   await chooseTower(page, 'shop-arrow')
   await clickCell(page, 7, 5)
   await clickCell(page, 8, 5)
@@ -1296,7 +1296,7 @@ test('first-run hints guide placement, then retire forever', async ({ page }) =>
   // footer buttons players most often never discover on their own.
   await page.getByTestId('start-wave').click()
   await page.evaluate(() => window.__harness.fastForward(90))
-  await expect(page.getByTestId('hint')).toContainText('Kills pay gold')
+  await expect(page.getByTestId('hint')).toContainText('Check the wave report')
   await page.getByTestId('start-wave').click()
   await expect(page.getByTestId('hint')).toContainText('Meteor')
   // Dismiss kills hints permanently, across reloads.
@@ -1623,6 +1623,7 @@ test('the Crucible: cycle victories harden the next run and surface in the HUD',
     window.__harness.getMeta().cycleVictories = 2
     window.__harness.newRun('e2e-crucible')
   })
+  await page.getByTestId('open-menu').click()
   await expect(page.getByTestId('crucible')).toBeVisible()
   await expect(page.getByTestId('crucible')).toContainText('Crucible II')
   await expect(page.getByTestId('open-tree')).toContainText('🔥')

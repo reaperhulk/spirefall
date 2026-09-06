@@ -123,6 +123,7 @@ export class Music {
   private crucibleFrom = -1 // totalStep where the crucible menace motif plays
   private cruciblePulses = 0 // rank-scaled pulse count for the motif
   private phrasePhase: ScorePhase = 'preparation'
+  private phraseFrom = 0
   private biome: BiomeId = 'verdant'
   private ascensionFrom = -1
   private voiceEnds: number[] = []
@@ -269,7 +270,7 @@ export class Music {
     // Master music level: player slider × mute, eased so changes glide.
     const muted = this.sfx.muted || settings.musicVolume <= 0
     const level = muted ? 0.0001 : 0.05 * (settings.musicVolume / 100) * this.sfx.musicDuck
-    this.bus.gain.setTargetAtTime(level, ctx.currentTime, 0.4)
+    this.bus.gain.setTargetAtTime(level, ctx.currentTime, this.sfx.musicDuck < 1 ? 0.035 : 0.4)
     if (muted) { this.nextNoteAt = ctx.currentTime + 0.1; return }
     // Resume at the present beat after suspension; never schedule a backlog.
     if (this.nextNoteAt < ctx.currentTime - BEAT) {
@@ -308,7 +309,8 @@ export class Music {
     // Key: biome mode + seed transpose; seed also salts the rhythm rotation.
     const biome: BiomeId = BIOME_IDS.includes(state.biome) ? state.biome : 'verdant'
     this.biome = biome
-    this.phrasePhase = bossAlive ? 'boss' : state.phase === 'wave' ? 'pressure' : 'preparation'
+    const phase = bossAlive ? 'boss' : state.phase === 'wave' ? 'pressure' : 'preparation'
+    if (phase !== this.phrasePhase) { this.phrasePhase = phase; this.phraseFrom = this.totalStep }
     const seedHash = hashSeed(state.seed)
     const root = BIOME_ROOT[biome] + (seedHash % 12)
     const scale = BIOME_SCALE[biome]
@@ -382,22 +384,26 @@ export class Music {
     const harmonicSteps = bossAlive ? STEPS_PER_BAR / 2 : STEPS_PER_BAR
     // Macro-form: pass 0 plays progression A, pass 1 plays B, then both
     // again LIFTED (higher chord tones, denser line, brighter pad) — a
-    // 32-bar cycle (~87s) before the harmony literally repeats.
+    // 64-bar cycle (~175s), including a lower-register bridge and return.
     const progLen = progs[0]!.length
     const pass = Math.floor(bar / progLen)
+    const bridge = Math.floor(pass / 4) % 2 === 1
     const prog = progs[pass % progs.length]!
     const chordDegree = bossAlive
       ? Math.floor(this.totalStep / harmonicSteps) % 2 === 0
         ? 0
         : 1
-      : prog[Math.floor(this.totalStep / harmonicSteps) % prog.length]!
-    const lift = Math.floor(pass / progs.length) % 2 === 1
+      : prog[(Math.floor(this.totalStep / harmonicSteps) + (bridge ? 4 : 0)) % prog.length]!
+    const lift = !bridge && Math.floor(pass / progs.length) % 2 === 1
     // The last bar of each pass earns a little cadence fill.
     const cadenceBar = bar % prog.length === prog.length - 1
     const tone = toneOf
     // Boss-entrance dropout: the groove (bass, hats, melody, calls) is
     // silenced for a bar — only the heartbeat kick under the ducked pad.
     const dropped = this.totalStep < this.dropUntilStep
+    // Two bars of breathing room before each long-form return. Keep live
+    // tactical cues clear; accompaniment releases as well as the lead.
+    const breathing = !bossAlive && bar % 32 >= 30 && this.ascensionFrom < 0
 
     const bossEntrance = this.totalStep === this.forceChordStep
     if (this.totalStep % harmonicSteps === 0 || bossEntrance) {
@@ -405,13 +411,13 @@ export class Music {
       // on the downbeat and relax through the bar (breathing, not droning),
       // and let the filter bloom open then settle. Boss vamps ride an
       // octave down — register is half of what makes them read as a shift.
-      const drop = bossAlive ? 12 : 0
+      const drop = bossAlive || bridge ? 12 : 0
       this.tunePad(ctx, at, [tone(chordDegree, 0) - drop, tone(chordDegree, 1) - drop, tone(chordDegree, 2) - drop])
       this.lastTonality = {
         scalePCs: scale.map((s) => (root + s) % 12),
         chordPCs: [0, 1, 2].map((k) => tone(chordDegree, k) % 12),
       }
-      const level = this.padLevel * (lift ? 1.12 : 1) * (dropped ? 0.4 : 1)
+      const level = breathing ? 0.0001 : this.padLevel * (lift ? 1.12 : 1) * (dropped ? 0.4 : 1)
       const bright = lift ? 260 : 0
       this.padGain.gain.setTargetAtTime(level, at, 0.3)
       this.padGain.gain.setTargetAtTime(level * 0.65, at + BEAT * 4, 0.9)
@@ -426,6 +432,8 @@ export class Music {
       this.padFilter.frequency.setTargetAtTime(240, at, 0.03)
       this.padFilter.frequency.setTargetAtTime(380 + this.intensity * 1100, at + 1.2, 1.2)
     }
+
+    if (breathing) return
 
     // Bass: the chord root anchors every downbeat (triangle, not sine — the
     // upper harmonics keep it audible on phone speakers), the chord's fifth
@@ -490,7 +498,7 @@ export class Music {
     }
 
     const phase = this.ascensionFrom >= 0 ? 'ascension' : this.phrasePhase
-    const phraseStep = this.ascensionFrom >= 0 ? this.totalStep - this.ascensionFrom : this.totalStep % (bossAlive ? 32 : 64)
+    const phraseStep = this.ascensionFrom >= 0 ? this.totalStep - this.ascensionFrom : (this.totalStep - this.phraseFrom) % (PHRASES[phase].length + (bossAlive ? 16 : 32))
     if (phraseStep < PHRASES[phase].length) {
       this.authoredNote(ctx, at, root, scale, phase, phraseStep)
       return // composed rests own the lead too

@@ -16,14 +16,15 @@ it('fifteen minutes of biome, phase, mute and stall transitions keep scheduled w
   const node = () => ({gain:param(),frequency:param(),detune:param(),Q:param(),delayTime:param(),connect:() => {},disconnect:() => {}})
   const ctx = {
     get currentTime() { return clock }, state:'running', destination:node(),
-    createGain:node, createBiquadFilter:node, createDelay:node,
+    createGain:node, createBiquadFilter:node, createDelay:node, createPeriodicWave:() => ({}),
     createOscillator:() => {
       const source = {end:Infinity}; sources.push(source)
-      return {...node(), start:(at=clock) => { expect(at).toBeGreaterThanOrEqual(clock - 0.35); starts++ }, stop:(at=clock) => { expect(Number.isFinite(at)).toBe(true); source.end=at }}
+      return {...node(), setPeriodicWave:() => {}, start:(at=clock) => { expect(at).toBeGreaterThanOrEqual(clock - 0.35); starts++ }, stop:(at=clock) => { expect(Number.isFinite(at)).toBe(true); source.end=at }}
     },
   }
   const sfx = {muted:false, musicDuck:1, currentContext:() => ctx, musicDestination:() => ctx.destination, currentNoiseBuffer:() => null} as unknown as Sfx
   const music = new Music(sfx)
+  const authored = vi.spyOn(music as unknown as {authoredNote:(ctx:unknown,at:number,root:number,scale:number[],phase:string,offset:number)=>void}, 'authoredNote')
   const probe = music as unknown as {getState:() => typeof state; tick:() => void}
   probe.getState = () => state
   const originalVolume = settings.musicVolume; settings.musicVolume = 60
@@ -47,6 +48,11 @@ it('fifteen minutes of biome, phase, mute and stall transitions keep scheduled w
     expect(starts - before).toBeLessThanOrEqual(20)
     expect(maxActive).toBeGreaterThan(3)
     expect(starts).toBeGreaterThan(500)
+    // The old 64-step modulo silently discarded the second half of longer
+    // themes. Exercise one uninterrupted pressure passage through its ending.
+    state.phase = 'wave'; state.enemies = []
+    for (let i=0;i<300;i++) { clock += 0.2; probe.tick() }
+    expect(authored.mock.calls.some(call => call[4] === 'pressure' && call[5] > 110)).toBe(true)
   } finally { settings.musicVolume = originalVolume }
 })
 

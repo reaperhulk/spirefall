@@ -5,17 +5,44 @@ export const SCORE_BEAT = 60 / 88 / 2
 // Scale degrees: the opening leap, falling answer and return to the Spire
 // survive every variation. -1 is a deliberate rest, not a missing note.
 export const PHRASES: Record<ScorePhase, readonly number[]> = {
-  preparation: [0,-1,-1,-1,4,-1,2,-1,1,-1,-1,-1,0,-1,-1,-1],
-  pressure: [0,-1,4,-1,2,1,-1,0,0,-1,4,5,4,-1,2,-1,1,-1,2,-1,4,2,1,-1,0,-1,-1,-1,-1,-1,-1,-1],
-  boss: [0,-1,4,1,0,-1,1,-1,0,-1,4,2,1,-1,-1,-1],
-  victory: [0,-1,4,-1,2,-1,4,-1,5,-1,4,2,1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1],
-  ascension: [0,-1,4,-1,2,-1,4,-1,5,-1,7,-1,9,-1,7,-1,5,-1,-1,-1,-1,-1,-1,-1],
+  preparation: [
+    0,-1,-1,-1,4,-1,2,-1,1,-1,-1,-1,0,-1,-1,-1,
+    2,-1,-1,-1,5,-1,4,-1,2,-1,1,-1,0,-1,-1,-1,
+    4,-1,-1,-1,7,-1,5,-1,4,-1,2,-1,1,-1,-1,-1,
+    2,-1,4,-1,2,-1,1,-1,0,-1,-1,-1,-1,-1,-1,-1,
+  ],
+  pressure: [
+    0,-1,4,-1,2,1,-1,0,0,-1,4,5,4,-1,2,-1,
+    1,-1,2,-1,4,2,1,-1,0,-1,-1,-1,-1,-1,-1,-1,
+    2,-1,5,-1,4,2,-1,1,2,-1,5,7,5,-1,4,-1,
+    4,-1,2,-1,1,2,4,-1,2,-1,-1,-1,-1,-1,-1,-1,
+    4,-1,7,-1,5,4,-1,2,4,-1,7,9,7,-1,5,-1,
+    5,-1,4,2,4,-1,5,-1,7,-1,5,-1,4,-1,-1,-1,
+    2,-1,4,-1,5,4,2,-1,1,-1,2,-1,4,2,1,-1,
+    0,-1,-1,-1,4,-1,2,-1,0,-1,-1,-1,-1,-1,-1,-1,
+  ],
+  boss: [
+    0,-1,4,1,0,-1,1,-1,0,-1,4,2,1,-1,-1,-1,
+    1,-1,5,2,1,-1,2,-1,1,-1,5,4,2,-1,-1,-1,
+    4,-1,7,5,4,-1,2,-1,4,-1,7,4,1,-1,2,-1,
+    0,-1,4,1,2,-1,1,-1,0,-1,-1,-1,-1,-1,-1,-1,
+  ],
+  victory: [0,-1,4,-1,2,-1,4,-1,5,-1,4,2,1,-1,0,-1,4,-1,5,-1,7,-1,5,-1,4,-1,2,-1,0,-1,-1,-1],
+  ascension: [0,-1,4,-1,2,-1,4,-1,5,-1,7,-1,9,-1,7,-1,5,-1,-1,-1,7,-1,9,-1,12,-1,9,-1,7,-1,-1,-1],
 }
-const VOICES: Record<BiomeId, {type:OscillatorType; attack:number; cutoff:number; overtone:number; wet:number}> = {
-  verdant: {type:'triangle', attack:0.008, cutoff:3200, overtone:2, wet:0.18}, // carved string
-  frostfen: {type:'sine', attack:0.006, cutoff:6500, overtone:2.01, wet:0.48}, // ice bell
-  emberwaste: {type:'sawtooth', attack:0.055, cutoff:950, overtone:1, wet:0.12}, // low reed
-  highlands: {type:'triangle', attack:0.08, cutoff:1800, overtone:3, wet:0.32}, // distant horn
+
+const VOICES: Record<BiomeId, {attack:number; cutoff:number; overtone:number; wet:number; partials:number[]}> = {
+  verdant: {partials:[0,1,0.42,0.23,0.09,0.04], attack:0.008, cutoff:3200, overtone:2, wet:0.18}, // carved string
+  frostfen: {partials:[0,1,0.04,0.16,0.02,0.08], attack:0.006, cutoff:6500, overtone:2.01, wet:0.48}, // ice bell
+  emberwaste: {partials:[0,1,0.12,0.6,0.08,0.3,0.02,0.12], attack:0.055, cutoff:950, overtone:1, wet:0.12}, // low reed
+  highlands: {partials:[0,1,0.5,0.32,0.16,0.08], attack:0.08, cutoff:1800, overtone:3, wet:0.32}, // distant horn
+}
+// One immutable harmonic palette per biome/context, reused by every note.
+const waves = new WeakMap<BaseAudioContext, Partial<Record<BiomeId, PeriodicWave>>>()
+function instrumentWave(ctx:BaseAudioContext, biome:BiomeId): PeriodicWave {
+  let cache = waves.get(ctx)
+  if (!cache) { cache = {}; waves.set(ctx, cache) }
+  return cache[biome] ??= ctx.createPeriodicWave(new Float32Array(VOICES[biome].partials.length), new Float32Array(VOICES[biome].partials))
 }
 export function phraseFrequency(root:number, scale:readonly number[], degree:number): number {
   return 440 * 2 ** ((root + scale[degree % scale.length]! + 12 * (1 + Math.floor(degree / scale.length)) - 69) / 12)
@@ -40,7 +67,8 @@ export function scoreVoice(ctx:BaseAudioContext, destination:AudioNode, echo:Aud
   let remaining = 2
   for (let i = 0; i < 2; i++) {
     const osc = ctx.createOscillator(), partial = ctx.createGain()
-    osc.type = i === 0 ? voice.type : 'sine'
+    if (i === 0) osc.setPeriodicWave(instrumentWave(ctx, biome))
+    else osc.type = 'sine'
     osc.frequency.value = freq * (i === 0 ? 1 : voice.overtone)
     partial.gain.value = i === 0 ? 0.8 : biome === 'frostfen' ? 0.3 : 0.12
     osc.connect(partial); partial.connect(filter)

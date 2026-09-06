@@ -1,3 +1,4 @@
+import { modernRules, stormNetwork } from '../../engine/campaign'
 import { placementPreview } from '../placementPreview'
 // The tower pass: every tower's sprite, its tier pips, veterancy stars and
 // beacon coverage pips, the selection ring, and the placement ghost.
@@ -28,15 +29,15 @@ export function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, 
     const color = COLORS.towers[t.type]
     const aim = session.aim[t.id] ?? -Math.PI / 2
     // Tiers read as size: the whole tower grows a little per tier.
-    const s = 0.95 + t.tier * 0.1
+    const s = 1.06 + t.tier * 0.09
 
     // Shared base plate, edged in the tower's color so types read at a
     // glance — tier 3 earns a bright edge, enhancements make it burn.
-    ctx.fillStyle = '#344453'
+    ctx.fillStyle = '#17232d'
     roundRect(ctx, gx + 4.5, gy + 4.5, CELL_PX - 9, CELL_PX - 9, 5)
     ctx.fill()
     ctx.save()
-    ctx.globalAlpha = t.tier >= 3 ? 0.95 : 0.55
+    ctx.globalAlpha = t.tier >= 3 ? 1 : 0.8
     ctx.strokeStyle = color
     ctx.lineWidth = t.tier >= 3 ? 1.5 : 1
     ctx.stroke()
@@ -57,7 +58,7 @@ export function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, 
       }
     }
 
-    // A committed tier-3 path wears a gold badge on the plate's crown — the
+    // A committed specialization wears a gold badge on the plate's crown — the
     // commitment reads on the field, not just in the panel.
     if (t.spec !== null) {
       glow(ctx, cx, gy + 4, 7, '#e0af68', 0.35)
@@ -110,6 +111,26 @@ export function drawTowers(ctx: CanvasRenderingContext2D, session: GameSession, 
       ctx.globalAlpha = 1
       ctx.lineWidth = 1
       if (frac >= 1) glow(ctx, cx, cy, 16, color, 0.3) // full climb burns
+    }
+
+    // Read the actual doctrine state: no independent visual charge timer.
+    if (modernRules(state) && state.doctrine === 'siege' && (t.siegeAim ?? 0) > 0) {
+      ctx.strokeStyle = '#ffe1a1'; ctx.lineWidth = 2.5
+      ctx.beginPath(); ctx.arc(cx,cy,15,-Math.PI/2,-Math.PI/2 + Math.PI*2*(t.siegeAim ?? 0)/45); ctx.stroke()
+    }
+    if (modernRules(state) && state.doctrine === 'storm' && t.type === 'tesla' && ui.selectedTowerId === t.id) {
+      const network = stormNetwork(state,t)
+      ctx.strokeStyle = '#d6b5ff'; ctx.lineWidth = 1.5; ctx.setLineDash([3,4])
+      for (const other of network) {
+        const end = cellCenter(other.cell)
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px(end.x),px(end.y)); ctx.stroke()
+      }
+      ctx.setLineDash([])
+      for (let i=0;i<6;i++) { ctx.fillStyle = i < (network[0]?.stormCharge ?? 0) ? '#f0dfff' : '#454058'; circle(ctx,gx+4+i*5,gy+CELL_PX+2,1.7);ctx.fill() }
+    }
+    if (modernRules(state) && state.doctrine === 'war_economy' && t.type === 'mint') {
+      ctx.strokeStyle = '#ffe1a1'; ctx.lineWidth = 1
+      for (let i=0;i<(state.supply ?? 0);i++) ctx.strokeRect(gx+4+i*8,gy+CELL_PX-5,5,5)
     }
 
     // Overcharge: an armed tower burns white-hot until the shot spends it.

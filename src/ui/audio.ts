@@ -1,3 +1,4 @@
+import { SoundBudget } from './soundBudget'
 import { AudioCues, type TacticalCue } from './audioCues'
 import type { RunState } from '../engine/types'
 import { measure } from './performance'
@@ -345,12 +346,9 @@ export class Sfx {
   private reverb: ConvolverNode | null = null
   private noiseBuffer: AudioBuffer | null = null
   private lastPlayed: Partial<Record<SoundKind, number>> = {}
-  private urgentCount = 0
-  private recentCount = 0
-  private recentWindow = 0
-  private duckUntil = 0
+  private budget = new SoundBudget()
   private voiceEnds: number[] = []
-  get musicDuck(): number { return performance.now() < this.duckUntil ? 0.55 : 1 }
+  get musicDuck(): number { return this.budget.duck(performance.now()) }
   private reviveGeneration = 0
   private probeGeneration = 0
   private liveFlag = false
@@ -476,6 +474,9 @@ export class Sfx {
           break
         case 'relic_chosen':
           if (e.relic !== null) this.play('relic')
+          break
+        case 'doctrine_trigger':
+          this.play(e.doctrine === 'shatter' ? 'shot_frost' : e.doctrine === 'storm' ? 'overcharge' : e.doctrine === 'siege' ? 'shot_sniper' : 'coin', panFromX(e.at.x))
           break
         case 'tower_specialized':
           this.play('relic') // a commitment chime — same glass bell as a relic
@@ -653,16 +654,10 @@ export class Sfx {
     // Per-kind cooldown plus a global cap keep fast-forward bearable.
     const minGap = MIN_GAP[kind] ?? DEFAULT_MIN_GAP
     if (now - (this.lastPlayed[kind] ?? Number.NEGATIVE_INFINITY) < minGap) return
-    if (now - this.recentWindow > 250) {
-      this.recentWindow = now
-      this.recentCount = 0
-      this.urgentCount = 0
-    }
-    const urgent = ['core_open', 'beam_warning', 'execute_ready', 'beam_hot', 'spire_hit', 'boss', 'carapace', 'gale', 'victory', 'defeat', 'execute', 'meteor', 'frost_nova', 'cataclysm'].includes(kind)
-    if (urgent) { if (this.urgentCount >= 4) return; this.urgentCount += 1 }
-    else { if (this.recentCount >= (settings.quietAudio ? 3 : 8)) return; this.recentCount += 1 }
+    const admitted = this.budget.admit(kind, now, settings.quietAudio)
+    if (!admitted) return
+    const {urgent} = admitted
     this.lastPlayed[kind] = now
-    if (urgent) this.duckUntil = now + 500
 
     const ctx = this.ctx
     // Per-sound bus: notes -> (panner) -> master, with a parallel send into
@@ -693,7 +688,7 @@ export class Sfx {
     for (const note of SOUNDS[kind]) {
       const at = base + (note.at ?? chained)
       if (note.at === undefined) chained += note.dur * 0.9
-      const scaled = (note.gain * (!urgent && now < this.duckUntil ? 0.5 : 1) * (settings.quietAudio && !urgent ? 0.55 : 1) * Math.max(0, Math.min(100, settings.volume))) / 100
+      const scaled = (note.gain * (!urgent && this.budget.duck(now) < 1 ? 0.5 : 1) * (settings.quietAudio && !urgent ? 0.55 : 1) * Math.max(0, Math.min(100, settings.volume))) / 100
       if (scaled <= 0) continue
       this.voiceEnds = this.voiceEnds.filter(end => end > ctx.currentTime)
       this.voiceEnds.push(at + note.dur + 0.02)

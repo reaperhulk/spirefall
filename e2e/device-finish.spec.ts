@@ -1,4 +1,4 @@
-import { clickMenu } from './ui-helpers'
+import { chooseTower, clickMenu } from './ui-helpers'
 import { expect, test } from '@playwright/test'
 import type { GameHarness } from '../src/ui/harness'
 
@@ -24,7 +24,7 @@ test('retina phone resolution follows display size, low quality, and rotation', 
   await page.reload()
   await page.getByTestId('playfield').waitFor()
   await expect.poll(async () => { const d=await dimensions(); return Math.abs(d.backing - d.display) }).toBeLessThan(3)
-  await page.getByTestId('shop-arrow').tap()
+  await chooseTower(page, 'shop-arrow', true)
   const cell = await page.evaluate(() => {
     const map=(window.__harness as GameHarness).getMapInfo()
     // Use a central buildable cell to exercise touch after rotation.
@@ -78,7 +78,8 @@ test('repeated dense sessions release retained heap and keep audio alive', async
   test.setTimeout(90000)
   await page.goto('/?seed=memory-soak')
   await page.getByTestId('playfield').waitFor()
-  await clickMenu(page, 'mute')
+  await page.getByTestId('open-menu').click()
+  await page.getByRole('button',{name:'Resume game',exact:true}).click()
   const cdp = await page.context().newCDPSession(page)
   await cdp.send('Performance.enable')
   const samples = []
