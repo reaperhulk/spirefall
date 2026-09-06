@@ -32,9 +32,9 @@
 .construction-panel { position: relative; flex: 1; min-height: 0; width: 100%; }
 .construction-close { display: none; }
 .shop-towers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; overflow: visible; }
-.shop-card { position: relative; display: flex; flex-direction: row; justify-content: space-between; min-height: 64px; padding: 6px; gap: 2px; }
-.shop-card-top { justify-content: flex-start; gap: 5px; }
-.shop-card-bottom { flex-direction: column; gap: 2px; }
+.shop-card { position: relative; display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; min-height: 64px; padding: 6px; gap: 3px; }
+.shop-card-top { justify-content: flex-start; flex-wrap: nowrap; gap: 5px; width: 100%; }
+.shop-card-bottom { flex-direction: row; justify-content: space-between; gap: 2px; width: 100%; }
 .shop-card .tower-dot { display: none; }
 .shop-card .tower-portrait { width: 32px; height: 32px; flex-basis: 32px; }
 .shop-card-name { font-size: 12px; white-space: nowrap; overflow: visible; text-overflow: clip; }
@@ -178,4 +178,9 @@
   .combat-dock button, .tower-panel-actions button, .tower-panel-actions select {
     min-height: 44px;
   }
+}
+
+@media (max-width: 999px) {
+  /* Keep the board beside the thumb controls on tall portrait screens. */
+  .battlefield-space { align-items: end; }
 }

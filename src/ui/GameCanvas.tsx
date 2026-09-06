@@ -182,7 +182,7 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
   }
 
   return (
-    <div className="playfield-wrap" style={{ maxWidth: MAP_WIDTH * CELL_PX }}>
+    <div className="playfield-wrap">
       <canvas
         ref={canvasRef}
         className="playfield"

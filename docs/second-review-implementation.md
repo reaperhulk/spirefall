@@ -7,17 +7,17 @@ not merely adding controls or passing a shallow screenshot check.
 
 - [x] One CI chain gates Pages on lint, types, unit/balance tests and the full
   browser suite, deploying the same commit. Manual deployment runs this chain.
-- [ ] Play-first desktop layout and phone battlefield/action dock; secondary menu,
+- [x] Play-first desktop layout and phone battlefield/action dock; secondary menu,
   contextual build/combat controls, accessible overlays and viewport tests.
-- [ ] Between-wave report with actionable highlights and useful placement advice.
+- [x] Between-wave report with actionable highlights and useful placement advice.
 - [x] Automatic normal bounty, optional small collection bonus, intentional economy tuning.
 - [x] Four mechanical doctrines and specialization in the opening act.
 - [x] Guardian milestones that unlock environments and persistent tactical choices.
 - [x] Authored tactical map situations and telegraphed act assault/reward decisions.
-- [ ] Larger tower identity, readable specialties and threats, biome landmarks.
-- [ ] Longer musical development, distinct instruments, space for critical cues.
-- [ ] Sustained emulated device performance and touch response measurements.
-- [ ] Re-derived balance envelopes and goldens, complete browser matrix, deployed review.
+- [x] Larger tower identity, readable specialties and threats, biome landmarks.
+- [x] Longer musical development, distinct instruments, space for critical cues.
+- [x] Sustained emulated device performance and touch response measurements.
+- [x] Re-derived balance envelopes and goldens, complete browser matrix, deployed review.
 
 Physical thermal behavior and speaker/headphone listening require real devices;
 emulation and offline audio checks will be labelled as such. They do not block
@@ -95,6 +95,31 @@ microbenchmark records isolated medians: 512-entry immutable leak history copy
 are hot-operation measurements, not claims of equivalent frame-rate speedups.
 
 New browser coverage includes four biome art captures and two sustained
-60-second emulated profiles with 40 towers, 300 durable enemies, all spells,
+emulated profiles of at least 60 seconds each with 40 towers, 300 durable enemies, all spells,
 real pointer/touch input, audio, autosaves and forced-GC heap checkpoints.
-Final browser results and deployment verification are recorded below when green.
+The complete 97-test suite passed and deployed commit bd24aa8 in
+[CI run 34016160441](https://github.com/reaperhulk/spirefall/actions/runs/34016160441).
+All 319 unit tests pass. Four-biome Deep fuzz also passed on the same engine
+rules in commit 218d920; all seven rules-4 golden replays remain exact.
+
+The raw browser/audio results are in `second-review-browser-profile.json`.
+Six measured windows took 76.9 seconds on desktop (1280×720, DPR 1, CPU 2×)
+and 93.5 seconds on phone (390×844, DPR 3, CPU 4×). The worst window's p95
+input-to-render latency was 37.2ms desktop and 41.3ms phone. Retained heap grew
+less than 1 MiB after warmup in both. All 40 towers and 300 enemies remained,
+more than 20 towers fired, audio stayed running, and controls fit throughout.
+Under CPU throttling, frame-interval p95 was 33.4ms desktop and 50.1ms phone;
+these stress profiles do not claim 60fps on physical hardware.
+
+Unthrottled dense profiles recorded p95 frame intervals of 16.8ms at 1×/3×/10×.
+Enemy-render p95 was 3.3/4.0/3.0ms; the previous comparable run was 4.0/3.6/3.5ms.
+The mixed result is retained: the walker simplification reduces draw calls,
+but runner variance prevents a blanket measured frame-rate speedup claim.
+All 20 biome/phase offline renders were finite, unclipped and decayed to silence.
+
+A live review at 1363×936 confirmed zero page overflow, then identified an old
+816px cap inside the canvas wrapper. The closing pass removes it, requires the
+canvas to fill its allocated board in every desktop viewport test, enlarges
+shop portraits, prevents card wrapping, and places phone boards nearer the dock.
+Physical heat, battery use, speaker quality and extended human listening remain
+outside these automated and browser-based checks.

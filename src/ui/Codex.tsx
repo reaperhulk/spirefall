@@ -195,7 +195,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'Selling & enhancing',
-    body: `Selling a tower refunds ${SELL_REFUND_PCT}% of everything invested in it. Past tier 3, towers can be enhanced forever: +${ENHANCE_DAMAGE_PCT}% damage per level, each level costing ${ENHANCE_COST_GROWTH_PCT}% of the last — the unbounded late-game gold sink.`,
+    body: `Selling refunds ${SELL_REFUND_PCT}% of placement and tier-upgrade costs, or 100% if the tower has never fired or paid income. Specialization and enhancement spending is not refunded. Past tier 3, towers can be enhanced forever: +${ENHANCE_DAMAGE_PCT}% damage per level, each level costing ${ENHANCE_COST_GROWTH_PCT}% of the last — the unbounded late-game gold sink.`,
   },
   {
     title: 'Relics',

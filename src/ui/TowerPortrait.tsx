@@ -7,7 +7,8 @@ export function TowerPortrait({ type }: { type: TowerType }) {
     const ctx = ref.current?.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, 64, 64)
-    ctx.save(); ctx.translate(32, 34); ctx.scale(1.6, 1.6)
+    const scale = type === 'lance' ? 1.55 : type === 'tesla' ? 2 : 2.3
+    ctx.save(); ctx.translate(32, 34); ctx.scale(scale, scale)
     drawTowerBody(ctx, { type, tier: 1, id: 0, spec: null }, -Math.PI / 2, 0)
     ctx.restore()
   }, [type])

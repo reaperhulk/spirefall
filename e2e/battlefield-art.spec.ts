@@ -26,6 +26,8 @@ for(const biome of ['verdant','frostfen','emberwaste','highlands'] as const) tes
     h.resetPerformance(); h.fastForward(1/30)
   },biome)
   await expect.poll(()=>page.evaluate(()=>(window.__harness as GameHarness).getPerformance().render?.samples ?? 0)).toBeGreaterThan(0)
+  // Let the spawn scale and hit flashes finish before judging silhouettes.
+  await page.waitForTimeout(400)
   expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1)).toBe(true)
   await info.attach(`battlefield-${biome}.png`,{body:await page.screenshot(),contentType:'image/png'})
 })

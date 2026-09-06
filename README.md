@@ -21,6 +21,7 @@ npm run dev     # then open http://localhost:5173
 ```
 
 - **Build**: pick a tower in the shop (hotkeys 1–8), click the field to place.
+  On phones, open Build; picking a tower returns to the full battlefield.
   The preview shows route changes and coverage gained/lost before committing.
   Towers block the path — build mazes. Eight types: Arrow (2× vs fliers), Cannon
   (splash), Frost (slows), Tesla (chains), Sniper (pierces shields, 1.5× vs
@@ -28,7 +29,7 @@ npm run dev     # then open http://localhost:5173
   (ramps +15%/hit on a held target — the boss-killer). Click a
   tower for its itemized damage breakdown, upgrades, and targeting (six modes,
   including Weakest and Elite Hunter).
-- **Fight**: press *Start wave* (or Space; ▶▶ auto-advances). The scouting report
+- **Fight**: press *Send wave* (or Space; auto-advance lives in Menu). The scouting report
   shows exactly what's coming — counts, total HP, elites, affixes. Cast Meteor /
   Frost Nova (Q/W, then click), Gold Rush (E), and Bulwark (F) during waves.
   Watch for fliers that soar over mazes, phasing wraiths, carriers that birth
@@ -38,8 +39,14 @@ npm run dev     # then open http://localhost:5173
   Three shared command charges power 250% overcharged shots; one charge
   recovers every six combat seconds before upgrades. B toggles the beam;
   V executes a wounded target, G collects, and O charges a selected tower.
+- **Collect**: 95% of adjusted kill bounty banks immediately; the remaining 5%
+  is an optional pickup. Between waves, the report points to escaped threats,
+  blocked shots, idle towers and gaps on the final approach.
 - **Choose**: pick a persistent Shatter, Siege, Storm or War economy doctrine
-  from wave 2, with opening and counterplay guides. Relic offers identify matching
+  from wave 2, with opening and counterplay guides. Shatter stores Frost stacks
+  for heavy hits; Siege rewards held aim; Storm connects Tesla discharges;
+  War Economy supplies Mint-backed requisitions. Tier-2 towers can specialize,
+  with a once-per-run 20-gold commission after wave 2. Relic offers identify matching
   towers and owned synergies. A focused reroll costs extra and guarantees one
   unowned family relic, sharing the normal once-per-offer limit. Every 5 waves the ruins offer a relic (31 in the pool, with
   rarities, one paid reroll, and a pity floor past wave 15). Skipping pays gold.
@@ -52,7 +59,10 @@ npm run dev     # then open http://localhost:5173
   wave past victory strikes a permanent, stacking Cataclysm. Win again and the
   **Crucible** hardens each subsequent run for bonus sparks and embers.
 - **Vary it**: battlefields GENERATE per run across 4 biomes (marsh, lava vents,
-  mesas — each biome fights differently and unlocks up the meta ladder), take an
+  mesas — each biome fights differently), with six named tactical situations.
+  Guardian kills at waves 6/12/18 permanently unlock the next biomes and award
+  first-kill Sparks at settlement. Accept three-wave Iron Column or Swift Swarm
+  assaults for explicit rewards, or skip the extra danger. Take an
   optional shrine defense for extra gold, take an opt-in Trial for bonus sparks (Glass Spire, Swift Horde, Iron Horde, Famine,
   No Mercy, Blackout), race the normalized **Daily** (fixed progression, arsenal and rules, with day streaks),
   or share any run as a link with `?seed=<anything>`.
@@ -71,8 +81,9 @@ Auto/High/Low graphics quality. Direct target, execute and beam buttons sit besi
 the battlefield. Music carries authored themes through preparation, pressure,
 bosses, victory and ascension, voiced differently in each biome.
 
-See [the September release report](docs/roadmap-implementation.md) for the full
-implementation checklist, measurements, build-family results and validation limits.
+See [the second-review implementation report](docs/second-review-implementation.md)
+for the current checklist, measurements, build-family results and validation limits.
+New runs use rules 5; existing saved runs and replays retain their original rules.
 
 ## Testing
 
@@ -103,18 +114,22 @@ held-out pilot and geography report in `docs/release-profile.json`.
 and unobscured battlefield, HUD, construction, upgrade and spell controls,
 with first-run hints visible and with late-run content. Touch checks exercise
 placement, upgrades, doctrines, shrine dialogs and rotation; the entire board
-must fit in view, while the surrounding phone controls use vertical scrolling.
-Screenshots are attached to the Playwright report in CI.
+and combat dock must fit without document scrolling. Build and Inspect open as
+explicit drawers; dialogs scroll internally when needed.
+Screenshots are attached to the Playwright report in CI. Sustained desktop and
+phone CPU emulation in `e2e/sustained-performance.spec.ts` records six 10-second
+windows of dense combat, real input, audio, saves and retained heap.
 
 ## Deploying
 
 CI runs lint/typecheck/tests/build plus the Playwright suite on every push and PR.
-`deploy.yml` publishes to GitHub Pages on pushes to main once Pages is enabled for
-the repository (Settings → Pages → Source: GitHub Actions).
+The same `ci.yml` workflow deploys that exact commit to Pages only after both
+check and browser jobs pass. Manual CI runs use the same gates; pull requests
+never deploy. Pages must use GitHub Actions as its source in repository settings.
 
 ## Status
 
-**September improvement release.** Eight tower types, six pairs of combat
+**September second-review release.** Eight tower types, six pairs of combat
 specializations, four build doctrines, four biomes with authored structural
 patterns, act guardians and a dedicated finale, relic and progression tradeoffs,
 normalized Daily challenges, and seekable replays. Canvas fortress and tower art

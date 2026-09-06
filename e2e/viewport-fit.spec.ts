@@ -45,6 +45,7 @@ async function expectDesktopFit(page: Page, phase: string) {
       .map(([x, y]) => document.elementFromPoint(x!, y!)?.getAttribute('data-testid'))
     return {width: innerWidth, height: innerHeight, scrollX, scrollY,
       scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight,
+      boardWidth:document.querySelector('.board')!.getBoundingClientRect().width,
       controls, corners, clippedNames: inspector ? [] : [...document.querySelectorAll('.shop-card-name')]
         .filter(el => el.scrollWidth > el.clientWidth + 1).map(el => el.textContent)}
   })
@@ -63,6 +64,7 @@ async function expectDesktopFit(page: Page, phase: string) {
   expect(result.corners, `${phase}: battlefield obscured`).toEqual(Array(4).fill('playfield'))
   expect(result.clippedNames, `${phase}: tower names truncated`).toEqual([])
   const canvas = result.controls.find(c => c.id === 'playfield')!
+  expect(canvas.width, `${phase}: canvas failed to fill its allocated board`).toBeCloseTo(result.boardWidth, 0)
   expect(canvas.width, `${phase}: board shrank below a useful size`).toBeGreaterThan(350)
   expect(canvas.width / canvas.height).toBeCloseTo(24 / 14, 1)
 }
