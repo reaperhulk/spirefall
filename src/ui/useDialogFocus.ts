@@ -31,7 +31,7 @@ export function useDialogFocus(): void {
       }
     }
     const observer = new MutationObserver(update)
-    observer.observe(document.body, { childList: true, subtree: true })
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-modal'] })
     document.addEventListener('keydown', key, true)
     update()
     return () => { observer.disconnect(); document.removeEventListener('keydown', key, true) }

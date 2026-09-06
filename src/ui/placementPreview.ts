@@ -8,6 +8,7 @@ import type { CellPos, RunState, Tower, TowerType } from '../engine/types'
 export interface PlacementPreview {
   ok: boolean; reason: string; affordable: boolean; range: number
   before: CellPos[]; after: CellPos[]; gained: CellPos[]; lost: CellPos[]
+  coverageAdvice: string
   newCoverage: number; supportTargets: number; routeDelta: number
 }
 // Maps and tower layouts stay stable through ordinary ticks. Economy and
@@ -33,7 +34,11 @@ export function placementPreview(state: RunState, type: TowerType, cell: CellPos
     const oldCovered = covered(before), newCovered = covered(after)
     const oldSet = new Set(oldCovered.map(c => cellIndex(map,c))), newSet = new Set(newCovered.map(c => cellIndex(map,c)))
     const at = cellCenter(cell)
-    cached = {range,before,after,gained:newCovered.filter(c => !oldSet.has(cellIndex(map,c))),lost:oldCovered.filter(c => !newSet.has(cellIndex(map,c))),newCoverage:TOWERS[type].support ? 0 : after.filter(c => distSq(cellCenter(c),at) <= range*range).length,supportTargets:type === 'beacon' ? state.towers.filter(t => !TOWERS[t.type].support && distSq(cellCenter(t.cell),at) <= range*range).length : 0,routeDelta:after.length-before.length}
+    const unique = after.filter(c => !newSet.has(cellIndex(map, c)) && distSq(cellCenter(c), at) <= range * range)
+    const final = new Set(after.slice(Math.floor(after.length * 0.7)).map(c => cellIndex(map, c)))
+    const rearGain = unique.filter(c => final.has(cellIndex(map, c))).length
+    const coverageAdvice = rearGain > 0 ? `Protects ${rearGain} exposed cells on the final approach.` : unique.length > 0 ? `Adds ${unique.length} previously uncovered route cells.` : 'Overlaps existing coverage; useful for concentrated damage.'
+    cached = {coverageAdvice,range,before,after,gained:newCovered.filter(c => !oldSet.has(cellIndex(map,c))),lost:oldCovered.filter(c => !newSet.has(cellIndex(map,c))),newCoverage:TOWERS[type].support ? 0 : after.filter(c => distSq(cellCenter(c),at) <= range*range).length,supportTargets:type === 'beacon' ? state.towers.filter(t => !TOWERS[t.type].support && distSq(cellCenter(t.cell),at) <= range*range).length : 0,routeDelta:after.length-before.length}
     cachedKey=key; cachedMap=map
   }
   let validation=cachedValidity
@@ -45,5 +50,5 @@ export function placementSummary(p: PlacementPreview, type: TowerType): string {
   if (!p.ok) return `Cannot build: ${p.reason}.`
   const budget = p.affordable ? '' : 'Not enough gold. '
   const role = type === 'mint' ? 'Mint produces income; no attack coverage.' : type === 'beacon' ? `Aura reaches ${p.supportTargets} combat towers.` : `New tower covers ${p.newCoverage} route cells.`
-  return `${budget}${role} Route ${p.routeDelta >= 0 ? '+' : ''}${p.routeDelta} cells. Existing defense: ${p.gained.length} covered cells gained, ${p.lost.length} lost.`
+  return `${budget}${role} ${TOWERS[type].support ? '' : p.coverageAdvice} Route ${p.routeDelta >= 0 ? '+' : ''}${p.routeDelta} cells. Existing defense: ${p.gained.length} covered cells gained, ${p.lost.length} lost.`
 }

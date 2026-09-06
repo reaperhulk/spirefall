@@ -431,7 +431,7 @@ export function CodexModal({
                   <div className="codex-entry-head">
                     <strong>{m.title}</strong>
                   </div>
-                  <p className="codex-trait">{m.body}</p>
+                  <p className="codex-trait">{m.title === 'Gold on the ground' && (state.rulesVersion ?? 4) >= 5 ? '95% of adjusted bounty banks automatically; the remaining 5% is an optional pickup. Sweep bonuses with your pointer or finger. Coins wait through planning and expire after 20 seconds of combat. Collector’s Reach and Spire Magnet apply to these bonuses. Wave clears and Mints pay directly.' : m.title === 'Specializations' && (state.rulesVersion ?? 4) >= 5 ? 'Combat towers choose a path from tier 2. After wave 2, your first specialization costs only 20 gold. The commission is spent for the run, even if the tower is sold.' : m.body}</p>
                 </div>
               ))}
               <div className="codex-entry">

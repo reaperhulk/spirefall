@@ -6,7 +6,8 @@ import type { GameHarness } from '../src/ui/harness'
 for (const speed of [1, 3, 10]) test(`dense browser profile ${speed}x`, async ({ page }, testInfo) => {
   await page.goto('/?seed=browser-profile')
   await page.getByTestId('playfield').waitFor()
-  await page.getByTestId('mute').click()
+  await page.getByTestId('open-menu').click()
+  await page.getByRole('button', {name:'Resume game',exact:true}).click()
   const before = await page.evaluate((speed) => {
     const h = window.__harness as GameHarness
     h.setSpeed(0)

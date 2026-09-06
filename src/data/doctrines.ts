@@ -12,3 +12,13 @@ export function doctrineDamage(id: DoctrineId | null | undefined, tower: TowerTy
 }
 export const COMMAND_CHARGES = 3
 export const COMMAND_RECHARGE_TICKS = 180
+
+export function doctrineDescription(id: DoctrineId, rules = 5): string {
+  if (rules >= 5) return DOCTRINES[id].description
+  return {
+    shatter: 'All towers deal +20% damage to slowed enemies.',
+    siege: 'Snipers and Lances deal +15% damage.',
+    storm: 'Unlock Tesla for this run; Tesla deals +20% damage.',
+    war_economy: 'Unlock Mint; +15% income, −5% tower damage.',
+  }[id]
+}

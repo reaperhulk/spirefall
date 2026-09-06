@@ -83,7 +83,7 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
       dpr = canvas.width / (MAP_WIDTH * CELL_PX)
       graphicsState.reduced = settings.graphicsQuality === 'low' || (settings.graphicsQuality === 'auto' && adaptive.scale < 1)
       const liveUi = uiRef.current
-      const signature = [liveUi.shopSelection,liveUi.abilitySelection,liveUi.selectedTowerId,liveUi.hoverCell?.cx,liveUi.hoverCell?.cy,settings.colorAssist,settings.reducedMotion,settings.quietEffects,settings.graphicsQuality].join(':')
+      const signature = [liveUi.shopSelection,liveUi.abilitySelection,liveUi.selectedTowerId,liveUi.hoverCell?.cx,liveUi.hoverCell?.cy,liveUi.reviewCell?.cx,liveUi.reviewCell?.cy,settings.colorAssist,settings.reducedMotion,settings.quietEffects,settings.graphicsQuality].join(':')
       const frozen = session.suspended || session.speed <= 0 || session.terminal || session.seeking
       const animating = session.effects.some(fx => now < fx.t0 + fx.dur)
       last = now

@@ -1,82 +1,167 @@
-/* The desktop play surface budgets BOTH dimensions. Optional reference text
-   belongs in dialogs; combat never depends on scrolling to another control. */
-.play-layout, .battlefield-column, .battlefield-space, .control-column { display: contents; }
-.board { width: min(100%, calc((100svh - 80px) * 24 / 14)); }
-.construction-panel { width: 100%; position: relative; }
-.shop-abilities { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; overflow: visible; }
-.run-context { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 12px; }
+/* Size the play surface from the space left by real controls in both axes. */
+.app { height: 100dvh; max-width: 1800px; gap: 8px; }
+.app > .hud, .app > .replay-banner, .app > .save-warning { flex: none; }
+.hud { flex-wrap: nowrap; gap: 12px; min-height: 44px; }
+.hud-title { min-width: 0; font-size: 17px; }
+.hud-wave { font-size: 11px; }
+.hud-spire { min-width: 75px; max-width: 340px; margin-left: auto; }
+.hud-gold { min-width: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hud button { min-height: 40px; }
+.play-layout { display: grid; grid-template-columns: minmax(0, 1fr) 288px; gap: 16px; width: 100%; flex: 1; min-height: 0; }
+.battlefield-column { display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 0; }
+.battlefield-column > :not(.battlefield-space) { flex: none; }
+.battlefield-column .hint-banner { width: 100%; min-height: 44px; height: 44px; padding: 5px 44px 5px 10px; font-size: 12px; }
+.hint-close { min-height: 36px; min-width: 36px; }
+.battlefield-column .wave-preview { min-height: 36px; height: 36px; padding: 2px 6px; flex-wrap: nowrap; overflow-x: auto; }
+.wave-preview > * { flex-shrink: 0; }
+.battlefield-column .boon-strip { width: 100%; padding: 0; height: 40px; overflow-x: auto; }
+.boon-row { width: 100%; display: flex; gap: 6px; }
+.boon-btn { flex: 1; min-width: 0; min-height: 36px; }
+.boon-label, .boon-skip { display: none; }
+.battlefield-space { display: grid; place-items: center; flex: 1; min-width: 0; min-height: 0; container-type: size; }
+.battlefield-space .board { width: min(100cqw, calc((100cqh - 40px) * 24 / 14)); }
+.placement-report { height: 32px; min-height: 32px; margin: 8px 0 0; font-size: 11px; line-height: 16px; overflow-y: auto; }
+.wave-summary { position: absolute; bottom: 0; left: 0; width: 100%; height: 36px; padding: 3px 8px; text-align: left; font-size: 12px; color: #f2d594; border-color: #645335; background: #211e16; }
+.command-dock { display: flex; align-items: stretch; gap: 6px; min-height: 40px; flex-wrap: nowrap; width: 100%; }
+.command-dock button, .command-dock select { min-height: 40px; font-size: 13px; padding: 4px 10px; }
+.command-dock .btn-wave { min-width: 122px; }
+.command-dock select { min-width: 64px; background: #141a26; color: #d8dee9; border: 1px solid #2c3448; border-radius: 6px; }
+.command-dock [data-testid='open-plan'] { margin-left: auto; }
+.build-toggle { display: none; }
+.control-column { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; }
+.construction-panel { position: relative; flex: 1; min-height: 0; width: 100%; }
+.construction-close { display: none; }
+.shop-towers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; overflow: visible; }
+.shop-card { position: relative; display: flex; flex-direction: row; justify-content: space-between; min-height: 64px; padding: 6px; gap: 2px; }
+.shop-card-top { justify-content: flex-start; gap: 5px; }
+.shop-card-bottom { flex-direction: column; gap: 2px; }
+.shop-card .tower-dot { display: none; }
+.shop-card .tower-portrait { width: 32px; height: 32px; flex-basis: 32px; }
+.shop-card-name { font-size: 12px; white-space: nowrap; overflow: visible; text-overflow: clip; }
+.shop-card-name small { display: block; font-size: 9px; font-weight: 400; color: #9ba9bb; }
+.shop-card .air-mark { position: absolute; right: 2px; top: 1px; margin: 0; font-size: 9px; }
+.combat-dock { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: none; gap: 6px; }
+.tactical-bar, .tactical-buttons, .shop-abilities { display: contents; }
+.target-status { grid-column: 1 / -1; height: 20px; min-height: 20px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.combat-dock button { min-width: 0; min-height: 40px; padding: 4px; font-size: 12px; white-space: normal; }
+.combat-dock .cooldown { font-size: 10px; margin: 0; display: block; }
+.command-pool { grid-column: 1 / -1; margin: 0; font-size: 11px; height: 18px; line-height: 18px; }
+.construction-panel .tower-panel { inset: 0; width: 100%; max-height: 100%; padding: 8px; gap: 6px; }
+.construction-panel:has(.tower-panel) .shop { visibility: hidden; }
+.tower-panel-info { flex: 1; min-height: 0; overflow-y: auto; padding-right: 20px; display: flex; flex-direction: column; gap: 6px; }
+.tower-panel-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: none; gap: 6px; font-size: 12px; }
+.tower-panel-actions > label, .tower-panel-actions > .upgrade-preview, .tower-panel-actions > .primary-btn { grid-column: 1 / -1; }
+.tower-panel-actions button { min-height: 32px; padding: 4px 6px; font-size: 12px; }
+.tower-panel-actions .upgrade-preview { font-size: 11px; }
+.doctrine-meter { flex: none; font-size: 11px; }
 .planning-modal { max-width: 900px; }
 .planning-modal .doctrine-panel, .planning-modal .doctrine-summary { margin: 0; max-width: none; }
-.tower-panel-info { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-.tower-panel-actions { flex: none; display: flex; flex-direction: column; gap: 6px; }
-.tower-panel { max-height: calc(100dvh - 32px); }
+.run-menu { max-width: 600px; }
+.run-records { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 0; }
+.menu-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.menu-actions button { min-height: 48px; }
+.review-finding { display: flex; flex-direction: column; text-align: left; gap: 6px; padding: 12px; margin: 8px 0; width: 100%; }
+.review-finding strong { color: #f2d594; }
+.review-finding span { font-size: 13px; line-height: 1.5; }
 
-/* Smaller windows keep the established flowing layout and bottom inspector. */
+/* Phones keep the whole board and dock visible. Build/Inspect are explicit
+   drawers, so selecting a tower never requires scrolling the document. */
 @media (max-width: 999px), (max-height: 539px) {
-  .tower-panel { position: fixed; top: auto; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; }
-  /* Health and a priced repair button cannot share a tiny remainder beside
-     late-run badges. Wrap the group before its button text spills out. */
-  .hud-spire { min-width: min(100%, 280px); }
-  .hud-spire .btn-repair { flex-shrink: 0; }
+  .app { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); gap: 6px; }
+  .hud { min-height: 44px; gap: 8px; }
+  .hud-title { font-size: 12px; flex: 1; }
+  .hud-wave { font-size: 9px; }
+  .hud-spire { min-width: 52px; max-width: 180px; flex: 1; gap: 4px; font-size: 11px; }
+  .hud-gold { font-size: 12px; }
+  .hud button { min-height: 44px; min-width: 44px; padding: 5px 8px; }
+  .play-layout { display: flex; flex-direction: column; gap: 6px; }
+  .battlefield-column { flex: 1; gap: 4px; }
+  .battlefield-column .hint-banner { height: 40px; min-height: 40px; font-size: 11px; line-height: 14px; padding: 3px 40px 3px 8px; }
+  .battlefield-column .wave-preview { height: 30px; min-height: 30px; font-size: 11px; }
+  .wave-preview .preview-unit { min-height: 28px; }
+  .battlefield-column .boon-strip { height: 44px; min-height: 44px; }
+  .boon-btn { min-height: 44px; font-size: 11px; padding: 4px; }
+  .boon-effect { display: none; }
+  .boon-strip > span { display: flex; align-items: center; min-height: 44px; font-size: 11px; }
+  .battlefield-space .board { width: min(100cqw, calc((100cqh - 40px) * 24 / 14)); }
+  .command-dock { min-height: 44px; gap: 4px; }
+  .command-dock button, .command-dock select { min-height: 44px; padding: 3px 6px; font-size: 12px; }
+  .command-dock .btn-wave { min-width: 100px; flex: 1; }
+  .command-dock select { width: 52px; min-width: 52px; }
+  .command-dock [data-testid='pause-game'] { min-width: 44px; }
+  .command-dock [data-testid='open-plan'] { margin-left: 0; min-width: 44px; }
+  .build-toggle { display: block; min-width: 44px; }
+  .control-column { display: contents; }
+  .combat-dock { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .combat-dock button { min-height: 44px; padding: 3px; font-size: 10px; }
+  .combat-dock .key-hint { display: none; }
+  .target-status { display: none; }
+  .command-pool { height: 16px; font-size: 10px; line-height: 16px; }
+  .construction-panel { display: none; position: fixed; z-index: 9; inset: auto 8px 8px auto; width: min(440px, calc(100% - 16px)); max-height: calc(100dvh - 72px); padding: 44px 8px 8px; background: #101722; border: 1px solid #596174; border-radius: 12px; box-shadow: 0 -12px 36px #0009; }
+  .build-open .construction-panel, .inspecting .construction-panel { display: block; }
+  .construction-close { display: block; position: absolute; right: 4px; top: 2px; min-height: 40px; }
+  .construction-panel .shop-towers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .construction-panel .shop-card { min-height: 60px; }
+  .construction-panel .shop-card-name { font-size: 12px; letter-spacing: normal; }
+  .construction-panel .shop-card .cost { font-size: 11px; }
+  .construction-panel .tower-panel { position: relative; inset: auto; width: 100%; max-height: calc(100dvh - 96px); padding: 8px; }
+  .inspecting .construction-panel { padding: 0; }
+  .inspecting .construction-panel > .construction-close, .inspecting .construction-panel .shop { display: none; }
+  .tower-panel-info { max-height: 150px; }
+  .tower-panel-actions button, .tower-panel-actions select { min-height: 44px; }
+  .tower-panel-actions > .upgrade-preview { display: none; }
+  .wave-summary { font-size: 10px; }
 }
 
-@media (min-width: 1000px) and (min-height: 540px) {
-  .app { height: 100dvh; max-width: 1440px; gap: 10px; }
-  .app > .hud, .app > .replay-banner, .app > .save-warning { flex: none; }
-  .hud { gap: 6px 12px; }
-  .hud-right { gap: 6px; }
-  .hud button { font-size: 13px; padding: 5px 8px; min-height: 32px; }
-  .hud .speed-controls button { padding: 4px 7px; min-height: 32px; }
-  .hud-gold { min-width: 60px; }
-  .hud-sparks { min-width: 50px; }
-  .play-layout { display: grid; grid-template-columns: minmax(0, 1fr) 304px; gap: 16px; width: 100%; flex: 1; min-height: 0; }
-  .battlefield-column { display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 0; }
-  .battlefield-column > :not(.battlefield-space) { flex: none; }
-  .battlefield-column .hint-banner { width: 100%; min-height: 48px; padding: 8px 36px 8px 12px; }
-  .battlefield-column .wave-preview { min-height: 36px; padding: 2px 8px; }
-  .battlefield-column .boon-strip { width: 100%; padding: 2px 8px; height: 32px; overflow-x: auto; }
-  .boon-label, .boon-skip { display: none; }
-  .battlefield-space { display: grid; place-items: center; min-height: 0; min-width: 0; flex: 1; container-type: size; }
-  /* Reserve the placement report below the 24×14 board. Container units use
-     the space left after the real header, hints, wave info and plan button. */
-  .battlefield-space .board { width: min(100cqw, calc((100cqh - 48px) * 24 / 14)); }
-  .placement-report { height: 40px; min-height: 40px; margin: 8px 0 0; }
-  .run-context { min-height: 36px; flex-wrap: nowrap; }
-  .run-context button { min-height: 36px; font-size: 12px; padding: 4px 8px; }
-  .control-column { display: flex; flex-direction: column; gap: 8px; min-height: 0; min-width: 0; }
-  .tactical-bar { flex: none; padding: 0; min-height: 0; gap: 6px; }
-  .target-status { min-height: 32px; }
-  .tactical-buttons { gap: 4px; }
-  .tactical-buttons .ability-btn { min-width: 0; padding: 5px 3px; font-size: 12px; }
-  .tactical-buttons .cooldown { display: block; margin: 2px 0 0; }
-  .command-pool { flex: none; margin: 0; min-height: 48px; font-size: 12px; line-height: 1.4; }
-  .construction-panel { flex: 1; min-height: 0; }
-  .shop { gap: 10px; }
-  .shop-towers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; overflow: visible; }
-  .shop-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 52px; padding: 6px; gap: 2px; }
-  .shop-card-top { flex-wrap: nowrap; justify-content: flex-start; gap: 4px; }
-  .shop-card-bottom { flex-direction: column; gap: 4px; }
-  .shop-card-name { font-size: 12px; }
-  .shop-card .tower-portrait { width: 24px; height: 24px; flex-basis: 24px; }
-  .shop-card .air-mark { position: absolute; top: 0; right: 2px; font-size: 8px; margin-left: 0; }
-  .shop-abilities { flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; overflow: visible; gap: 6px; }
-  .shop-abilities .ability-btn { min-height: 40px; padding: 4px; font-size: 12px; }
-  .shop-abilities .cooldown { margin-left: 4px; }
-  /* The inspector replaces the palette in its own column. Its statistics
-     scroll independently; targeting, upgrade, charge and sell stay visible. */
-  .construction-panel .tower-panel { inset: 0; width: 100%; max-height: 100%; padding: 10px; }
-  .construction-panel:has(.tower-panel) .shop { visibility: hidden; }
-  .tower-panel-info { padding-right: 20px; }
-  .tower-panel-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); font-size: 12px; }
-  .tower-panel-actions > label, .tower-panel-actions > .upgrade-preview,
-  .tower-panel-actions > .primary-btn { grid-column: 1 / -1; }
-  .tower-panel-actions button { min-height: 32px; padding: 4px 6px; font-size: 12px; }
-  .tower-panel-actions .upgrade-preview { font-size: 11px; }
+/* Landscape phones use the full height for the battlefield; the compact
+   header and action dock share the right-hand column. */
+@media (orientation: landscape) and (max-height: 539px) {
+  .app { display: grid; grid-template-columns: minmax(0, 1fr) 224px; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; gap: 6px; }
+  .app > .hud { grid-column: 2; grid-row: 1; flex-wrap: wrap; gap: 4px; }
+  .hud-title { flex-basis: 100%; }
+  .hud-spire { min-width: 55px; }
+  .play-layout { display: contents; }
+  .battlefield-column { grid-column: 1; grid-row: 1 / -1; }
+  .control-column { grid-column: 2; grid-row: 2; display: flex; justify-content: end; }
+  .combat-dock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .combat-dock button { min-height: 40px; font-size: 11px; }
+  .battlefield-column .boon-strip, .boon-btn, .boon-strip > span { height: 36px; min-height: 36px; }
+  .battlefield-column .hint-banner { height: 32px; min-height: 32px; font-size: 10px; line-height: 12px; }
+  .battlefield-column .wave-preview { min-height: 28px; height: 28px; }
+  .command-dock { gap: 3px; }
+  .command-dock .btn-wave { min-width: 96px; }
+  .construction-panel { width: min(420px, calc(100% - 16px)); max-height: calc(100dvh - 16px); }
+  .construction-panel .shop-towers { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .construction-panel .shop-card { flex-direction: column; min-height: 76px; }
+  .construction-panel .shop-card-top { flex-direction: column; }
+  .construction-panel .shop-card-name { font-size: 11px; }
+  .construction-panel .shop-card-name small { display: none; }
+  .construction-panel .shop-card-bottom { flex-direction: row; }
+  .construction-panel .tower-panel { max-height: calc(100dvh - 24px); }
+  .tower-panel-info { max-height: 64px; }
 }
-
 @media (pointer: coarse) {
-  .run-context button, .tower-panel-actions button, .tower-panel-actions select,
-  .planning-modal button, .planning-modal summary { min-height: 44px; }
-  .hud button, .hud .speed-controls button { min-height: 44px; min-width: 44px; }
-  .shop-abilities .ability-btn { min-height: 44px; }
+  .planning-modal button, .planning-modal summary, .run-menu button { min-height: 44px; }
+  .hint-close { min-height: 40px; min-width: 40px; }
 }
+@media (orientation: landscape) and (max-height: 539px) {
+  .control-column { justify-content: start; gap: 4px; }
+  .control-column .hint-banner { width: 100%; min-height: 32px; height: 32px; font-size: 9px; line-height: 11px; padding: 2px 34px 2px 4px; }
+  .control-column .hint-close { min-width: 32px; min-height: 32px; }
+  .control-column .wave-preview { min-height: 28px; height: 28px; width: 100%; flex-wrap: nowrap; overflow-x: auto; padding: 0; font-size: 10px; }
+  .control-column .boon-strip { min-height: 36px; height: 36px; width: 100%; padding: 0; }
+  .control-column .boon-btn { min-height: 36px; height: 36px; font-size: 9px; padding: 2px; }
+  .control-column .boon-strip > span { min-height: 36px; font-size: 9px; }
+  .control-column .combat-dock { margin-top: auto; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; }
+  .combat-dock button { min-height: 44px; font-size: 9px; padding: 2px; }
+  .combat-dock .cooldown { font-size: 8px; }
+  .command-pool { font-size: 9px; }
+  .battlefield-space .board { width: min(100cqw, calc((100cqh - 24px) * 24 / 14)); }
+  .placement-report { height: 20px; min-height: 20px; margin-top: 4px; font-size: 10px; line-height: 10px; }
+  .wave-summary { height: 24px; font-size: 10px; }
+}
+
+.modal-backdrop[hidden] { display: none; }
+.beam-meter { position: absolute; inset: auto 3px 2px; height: 3px; background: #384659; border-radius: 3px; overflow: hidden; pointer-events: none; }
+.beam-meter > span { display: block; height: 100%; background: #ffba70; }
+.overheated .beam-meter > span { background: #ff5c68; }

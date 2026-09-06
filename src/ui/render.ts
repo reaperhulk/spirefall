@@ -60,6 +60,13 @@ export function draw(ctx: CanvasRenderingContext2D, session: GameSession, ui: Re
   drawEffects(ctx, session)
   drawAtmosphere(ctx, session, map, theme)
   drawPlacementGhost(ctx, session, ui, map)
+  if (ui.reviewCell && state.phase === 'build') {
+    const at = cellCenter(ui.reviewCell)
+    ctx.strokeStyle = '#fff2b6'; ctx.lineWidth = 3
+    circle(ctx, px(at.x), px(at.y), CELL_PX * 0.8); ctx.stroke()
+    ctx.fillStyle = '#fff2b6'; ctx.textAlign = 'center'; ctx.font = 'bold 11px system-ui'
+    ctx.fillText('CHECK HERE', Math.max(42, Math.min(w - 42, px(at.x))), Math.max(15, px(at.y) - 34)); ctx.textAlign = 'left'
+  }
   drawBossBar(ctx, state, map)
 }
 

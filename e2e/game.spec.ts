@@ -1,3 +1,4 @@
+import { clickMenu, chooseTower } from './ui-helpers'
 import { expect, test, type Page } from '@playwright/test'
 
 // UI smoke suite (PLAN.md §5.7): deliberately shallow on game logic — that
@@ -158,7 +159,7 @@ test('boots clean: canvas, HUD, and harness all present, no console errors', asy
 
 test('placing a tower via real shop + canvas clicks spends gold', async ({ page }) => {
   const errors = await boot(page, 'e2e-place')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   const cells = await findBuildCells(page, 3)
   for (const [cx, cy] of cells) await clickCell(page, cx, cy)
   // Commands apply on the session's next animation frame — poll the count
@@ -182,7 +183,7 @@ test('placing a tower via real shop + canvas clicks spends gold', async ({ page 
 test('a defended wave plays out: enemies die, bounties arrive, build phase returns', async ({ page }) => {
   const errors = await boot(page, 'e2e-wave')
   // Four towers around the path mouth — the horde is dense, two won't hold.
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   await clickCell(page, 4, 5)
   await clickCell(page, 4, 7)
   await clickCell(page, 5, 5)
@@ -214,7 +215,7 @@ test('the rogue-lite loop closes in the browser: defeat → sparks → spire tre
   const errors = await boot(page, 'e2e-loop')
   // Mount a light defense — sparks pay for PROGRESS (waves cleared + kills),
   // so a totally undefended collapse would bank nothing to spend below.
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
   // Then send waves until the spire falls (fastForward is instant).
   await page.evaluate(() => {
@@ -293,9 +294,9 @@ test('the spire beam: B (or the button) toggles it, taps and the cursor aim it',
   // playfield, and the tap-to-aim click below landed on the modal instead.
   // It passed locally with ~0.3s to spare and failed in CI, which is a race
   // the spec should not have been running at all.
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
-  await page.getByTestId('shop-arrow').click() // disarm so clicks below aim the beam
+  await chooseTower(page, 'shop-arrow') // disarm so clicks below aim the beam
   // No fastForward: the 's left' label below is gated on phase 'wave', and
   // skipping 3s ahead left the wave with ~260ms to live — the assertion was
   // a coin flip. Letting it run keeps the wave up for ~3.3s, and the poll
@@ -336,9 +337,9 @@ test('the spire beam: B (or the button) toggles it, taps and the cursor aim it',
 
 test('physical gold: bounties drop as coins, the cursor sweeps them, neglect loses them', async ({ page }) => {
   const errors = await boot(page, 'e2e-coins')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
-  await page.getByTestId('shop-arrow').click() // disarm
+  await chooseTower(page, 'shop-arrow') // disarm
   await page.evaluate(() => {
     window.__harness.dispatch({ type: 'start_wave' })
     window.__harness.fastForward(1)
@@ -423,7 +424,7 @@ test('wave boons: pick one, it blesses exactly one wave, skipping is free', asyn
   await expect(page.getByTestId('boon-active')).toBeVisible()
   expect(await page.evaluate(() => window.__harness.getState().activeBoon)).toBe(offered![0])
   // Survive the wave with a real defense, then: blessing gone, next offer up.
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [cx, cy] of await findBuildCells(page, 4)) await clickCell(page, cx, cy)
   await page.evaluate(() => {
     window.__harness.dispatch({ type: 'start_wave' })
@@ -442,10 +443,10 @@ test('wave boons: pick one, it blesses exactly one wave, skipping is free', asyn
 
 test('overcharge: the panel button arms the next shot and the recharge gates it', async ({ page }) => {
   const errors = await boot(page, 'e2e-overcharge')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   const [[cx, cy]] = await findBuildCells(page, 1)
   await clickCell(page, cx!, cy!)
-  await page.getByTestId('shop-arrow').click() // disarm placement
+  await chooseTower(page, 'shop-arrow') // disarm placement
   await clickCell(page, cx!, cy!) // select the tower
   await expect(page.getByTestId('tower-panel')).toBeVisible()
   await expect(page.getByTestId('overcharge-tower')).toHaveText(/Overcharge/)
@@ -550,7 +551,7 @@ test('wave preview warns about the coming boss mechanic', async ({ page }) => {
 test('watch replay: the last run replays deterministically to the same outcome', async ({ page }) => {
   const errors = await boot(page, 'e2e-replay-watch')
   // A short real run: two towers, waves until the spire falls.
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [cx, cy] of await findBuildCells(page, 2)) await clickCell(page, cx, cy)
   await page.evaluate(() => {
     const send = () => {
@@ -631,7 +632,7 @@ test('watch replay: the last run replays deterministically to the same outcome',
 
 test('replay links: opening a ?replay= URL spectates the exact run on arrival', async ({ page }) => {
   const errors = await boot(page, 'e2e-replay-link')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [cx, cy] of await findBuildCells(page, 2)) await clickCell(page, cx, cy)
   await page.evaluate(() => {
     const send = () => {
@@ -747,7 +748,7 @@ test('relic offers appear in the UI and apply on click', async ({ page }) => {
 test('an armed but unaffordable shop selection never traps you', async ({ page }) => {
   const errors = await boot(page, 'e2e-trap')
   // Spend everything: four arrows at 50 each leaves 0 gold with arrow armed.
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   await clickCell(page, 4, 5)
   await clickCell(page, 4, 7)
   await clickCell(page, 5, 5)
@@ -756,13 +757,13 @@ test('an armed but unaffordable shop selection never traps you', async ({ page }
 
   // The unaffordable card must still toggle the selection off...
   await expect(page.getByTestId('shop-arrow')).toBeEnabled()
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   await clickCell(page, 4, 5)
   await expect(page.getByTestId('tower-panel')).toBeVisible() // click selects, not places
 
   // ...and clicking an existing tower while re-armed inspects it directly.
   await page.getByTestId('close-tower-panel').click()
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   await clickCell(page, 4, 7)
   await expect(page.getByTestId('tower-panel')).toBeVisible()
   const snap = await page.evaluate(() => window.__harness.snapshot())
@@ -778,12 +779,12 @@ test('give up ends the run, zero-progress abandons pay zero sparks, and high spe
   expect(await page.evaluate(() => window.__harness.getSpeed())).toBe(10)
 
   // Cancel first: the dialog must be a real question, not a speed bump.
-  await page.getByTestId('abandon-run').click()
+  await clickMenu(page, 'abandon-run')
   await page.getByTestId('confirm-no').click()
   await expect(page.getByTestId('confirm-modal')).not.toBeVisible()
   expect((await page.evaluate(() => window.__harness.snapshot())).phase).toBe('build') // run unharmed
 
-  await page.getByTestId('abandon-run').click()
+  await clickMenu(page, 'abandon-run')
   await page.getByTestId('confirm-yes').click() // in-app confirm, not window.confirm
   await expect(page.getByTestId('run-over')).toBeVisible()
   // Exploit guard: giving up before clearing anything must earn NOTHING —
@@ -810,12 +811,12 @@ test.describe('touch', () => {
 
   test('tower popups dismiss on touch: ✕ closes the panel, tooltips never stick', async ({ page }) => {
     const errors = await boot(page, 'e2e-touch')
-    await page.getByTestId('shop-arrow').tap()
+    await chooseTower(page, 'shop-arrow', true)
     await tapCell(page, 7, 5)
     await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
 
     // Disarm, then tap the tower: the panel opens and no hover tooltip sticks.
-    await page.getByTestId('shop-arrow').tap()
+    await chooseTower(page, 'shop-arrow', true)
     await tapCell(page, 7, 5)
     await expect(page.getByTestId('tower-panel')).toBeVisible()
     await expect(page.getByTestId('tower-tooltip')).not.toBeVisible()
@@ -836,7 +837,7 @@ test.describe('touch', () => {
   test('hold-to-aim: a touch drag shows the loupe and places at the RELEASE cell', async ({ page }) => {
     const errors = await boot(page, 'e2e-wave')
     await page.locator('.hint-close').tap()
-    await page.getByTestId('shop-arrow').tap()
+    await chooseTower(page, 'shop-arrow', true)
 
     // While armed, touch drags must aim — not scroll the page.
     await expect(page.getByTestId('playfield')).toHaveCSS('touch-action', 'none')
@@ -939,20 +940,7 @@ const STANDARD_VIEWPORTS: [string, number, number][] = [
   ['desktop', 1280, 720],
 ]
 
-const HUD_CONTROLS = [
-  'mute',
-  'daily-run',
-  'open-stats',
-  'open-codex',
-  'open-tree',
-  'open-settings',
-  'abandon-run',
-  'start-wave',
-  'auto-start',
-  'repair-spire',
-  'shop-arrow',
-  'shop-lance', // the LAST tower card: all eight must share the row, never scroll off-edge
-]
+const HUD_CONTROLS = ['open-menu', 'start-wave', 'pause-game', 'game-speed', 'repair-spire', 'shop-arrow', 'shop-lance']
 
 for (const [name, width, height] of STANDARD_VIEWPORTS) {
   test.describe(`layout @ ${name} (${width}×${height})`, () => {
@@ -973,7 +961,7 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
         for (const id of HUD_CONTROLS) {
           // Desktop management replaces the palette; spells and tactical
           // controls remain visible beside it (viewport-fit.spec.ts).
-          if (id.startsWith('shop-') && width >= 1000 && height >= 540 && await page.getByTestId('tower-panel').isVisible()) continue
+          if (id.startsWith('shop-') && !await page.getByTestId(id).isVisible()) continue
           const box = await page.getByTestId(id).boundingBox()
           expect(box, `${phase}: ${id} not rendered`).not.toBeNull()
           expect(box!.x, `${phase}: ${id} clipped left`).toBeGreaterThanOrEqual(-0.5)
@@ -995,7 +983,7 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
             return el ? { scrollW: el.scrollWidth, clientW: el.clientWidth } : null
           })
           if (preview) {
-            expect(preview.scrollW, `${phase}: wave preview scrolls internally`).toBeLessThanOrEqual(preview.clientW + 1)
+            expect(preview.clientW, `${phase}: bounded scouting strip`).toBeLessThanOrEqual(width)
           }
         }
       }
@@ -1003,10 +991,10 @@ for (const [name, width, height] of STANDARD_VIEWPORTS) {
       await assertLayout('build phase')
 
       // Tower panel open (a bottom sheet on phones) must not break layout.
-      await page.getByTestId('shop-arrow').click()
+      await chooseTower(page, 'shop-arrow')
       await clickCell(page, 4, 5)
       await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
-      await page.getByTestId('shop-arrow').click() // disarm
+      await chooseTower(page, 'shop-arrow') // disarm
       await clickCell(page, 4, 5)
       await expect(page.getByTestId('tower-panel')).toBeVisible()
       const panel = (await page.getByTestId('tower-panel').boundingBox())!
@@ -1064,7 +1052,7 @@ test.describe('tablet portrait', () => {
     // playfield jumped every wave. Both are now constant-presence.
     const errors = await boot(page, 'e2e-tablet')
     await page.locator('.hint-close').click() // the one-time hint banner is a legitimate shift; remove it
-    await page.getByTestId('shop-arrow').click()
+    await chooseTower(page, 'shop-arrow')
     await clickCell(page, 4, 5)
     await clickCell(page, 4, 7)
     await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(2)
@@ -1088,10 +1076,10 @@ test.describe('mobile viewport', () => {
 
   test('tower panel is a bottom sheet: buttons stay tappable over the shop', async ({ page }) => {
     const errors = await boot(page, 'e2e-mobile')
-    await page.getByTestId('shop-arrow').tap()
+    await chooseTower(page, 'shop-arrow', true)
     await tapCell(page, 7, 5)
     await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
-    await page.getByTestId('shop-arrow').tap() // disarm
+    await chooseTower(page, 'shop-arrow', true) // disarm
     await tapCell(page, 7, 5)
     await expect(page.getByTestId('tower-panel')).toBeVisible()
 
@@ -1103,7 +1091,7 @@ test.describe('mobile viewport', () => {
     await expect(page.getByTestId('tower-panel')).not.toBeVisible()
 
     // With the sheet gone, the shop is interactive again.
-    await page.getByTestId('shop-cannon').tap()
+    await chooseTower(page, 'shop-cannon', true)
     await expect(page.getByTestId('shop-cannon')).toHaveClass(/selected/)
     expect(errors).toEqual([])
   })
@@ -1113,7 +1101,7 @@ test.describe('mobile viewport', () => {
     // (which only counts for mouse). This pins the unlock listeners against
     // regressing to a desktop-only set that leaves phones silent.
     const errors = await boot(page, 'e2e-mobile-audio')
-    await page.getByTestId('shop-arrow').tap()
+    await chooseTower(page, 'shop-arrow', true)
     await expect.poll(() => page.evaluate(() => window.__harness.audioState())).toBe('running')
     // Not just claimed — PROBED: the audio clock was observed advancing.
     await expect.poll(() => page.evaluate(() => window.__harness.audioLive())).toBe(true)
@@ -1171,12 +1159,14 @@ test('sound button reflects PROBED audio state: pending on load, live after a ge
 
   // Clicking the pending button means "I want sound": the click unlocks the
   // context and the probe flips the icon — it must NOT mute instead.
-  await page.getByTestId('mute').click()
+  await page.getByTestId('open-menu').click()
   await expect(page.getByTestId('mute')).toHaveAttribute('aria-label', 'Mute sound')
   await expect.poll(() => page.evaluate(() => window.__harness.audioLive())).toBe(true)
 
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click()
+
   // Live now: the same button is a plain mute toggle again.
-  await page.getByTestId('mute').click()
+  await clickMenu(page, 'mute')
   await expect(page.getByTestId('mute')).toHaveAttribute('aria-label', 'Unmute sound')
   await expect(page.getByTestId('mute')).toHaveAttribute('aria-pressed', 'true')
   expect(errors).toEqual([])
@@ -1203,7 +1193,7 @@ test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refun
 
 test('saves survive a reload mid-run', async ({ page }) => {
   const errors = await boot(page, 'e2e-save')
-  await page.getByTestId('shop-cannon').click()
+  await chooseTower(page, 'shop-cannon')
   const [[scx, scy]] = await findBuildCells(page, 1)
   await clickCell(page, scx!, scy!)
   await page.evaluate(() => {
@@ -1225,7 +1215,7 @@ test('saves survive a reload mid-run', async ({ page }) => {
 
 test('settings: volume and reduced motion persist across reloads', async ({ page }) => {
   const errors = await boot(page, 'e2e-settings')
-  await page.getByTestId('open-settings').click()
+  await clickMenu(page, 'open-settings')
   await expect(page.getByTestId('settings-modal')).toBeVisible()
   await page.getByTestId('volume-slider').fill('40')
   await page.getByTestId('music-slider').fill('25')
@@ -1265,11 +1255,11 @@ test('PWA surface: manifest and service worker are served and coherent', async (
 
 test('save transfer: export a code, wipe, import restores progress', async ({ page }) => {
   const errors = await boot(page, 'e2e-transfer')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   await clickCell(page, 7, 5)
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
 
-  await page.getByTestId('open-settings').click()
+  await clickMenu(page, 'open-settings')
   await page.getByTestId('export-save').click()
   const code = await page.getByTestId('transfer-code').inputValue()
   expect(code.length).toBeGreaterThan(50)
@@ -1279,7 +1269,7 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
   await page.waitForLoadState()
   await page.waitForSelector('[data-testid="playfield"]')
   expect((await page.evaluate(() => window.__harness.snapshot())).towers).toBe(0)
-  await page.getByTestId('open-settings').click()
+  await clickMenu(page, 'open-settings')
   await page.getByTestId('transfer-code').fill(code)
   await page.getByTestId('import-save').click()
   await page.getByTestId('confirm-yes').click() // in-app confirm, not window.confirm
@@ -1287,7 +1277,7 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
 
   // Garbage codes are rejected without nuking anything.
-  await page.getByTestId('open-settings').click()
+  await clickMenu(page, 'open-settings')
   await page.getByTestId('transfer-code').fill('not-a-save')
   await page.getByTestId('import-save').click()
   await page.getByTestId('confirm-yes').click()
@@ -1298,7 +1288,7 @@ test('save transfer: export a code, wipe, import restores progress', async ({ pa
 test('first-run hints guide placement, then retire forever', async ({ page }) => {
   const errors = await boot(page, 'e2e-hints')
   await expect(page.getByTestId('hint')).toContainText('Pick a tower')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   await clickCell(page, 7, 5)
   await clickCell(page, 8, 5)
   await expect(page.getByTestId('hint')).toContainText('Send the wave')
@@ -1374,7 +1364,7 @@ test('the Spire Tree graph: nodes carry state, a purchase runs charge down the l
   await page.evaluate(() => {
     window.__harness.getMeta().sparks = 600
   })
-  await page.getByTestId('open-tree').click()
+  await clickMenu(page, 'open-tree')
   await expect(page.getByTestId('tree-graph')).toBeVisible()
 
   // Tier 1 is open on a fresh account; Iron tier 2 is gated behind spend.
@@ -1523,11 +1513,11 @@ test('keyboard-only build: arm with 1, steer with arrows, place with Enter', asy
 
 test('auto-advance sends the next wave by itself', async ({ page }) => {
   const errors = await boot(page, 'e2e-auto')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [cx, cy] of [[4, 5], [4, 7], [5, 5], [5, 7]]) {
     await clickCell(page, cx!, cy!)
   }
-  await page.getByTestId('auto-start').click()
+  await clickMenu(page, 'auto-start')
   await page.getByTestId('start-wave').click()
   await page.evaluate(() => window.__harness.fastForward(120)) // clear wave 1
   // Without touching anything, wave 2 should start on its own.
@@ -1537,7 +1527,7 @@ test('auto-advance sends the next wave by itself', async ({ page }) => {
 
 test('daily run: shared date seed, best-of-today recorded', async ({ page }) => {
   const errors = await boot(page, 'e2e-daily')
-  await page.getByTestId('daily-run').click()
+  await clickMenu(page, 'daily-run')
   await page.getByTestId('confirm-yes').click() // in-app confirm, not window.confirm
   const today = new Date().toISOString().slice(0, 10)
   await expect.poll(async () => await page.evaluate(() => window.__harness.getReplay().seed)).toBe(`daily-${today}`)
@@ -1564,7 +1554,7 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
   await page.locator('.hint-close').click()
 
   // HUD button → full reference with all four tabs.
-  await page.getByTestId('open-codex').click()
+  await clickMenu(page, 'open-codex')
   await expect(page.getByTestId('codex-modal')).toBeVisible()
   await expect(page.getByTestId('codex-enemy-runner')).toBeVisible()
   await page.getByTestId('codex-tab-towers').click()
@@ -1608,7 +1598,7 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
     window.__harness.buyMeta('tower_damage')
     window.__harness.newRun('e2e-wave')
   })
-  await page.getByTestId('open-codex').click()
+  await clickMenu(page, 'open-codex')
   await page.getByTestId('codex-tab-towers').click()
   await expect(page.getByTestId('codex-modifier-note')).toBeVisible()
   await expect(page.getByTestId('codex-tower-sniper')).toContainText('322')
@@ -1925,7 +1915,7 @@ for (const biome of ['frostfen', 'emberwaste', 'highlands'] as const) {
 test('planning pauses combat and remapped hold-beam controls remain usable', async ({ page }) => {
   const errors = await boot(page, 'e2e-planning-controls')
   await page.getByTestId('start-wave').click()
-  await page.getByTestId('open-settings').click()
+  await clickMenu(page, 'open-settings')
   await expect(page.getByTestId('settings-modal')).toBeVisible()
   const pausedTick = (await page.evaluate(() => window.__harness.snapshot())).tick
   await page.getByRole('textbox', { name: 'Beam key', exact: true }).fill('j')
@@ -1950,7 +1940,7 @@ test('between-run keystone respec refunds Sparks, switches commitment and surviv
     for (let i=0; i<8; i++) window.__harness.buyMeta('tower_damage')
     window.__harness.buyMeta('ks_glassforge')
   })
-  await page.getByTestId('open-tree').click()
+  await clickMenu(page, 'open-tree')
   await page.getByTestId('gnode-ks_glassforge').click()
   const before = await page.evaluate(() => window.__harness.getMeta().sparks)
   await page.getByTestId('respec-ks_glassforge').click()
@@ -1968,7 +1958,7 @@ test('between-run keystone respec refunds Sparks, switches commitment and surviv
 
 test('reload preserves a complete replay and the timeline seeks back to the start', async ({ page }) => {
   const errors = await boot(page, 'e2e-resume-seek')
-  await page.getByTestId('shop-arrow').click()
+  await chooseTower(page, 'shop-arrow')
   for (const [x,y] of await findBuildCells(page, 2)) await clickCell(page,x,y)
   await page.getByTestId('start-wave').click()
   await page.evaluate(() => window.__harness.fastForward(1))

@@ -24,7 +24,7 @@ export function TacticalControls({state, beamMode, getTargetId, onTarget, onExec
         Execute <kbd className="key-hint">{(settings.keyBindings.v ?? 'v').toUpperCase()}</kbd><span className="cooldown">{state.executeCd > 0 ? `${Math.ceil(state.executeCd / 30)}s` : `${wounded.length} ready`}</span>
       </button>
       <button className={`ability-btn beam-btn${beamMode ? ' selected' : ''}${state.beamOverheated ? ' overheated' : ''}`} data-testid="beam-toggle" aria-pressed={beamMode} title="Toggle the beam, then hover or drag to aim. It wounds foes down to 1 HP; towers and executions finish them. Release before the heat meter fills." onClick={onBeam}>
-        <Icon name="beam" /> Beam <kbd className="key-hint">{(settings.keyBindings.b ?? 'b').toUpperCase()}</kbd><span className="cooldown" data-testid="beam-state">{label}</span>
+        <span className="beam-meter" data-testid="beam-heat" role="progressbar" aria-label="Beam heat" aria-valuenow={state.beamHeat} aria-valuemin={0} aria-valuemax={BEAM_HEAT_MAX}><span style={{width: `${state.beamHeat * 100 / BEAM_HEAT_MAX}%`}} /></span><Icon name="beam" /> Beam <kbd className="key-hint">{(settings.keyBindings.b ?? 'b').toUpperCase()}</kbd><span className="cooldown" data-testid="beam-state">{label}</span>
       </button>
     </div>
   </div>

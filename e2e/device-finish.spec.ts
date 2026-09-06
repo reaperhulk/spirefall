@@ -1,3 +1,4 @@
+import { clickMenu } from './ui-helpers'
 import { expect, test } from '@playwright/test'
 import type { GameHarness } from '../src/ui/harness'
 
@@ -9,7 +10,7 @@ test('retina phone resolution follows display size, low quality, and rotation', 
   const dimensions = () => page.getByTestId('playfield').evaluate((c:HTMLCanvasElement) => ({backing:c.width,display:c.clientWidth}))
   await expect.poll(async () => (await dimensions()).display).toBeGreaterThan(340)
   await expect.poll(async () => { const d=await dimensions(); return Math.abs(d.backing - d.display*2) }).toBeLessThan(5)
-  await page.getByTestId('open-settings').click()
+  await clickMenu(page, 'open-settings')
   await page.getByLabel('Graphics quality',{exact:true}).selectOption('low')
   await page.keyboard.press('Escape')
   await expect.poll(async () => { const d=await dimensions(); return Math.abs(d.backing - d.display) }).toBeLessThan(3)
@@ -77,7 +78,7 @@ test('repeated dense sessions release retained heap and keep audio alive', async
   test.setTimeout(90000)
   await page.goto('/?seed=memory-soak')
   await page.getByTestId('playfield').waitFor()
-  await page.getByTestId('mute').click()
+  await clickMenu(page, 'mute')
   const cdp = await page.context().newCDPSession(page)
   await cdp.send('Performance.enable')
   const samples = []

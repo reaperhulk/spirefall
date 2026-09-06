@@ -1,3 +1,4 @@
+import { clickMenu, chooseTower } from './ui-helpers'
 import { expect, test, type Page } from '@playwright/test'
 import type { GameHarness } from '../src/ui/harness'
 
@@ -25,11 +26,11 @@ async function expectDesktopFit(page: Page, phase: string) {
   const result = await page.evaluate(() => {
     const inspector = document.querySelector('[data-testid="tower-panel"]')
     const selectors = [
-      '.hud button', '[data-testid="playfield"]', '.run-context button',
+      '.hud button', '[data-testid="playfield"]', '.run-context button', '.run-context select', '.combat-dock button',
       '.tactical-buttons button', '.shop-abilities button',
       ...(inspector ? ['.tower-panel-actions button', '.tower-panel-actions select', '[data-testid="close-tower-panel"]'] : ['.shop-card']),
     ]
-    const controls = [...document.querySelectorAll<HTMLElement>(selectors.join(','))].map(el => {
+    const controls = [...document.querySelectorAll<HTMLElement>(selectors.join(','))].filter(el => el.getClientRects().length > 0).map(el => {
       const r = el.getBoundingClientRect()
       const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
       return {id: el.dataset.testid ?? el.getAttribute('aria-label') ?? el.textContent,
@@ -67,15 +68,14 @@ async function expectDesktopFit(page: Page, phase: string) {
 }
 
 async function selectTower(page: Page, touch = false) {
-  const arrow = page.getByTestId('shop-arrow')
-  if (touch) await arrow.tap(); else await arrow.click()
+  await chooseTower(page, 'shop-arrow', touch)
   const canvas = page.getByTestId('playfield')
   if (touch) await canvas.scrollIntoViewIfNeeded()
   const box = (await canvas.boundingBox())!
   const point = {x: box.x + 4.5 * box.width / 24, y: box.y + 5.5 * box.height / 14}
   if (touch) await page.touchscreen.tap(point.x, point.y); else await page.mouse.click(point.x, point.y)
   await expect.poll(() => page.evaluate(() => (window.__harness as GameHarness).getState().towers.length)).toBe(1)
-  if (touch) await arrow.tap(); else await arrow.click()
+  await chooseTower(page, 'shop-arrow', touch)
   if (touch) await canvas.scrollIntoViewIfNeeded()
   const current = (await canvas.boundingBox())!
   const select = {x: current.x + 4.5 * current.width / 24, y: current.y + 5.5 * current.height / 14}
@@ -95,7 +95,7 @@ async function lateRun(page: Page) {
     s.relicOffer = null; s.cataclysmOffer = null
     h.fastForward(1 / 30)
   })
-  await expect(page.getByTestId('open-shrine')).toBeVisible()
+  await expect(page.getByTestId('open-plan')).toBeVisible()
 }
 
 for (const [width, height] of DESKTOPS) {
@@ -139,7 +139,7 @@ test('desktop resize recomputes the usable battlefield without reload', async ({
 })
 
 async function expectVisibleBounds(page: Page, selector: string) {
-  const el = page.locator(selector)
+  const el = page.locator(`${selector}:visible`)
   const r = (await el.boundingBox())!
   const viewport = page.viewportSize()!
   expect(r.x, selector).toBeGreaterThanOrEqual(0)
@@ -147,6 +147,27 @@ async function expectVisibleBounds(page: Page, selector: string) {
   expect(r.x + r.width, selector).toBeLessThanOrEqual(viewport.width + 1)
   expect(r.y + r.height, selector).toBeLessThanOrEqual(viewport.height + 1)
   expect(await el.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `${selector}: internal horizontal overflow`).toBe(true)
+}
+
+async function expectTouchPlayFit(page: Page) {
+  const layout = await page.evaluate(() => {
+    const elements = [...document.querySelectorAll<HTMLElement>('[data-testid="playfield"], .hud button, .command-dock button, .command-dock select, .combat-dock button')].filter(el => el.getClientRects().length)
+    return {width: innerWidth, height: innerHeight, scrollHeight: document.documentElement.scrollHeight, scrollX, scrollY,
+      controls: elements.map(el => { const r = el.getBoundingClientRect(), hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+        return {id: el.dataset.testid, x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height, hit: hit === el || (!!hit && el.contains(hit))} })}
+  })
+  expect(layout.scrollHeight).toBeLessThanOrEqual(layout.height + 1)
+  expect([layout.scrollX, layout.scrollY]).toEqual([0, 0])
+  for (const c of layout.controls) {
+    expect(c.x, JSON.stringify(c)).toBeGreaterThanOrEqual(0)
+    expect(c.y, JSON.stringify(c)).toBeGreaterThanOrEqual(0)
+    expect(c.right, JSON.stringify(c)).toBeLessThanOrEqual(layout.width + 1)
+    expect(c.bottom, JSON.stringify(c)).toBeLessThanOrEqual(layout.height + 1)
+    expect(c.hit, JSON.stringify(c)).toBe(true)
+  }
+  const board = layout.controls.find(c => c.id === 'playfield')!
+  expect(board.width).toBeGreaterThanOrEqual(Math.min(layout.width - 32, 280))
+  expect(board.width / board.height).toBeCloseTo(24 / 14, 1)
 }
 
 async function expectNoHorizontalOverflow(page: Page) {
@@ -166,10 +187,11 @@ for (const [width, height] of TOUCH_SCREENS) {
     test.use({viewport: {width, height}, hasTouch: true, isMobile: true, deviceScaleFactor: 2})
     test('whole board, tower actions and planning dialogs remain reachable', async ({page}, info) => {
       await boot(page)
-      await page.getByTestId('playfield').scrollIntoViewIfNeeded()
+      await expectTouchPlayFit(page)
       await expectVisibleBounds(page, '[data-testid="playfield"]')
       await expectNoHorizontalOverflow(page)
-      for (const id of ['shop-arrow', 'cycle-target', 'execute-target', 'beam-toggle', 'open-plan']) {
+      for (const id of ['toggle-build', 'cycle-target', 'execute-target', 'beam-toggle', 'open-plan']) {
+        if (id === 'toggle-build' && !await page.getByTestId(id).isVisible()) continue
         const r = (await page.getByTestId(id).boundingBox())!
         expect(r.width, `${id} touch width`).toBeGreaterThanOrEqual(44)
         expect(r.height, `${id} touch height`).toBeGreaterThanOrEqual(44)
@@ -191,19 +213,20 @@ for (const [width, height] of TOUCH_SCREENS) {
       await page.getByTestId('doctrine-storm').tap()
       await expect(page.getByRole('dialog')).not.toBeVisible()
       await lateRun(page)
+      await expectTouchPlayFit(page)
       await expectNoHorizontalOverflow(page)
       expect(await page.locator('.shop-abilities').evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true)
-      await page.getByTestId('open-shrine').tap()
+      await page.getByTestId('open-plan').tap()
       await expectVisibleBounds(page, '.planning-modal')
       await page.getByTestId('accept-shrine').tap()
-      await expect(page.getByTestId('open-shrine')).toHaveText('Defending shrine')
-      await page.getByTestId('open-settings').tap()
+      await expect.poll(() => page.evaluate(() => (window.__harness as GameHarness).getState().shrine?.status)).toBe('active')
+      await clickMenu(page, 'open-settings', true)
       await expectVisibleBounds(page, '[role="dialog"]')
       await info.attach('settings.png', {body: await page.screenshot(), contentType: 'image/png'})
       await page.keyboard.press('Escape')
       // Rotate without reloading and verify the entire board is still usable.
       await page.setViewportSize({width: height, height: width})
-      await page.getByTestId('playfield').scrollIntoViewIfNeeded()
+      await expectTouchPlayFit(page)
       await expectVisibleBounds(page, '[data-testid="playfield"]')
       await expectNoHorizontalOverflow(page)
     })

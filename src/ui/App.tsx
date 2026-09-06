@@ -1,3 +1,6 @@
+import { useCompactLandscape } from './useCompactLandscape'
+import { WaveReview } from './WaveReview'
+import { TOWER_ROLES, stormNetwork } from '../engine/campaign'
 import { bankGuardianMilestones, canSpecialize, specializationCost, warSupply } from '../engine/campaign'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { TacticalControls } from './TacticalControls'
@@ -17,11 +20,9 @@ import {
   ENHANCE_DAMAGE_PCT,
   enhanceCost,
   relicSkipGold,
-  BEAM_HEAT_MAX,
   BOONS,
   COMBO_HASTE_THRESHOLD,
   EXECUTE_THRESHOLD_PCT,
-  COMBO_WINDOW_TICKS,
   OVERCHARGE_DAMAGE_PCT,
   CRUCIBLE_HP_PCT_PER_RANK,
   CRUCIBLE_SPARK_PCT_PER_RANK,
@@ -64,7 +65,7 @@ import { installHarness } from './harness'
 import { CataclysmModal, ConfirmModal, RelicModal, RunOverOverlay, RunStatsModal, SettingsModal, SpireTreeModal } from './Overlays'
 import { gunzipBase64Url, gzipBase64Url } from './codec'
 import { settings, updateSettings } from './settings'
-import { CELL_PX, type RenderUiState } from './render'
+import { type RenderUiState } from './render'
 import { clearSave, loadSave, persistSave, getSaveStatus, subscribeSaveStatus } from './save'
 import { useDialogFocus } from './useDialogFocus'
 import { RULES_VERSION, parseRecording } from './validation'
@@ -117,6 +118,11 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showStats, setShowStats] = useState(false)
   const [showPlan, setShowPlan] = useState(false)
+  const compactLandscape = useCompactLandscape()
+  const [showMenu, setShowMenu] = useState(false)
+  const [showReview, setShowReview] = useState(false)
+  const [buildOpen, setBuildOpen] = useState(false)
+  const [reviewFocus, setReviewFocus] = useState<CellPos | null>(null)
   const [showCodex, setShowCodex] = useState(false)
   const [codexFocus, setCodexFocus] = useState<EnemyType | null>(null)
   const [uiSettings, setUiSettings] = useState(() => ({ ...settings }))
@@ -134,7 +140,7 @@ export default function App() {
   const [srMessage, setSrMessage] = useState('')
   // In-app confirmation (replaces window.confirm — see ConfirmModal).
   const [confirm, setConfirm] = useState<{ message: string; action: () => void } | null>(null)
-  const askConfirm = (message: string, action: () => void) => setConfirm({ message, action })
+  const askConfirm = (message: string, action: () => void) => { setShowMenu(false); setConfirm({ message, action }) }
   const [dailyBest, setDailyBest] = useState<DailyBest | null>(() => loadDailyBest())
   const [mapPref, setMapPref] = useState<string>(() => loadMapPref())
   const mapPrefRef = useRef(mapPref)
@@ -178,9 +184,9 @@ export default function App() {
 
   useSyncExternalStore(session.subscribe, session.getVersion)
   useEffect(() => {
-    session.setSuspended(showTree || showSettings || showStats || showCodex || showPlan || confirm !== null)
+    session.setSuspended(showTree || showSettings || showStats || showCodex || showPlan || showMenu || showReview || confirm !== null)
     return () => { session.setSuspended(false) }
-  }, [session, showTree, showSettings, showStats, showCodex, showPlan, confirm, victoryPrompt])
+  }, [session, showTree, showSettings, showStats, showCodex, showPlan, showMenu, showReview, confirm, victoryPrompt])
   const state = session.state
   const saveStatus = useSyncExternalStore(subscribeSaveStatus, getSaveStatus)
 
@@ -202,6 +208,7 @@ export default function App() {
       // batch — a per-kill feed would drown the reader in a horde game.
       for (const e of events) {
         if (e.type === 'wave_started') {
+          setReviewFocus(null)
           setSrMessage(`Wave ${e.wave} started — ${e.spawnCount} enemies${e.affix ? `, ${AFFIXES[e.affix].name} affix` : ''}.`)
         } else if (e.type === 'wave_cleared') {
           setSrMessage(`Wave cleared. Spire at ${s.spireHp} of ${s.spireMaxHp} HP, ${s.gold} gold.`)
@@ -506,7 +513,7 @@ export default function App() {
   // victory prompt, run over).
   const autoStart = uiSettings.autoStart
   useEffect(() => {
-    if (!autoStart || summary || victoryPrompt || showTree || showSettings || showStats || showCodex || showPlan || confirm) return
+    if (!autoStart || summary || victoryPrompt || showTree || showSettings || showStats || showCodex || showPlan || showMenu || showReview || confirm) return
     // A pending relic or cataclysm choice pauses the conveyor — firing
     // start_wave into the gate would just spam rejections into the log.
     if (state.phase !== 'build' || state.relicOffer !== null || state.cataclysmOffer !== null) return
@@ -516,11 +523,12 @@ export default function App() {
         sessionRef.current.dispatch({ type: 'start_wave' })
     }, 1200)
     return () => clearTimeout(timer)
-  }, [autoStart, state.phase, state.relicOffer, state.cataclysmOffer, state.wave, summary, victoryPrompt, showTree, showSettings, showStats, showCodex, showPlan, confirm])
+  }, [autoStart, state.phase, state.relicOffer, state.cataclysmOffer, state.wave, summary, victoryPrompt, showTree, showSettings, showStats, showCodex, showPlan, showMenu, showReview, confirm])
 
-  useGameKeyboard({summary, sfx, sessionRef, beginNextRunRef, handleCellClickRef, hoverRef, keyboardEnemyRef, beamModeRef, toggleBeamRef, selectedTowerIdRef, setShopSelection, setAbilitySelection, setSelectedTowerId, setShowTree, setShowSettings, setShowStats, setShowCodex, setShowPlan, setCodexFocus, setConfirm, setSrMessage, setMuted})
+  useGameKeyboard({summary, sfx, sessionRef, beginNextRunRef, handleCellClickRef, hoverRef, keyboardEnemyRef, beamModeRef, toggleBeamRef, selectedTowerIdRef, setShopSelection, setAbilitySelection, setSelectedTowerId, setShowTree, setShowSettings, setShowStats, setShowCodex, setShowPlan, setShowMenu, setShowReview, setCodexFocus, setConfirm, setSrMessage, setMuted})
 
   const renderUi: RenderUiState = {
+    reviewCell: reviewFocus,
     get hoverCell() {
       return hoverRef.current
     },
@@ -554,15 +562,15 @@ export default function App() {
   let hint: string | null = null
   if (!hintsDismissed && meta.runs === 0 && !summary) {
     if (state.wave === 0 && state.towers.length < 2) {
-      hint = 'Pick a tower (or press 1) and click beside the glowing path to build. Two towers is a start.'
+      hint = 'Build beside the lit path. Start with Arrow + Cannon, then add Frost.'
     } else if (state.wave === 0 && state.phase === 'build') {
-      hint = 'Send the wave when ready (Space). Enemies march the lit path — leaks hit the Spire, and it only has 10 HP.'
+      hint = 'Send the wave with Space. Guard the final approach: leaks damage the Spire.'
     } else if (state.wave === 1 && state.phase === 'build') {
-      hint = 'Kills pay gold; every wave is stronger than the last. The scouting report above shows exactly what is coming.'
+      hint = 'Check the wave report before spending gold. Upgrade coverage where enemies escaped.'
     } else if (state.wave === 2 && state.phase === 'wave') {
       // Meteor and Frost Nova sit charged from run one — the footer buttons
       // players most often never discover on their own.
-      hint = 'Your abilities are charged: Meteor (Q) and Frost Nova (W) are free every wave — aim them into the thick of the horde.'
+      hint = 'Meteor (Q) and Frost Nova (W) are ready. Aim them at the toughest pack.'
     }
   }
   const dismissHints = () => {
@@ -574,320 +582,10 @@ export default function App() {
     }
   }
 
-  return (
-    <div className="app">
-      {watching && (
-        <div className="replay-banner" data-testid="replay-banner">
-          <span>
-            ▶ REPLAY · wave {state.wave}
-            {session.terminal ? ` · over — ${state.phase === 'victory' ? 'the Spire stood' : 'the Spire fell'}` : ''} —
-            speed controls work; inputs don't.
-          </span>
-          <label>Replay position <input aria-label="Replay position" type="range" min={session.initial.tick} max={Math.max(session.initial.tick + 1, Number.isFinite(session.replayEndTick) ? session.replayEndTick : state.tick)} value={state.tick} onChange={e => { void session.seek(Number(e.target.value)) }} /></label>
-          <span>{session.seeking ? 'Seeking…' : `${Math.floor(state.tick / 30)}s`} {session.initial.tick > 0 && '(checkpoint recording)'}</span>
-          <div className="replay-checkpoints">{session.checkpoints.filter(c => c.wave > 0).map(c => <button key={c.tick} className="ghost-btn" onClick={() => { void session.seek(c.tick) }}>Wave {c.wave}</button>)}</div>
-          <button className="ghost-btn" data-testid="exit-replay" onClick={exitReplay}>
-            Exit replay
-          </button>
-        </div>
-      )}
-      <header className="hud">
-        <div className="hud-title">
-          SPIREFALL
-          <span className="hud-wave" data-testid="wave-label">
-            {state.victoryClaimed ? `Wave ${state.wave} · ENDLESS` : `Wave ${state.wave}/${VICTORY_WAVE}`}
-            {' · '}
-            {BIOMES[state.biome].name}
-          </span>
-        </div>
-        {state.phase === 'wave' && state.activeAffix && (
-          <span className="affix-badge" data-testid="affix" title={AFFIXES[state.activeAffix].description}>
-            {AFFIXES[state.activeAffix].name}
-          </span>
-        )}
-        {cataclysmIn !== null && (
-          <span
-            className={`cataclysm-countdown${cataclysmIn === 1 ? ' imminent' : ''}`}
-            data-testid="cataclysm-countdown"
-            title="Every 5th endless wave ends in a Cataclysm: a permanent, stacking modifier for the rest of the run."
-          >
-            {cataclysmIn === 1 ? '⚠ Cataclysm this wave' : `⚠ Cataclysm in ${cataclysmIn} waves`}
-          </span>
-        )}
-        {state.mapSeed !== '' &&
-          state.wavesCleared > 0 &&
-          state.wavesCleared > (meta.bestWaveByMap[state.biome] ?? 0) && (
-            <span
-              className="trial-badge depth-badge"
-              data-testid="new-depth"
-              title={`Deeper than any prior run in ${BIOMES[state.biome].name} — the record updates when this run ends.`}
-            >
-              ★ new depth
-            </span>
-          )}
-        {state.crucible > 0 && (
-          <span
-            className="trial-badge crucible-badge"
-            data-testid="crucible"
-            title={`The Crucible: ${state.crucible} ${state.crucible === 1 ? 'victory' : 'victories'} this cycle — enemies +${CRUCIBLE_HP_PCT_PER_RANK * state.crucible}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * state.crucible}%${crucibleTiersAt(state.crucible)
-              .map((t) => `; ${t.name}: ${t.description}`)
-              .join('')}. Ascend to reset.`}
-          >
-            🔥 Crucible {'I'.repeat(Math.min(state.crucible, 3))}{state.crucible > 3 ? `×${state.crucible}` : ''}
-            {crucibleTiersAt(state.crucible).length > 0 &&
-              ` · ${crucibleTiersAt(state.crucible)[crucibleTiersAt(state.crucible).length - 1]!.name}`}
-          </span>
-        )}
-        {state.trials.length > 0 && (
-          <span className="cataclysm-badges" data-testid="trials">
-            {state.trials.map((t) => (
-              <span key={t} className="trial-badge" title={`${TRIALS[t].description} +${TRIALS[t].sparkBonusPct}% sparks.`}>
-                ⚔ {TRIALS[t].name}
-              </span>
-            ))}
-          </span>
-        )}
-        {state.cataclysms.length > 0 && (
-          <span className="cataclysm-badges" data-testid="cataclysms">
-            {Object.entries(
-              state.cataclysms.reduce<Record<string, number>>((acc, c) => {
-                acc[c] = (acc[c] ?? 0) + 1
-                return acc
-              }, {}),
-            ).map(([id, n]) => (
-              <span key={id} className="cataclysm-badge" title={CATACLYSMS[id as CataclysmId].description}>
-                {CATACLYSMS[id as CataclysmId].name}
-                {n > 1 && ` ×${n}`}
-              </span>
-            ))}
-          </span>
-        )}
-        <div className="hud-spire" title={`Spire ${state.spireHp}/${state.spireMaxHp}`}>
-          <div
-            className="hp-bar"
-            role="progressbar"
-            aria-label="Spire health"
-            aria-valuenow={state.spireHp}
-            aria-valuemin={0}
-            aria-valuemax={state.spireMaxHp}
-          >
-            <div className="hp-fill" style={{ width: `${hpPct}%` }} />
-          </div>
-          <span data-testid="spire-hp">
-            {state.spireHp}/{state.spireMaxHp}
-          </span>
-          {/* Always mounted: an appearing/vanishing button re-wraps the
-              header and shoves the playfield (visible on tablet portrait). */}
-          <button
-            className="ghost-btn btn-repair"
-            data-testid="repair-spire"
-            disabled={repairHp <= 0 || repairsExhausted}
-            title={
-              state.spireHp >= state.spireMaxHp
-                ? 'The Spire is at full health'
-                : repairsExhausted
-                  ? `Repair crews are spent — ${repairCap} cast${repairCap > 1 ? 's' : ''} per wave under fire. They recover when the wave clears.`
-                  : `Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs each wave; max ${repairCap} cast${repairCap > 1 ? 's' : ''} while a wave is live${state.phase === 'wave' ? ` (${repairCap - state.repairsThisWave} left)` : ''} (R)`
-            }
-            onClick={() => session.dispatch({ type: 'repair_spire' })}
-          >
-            {state.spireHp >= state.spireMaxHp
-              ? 'Repair'
-              : repairsExhausted
-                ? 'Repair crews spent'
-                : repairHp > 0
-                  ? `Repair +${repairHp} (⛀ ${repairHp * repairPerHp})`
-                  : `Repair (⛀ ${repairPerHp}/HP)`}
-          </button>
-        </div>
-        <div className="hud-right">
-          {state.combo >= 5 && (
-            <span
-              className={`hud-combo${state.combo >= COMBO_HASTE_THRESHOLD ? ' hasted' : ''}`}
-              data-testid="combo"
-              title={`Unbroken kill streak — hold ${COMBO_HASTE_THRESHOLD}+ and ability cooldowns recover at double speed. A leak, or ${COMBO_WINDOW_TICKS / 30}s of silence mid-wave, breaks it.`}
-            >
-              ⚡{state.combo}
-              {state.combo >= COMBO_HASTE_THRESHOLD && ' 2×'}
-              <span
-                className="combo-drain"
-                style={{ width: `${Math.round((state.comboTicks / COMBO_WINDOW_TICKS) * 100)}%` }}
-              />
-            </span>
-          )}
-          {(state.beamHeat > 0 || state.beamTarget !== null) && (
-            <span
-              className={`hud-beam${state.beamOverheated ? ' overheated' : ''}`}
-              data-testid="beam-heat"
-              title={
-                state.beamOverheated
-                  ? 'Beam OVERHEATED — venting; it unlocks when fully cool'
-                  : 'Spire beam heat — use the Beam control to fire at the cursor; overheat locks it until vented'
-              }
-            >
-              <Icon name="beam" />
-              <span
-                className="beam-heat-bar"
-                style={{ width: `${Math.round((state.beamHeat / BEAM_HEAT_MAX) * 100)}%` }}
-              />
-            </span>
-          )}
-          <span className="hud-gold" data-testid="gold">
-            ⛀ {state.gold}
-          </span>
-          <span className="hud-sparks" data-testid="meta-sparks">
-            ✦ {meta.sparks}
-          </span>
-          {(meta.embers > 0 || meta.ascensions > 0) && (
-            <span className="hud-embers" data-testid="meta-embers" title={`Embers · ascension cycle ${meta.ascensions + 1}`}>
-              ❖ {meta.embers}
-            </span>
-          )}
-          <button
-            className={`ghost-btn${!muted && !audioLive ? ' sound-pending' : ''}`}
-            data-testid="mute"
-            aria-label={muted ? 'Unmute sound' : audioLive ? 'Mute sound' : 'Enable sound'}
-            aria-pressed={muted}
-            title={
-              muted
-                ? 'Unmute sound (M)'
-                : audioLive
-                  ? 'Mute sound (M)'
-                  : 'Sound starts with your first tap or key press'
-            }
-            onClick={() => {
-              // Pending + click = "I want sound": the click itself unlocks
-              // the context (the probe flips the icon) — don't mute instead.
-              if (!muted && !audioLive) return
-              setMuted(sfx.toggleMute())
-            }}
-          >
-            <Icon name={muted ? "muted" : "sound"} />
-          </button>
-          <div className="speed-controls" role="group" aria-label="Game speed" title="Keys − and = step speed down/up">
-            {SPEEDS.map((n) => (
-              <button
-                key={n}
-                className={session.speed === n ? 'active' : ''}
-                aria-label={n === 0 ? 'Pause' : `Speed ${n}×`}
-                aria-pressed={session.speed === n}
-                onClick={() => {
-                  session.setSpeed(n)
-                }}
-              >
-                {n === 0 ? <Icon name="pause" /> : `${n}×`}
-              </button>
-            ))}
-          </div>
-          <button
-            className="ghost-btn"
-            data-testid="daily-run"
-            aria-label="Play today's daily run"
-            title={
-              dailyBest
-                ? `Today's shared seed — your best: wave ${dailyBest.waves}${(dailyBest.streak ?? 1) > 1 ? ` · ${dailyBest.streak}-day streak` : ''}`
-                : "Play today's shared seed — same map and waves for everyone"
-            }
-            onClick={() =>
-              askConfirm('Start the Daily run? Your current run will be abandoned (progress-only sparks apply).', () =>
-                beginNextRun(dailySeed()),
-              )
-            }
-          >
-            <Icon name="calendar" />{dailyBest ? ` ${dailyBest.waves}` : ''}
-            {(dailyBest?.streak ?? 1) > 1 && <span className="streak-mark">🔥{dailyBest!.streak}</span>}
-          </button>
-          <button
-            className="ghost-btn"
-            onClick={() => setShowStats(true)}
-            data-testid="open-stats"
-            aria-label="Run stats"
-            title="This run's stats so far (S)"
-          >
-            <Icon name="stats" />
-          </button>
-          <button
-            className="ghost-btn"
-            onClick={() => {
-              setCodexFocus(null)
-              setShowCodex(true)
-            }}
-            data-testid="open-codex"
-            aria-label="Codex — enemies, towers, and mechanics"
-            title="Codex — enemies, towers & mechanics (C)"
-          >
-            <Icon name="book" />
-          </button>
-          <button
-            className="ghost-btn"
-            onClick={() => setShowTree(true)}
-            data-testid="open-tree"
-            title={canAscend(meta) ? 'Spire Tree (T) — Ascension is ready 🔥' : 'Spire Tree (T)'}
-          >
-            Spire Tree{canAscend(meta) ? ' 🔥' : ''}
-          </button>
-          <button
-            className="ghost-btn"
-            onClick={() => setShowSettings(true)}
-            data-testid="open-settings"
-            aria-label="Settings and shortcuts"
-            title="Settings & shortcuts (?)"
-          >
-            <Icon name="settings" />
-          </button>
-          {!summary && (
-            <button
-              className="ghost-btn danger btn-abandon"
-              data-testid="abandon-run"
-              title="End this run now — you keep the Sparks earned so far"
-              onClick={() =>
-                askConfirm(
-                  state.victoryClaimed ? 'End the run and bank your victory?' : 'Abandon this run? You keep the Sparks earned so far.',
-                  () => session.dispatch({ type: 'abandon_run' }),
-                )
-              }
-            >
-              {state.victoryClaimed ? 'End run' : 'Give up'}
-            </button>
-          )}
-          {/* Always mounted, disabled mid-wave: unmounting re-wraps the
-              header row and the playfield jumps every single wave. */}
-          <button
-            className="primary-btn btn-wave"
-            onClick={() => session.dispatch({ type: 'start_wave' })}
-            data-testid="start-wave"
-            disabled={state.phase !== 'build'}
-            title={
-              state.phase === 'build'
-                ? 'Start the next wave (Space)'
-                : 'The wave is live — the next one starts once it clears'
-            }
-          >
-            Start wave {state.wave + 1}
-          </button>
-          <button
-            className={`ghost-btn${autoStart ? ' auto-on' : ''}`}
-            data-testid="auto-start"
-            aria-label="Auto-advance waves"
-            aria-pressed={autoStart}
-            title={autoStart ? 'Auto-advance is ON — waves send themselves' : 'Auto-advance waves'}
-            onClick={() => setUiSettings({ ...updateSettings({ autoStart: !autoStart }) })}
-          >
-            <Icon name="advance" />
-          </button>
-        </div>
-      </header>
-
-      {/* Invisible narrator: screen readers hear the run's major beats. */}
-      <div className="sr-only" role="status" aria-live="polite" data-testid="sr-status">
-        {srMessage}
-      </div>
-      {saveStatus && <p role="status" className="save-warning">{saveStatus}</p>}
-      <div className="play-layout">
-      <section className="battlefield-column" aria-label="Battlefield and wave planning">
+  const scouting = <>
       {!hintsDismissed && meta.runs === 0 && (
         <div className="hint-banner" data-testid="hint">
-          <span>{hint ?? 'Sweep gold with your pointer. B toggles the beam; select a tower and press O to spend a command charge.'}</span>
+          <span>{hint ?? 'Bounty banks automatically. Build a mixed defense; B aims the beam and O overcharges a selected tower.'}</span>
           <button className="panel-close hint-close" aria-label="Dismiss hints" onClick={dismissHints}>
             ✕
           </button>
@@ -939,8 +637,66 @@ export default function App() {
         </div>
       )}
 
+  </>
+
+  return (
+    <div className={`app phase-${state.phase}${buildOpen ? ' build-open' : ''}${selectedTower ? ' inspecting' : ''}`}>
+      {watching && (
+        <div className="replay-banner" data-testid="replay-banner">
+          <span>
+            ▶ REPLAY · wave {state.wave}
+            {session.terminal ? ` · over — ${state.phase === 'victory' ? 'the Spire stood' : 'the Spire fell'}` : ''} —
+            speed controls work; inputs don't.
+          </span>
+          <label>Replay position <input aria-label="Replay position" type="range" min={session.initial.tick} max={Math.max(session.initial.tick + 1, Number.isFinite(session.replayEndTick) ? session.replayEndTick : state.tick)} value={state.tick} onChange={e => { void session.seek(Number(e.target.value)) }} /></label>
+          <span>{session.seeking ? 'Seeking…' : `${Math.floor(state.tick / 30)}s`} {session.initial.tick > 0 && '(checkpoint recording)'}</span>
+          <div className="replay-checkpoints">{session.checkpoints.filter(c => c.wave > 0).map(c => <button key={c.tick} className="ghost-btn" onClick={() => { void session.seek(c.tick) }}>Wave {c.wave}</button>)}</div>
+          <button className="ghost-btn" data-testid="exit-replay" onClick={exitReplay}>
+            Exit replay
+          </button>
+        </div>
+      )}
+      <header className="hud">
+        <div className="hud-title">
+          SPIREFALL
+          <span className="hud-wave" data-testid="wave-label">
+            {state.victoryClaimed ? `Wave ${state.wave} · ENDLESS` : `Wave ${state.wave}/${VICTORY_WAVE}`}
+            {' · '}
+            {BIOMES[state.biome].name}
+          </span>
+        </div>
+        <div className="hud-spire" title={`Spire ${state.spireHp}/${state.spireMaxHp}`}>
+          <div
+            className="hp-bar"
+            role="progressbar"
+            aria-label="Spire health"
+            aria-valuenow={state.spireHp}
+            aria-valuemin={0}
+            aria-valuemax={state.spireMaxHp}
+          >
+            <div className="hp-fill" style={{ width: `${hpPct}%` }} />
+          </div>
+          <span data-testid="spire-hp">
+            {state.spireHp}/{state.spireMaxHp}
+          </span>
+          {/* Always mounted: an appearing/vanishing button re-wraps the
+              header and shoves the playfield (visible on tablet portrait). */}
+          
+        </div>
+        <span className="hud-gold" data-testid="gold">⛀ {state.gold}</span>
+        <button className="ghost-btn" data-testid="open-menu" aria-haspopup="dialog" onClick={() => setShowMenu(true)}>Menu</button>
+      </header>
+
+      {/* Invisible narrator: screen readers hear the run's major beats. */}
+      <div className="sr-only" role="status" aria-live="polite" data-testid="sr-status">
+        {srMessage}
+      </div>
+      {saveStatus && <p role="status" className="save-warning">{saveStatus}</p>}
+      <div className="play-layout">
+      <section className="battlefield-column" aria-label="Battlefield and wave planning">
+      {!compactLandscape && scouting}
       <div className="battlefield-space">
-      <main className="board" style={{maxWidth:MAP_WIDTH * CELL_PX}}>
+      <main className={`board${shopSelection || abilitySelection ? ' placing' : ''}`}>
         <GameCanvas
           onObserve={(state, identity) => sfx.observe(state, identity)}
           session={session}
@@ -964,6 +720,9 @@ export default function App() {
             setHoveredTowerId((cur) => (tower ? tower.id : null) === cur ? cur : (tower ? tower.id : null))
           }}
         />
+        {state.phase === 'build' && state.waveStats && !shopSelection && !abilitySelection && <button className="wave-summary" data-testid="wave-debrief" onClick={() => setShowReview(true)}>
+          Wave {state.wave}: {state.waveStats.damageTaken ? `${state.waveStats.damageTaken} HP lost` : 'Spire held'} · {state.waveStats.bankedGold} bounty banked · Review defense →
+        </button>}
         {hoveredTower && !shopSelection && hoveredTower.id !== selectedTowerId && (
           <div
             className="tower-tooltip"
@@ -1017,29 +776,30 @@ export default function App() {
       </main>
       </div>
 
-      <div className="run-context">
-        <button className={`ghost-btn${!state.doctrine && state.wave >= 2 ? ' primary-btn' : ''}`} data-testid="open-plan" onClick={() => setShowPlan(true)}>
-          {state.doctrine ? `${DOCTRINES[state.doctrine].name} · Build guide` : state.wave >= 2 ? 'Choose a build doctrine' : 'Build & objectives'}
-        </button>
-        {state.shrine && <button className="ghost-btn" data-testid="open-shrine" onClick={() => setShowPlan(true)}>
-          {state.shrine.status === 'offered' ? 'Shrine available' : state.shrine.status === 'active' ? 'Defending shrine' : state.shrine.status === 'won' ? 'Shrine secured' : 'Shrine lost'}
-        </button>}
-        {state.seed.startsWith('daily-') && <span>Daily · fixed progression · rules {RULES_VERSION}</span>}
+      <div className="run-context command-dock" aria-label="Run controls">
+<button
+            className="primary-btn btn-wave"
+            onClick={() => session.dispatch({ type: 'start_wave' })}
+            data-testid="start-wave"
+            disabled={state.phase !== 'build'}
+            title={
+              state.phase === 'build'
+                ? 'Start the next wave (Space)'
+                : 'The wave is live — the next one starts once it clears'
+            }
+          >
+            {state.phase === 'wave' ? 'Wave live' : `Send wave ${state.wave + 1}`}
+          </button>        <button className="ghost-btn" data-testid="pause-game" aria-label={session.speed === 0 ? 'Resume' : 'Pause'} onClick={() => session.setSpeed(session.speed === 0 ? 1 : 0)}>{session.speed === 0 ? '▶' : 'Ⅱ'}</button>
+        <select data-testid="game-speed" aria-label="Game speed" value={session.speed} onChange={e => session.setSpeed(Number(e.target.value))}>{SPEEDS.map(n => <option key={n} value={n}>{n ? `${n}×` : 'Paused'}</option>)}</select>
+        <button className="ghost-btn build-toggle" data-testid="toggle-build" aria-expanded={buildOpen} onClick={() => { setBuildOpen(v => !v); setSelectedTowerId(null); setShopSelection(null) }}>Build</button>
+        <button className={`ghost-btn${(state.phase === 'build' && !state.doctrine && state.wave >= 2) || state.assaultOffer ? ' primary-btn' : ''}`} data-testid="open-plan" onClick={() => setShowPlan(true)}
+          aria-label={state.assaultOffer ? 'Choose the next assault' : !state.doctrine && state.wave >= 2 && state.phase === 'build' ? 'Choose a build doctrine' : 'Build and objectives'}>Plan{state.assaultOffer || (!state.doctrine && state.wave >= 2 && state.phase === 'build') ? ' !' : ''}</button>
       </div>
       </section>
       <section className="control-column" aria-label="Defense controls">
-      <TacticalControls state={state} beamMode={beamMode} getTargetId={() => keyboardEnemyRef.current}
-        onTarget={id => {
-          const target = sessionRef.current.state.enemies.find(e => e.id === id)
-          if (!target) return
-          keyboardEnemyRef.current = id
-          hoverRef.current = {cx:Math.floor(target.pos.x / 1000),cy:Math.floor(target.pos.y / 1000)}
-          setSrMessage(`${target.type}, ${target.hp} health`)
-        }}
-        onExecute={id => session.dispatch({type:'execute_enemy',id})}
-        onBeam={() => toggleBeam(!beamModeRef.current)} />
-      <p className="command-pool" role="status">Command charges: <strong>{state.commandCharges ?? 3}/3</strong> · select a tower, then {(settings.keyBindings.o ?? 'o').toUpperCase()} · one charge recovers every {Math.max(1, 6 * (100 - state.mods.overchargeCdPct) / 100)}s of combat</p>
+      {compactLandscape && scouting}
       <div className="construction-panel">
+        <button className="ghost-btn construction-close" data-testid="close-build" onClick={() => setBuildOpen(false)}>Close build ×</button>
         {selectedTower && (
           <aside className="tower-panel" data-testid="tower-panel">
             <button
@@ -1121,6 +881,9 @@ export default function App() {
               </p>
             )}
             </div>
+            {state.doctrine === 'storm' && selectedTower.type === 'tesla' && <p className="doctrine-meter">Network: {stormNetwork(state, selectedTower).length} Teslas · discharge {stormNetwork(state, selectedTower)[0]?.stormCharge ?? 0}/6</p>}
+            {state.doctrine === 'siege' && ['sniper','lance'].includes(selectedTower.type) && <p className="doctrine-meter">Held aim: {Math.floor((selectedTower.siegeAim ?? 0) * 100 / 45)}% · next aimed hit +40%</p>}
+            {state.doctrine === 'shatter' && <p className="doctrine-meter">Frost stores up to 3 crystals; heavy hits consume them.</p>}
             <div className="tower-panel-actions">
             <label>
               Target:{' '}
@@ -1227,11 +990,12 @@ export default function App() {
                 onClick={() => {
                   setShopSelection((cur) => (cur === type ? null : type))
                   setAbilitySelection(null)
+                  setBuildOpen(false)
                 }}
               >
                 <span className="shop-card-top">
                   <span className={`tower-dot tower-${type}`} />
-                  <TowerPortrait type={type} /><span className="shop-card-name">{TOWERS[type].name}</span>
+                  <TowerPortrait type={type} /><span className="shop-card-name">{TOWERS[type].name}<small>{TOWER_ROLES[type]}</small></span>
                   {TOWERS[type].hitsAir && (
                     <span className="air-mark" title="Can hit fliers">
                       ✈
@@ -1248,7 +1012,38 @@ export default function App() {
         </div>
       </footer>
       </div>
-        <div className="shop-abilities">
+      <div className="combat-dock" aria-label="Combat action dock">
+      <TacticalControls state={state} beamMode={beamMode} getTargetId={() => keyboardEnemyRef.current}
+        onTarget={id => {
+          const target = sessionRef.current.state.enemies.find(e => e.id === id)
+          if (!target) return
+          keyboardEnemyRef.current = id
+          hoverRef.current = {cx:Math.floor(target.pos.x / 1000),cy:Math.floor(target.pos.y / 1000)}
+          setSrMessage(`${target.type}, ${target.hp} health`)
+        }}
+        onExecute={id => session.dispatch({type:'execute_enemy',id})}
+        onBeam={() => toggleBeam(!beamModeRef.current)} />
+<button
+            className="ghost-btn btn-repair"
+            data-testid="repair-spire"
+            disabled={repairHp <= 0 || repairsExhausted}
+            title={
+              state.spireHp >= state.spireMaxHp
+                ? 'The Spire is at full health'
+                : repairsExhausted
+                  ? `Repair crews are spent — ${repairCap} cast${repairCap > 1 ? 's' : ''} per wave under fire. They recover when the wave clears.`
+                  : `Mends up to ${REPAIR_MAX_PER_CAST} HP per cast at ⛀${repairPerHp} per HP — the price climbs each wave; max ${repairCap} cast${repairCap > 1 ? 's' : ''} while a wave is live${state.phase === 'wave' ? ` (${repairCap - state.repairsThisWave} left)` : ''} (R)`
+            }
+            onClick={() => session.dispatch({ type: 'repair_spire' })}
+          >
+            {state.spireHp >= state.spireMaxHp
+              ? 'Repair'
+              : repairsExhausted
+                ? 'Crews spent'
+                : repairHp > 0
+                  ? `+${repairHp} HP · ⛀${repairHp * repairPerHp}`
+                  : `Repair · ⛀${repairPerHp}`}
+          </button>        <div className="shop-abilities">
           {ABILITY_KEYS.filter((a) => a in state.abilities).map((ability, i) => {
             const cd = state.abilities[ability] ?? 0
             const ready = cd === 0 && state.phase === 'wave'
@@ -1286,6 +1081,8 @@ export default function App() {
           })}
 
         </div>
+      <p className="command-pool" role="status">⚡ <strong>{state.commandCharges ?? 3}/3</strong> charges{state.combo >= 5 && <span data-testid="combo"> · {state.combo} streak{state.combo >= COMBO_HASTE_THRESHOLD ? ' · 2× spell recovery' : ''}</span>} · {state.doctrine === 'war_economy' ? `${warSupply(state)} supply crates` : state.doctrine ? DOCTRINES[state.doctrine].name : 'Select a tower to overcharge'}</p>
+      </div>
       </section>
       </div>
 
@@ -1397,6 +1194,185 @@ export default function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+      <div hidden={!showMenu} className="modal-backdrop" onClick={() => setShowMenu(false)}>
+        <section className="modal run-menu" role="dialog" aria-modal={showMenu ? true : undefined} aria-label="Run menu" onClick={e => e.stopPropagation()}>
+          <h2>Run menu</h2>
+          <p>{state.seed.startsWith('daily-') ? 'Daily · fixed progression' : BIOMES[state.biome].name} · rules {state.rulesVersion ?? RULES_VERSION - 1}</p>
+          <button className="primary-btn" onClick={() => setShowMenu(false)}>Resume game</button>
+          <div className="run-records"><span data-testid="meta-sparks">✦ {meta.sparks} Sparks</span><span data-testid="meta-embers">❖ {meta.embers} Embers</span>
+        {state.phase === 'wave' && state.activeAffix && (
+          <span className="affix-badge" data-testid="affix" title={AFFIXES[state.activeAffix].description}>
+            {AFFIXES[state.activeAffix].name}
+          </span>
+        )}
+        {cataclysmIn !== null && (
+          <span
+            className={`cataclysm-countdown${cataclysmIn === 1 ? ' imminent' : ''}`}
+            data-testid="cataclysm-countdown"
+            title="Every 5th endless wave ends in a Cataclysm: a permanent, stacking modifier for the rest of the run."
+          >
+            {cataclysmIn === 1 ? '⚠ Cataclysm this wave' : `⚠ Cataclysm in ${cataclysmIn} waves`}
+          </span>
+        )}
+        {state.mapSeed !== '' &&
+          state.wavesCleared > 0 &&
+          state.wavesCleared > (meta.bestWaveByMap[state.biome] ?? 0) && (
+            <span
+              className="trial-badge depth-badge"
+              data-testid="new-depth"
+              title={`Deeper than any prior run in ${BIOMES[state.biome].name} — the record updates when this run ends.`}
+            >
+              ★ new depth
+            </span>
+          )}
+        {state.crucible > 0 && (
+          <span
+            className="trial-badge crucible-badge"
+            data-testid="crucible"
+            title={`The Crucible: ${state.crucible} ${state.crucible === 1 ? 'victory' : 'victories'} this cycle — enemies +${CRUCIBLE_HP_PCT_PER_RANK * state.crucible}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * state.crucible}%${crucibleTiersAt(state.crucible)
+              .map((t) => `; ${t.name}: ${t.description}`)
+              .join('')}. Ascend to reset.`}
+          >
+            🔥 Crucible {'I'.repeat(Math.min(state.crucible, 3))}{state.crucible > 3 ? `×${state.crucible}` : ''}
+            {crucibleTiersAt(state.crucible).length > 0 &&
+              ` · ${crucibleTiersAt(state.crucible)[crucibleTiersAt(state.crucible).length - 1]!.name}`}
+          </span>
+        )}
+        {state.trials.length > 0 && (
+          <span className="cataclysm-badges" data-testid="trials">
+            {state.trials.map((t) => (
+              <span key={t} className="trial-badge" title={`${TRIALS[t].description} +${TRIALS[t].sparkBonusPct}% sparks.`}>
+                ⚔ {TRIALS[t].name}
+              </span>
+            ))}
+          </span>
+        )}
+        {state.cataclysms.length > 0 && (
+          <span className="cataclysm-badges" data-testid="cataclysms">
+            {Object.entries(
+              state.cataclysms.reduce<Record<string, number>>((acc, c) => {
+                acc[c] = (acc[c] ?? 0) + 1
+                return acc
+              }, {}),
+            ).map(([id, n]) => (
+              <span key={id} className="cataclysm-badge" title={CATACLYSMS[id as CataclysmId].description}>
+                {CATACLYSMS[id as CataclysmId].name}
+                {n > 1 && ` ×${n}`}
+              </span>
+            ))}
+          </span>
+        )}
+          </div>
+          <div className="menu-actions">
+<button
+            className="ghost-btn"
+            data-testid="daily-run"
+            aria-label="Play today's daily run"
+            title={
+              dailyBest
+                ? `Today's shared seed — your best: wave ${dailyBest.waves}${(dailyBest.streak ?? 1) > 1 ? ` · ${dailyBest.streak}-day streak` : ''}`
+                : "Play today's shared seed — same map and waves for everyone"
+            }
+            onClick={() =>
+              askConfirm('Start the Daily run? Your current run will be abandoned (progress-only sparks apply).', () =>
+                beginNextRun(dailySeed()),
+              )
+            }
+          >
+            <Icon name="calendar" /> Daily{dailyBest ? ` ${dailyBest.waves}` : ''}
+            {(dailyBest?.streak ?? 1) > 1 && <span className="streak-mark">🔥{dailyBest!.streak}</span>}
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => { setShowMenu(false); setShowStats(true) }}
+            data-testid="open-stats"
+            aria-label="Run stats"
+            title="This run's stats so far (S)"
+          >
+            <Icon name="stats" /> Run stats
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => {
+              setShowMenu(false)
+              setCodexFocus(null)
+              setShowCodex(true)
+            }}
+            data-testid="open-codex"
+            aria-label="Codex — enemies, towers, and mechanics"
+            title="Codex — enemies, towers & mechanics (C)"
+          >
+            <Icon name="book" /> Codex
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => { setShowMenu(false); setShowTree(true) }}
+            data-testid="open-tree"
+            title={canAscend(meta) ? 'Spire Tree (T) — Ascension is ready 🔥' : 'Spire Tree (T)'}
+          >
+            Spire Tree{canAscend(meta) ? ' 🔥' : ''}
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => { setShowMenu(false); setShowSettings(true) }}
+            data-testid="open-settings"
+            aria-label="Settings and shortcuts"
+            title="Settings & shortcuts (?)"
+          >
+            <Icon name="settings" /> Settings
+          </button>
+          {!summary && (
+            <button
+              className="ghost-btn danger btn-abandon"
+              data-testid="abandon-run"
+              title="End this run now — you keep the Sparks earned so far"
+              onClick={() =>
+                askConfirm(
+                  state.victoryClaimed ? 'End the run and bank your victory?' : 'Abandon this run? You keep the Sparks earned so far.',
+                  () => session.dispatch({ type: 'abandon_run' }),
+                )
+              }
+            >
+              {state.victoryClaimed ? 'End run' : 'Give up'}
+            </button>
+          )}
+<button
+            className={`ghost-btn${!muted && !audioLive ? ' sound-pending' : ''}`}
+            data-testid="mute"
+            aria-label={muted ? 'Unmute sound' : audioLive ? 'Mute sound' : 'Enable sound'}
+            aria-pressed={muted}
+            title={
+              muted
+                ? 'Unmute sound (M)'
+                : audioLive
+                  ? 'Mute sound (M)'
+                  : 'Sound starts with your first tap or key press'
+            }
+            onClick={() => {
+              // Pending + click = "I want sound": the click itself unlocks
+              // the context (the probe flips the icon) — don't mute instead.
+              if (!muted && !audioLive) return
+              setMuted(sfx.toggleMute())
+            }}
+          >
+            <Icon name={muted ? "muted" : "sound"} /> Sound
+          </button><button
+            className={`ghost-btn${autoStart ? ' auto-on' : ''}`}
+            data-testid="auto-start"
+            aria-label="Auto-advance waves"
+            aria-pressed={autoStart}
+            title={autoStart ? 'Auto-advance is ON — waves send themselves' : 'Auto-advance waves'}
+            onClick={() => setUiSettings({ ...updateSettings({ autoStart: !autoStart }) })}
+          >
+            <Icon name="advance" />
+          </button>          </div>
+          <p>Guardian milestones: {(meta.guardianMilestones ?? []).length}/3 · biome unlocks survive defeat and ascension.</p>
+        </section>
+      </div>
+      {showReview && <WaveReview state={state} onClose={() => setShowReview(false)} onFocus={finding => {
+        setShowReview(false); setReviewFocus(finding.cell); hoverRef.current = finding.cell
+        setSelectedTowerId(finding.towerId ?? null); setShopSelection(null)
+      }} />}
       {showPlan && !summary && <RunPlanning state={state} watching={watching}
         onChoose={doctrine => { session.dispatch({type:'choose_doctrine', doctrine}); setShowPlan(false) }}
         onAssault={assault => { session.dispatch({type:'choose_assault', assault}); setShowPlan(false) }}

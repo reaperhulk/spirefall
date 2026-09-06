@@ -3,6 +3,7 @@
 import type { AbilityId, CellPos, TowerType } from '../../engine/types'
 
 export interface RenderUiState {
+  reviewCell?: CellPos | null
   hoverCell: CellPos | null
   selectedTowerId: number | null
   shopSelection: TowerType | null
