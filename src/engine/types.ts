@@ -178,6 +178,7 @@ export interface RunState {
   mapId: number // legacy fixed-map index (used only when mapSeed === '')
   biome: BiomeId // battlefield rules; structure generates from mapSeed
   rulesVersion?: number // absent = rules 4; snapshotted so old runs keep their rules
+  frontierWave?: number // rules 6: the account's best wave when the run began (waves past it pay a bonus)
   commissionUsed?: boolean
   bountyRemainder?: number
   supply?: number // War Economy: maximum three field requisitions

@@ -115,7 +115,11 @@ describe('createRun applies meta', () => {
     expect(run.gold).toBeGreaterThan(STARTING_GOLD) // catch-up gold for the skipped waves
     // Sparks only pay for waves cleared THIS run — a skip-then-abandon pays 0.
     expect(computeSparks({ ...run, wavesCleared: 2, kills: 0 })).toBe(0)
-    expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(10 * 15)
+    // Rules 6: waves 3..12 pay 5 + 1.5×wave (110 + 50) and all ten are past
+    // a fresh account's frontier (+15 each).
+    expect(computeSparks({ ...run, wavesCleared: 12, kills: 0 })).toBe(110 + 50 + 150)
+    // Rules-5 runs keep the flat 15 per wave.
+    expect(computeSparks({ ...run, rulesVersion: 5, wavesCleared: 12, kills: 0 })).toBe(10 * 15)
   })
 
   it('metaNodeEffect reports the cumulative value at any level', () => {
@@ -266,7 +270,9 @@ describe('computeSparks', () => {
     const base = { ...run, wavesCleared: 10, kills: 40 }
     const defeat = computeSparks(base)
     const victory = computeSparks({ ...base, victoryClaimed: true })
-    expect(defeat).toBe(10 * 15 + Math.floor(40 / 12))
+    // Waves 1..10 pay 5 + 1.5×wave (50 + 80), plus +15 each past the frontier.
+    expect(defeat).toBe(50 + 80 + 150 + Math.floor(40 / 12))
+    expect(computeSparks({ ...base, rulesVersion: 5 })).toBe(10 * 15 + Math.floor(40 / 12))
     expect(victory).toBe(defeat + 500)
 
     const boosted = computeSparks({ ...base, mods: { ...base.mods, sparkPct: 24 } })
@@ -274,6 +280,18 @@ describe('computeSparks', () => {
 
     const siphoned = computeSparks({ ...base, relics: ['spark_siphon'] })
     expect(siphoned).toBe(Math.floor((defeat * 125) / 100))
+  })
+
+  it('deep waves pay more than shallow ones, and only new ground pays the frontier bonus', () => {
+    const run = { ...createRun(createMeta(), 'depth'), kills: 0 }
+    const wave = (w: number, frontier: number) =>
+      computeSparks({ ...run, wavesCleared: w, frontierWave: frontier }) - computeSparks({ ...run, wavesCleared: w - 1, frontierWave: frontier })
+    expect(wave(22, 30)).toBe(5 + 33)
+    expect(wave(22, 30)).toBeGreaterThan(3 * wave(4, 30))
+    expect(wave(22, 21)).toBe(wave(22, 30) + 15)
+    // A daily's shared meta never erases the player's own frontier.
+    const veteran = { ...createMeta(), bestWave: 17 }
+    expect(createRun(veteran, 'daily-2026-09-24').frontierWave).toBe(17)
   })
 })
 
@@ -328,7 +346,7 @@ describe('ascension', () => {
     expect(run.crucible).toBe(2)
     // Sparks scale +15% per rank on the same progress.
     const base = { ...run, wavesCleared: run.startWave + 10, kills: 120 }
-    const fresh = { ...createRun(createMeta(), 'crucible-run'), wavesCleared: run.startWave + 10, kills: 120 }
+    const fresh = { ...createRun(createMeta(), 'crucible-run'), wavesCleared: run.startWave + 10, kills: 120, frontierWave: run.frontierWave ?? 0 }
     expect(computeSparks({ ...base, crucible: 0 })).toBe(computeSparks(fresh))
     expect(computeSparks(base)).toBe(Math.floor((computeSparks(fresh) * 130) / 100))
     // Enemy HP: the crucible stage multiplies last, +10% per rank. Same

@@ -1,4 +1,4 @@
-import { bankGuardianMilestones } from './campaign'
+import { bankGuardianMilestones, RULES_VERSION } from './campaign'
 import { COMMAND_CHARGES } from '../data/doctrines'
 import {
   BASE_WAVE_BUDGET,
@@ -225,6 +225,8 @@ export function glassforgeDamageBonus(meta: MetaState): number {
 // trials are opt-in handicaps: their effects apply here (spire, gold) or at
 // spawn time (enemy stats), and computeSparks pays their bonus.
 export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials?: TrialId[]): RunState {
+  // Captured before a daily swaps in its shared meta: the frontier is yours.
+  const frontierWave = meta.bestWave
   if (seed.startsWith('daily-')) {
     // One challenge ruleset across accounts. The saved personal meta is never mutated.
     meta = { ...createMeta(), upgrades: { tower_damage: 8, tower_damage_2: 8, spire_hp: 6, starting_gold: 4, gold_income: 4, crit_chance: 3, magnet_reach: 2, steady_aim: 2, quick_hands: 2, unlock_tesla: 1, unlock_lance: 1, unlock_mint: 1, unlock_beacon: 1, unlock_bulwark: 1, unlock_gold_rush: 1 } }
@@ -296,7 +298,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     biome: chosenBiome,
     mapSeed: seed,
     layoutVersion: 3,
-    rulesVersion: 5,
+    rulesVersion: RULES_VERSION,
+    frontierWave,
     commissionUsed: false,
     bountyRemainder: 0,
     supply: 0,

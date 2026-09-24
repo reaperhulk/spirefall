@@ -9,7 +9,8 @@ import type { LoggedCommand } from './session'
 import { MAX_TRANSFER_BYTES } from './boundedStream'
 
 // Gameplay rules are part of a recording, separate from the save schema.
-export const RULES_VERSION: number = 5
+import { RULES_VERSION } from '../engine/campaign'
+export { RULES_VERSION }
 export interface Recording { seed?: string; v: 3; rules: number; initial: RunState; log: LoggedCommand[]; endTick: number }
 const object = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const nat = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0
@@ -31,7 +32,8 @@ export function validRun(value: unknown): value is RunState {
     if (s.schemaVersion !== 1 || typeof s.seed !== 'string' || s.seed.length > 512 || typeof s.mapSeed !== 'string') return false
     if (!BIOME_IDS.includes(s.biome) || !nat(s.mapId) || !nat(s.tick) || s.mapSeed.length > 512 || (s.mapSeed === '' && s.mapId >= MAPS.length)) return false
     if (s.layoutVersion !== undefined && ![1,2,3].includes(s.layoutVersion)) return false
-    if (s.rulesVersion !== undefined && ![4, 5].includes(s.rulesVersion)) return false
+    if (s.rulesVersion !== undefined && ![4, 5, 6].includes(s.rulesVersion)) return false
+    if (s.frontierWave !== undefined && !nat(s.frontierWave)) return false
     if (s.commissionUsed !== undefined && typeof s.commissionUsed !== 'boolean') return false
     if (s.assaultOffer !== undefined && typeof s.assaultOffer !== 'boolean') return false
     if (s.assault && (!known(ASSAULTS, s.assault.id) || !nat(s.assault.fromWave) || !nat(s.assault.untilWave) || s.assault.untilWave !== s.assault.fromWave + 3)) return false
@@ -94,7 +96,7 @@ export function parseRecording(text: string): Recording | null {
     const legacy = (d as {v: number}).v === 2 && RULES_VERSION === 1
     // Rules 5 snapshots new mechanics in initial.rulesVersion. Absent markers
     // preserve all rules-3/4 command semantics and RNG consumption.
-    if ((!legacy && (d.v !== 3 || ![3, 4, RULES_VERSION].includes(d.rules))) || !validRun(d.initial) || !Array.isArray(d.log) || d.log.length > 120000) return null
+    if ((!legacy && (d.v !== 3 || ![3, 4, 5, RULES_VERSION].includes(d.rules))) || !validRun(d.initial) || !Array.isArray(d.log) || d.log.length > 120000) return null
     let previous = d.initial.tick
     for (const c of d.log) {
       if (!object(c) || !nat(c.tick) || c.tick < previous || !validCommand(c.command)) return null

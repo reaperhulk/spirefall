@@ -528,6 +528,12 @@ export function mintStars(earned: number): number {
 }
 
 export const RELIC_WAVE_INTERVAL = 5
+
+// Rules-6 spark pay per cleared wave: base + depth% of the wave number, plus
+// a frontier bonus for every wave past the account's previous best.
+export const SPARKS_PER_WAVE_BASE = 5
+export const SPARKS_PER_WAVE_DEPTH_PCT = 150
+export const SPARKS_FRONTIER_BONUS = 15
 export const RELIC_OFFER_SIZE = 3
 
 // Rarity weights for offer draws. Legendaries are events, not table stakes.

@@ -21,6 +21,9 @@ import {
   CRIT_BASE_DAMAGE_PCT,
   CRUCIBLE_HP_PCT_PER_RANK,
   CRUCIBLE_SPARK_PCT_PER_RANK,
+  SPARKS_FRONTIER_BONUS,
+  SPARKS_PER_WAVE_BASE,
+  SPARKS_PER_WAVE_DEPTH_PCT,
   CRUCIBLE_TIERS,
   ENEMIES,
   ENHANCE_COST_GROWTH_PCT,
@@ -213,6 +216,10 @@ const MECHANICS: MechanicEntry[] = [
   {
     title: 'Victory & Endless',
     body: `Clearing wave ${VICTORY_WAVE} wins the run — bank it, or push into Endless where clearing every ${CATACLYSM_WAVE_INTERVAL}th wave strikes a Cataclysm: two dooms offered, you choose which becomes permanent. The next wave waits until you do.`,
+  },
+  {
+    title: 'Sparks',
+    body: `Every run that makes progress pays Sparks when it ends. Each cleared wave pays ${SPARKS_PER_WAVE_BASE} plus ${SPARKS_PER_WAVE_DEPTH_PCT / 100}× its wave number, so deep waves are worth far more than early ones; every wave past your best ever pays +${SPARKS_FRONTIER_BONUS} more. Kills add a little, victory adds 500, and Trials, the Crucible and Spark upgrades multiply the total.`,
   },
   {
     title: 'The Crucible',

@@ -23,10 +23,18 @@ interface Golden {
 const FIXTURE = join(import.meta.dirname, '..', '..', '..', 'fixtures', 'goldens.json')
 const UPDATE = process.env['UPDATE_GOLDENS'] === '1'
 
-function playAll(legacy = false): Record<string, Golden> {
+// Fields rules 6 added to a fresh run. A rules-5 replay's initial snapshot
+// never carried them, so the rules-5 pass strips them to replay it exactly.
+const RULES_6_FIELDS = ['frontierWave'] as const
+
+function playAll(legacy = false, rules5 = false): Record<string, Golden> {
   const results: Record<string, Golden> = {}
   for (const scenario of SCENARIOS) {
     const run = createRun(scenario.meta(), scenario.seed)
+    if (rules5 || legacy) {
+      run.rulesVersion = 5
+      for (const key of RULES_6_FIELDS) delete run[key]
+    }
     if (legacy) {
       run.layoutVersion = 2
       for (const key of ['rulesVersion','commissionUsed','bountyRemainder','supply','assault','assaultOffer'] as const) delete run[key]
@@ -48,6 +56,10 @@ describe('golden playthroughs', () => {
   it('preserves all seven rules-4 outcomes and complete state hashes', () => {
     const expected = JSON.parse(readFileSync(join(dirname(FIXTURE), 'rules-4-goldens.json'), 'utf8'))
     expect(playAll(true)).toEqual(expected)
+  }, 120_000)
+  it('preserves all rules-5 outcomes and complete state hashes', () => {
+    const expected = JSON.parse(readFileSync(join(dirname(FIXTURE), 'rules-5-goldens.json'), 'utf8'))
+    expect(playAll(false, true)).toEqual(expected)
   }, 120_000)
   it(
     'match the pinned outcomes (run `npm run goldens:update` to accept changes)',

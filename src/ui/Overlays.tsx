@@ -2,7 +2,7 @@ import { DefenseCoverage } from './DefenseCoverage'
 import { RunLessons } from './RunLessons'
 import { useEffect, useRef, useState } from 'react'
 import { drawRunCard, challengeLink } from './runCard'
-import { CATACLYSMS, CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, TRIAL_IDS, TRIALS } from '../data/content'
+import { CATACLYSMS, CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, SPARKS_FRONTIER_BONUS, TRIAL_IDS, TRIALS } from '../data/content'
 import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
 import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
 import {
@@ -298,6 +298,13 @@ export function RunStatsModal({ state, onClose }: { state: RunState; onClose: ()
           {state.bestCombo >= 10 && <span>⚡ {state.bestCombo} best streak · </span>}
           <strong data-testid="stats-sparks">✦ {computeSparks(state)}</strong> sparks banked if it ended now
         </p>
+        {state.frontierWave !== undefined && (
+          <p className="run-summary" data-testid="stats-frontier">
+            {state.wavesCleared > state.frontierWave
+              ? `Past your frontier (wave ${state.frontierWave}): every new wave pays +${SPARKS_FRONTIER_BONUS} ✦ extra.`
+              : `Frontier: wave ${state.frontierWave}. Waves past it pay +${SPARKS_FRONTIER_BONUS} ✦ extra.`}
+          </p>
+        )}
         {state.trials.length > 0 && (
           <p className="run-summary">{state.trials.map((t) => `⚔ ${TRIALS[t].name} (+${TRIALS[t].sparkBonusPct}% ✦)`).join(' · ')}</p>
         )}

@@ -1,4 +1,4 @@
-import { ASSAULTS, assaultActive, canSpecialize, modernRules, specializationCost, warSupply } from './campaign'
+import { ASSAULTS, assaultActive, canSpecialize, modernRules, rules6, specializationCost, warSupply } from './campaign'
 import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { navigation } from './navigation'
 import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, DOCTRINES } from '../data/doctrines'
@@ -22,6 +22,9 @@ import {
   FIELD_MEDICINE_KNIT_HP,
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
+  SPARKS_FRONTIER_BONUS,
+  SPARKS_PER_WAVE_BASE,
+  SPARKS_PER_WAVE_DEPTH_PCT,
   relicSkipGold,
   REPAIR_CASTS_PER_WAVE,
   REPAIR_MAX_PER_CAST,
@@ -815,6 +818,20 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   }
 }
 
+// Rules 6: a wave pays more the deeper it is (SPARKS_PER_WAVE_BASE plus
+// SPARKS_PER_WAVE_DEPTH_PCT% of its number), so pushing further is what
+// grows income — the flat 15/wave made a wave-22 run worth barely more than
+// a wave-12 one while the tree's prices climbed geometrically. Every wave
+// cleared past the account's best (the frontier) pays a bonus on top.
+export function depthSparks(s: RunState): number {
+  let total = 0
+  for (let w = s.startWave + 1; w <= s.wavesCleared; w++) {
+    total += SPARKS_PER_WAVE_BASE + Math.floor((w * SPARKS_PER_WAVE_DEPTH_PCT) / 100)
+    if (w > (s.frontierWave ?? 0)) total += SPARKS_FRONTIER_BONUS
+  }
+  return total
+}
+
 export function computeSparks(s: RunState): number {
   // Sparks are earned by PROGRESS only: waves cleared this run (skipped
   // starting waves excluded) and kills. No flat participation payout — a
@@ -822,7 +839,7 @@ export function computeSparks(s: RunState): number {
   // kills/12 (not /6): horde waves double the body count, so the per-kill
   // rate halves to keep spark income on the same curve.
   const cleared = Math.max(0, s.wavesCleared - s.startWave)
-  const base = cleared * 15 + Math.floor(s.kills / 12) + (s.victoryClaimed ? 500 : 0)
+  const base = (rules6(s) ? depthSparks(s) : cleared * 15) + Math.floor(s.kills / 12) + (s.victoryClaimed ? 500 : 0)
   let pct = 100 + s.mods.sparkPct
   if (s.relics.includes('spark_siphon')) pct += 25
   for (const t of s.trials) pct += TRIALS[t].sparkBonusPct // opt-in hardship pays

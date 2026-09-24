@@ -5,6 +5,10 @@ import { cellCenter, distSq } from './grid'
 
 // Absence is deliberate: saved rules-3/4 runs retain their original semantics.
 export const modernRules = (s: RunState): boolean => (s.rulesVersion ?? 4) >= 5
+// Rules 6: the incremental layer — depth-scaled spark pay, guardian spoils,
+// the sealed relic pool. Rules-5 runs and replays keep their exact outcomes.
+export const RULES_VERSION: number = 6
+export const rules6 = (s: RunState): boolean => (s.rulesVersion ?? 4) >= 6
 export const GUARDIAN_MILESTONES = [
   { enemy: 'boss', name: 'Gatebreaker', unlock: 'Frostfen', wave: 6 },
   { enemy: 'boss2', name: 'Broodbreaker', unlock: 'Ember Waste', wave: 12 },
