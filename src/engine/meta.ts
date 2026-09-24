@@ -1,4 +1,4 @@
-import { bankGuardianMilestones, RULES_VERSION } from './campaign'
+import { bankGuardianMilestones, bankRelicSeals, RULES_VERSION, sealedRelics } from './campaign'
 import { COMMAND_CHARGES } from '../data/doctrines'
 import {
   BASE_WAVE_BUDGET,
@@ -359,6 +359,8 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     layoutVersion: 3,
     rulesVersion: RULES_VERSION,
     frontierWave,
+    // Dailies are a shared ruleset: the whole relic table for everyone.
+    sealedRelics: seed.startsWith('daily-') ? [] : sealedRelics(meta),
     commissionUsed: false,
     bountyRemainder: 0,
     supply: 0,
@@ -482,37 +484,40 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     unlocked,
   }
   const won = run.phase === 'victory' ? 1 : 0
+  const settled: MetaState = {
+    ...meta,
+    sparks: meta.sparks + summary.sparks,
+    totalSparks: meta.totalSparks + summary.sparks,
+    runs: meta.runs + 1,
+    victories: meta.victories + won,
+    cycleVictories: meta.cycleVictories + won,
+    cycleEmbers: (meta.cycleEmbers ?? meta.cycleVictories) + won * (EMBERS_PER_VICTORY + run.crucible),
+    cycleSparks: (meta.cycleSparks ?? 0) + summary.sparks,
+    // A win at rank r opens rank r + 1. The ladder is lifetime.
+    crucibleUnlocked: Math.min(CRUCIBLE_MAX_RANK, Math.max(crucibleUnlocked(meta), won ? run.crucible + 1 : 0)),
+    bestWave: Math.max(meta.bestWave, summary.wavesCleared),
+    bestWaveByMap:
+      summary.wavesCleared > (meta.bestWaveByMap[bestKey(run)] ?? 0)
+        ? { ...meta.bestWaveByMap, [bestKey(run)]: summary.wavesCleared }
+        : meta.bestWaveByMap,
+    achievements: [...meta.achievements, ...unlocked.map((a) => a.id)],
+    lifetimeKills: meta.lifetimeKills + summary.kills,
+    history: [
+      {
+        outcome: summary.outcome,
+        wavesCleared: summary.wavesCleared,
+        kills: summary.kills,
+        sparks: summary.sparks,
+        biome: summary.biome,
+        crucible: summary.crucible,
+      },
+      ...meta.history,
+    ].slice(0, HISTORY_LIMIT),
+  }
   return {
-    meta: {
-      ...meta,
-      sparks: meta.sparks + summary.sparks,
-      totalSparks: meta.totalSparks + summary.sparks,
-      runs: meta.runs + 1,
-      victories: meta.victories + won,
-      cycleVictories: meta.cycleVictories + won,
-      cycleEmbers: (meta.cycleEmbers ?? meta.cycleVictories) + won * (EMBERS_PER_VICTORY + run.crucible),
-      cycleSparks: (meta.cycleSparks ?? 0) + summary.sparks,
-      // A win at rank r opens rank r + 1. The ladder is lifetime.
-      crucibleUnlocked: Math.min(CRUCIBLE_MAX_RANK, Math.max(crucibleUnlocked(meta), won ? run.crucible + 1 : 0)),
-      bestWave: Math.max(meta.bestWave, summary.wavesCleared),
-      bestWaveByMap:
-        summary.wavesCleared > (meta.bestWaveByMap[bestKey(run)] ?? 0)
-          ? { ...meta.bestWaveByMap, [bestKey(run)]: summary.wavesCleared }
-          : meta.bestWaveByMap,
-      achievements: [...meta.achievements, ...unlocked.map((a) => a.id)],
-      lifetimeKills: meta.lifetimeKills + summary.kills,
-      history: [
-        {
-          outcome: summary.outcome,
-          wavesCleared: summary.wavesCleared,
-          kills: summary.kills,
-          sparks: summary.sparks,
-          biome: summary.biome,
-          crucible: summary.crucible,
-        },
-        ...meta.history,
-      ].slice(0, HISTORY_LIMIT),
-    },
+    // Seals break on the record this run just wrote: guardians, a first
+    // victory, a win at Crucible rank 1.
+    meta: bankRelicSeals(settled),
     summary,
   }
 }

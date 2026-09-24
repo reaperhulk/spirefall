@@ -34,6 +34,8 @@ export function validRun(value: unknown): value is RunState {
     if (s.layoutVersion !== undefined && ![1,2,3].includes(s.layoutVersion)) return false
     if (s.rulesVersion !== undefined && ![4, 5, 6].includes(s.rulesVersion)) return false
     if (s.frontierWave !== undefined && !nat(s.frontierWave)) return false
+    if (s.sealedRelics !== undefined && (!Array.isArray(s.sealedRelics) || !s.sealedRelics.every(r => known(RELICS, r)))) return false
+    if (s.relicSpoils !== undefined && typeof s.relicSpoils !== 'boolean') return false
     if (s.commissionUsed !== undefined && typeof s.commissionUsed !== 'boolean') return false
     if (s.assaultOffer !== undefined && typeof s.assaultOffer !== 'boolean') return false
     if (s.assault && (!known(ASSAULTS, s.assault.id) || !nat(s.assault.fromWave) || !nat(s.assault.untilWave) || s.assault.untilWave !== s.assault.fromWave + 3)) return false
@@ -81,7 +83,7 @@ function validCommand(value: unknown): value is Command {
     case 'upgrade_tower': case 'sell_tower': case 'overcharge_tower': case 'execute_enemy': return nat(c.id)
     case 'specialize_tower': return nat(c.id) && typeof c.spec === 'string' && specIds.has(c.spec as never)
     case 'choose_boon': return typeof c.boon === 'string' && known(BOONS, c.boon)
-    case 'choose_relic': return c.relic === null || (typeof c.relic === 'string' && known(RELICS, c.relic))
+    case 'choose_relic': return (c.relic === null || (typeof c.relic === 'string' && known(RELICS, c.relic))) && (c.replace === undefined || (typeof c.replace === 'string' && known(RELICS, c.replace)))
     case 'choose_cataclysm': return typeof c.cataclysm === 'string' && known(CATACLYSMS, c.cataclysm)
     case 'set_beam': return vec(c.target)
     case 'set_collect': return vec(c.at)

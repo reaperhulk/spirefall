@@ -25,7 +25,7 @@ const UPDATE = process.env['UPDATE_GOLDENS'] === '1'
 
 // Fields rules 6 added to a fresh run. A rules-5 replay's initial snapshot
 // never carried them, so the rules-5 pass strips them to replay it exactly.
-const RULES_6_FIELDS = ['frontierWave'] as const
+const RULES_6_FIELDS = ['frontierWave', 'sealedRelics'] as const
 const RULES_6_MODS = ['veteranDamagePct', 'relicChoices', 'bonusCharges'] as const
 
 function playAll(legacy = false, rules5 = false): Record<string, Golden> {

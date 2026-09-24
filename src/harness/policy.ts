@@ -3,6 +3,7 @@ import { DOCTRINES, type DoctrineId } from '../data/doctrines'
 import type { MetaUpgradeId } from '../data/metaTree'
 import { META_TREE } from '../data/metaTree'
 import { nextInt, type Rng } from '../engine/rng'
+import { familyRelicsAvailable } from '../engine/campaign'
 import { BOON_IDS, type BoonId, EXECUTE_THRESHOLD_PCT, relicSkipGold, TOWERS } from '../data/content'
 import type { RelicId, RunState, Targeting, TowerType } from '../engine/types'
 import { type Bot, type BuildKnobs, buildActions, RELIC_PRIORITY, waveActions } from './bots'
@@ -348,9 +349,9 @@ export function makePolicyBot(genome: PolicyGenome): Bot {
   return (state) => {
     if (state.phase === 'build') {
       if (genome.doctrine && !state.doctrine && state.wave >= 2) return [{type:'choose_doctrine',doctrine:genome.doctrine}]
-      if (genome.focusRelics && state.doctrine && state.relicOffer && !state.relicRerolled) {
+      if (genome.focusRelics && state.doctrine && state.relicOffer && !state.relicSpoils && !state.relicRerolled) {
         const family = BUILD_FAMILIES[state.doctrine].relics
-        if (state.gold >= Math.ceil(relicSkipGold(state.wave) * 3 / 2) + 100 && family.some(r => !state.relics.includes(r)) && !state.relicOffer.some(r => family.includes(r))) return [{type:'reroll_relic',focus:state.doctrine}]
+        if (state.gold >= Math.ceil(relicSkipGold(state.wave) * 3 / 2) + 100 && familyRelicsAvailable(state, state.doctrine).length > 0 && !state.relicOffer.some(r => family.includes(r))) return [{type:'reroll_relic',focus:state.doctrine}]
       }
       const acts = buildActions(state, (s) => pickWeighted(s, genome), knobs)
       if (state.boonOffer !== null && genome.boonPriority) {

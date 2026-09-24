@@ -29,7 +29,9 @@ import {
   ENEMIES,
   ENHANCE_COST_GROWTH_PCT,
   ENHANCE_DAMAGE_PCT,
+  GUARDIAN_SPOILS_SIZE,
   RELIC_OFFER_SIZE,
+  RELIC_SEALS,
   RELIC_WAVE_INTERVAL,
   RELICS,
   REPAIR_CASTS_PER_WAVE,
@@ -203,7 +205,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'Relics',
-    body: `Every ${RELIC_WAVE_INTERVAL} waves the ruins offer ${RELIC_OFFER_SIZE} relics (one more with Relic Cartography) — take one, reroll once, or bank gold for skipping. Relics last for the run only.`,
+    body: `Every ${RELIC_WAVE_INTERVAL} waves the ruins offer ${RELIC_OFFER_SIZE} relics (one more with Relic Cartography) — take one, reroll once, or bank gold for skipping. Relics last for the run only. At Crucible rank 1 or higher, slaying a guardian on its wave (6, 12, 18) leaves spoils that let you EXCHANGE one relic you carry for one of ${GUARDIAN_SPOILS_SIZE} on offer — never an extra relic. The ${RELIC_SEALS.reduce((n, seal) => n + seal.relics.length, 0)} transformative relics start sealed: ${RELIC_SEALS.map((seal) => `${seal.hint.toLowerCase()} to unseal ${seal.relics.map((r) => RELICS[r].name).join(' and ')}`).join('; ')}.`,
   },
   {
     title: 'Abilities',
@@ -408,7 +410,7 @@ export function CodexModal({
               <p className="codex-trait" data-testid="codex-relic-count">
                 Every {RELIC_WAVE_INTERVAL} waves the Spire offers {RELIC_OFFER_SIZE} relics — pick one, or skip for
                 gold. Relics you hold this run are marked ✦ ({state.relics.length} of{' '}
-                {Object.keys(RELICS).length} held).
+                {Object.keys(RELICS).length} held). Sealed relics (🔒) join your offers once you break their seal.
               </p>
               {(['legendary', 'rare', 'common'] as const).map((rarity) => (
                 <div key={rarity}>
@@ -426,6 +428,11 @@ export function CodexModal({
                           <strong>
                             {def.name}
                             {state.relics.includes(id) && <span className="codex-owned"> ✦ held</span>}
+                            {(state.sealedRelics ?? []).includes(id) && (
+                              <span className="codex-owned" data-testid={`codex-sealed-${id}`}>
+                                {' '}🔒 sealed — {RELIC_SEALS.find((seal) => seal.relics.includes(id))?.hint}
+                              </span>
+                            )}
                           </strong>
                         </div>
                         <p className="codex-trait">{def.description}</p>

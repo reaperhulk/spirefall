@@ -5,7 +5,7 @@ import { deriveStream } from '../engine/rng'
 import type { MetaState, TowerType } from '../engine/types'
 import { autoplay, spendSparks } from './autoplay'
 import { BOTS } from './bots'
-import { DEFAULT_BUY_PRIORITY } from './scenarios'
+import { DEFAULT_BUY_PRIORITY, seasonedMeta } from './scenarios'
 import { makePolicyBot, mutateGenome, type PolicyGenome, randomGenome, TOWER_TYPES } from './policy'
 
 // The build fuzzer: an evolutionary search over PolicyGenome space that hunts
@@ -138,7 +138,7 @@ interface EvalOutcome {
 
 function metaFor(budget: number, priority: PolicyGenome['metaPriority']): MetaState {
   if (budget <= 0) return createMeta()
-  return spendSparks({ ...createMeta(), sparks: budget }, priority)
+  return spendSparks(seasonedMeta(budget), priority)
 }
 
 function* evaluate(
@@ -222,7 +222,7 @@ export function* fuzzBuildsSteps(opts: FuzzOptions): Generator<FuzzStep, FuzzRes
   const reference = new Map<string, number>()
   for (const budget of opts.budgets) {
     for (const seed of opts.seeds) {
-      const meta = budget <= 0 ? createMeta() : spendSparks({ ...createMeta(), sparks: budget }, DEFAULT_BUY_PRIORITY)
+      const meta = budget <= 0 ? createMeta() : spendSparks(seasonedMeta(budget), DEFAULT_BUY_PRIORITY)
       const { state } = autoplay(createRun(meta, seed, opts.biome), BOTS.active, MAX_TICKS)
       reference.set(`${budget}:${seed}`, state.wavesCleared)
       yield { phase: 'reference', budget, evaluated }

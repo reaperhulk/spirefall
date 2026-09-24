@@ -7,7 +7,7 @@ import { step } from '../../engine/step'
 import type { Enemy, RunState } from '../../engine/types'
 import { autoplay, spendSparks } from '../autoplay'
 import { balancedBot, buildCandidates } from '../bots'
-import { DEFAULT_BUY_PRIORITY } from '../scenarios'
+import { DEFAULT_BUY_PRIORITY, seasonedMeta } from '../scenarios'
 
 // Performance budget (PLAN.md §5.8): the sim must stay cheap enough that CI
 // can afford thousands of headless runs. The budget includes bot overhead —
@@ -35,7 +35,7 @@ describe('performance budget', () => {
   // order-of-magnitude regression (an accidental O(n^2) over enemies, say)
   // cannot hide the way it would under the 15x headroom this started with.
   it('a full board against a 300-strong horde stays under 2ms per tick', () => {
-    let s: RunState = { ...createRun(spendSparks({ ...createMeta(), sparks: 60_000 }, DEFAULT_BUY_PRIORITY), 'perf-horde'), gold: 500_000 }
+    let s: RunState = { ...createRun(spendSparks(seasonedMeta(60_000), DEFAULT_BUY_PRIORITY), 'perf-horde'), gold: 500_000 }
 
     // A full board: every buildable cell the placement doctrine likes, in a
     // spread of types so beacon auras and mint payouts are in the mix too.

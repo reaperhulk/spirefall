@@ -1,4 +1,4 @@
-import { canSpecialize, modernRules, specializationCost } from '../engine/campaign'
+import { canSpecialize, modernRules, specializationCost, swappableRelics } from '../engine/campaign'
 import { enhanceCost, EXECUTE_THRESHOLD_PCT, TOWER_SPECS, towerTier, TOWERS } from '../data/content'
 import { densestEnemyCell } from '../engine/combat'
 import { cellCenter, distSq, sameCell } from '../engine/grid'
@@ -26,7 +26,7 @@ export const afkBot: Bot = (state) => {
 // Max cheap DPS, no plan: arrow towers until broke, then send the wave.
 export const greedyBot: Bot = (state) => {
   if (state.phase !== 'build') return []
-  if (state.relicOffer !== null) return [{ type: 'choose_relic', relic: state.relicOffer[0]! }]
+  if (state.relicOffer !== null) return [{ type: 'choose_relic', relic: state.relicSpoils ? null : state.relicOffer[0]! }]
   if (state.cataclysmOffer !== null) return [{ type: 'choose_cataclysm', cataclysm: state.cataclysmOffer[0]! }]
   if (state.gold >= TOWERS.arrow.tiers[0].cost) {
     const spot = buildCandidates(state)[0]
@@ -150,6 +150,17 @@ export const DEFAULT_KNOBS: BuildKnobs = {
   relicPriority: RELIC_PRIORITY,
 }
 
+// Guardian spoils: exchange the lowest-ranked carried relic for the
+// best-ranked offer, but only when that is a strict upgrade by the bot's
+// own priority list (unlisted relics rank last). Otherwise walk away.
+export function spoilsExchange(state: RunState, priority: RelicId[]): Command {
+  const rank = (r: RelicId) => (priority.includes(r) ? priority.indexOf(r) : priority.length)
+  const best = [...state.relicOffer!].sort((a, b) => rank(a) - rank(b))[0]!
+  const worst = [...swappableRelics(state)].sort((a, b) => rank(b) - rank(a))[0]
+  if (worst === undefined || rank(best) >= rank(worst)) return { type: 'choose_relic', relic: null }
+  return { type: 'choose_relic', relic: best, replace: worst }
+}
+
 // Build-phase economy shared by the competent bots: relic pick, tier
 // upgrades, expansion via pickType, repairs, then enhancements.
 export function buildActions(
@@ -161,6 +172,7 @@ export function buildActions(
   // vacuum them through the build phase so gold is in hand for shopping.
   const collect = collectActions(state)
   if (state.relicOffer !== null) {
+    if (state.relicSpoils) return [...collect, spoilsExchange(state, knobs.relicPriority)]
     const pick = knobs.relicPriority.find((r) => state.relicOffer!.includes(r)) ?? state.relicOffer[0]!
     return [...collect, { type: 'choose_relic', relic: pick }]
   }

@@ -1,7 +1,7 @@
 import type { AssaultId } from './campaign'
 import type { DoctrineId } from '../data/doctrines'
 import type { BiomeId } from '../data/biomes'
-import type { BoonId, TowerSpecId } from '../data/content'
+import type { BoonId, RelicSealId, TowerSpecId } from '../data/content'
 import type { Rng } from './rng'
 
 // RunState is the entire simulation. It must stay plain JSON data: no classes,
@@ -183,6 +183,8 @@ export interface RunState {
   biome: BiomeId // battlefield rules; structure generates from mapSeed
   rulesVersion?: number // absent = rules 4; snapshotted so old runs keep their rules
   frontierWave?: number // rules 6: the account's best wave when the run began (waves past it pay a bonus)
+  sealedRelics?: RelicId[] // rules 6: relics this account has not unsealed yet (never offered); absent = none
+  relicSpoils?: boolean // the pending relic offer is a guardian's spoils: an exchange, not an addition
   commissionUsed?: boolean
   bountyRemainder?: number
   supply?: number // War Economy: maximum three field requisitions
@@ -267,7 +269,7 @@ export type Command =
   | { type: 'set_collect'; at: Vec | null }
   | { type: 'set_targeting'; id: number; targeting: Targeting }
   | { type: 'cast_ability'; ability: AbilityId; cell: CellPos }
-  | { type: 'choose_relic'; relic: RelicId | null }
+  | { type: 'choose_relic'; relic: RelicId | null; replace?: RelicId } // replace: the carried relic guardian spoils exchange away
   | { type: 'reroll_relic'; focus?: DoctrineId }
   | { type: 'choose_cataclysm'; cataclysm: CataclysmId }
 
@@ -308,8 +310,9 @@ export type GameEvent =
   | { type: 'beam_overheated' }
   | { type: 'coin_collected'; from: Vec; to: Vec; gold: number; auto: boolean }
   | { type: 'coin_expired'; at: Vec; gold: number }
-  | { type: 'relic_offered'; options: RelicId[] }
+  | { type: 'relic_offered'; options: RelicId[]; spoils?: boolean }
   | { type: 'relic_chosen'; relic: RelicId | null; goldAwarded: number }
+  | { type: 'relic_swapped'; out: RelicId; in: RelicId }
   | { type: 'run_ended'; outcome: 'defeat' | 'victory'; wavesCleared: number; kills: number; sparks: number }
   | { type: 'command_rejected'; command: Command; reason: string }
 
@@ -354,6 +357,7 @@ export interface MetaState {
   upgrades: Record<string, number> // MetaUpgradeId -> level (wiped on ascension)
   emberUpgrades: Record<string, number> // EmberUpgradeId -> level (permanent)
   guardianMilestones?: string[] // banked immediately; survives defeat and ascension
+  relicSeals?: RelicSealId[] // rules 6: relic seals broken (lifetime); absent = derived from the record
   bestWave: number // furthest wave ever cleared
   bestWaveByMap: Record<string, number> // mapId (as string key) -> furthest wave cleared there
   lifetimeKills: number

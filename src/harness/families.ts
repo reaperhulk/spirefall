@@ -2,6 +2,7 @@ import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { TOWERS, relicSkipGold, towerTier } from '../data/content'
 import type { DoctrineId } from '../data/doctrines'
 import type { TowerType } from '../engine/types'
+import { familyRelicsAvailable } from '../engine/campaign'
 import { pickBuildCell } from './placement'
 import { activeBot, buildActions, DEFAULT_KNOBS, RELIC_PRIORITY, type Bot, type BuildKnobs } from './bots'
 
@@ -29,7 +30,7 @@ export function makeFamilyBot(id: DoctrineId, reactionTicks=12): Bot {
     if(s.phase==='build') {
       if(s.boonOffer) return [{type:'choose_boon',boon:s.boonOffer[0]!}]
       if(s.wave>=2 && !s.doctrine) return [{type:'choose_doctrine',doctrine:id}]
-      if(s.relicOffer && s.doctrine===id && !s.relicRerolled && !s.relicOffer.some(r=>BUILD_FAMILIES[id].relics.includes(r)) && BUILD_FAMILIES[id].relics.some(r=>!s.relics.includes(r)) && s.gold>=Math.ceil(relicSkipGold(s.wave)*3/2)+150) return [{type:'reroll_relic',focus:id}]
+      if(s.relicOffer && !s.relicSpoils && s.doctrine===id && !s.relicRerolled && !s.relicOffer.some(r=>BUILD_FAMILIES[id].relics.includes(r)) && familyRelicsAvailable(s,id).length>0 && s.gold>=Math.ceil(relicSkipGold(s.wave)*3/2)+150) return [{type:'reroll_relic',focus:id}]
       if (id==='war_economy' && s.wave>=4 && !s.towers.some(t=>t.type==='mint') && s.spireHp*100>=s.spireMaxHp*85 && s.towers.filter(t=>!TOWERS[t.type].support).length>=4 && s.gold>=towerTier('mint',1).cost+100) {
         const cell=pickBuildCell(s,knobs.placement)
         if(cell) return [{type:'place_tower',tower:'mint',cell}]

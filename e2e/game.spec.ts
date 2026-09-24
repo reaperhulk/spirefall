@@ -24,6 +24,7 @@ declare global {
         towers: { id: number; tier: number; spec: string | null; cell: { cx: number; cy: number } }[]
         enemies: unknown[]
         relicOffer: unknown[] | null
+        relicSpoils?: boolean
         victoryClaimed: boolean
         spireHp: number
         spireMaxHp: number
@@ -1739,7 +1740,8 @@ const MAXED_PILOT = (seed: string) => {
     const s = h.getState()
     if (s.phase === 'victory' || s.phase === 'defeat') break
     if (s.relicOffer && s.relicOffer.length > 0) {
-      h.dispatch({ type: 'choose_relic', relic: s.relicOffer[0] })
+      // Guardian spoils are an exchange; the pilot keeps its build.
+      h.dispatch({ type: 'choose_relic', relic: s.relicSpoils ? null : s.relicOffer[0] })
       h.fastForward(0.2)
       continue
     }

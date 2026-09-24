@@ -36,3 +36,22 @@ test('a doctrine guide leads to a paid focused relic choice', async ({page}) => 
   await page.getByText('Build guide', {exact:true}).click()
   await expect(page.locator('.doctrine-summary')).toContainText('Shield')
 })
+
+test('guardian spoils exchange a carried relic instead of adding one', async ({page}) => {
+  await page.goto('/?seed=guardian-spoils')
+  await page.getByTestId('playfield').waitFor()
+  await page.evaluate(() => {
+    const h = window.__harness as GameHarness, s = h.getState()
+    s.wave = 6; s.relics = ['keen_sights', 'overclock']
+    s.relicOffer = ['field_medicine', 'deep_pockets']; s.relicSpoils = true
+    h.fastForward(1 / 30)
+  })
+  await expect(page.getByRole('dialog', { name: "Guardian's spoils" })).toBeVisible()
+  await expect(page.getByTestId('relic-reroll')).toHaveCount(0)
+  await page.getByTestId('spoils-give-up').selectOption('overclock')
+  await page.getByTestId('relic-field_medicine').click()
+  await page.evaluate(() => (window.__harness as GameHarness).fastForward(1 / 30))
+  await expect(page.getByTestId('relic-modal')).toHaveCount(0)
+  const relics = await page.evaluate(() => (window.__harness as GameHarness).getState().relics)
+  expect([...relics].sort()).toEqual(['field_medicine', 'keen_sights'])
+})

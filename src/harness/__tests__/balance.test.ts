@@ -223,32 +223,32 @@ describe('balance envelope', () => {
     expect(active.history.some(h => h.outcome === 'victory')).toBe(true)
   }, 600_000)
 
-  // Prestige pays: a second cycle wins in well under the runs the first
-  // took. Measured at introduction (rules 6, 35% kept, rank-0 reference):
-  // the active pilot's first cycles took 6/7/9/8 runs to a first win, its
-  // second cycles 6/4/4/4 — 18 of 30 pooled. Before the redesign an
-  // ascension burned the tree for 2-3 Embers and cycle 2 was no faster
-  // than cycle 1 (6 → 6, 6 → 10). One test per seed keeps each worker
-  // call short; the pooled bound is asserted after all four.
-  const prestige: { first: number; second: number }[] = []
+  // Prestige compounds: each cycle reaches its first win sooner. Re-derived
+  // with relic seals (rules 6, 35% kept, rank-0 reference, active pilot):
+  // cycles took 6/4/7/5 runs to a first win, then 3/6/4/5, then 2/3/2/6 —
+  // pooled 22 → 18 → 13. Before the redesign an ascension burned the tree
+  // for 2-3 Embers and later cycles were no faster (6 → 6, 6 → 10). One
+  // test per seed keeps each worker call short; the pooled bounds are
+  // asserted after all four.
+  const prestige: { first: number; second: number; third: number }[] = []
   for (const seed of ['career', 'cb', 'cc', 'cd']) {
-    it(`prestige pays (${seed}): the career wins again after ascending`, () => {
+    it(`prestige pays (${seed}): the career keeps winning across ascensions`, () => {
       const career = playProgression(40, seed, BOTS.active, DEFAULT_BUY_PRIORITY, {
         ascendWhen: DEFAULT_ASCEND_WHEN,
         emberPriority: DEFAULT_EMBER_PRIORITY,
         stopWhen: (history, ascensions) =>
-          ascensions.length > 0 && history.slice(ascensions[0]).some((h) => h.outcome === 'victory'),
+          ascensions.length > 1 && history.slice(ascensions[1]).some((h) => h.outcome === 'victory'),
       })
       const { cycles } = careerPacing(career)
-      expect(cycles.length).toBe(2)
-      expect(cycles[1]!.firstVictory, 'never won its second cycle').toBeGreaterThan(0)
-      prestige.push({ first: cycles[0]!.firstVictory, second: cycles[1]!.firstVictory })
+      expect(cycles.length).toBe(3)
+      for (const cycle of cycles) expect(cycle.firstVictory, 'a cycle never won').toBeGreaterThan(0)
+      prestige.push({ first: cycles[0]!.firstVictory, second: cycles[1]!.firstVictory, third: cycles[2]!.firstVictory })
     }, 300_000)
   }
-  it('prestige pays: pooled, second cycles win in at most 60% of the first cycles\' runs', () => {
+  it('prestige pays: pooled, later cycles win sooner — the third in at most 60% of the first\'s runs', () => {
     expect(prestige).toHaveLength(4)
-    const first = prestige.reduce((sum, p) => sum + p.first, 0)
-    const second = prestige.reduce((sum, p) => sum + p.second, 0)
-    expect(second).toBeLessThanOrEqual(Math.floor((first * 60) / 100))
+    const pooled = (key: 'first' | 'second' | 'third') => prestige.reduce((sum, p) => sum + p[key], 0)
+    expect(pooled('second')).toBeLessThanOrEqual(pooled('first'))
+    expect(pooled('third')).toBeLessThanOrEqual(Math.floor((pooled('first') * 60) / 100))
   })
 })

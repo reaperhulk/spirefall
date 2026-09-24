@@ -2,7 +2,7 @@ import { DefenseCoverage } from './DefenseCoverage'
 import { RunLessons } from './RunLessons'
 import { useEffect, useRef, useState } from 'react'
 import { drawRunCard, challengeLink } from './runCard'
-import { CATACLYSMS, CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, SPARKS_FRONTIER_BONUS, TRIAL_IDS, TRIALS } from '../data/content'
+import { CATACLYSMS, CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELIC_SEALS, RELICS, SPARKS_FRONTIER_BONUS, TRIAL_IDS, TRIALS } from '../data/content'
 import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
 import { ASCEND_KEEP_PCT, EMBER_LEGACY_KEEP_PCT_PER_LEVEL, EMBER_SPARKS_PER_ASH, EMBER_TREE, EMBERS_PER_VICTORY, type EmberUpgradeId } from '../data/emberTree'
 import {
@@ -32,6 +32,7 @@ import { computeSparks } from '../engine/step'
 import type { CataclysmId, MetaState, RelicId, RunState, RunSummary, Tower } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
 import { SpireTreeGraph } from './SpireTreeGraph'
+import { brokenSeals, sealedRelics } from '../engine/campaign'
 
 export { RelicModal } from './RelicModal'
 
@@ -652,6 +653,14 @@ export function RunOverOverlay({
               {crucibleTiersAt(chosenCrucible(meta))
                 .map((t) => ` · ${t.name} (${t.description})`)
                 .join('')}
+            </span>
+          )}
+          {sealedRelics(meta).length > 0 && (
+            <span className="trial-badge" data-testid="relic-seals" title="Sealed relics never appear in offers until their seal breaks.">
+              🔒 {sealedRelics(meta).length} relics sealed —{' '}
+              {RELIC_SEALS.filter((seal) => !brokenSeals(meta).includes(seal.id))
+                .map((seal) => `${seal.hint}: ${seal.relics.map((r) => RELICS[r].name).join(', ')}`)
+                .join(' · ')}
             </span>
           )}
           <button className="primary-btn" onClick={onNextRun} data-testid="next-run">

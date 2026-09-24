@@ -412,6 +412,23 @@ export const RELICS: Record<RelicId, RelicDef> = {
 
 export const RELIC_IDS = Object.keys(RELICS) as RelicId[]
 
+// Rules 6: the transformative relics start sealed and join an account's
+// pool as it earns milestones, so the relic table keeps growing through a
+// career instead of being fully known on run one. Every build family keeps
+// unsealed relics from the start.
+export type RelicSealId = 'boss' | 'boss2' | 'boss3' | 'victory' | 'crucible'
+export const RELIC_SEALS: { id: RelicSealId; relics: RelicId[]; hint: string }[] = [
+  { id: 'boss', relics: ['storm_coils', 'ricochet_strings'], hint: 'Defeat the Gatebreaker (wave 6)' },
+  { id: 'boss2', relics: ['cinder_shells', 'golden_ledger'], hint: 'Defeat the Broodbreaker (wave 12)' },
+  { id: 'boss3', relics: ['prism_lens', 'duelists_oath'], hint: 'Defeat the Stormwalker (wave 18)' },
+  { id: 'victory', relics: ['shatterheart'], hint: 'Win a run' },
+  { id: 'crucible', relics: ['deadeye_sigil'], hint: 'Win at Crucible rank 1' },
+]
+// Guardian spoils (Crucible rank 1+): clearing a guardian's wave with the
+// guardian slain offers this many relics to exchange for a carried one
+// (plus Relic Cartography's extra).
+export const GUARDIAN_SPOILS_SIZE = 2
+
 // The anti-air roster, DERIVED — every UI string naming who can hit fliers
 // reads this, so a new tower can never silently rot the docs again.
 export const AA_TOWER_NAMES = Object.values(TOWERS)

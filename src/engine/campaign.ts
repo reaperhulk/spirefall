@@ -1,5 +1,7 @@
-import { specForTower, TOWERS } from '../data/content'
-import type { Enemy, MetaState, RunState, Tower, TowerType } from './types'
+import { RELIC_IDS, RELIC_SEALS, specForTower, TOWERS, type RelicSealId } from '../data/content'
+import { BUILD_FAMILIES } from '../data/buildFamilies'
+import type { DoctrineId } from '../data/doctrines'
+import type { Enemy, MetaState, RelicId, RunState, Tower, TowerType } from './types'
 import type { TowerSpecId } from '../data/content'
 import { cellCenter, distSq } from './grid'
 
@@ -28,6 +30,47 @@ export function bankGuardianMilestones(meta: MetaState, run: RunState): MetaStat
   const previous = meta.guardianMilestones ?? []
   if (earned.every(id => previous.includes(id))) return meta
   return { ...meta, guardianMilestones: [...new Set([...previous, ...earned])] }
+}
+// Which relic seals the account's record has earned. The ladder check
+// mirrors crucibleUnlocked (meta.ts) without importing it, to keep this
+// module a leaf.
+function earnedSeals(meta: MetaState): RelicSealId[] {
+  return RELIC_SEALS.map((seal) => seal.id).filter((id) => {
+    if (id === 'victory') return meta.victories > 0
+    if (id === 'crucible') return (meta.crucibleUnlocked ?? (meta.victories > 0 ? Math.max(1, meta.cycleVictories) : 0)) >= 2
+    return (meta.guardianMilestones ?? []).includes(id)
+  })
+}
+// Broken seals are banked in meta.relicSeals at settle; saves from before
+// the field derive them from the record they already carry.
+export function brokenSeals(meta: MetaState): RelicSealId[] {
+  return meta.relicSeals ?? earnedSeals(meta)
+}
+export function bankRelicSeals(meta: MetaState): MetaState {
+  const banked = brokenSeals(meta)
+  const next = [...new Set([...banked, ...earnedSeals(meta)])]
+  return next.length === banked.length && meta.relicSeals !== undefined ? meta : { ...meta, relicSeals: next }
+}
+export function sealedRelics(meta: MetaState): RelicId[] {
+  const broken = brokenSeals(meta)
+  return RELIC_SEALS.filter((seal) => !broken.includes(seal.id)).flatMap((seal) => seal.relics)
+}
+// The relics a run can still be offered: unowned and unsealed.
+export function relicPool(s: RunState): RelicId[] {
+  const sealed = s.sealedRelics ?? []
+  return RELIC_IDS.filter((r) => !s.relics.includes(r) && !sealed.includes(r))
+}
+// Relics whose effect was paid once at pick time (a max-HP cut) can never
+// be exchanged away: shedding the relic would keep the price paid or need
+// a refund nothing else in the game makes.
+export const SWAP_LOCKED_RELICS: RelicId[] = ['glass_cannon', 'golden_touch']
+export function swappableRelics(s: RunState): RelicId[] {
+  return s.relics.filter((r) => !SWAP_LOCKED_RELICS.includes(r))
+}
+// A focused reroll needs a family relic that is still on the table.
+export function familyRelicsAvailable(s: RunState, doctrine: DoctrineId): RelicId[] {
+  const pool = relicPool(s)
+  return BUILD_FAMILIES[doctrine].relics.filter((r) => pool.includes(r))
 }
 export function canSpecialize(s: RunState, t: Tower): boolean {
   return t.spec === null && t.tier >= (modernRules(s) ? 2 : 3)

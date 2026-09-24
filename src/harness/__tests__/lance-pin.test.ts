@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createMeta, createRun } from '../../engine/meta'
+import { createRun } from '../../engine/meta'
+import { seasonedMeta } from '../scenarios'
 import { autoplay, spendSparks } from '../autoplay'
 import { makePolicyBot, type PolicyGenome } from '../policy'
 import { RELIC_PRIORITY } from '../bots'
@@ -36,7 +37,7 @@ describe('lance probe', () => {
   it('a lance-rush cannot win below the curve', () => {
     for (const budget of [5000, 8000]) {
       for (const seed of ['alpha', 'gamma']) {
-        const meta = spendSparks({ ...createMeta(), sparks: budget }, LANCE_RUSH.metaPriority)
+        const meta = spendSparks(seasonedMeta(budget), LANCE_RUSH.metaPriority)
         const { state } = autoplay(createRun(meta, seed), makePolicyBot(LANCE_RUSH), 150_000)
         expect(state.phase, `${seed} @ ${budget} sparks`).toBe('defeat')
       }

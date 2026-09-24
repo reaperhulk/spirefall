@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createMeta, createRun } from '../../engine/meta'
+import { seasonedMeta } from '../scenarios'
 import { deriveStream } from '../../engine/rng'
 import { autoplay, spendSparks } from '../autoplay'
 import { VICTORY_WAVE } from '../../data/content'
@@ -273,7 +274,7 @@ describe('build fuzzer', () => {
     const bot = makePolicyBot(HONED_ALLIN)
     for (const budget of [5000, 8000]) {
       for (const seed of ['alpha', 'gamma']) {
-        const meta = spendSparks({ ...createMeta(), sparks: budget }, HONED_ALLIN.metaPriority)
+        const meta = spendSparks(seasonedMeta(budget), HONED_ALLIN.metaPriority)
         const { state } = autoplay(createRun(meta, seed), bot, 120_000)
         expect(state.phase, `${seed} @ ${budget} sparks`).toBe('defeat')
       }
@@ -292,7 +293,7 @@ describe('build fuzzer', () => {
   it('closing-matrix find: the Ember-Choke depth corner never converts to a cheap win', () => {
     const bot = makePolicyBot(EMBER_CHOKE)
     for (const budget of [5000, 8000]) {
-      const meta = spendSparks({ ...createMeta(), sparks: budget }, EMBER_CHOKE.metaPriority)
+      const meta = spendSparks(seasonedMeta(budget), EMBER_CHOKE.metaPriority)
       const { state } = autoplay(createRun(meta, 'gamma', 'emberwaste'), bot, 150_000)
       expect(state.phase, `emberwaste gamma @ ${budget} sparks`).toBe('defeat')
     }
@@ -318,7 +319,7 @@ describe('build fuzzer', () => {
       [8000, 'frostfen', 'delta'],
     ]
     for (const [budget, biome, seed] of combos) {
-      const meta = spendSparks({ ...createMeta(), sparks: budget }, CANNON_WALL.metaPriority)
+      const meta = spendSparks(seasonedMeta(budget), CANNON_WALL.metaPriority)
       const { state } = autoplay(createRun(meta, seed, biome), bot, 150_000)
       expect(state.phase, `${biome} ${seed} @ ${budget} sparks`).toBe('defeat')
     }
@@ -332,7 +333,7 @@ describe('build fuzzer', () => {
     for (const budget of [5000, 8000]) {
       for (const seed of ['alpha', 'gamma']) {
         const meta = spendSparks(
-          { ...createMeta(), sparks: budget, emberUpgrades: { ember_crews: 2 } },
+          { ...seasonedMeta(budget), emberUpgrades: { ember_crews: 2 } },
           HONED_ALLIN.metaPriority,
         )
         const { state } = autoplay(createRun(meta, seed), bot, 120_000)
@@ -376,7 +377,7 @@ describe('build fuzzer', () => {
   it('pinned find: the Bounty-Banner economy comp stays contained', () => {
     const bot = makePolicyBot(BOUNTY_ECONOMY)
     const play = (budget: number, seed: string) => {
-      const meta = spendSparks({ ...createMeta(), sparks: budget }, BOUNTY_ECONOMY.metaPriority)
+      const meta = spendSparks(seasonedMeta(budget), BOUNTY_ECONOMY.metaPriority)
       return autoplay(createRun(meta, seed), bot, 120_000).state
     }
     for (const seed of ['alpha', 'beta', 'gamma', 'delta']) {
@@ -420,7 +421,7 @@ describe('build fuzzer', () => {
   it('pinned find: the Mortar-Blizzard lockdown comp stays contained', () => {
     const bot = makePolicyBot(MORTAR_BLIZZARD)
     for (const seed of ['alpha', 'gamma']) {
-      const meta = spendSparks({ ...createMeta(), sparks: 8000 }, MORTAR_BLIZZARD.metaPriority)
+      const meta = spendSparks(seasonedMeta(8000), MORTAR_BLIZZARD.metaPriority)
       const { state } = autoplay(createRun(meta, seed), bot, 120_000)
       expect(state.phase, `${seed} @ 8000 sparks`).toBe('defeat')
     }
@@ -467,7 +468,7 @@ describe('build fuzzer', () => {
   it('pinned find: the Ember Waste maze comp stays contained', () => {
     const bot = makePolicyBot(EMBER_MAZE)
     for (const seed of ['alpha', 'gamma']) {
-      const meta = spendSparks({ ...createMeta(), sparks: 8000 }, EMBER_MAZE.metaPriority)
+      const meta = spendSparks(seasonedMeta(8000), EMBER_MAZE.metaPriority)
       const { state } = autoplay(createRun(meta, seed, 'emberwaste'), bot, 120_000)
       expect(state.phase, `emberwaste ${seed} @ 8000 sparks`).toBe('defeat')
     }
@@ -480,7 +481,7 @@ describe('build fuzzer', () => {
     for (const genome of [HONED_ALLIN, BOUNTY_ECONOMY]) {
       const bot = makePolicyBot(genome)
       for (const biome of ['frostfen', 'emberwaste', 'highlands'] as const) {
-        const meta = spendSparks({ ...createMeta(), sparks: 8000 }, genome.metaPriority)
+        const meta = spendSparks(seasonedMeta(8000), genome.metaPriority)
         const { state } = autoplay(createRun(meta, 'alpha', biome), bot, 120_000)
         expect(state.phase, `${biome} @ 8000`).toBe('defeat')
       }
@@ -513,7 +514,7 @@ describe('build fuzzer', () => {
   it('the cannon comp cannot reach below its rebalanced floor', () => {
     for (const biome of ['verdant', 'frostfen', 'emberwaste', 'highlands'] as const) {
       for (const seed of ['alpha', 'beta', 'gamma', 'delta']) {
-        const meta = spendSparks({ ...createMeta(), sparks: 4000 }, CANNON_TEN_K.metaPriority)
+        const meta = spendSparks(seasonedMeta(4000), CANNON_TEN_K.metaPriority)
         const { state } = autoplay(createRun(meta, seed, biome), makePolicyBot(CANNON_TEN_K), 120_000)
         expect(state.phase, `cannon comp won at 4000 on ${biome}/${seed}`).toBe('defeat')
       }
@@ -548,14 +549,14 @@ describe('build fuzzer', () => {
       ['highlands', 'beta'],
       ['highlands', 'epsilon'],
     ] as const) {
-      const meta = spendSparks({ ...createMeta(), sparks: BREAKING_VICTORY_BUDGET }, ACTIVE_STACK.metaPriority)
+      const meta = spendSparks(seasonedMeta(BREAKING_VICTORY_BUDGET), ACTIVE_STACK.metaPriority)
       const { state } = autoplay(createRun(meta, seed, biome), bot, 150_000)
       expect(state.phase, `active-stack comp won at ${BREAKING_VICTORY_BUDGET} on ${biome}/${seed}`).toBe('defeat')
     }
     // Emberwaste/beta is the known soft cell — beta is the friendly map seed
     // on every biome. Named here so a future reader knows it is measured and
     // deliberately tolerated, not an oversight the pin quietly steps around.
-    const soft = spendSparks({ ...createMeta(), sparks: BREAKING_VICTORY_BUDGET }, ACTIVE_STACK.metaPriority)
+    const soft = spendSparks(seasonedMeta(BREAKING_VICTORY_BUDGET), ACTIVE_STACK.metaPriority)
     const softRun = autoplay(createRun(soft, 'beta', 'emberwaste'), bot, 150_000)
     // It gets deep on the soft cell; that is the softness. The threshold is
     // >= 20 rather than > 20 since the tree restructure moved this genome by

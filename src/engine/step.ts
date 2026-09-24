@@ -1,4 +1,4 @@
-import { ASSAULTS, assaultActive, canSpecialize, modernRules, rules6, specializationCost, warSupply } from './campaign'
+import { ASSAULTS, assaultActive, canSpecialize, familyRelicsAvailable, GUARDIAN_MILESTONES, modernRules, relicPool, rules6, specializationCost, swappableRelics, warSupply } from './campaign'
 import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { navigation } from './navigation'
 import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, commandChargeCap, DOCTRINES } from '../data/doctrines'
@@ -16,12 +16,12 @@ import {
   EXECUTE_COOLDOWN_TICKS,
   EXECUTE_THRESHOLD_PCT,
   hpGrowthPct,
-  RELIC_IDS,
   RELICS,
   DEEP_POCKETS_GOLD_PCT,
   FIELD_MEDICINE_KNIT_HP,
   RELIC_OFFER_SIZE,
   RELIC_WAVE_INTERVAL,
+  GUARDIAN_SPOILS_SIZE,
   SPARKS_FRONTIER_BONUS,
   SPARKS_PER_WAVE_BASE,
   SPARKS_PER_WAVE_DEPTH_PCT,
@@ -449,13 +449,14 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
 
     case 'reroll_relic': {
       if (s.relicOffer === null) return reject(command, 'no relic offer pending', events)
+      if (s.relicSpoils) return reject(command, 'spoils cannot be rerolled', events)
       if (s.relicRerolled) return reject(command, 'offer already rerolled', events)
       if (command.focus !== undefined && command.focus !== s.doctrine) return reject(command, 'focus must match your doctrine', events)
-      if (command.focus && BUILD_FAMILIES[command.focus].relics.every(r => s.relics.includes(r))) return reject(command, 'all focus relics already owned', events)
+      if (command.focus && familyRelicsAvailable(s, command.focus).length === 0) return reject(command, 'no focus relics left to offer', events)
       const cost = command.focus ? Math.ceil(relicSkipGold(s.wave) * 3 / 2) : relicSkipGold(s.wave)
       if (s.gold < cost) return reject(command, 'not enough gold', events)
       s.gold -= cost
-      const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
+      const pool = relicPool(s)
       s.relicOffer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
       if (command.focus) {
         const preferred = BUILD_FAMILIES[command.focus].relics.filter(r => pool.includes(r))
@@ -474,18 +475,35 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
 
     case 'choose_relic': {
       if (s.relicOffer === null) return reject(command, 'no relic offer pending', events)
+      if (s.relicSpoils) {
+        // Guardian spoils are an exchange, never an addition: give up one
+        // relic you carry for one on offer, or walk away with nothing.
+        if (command.relic === null) {
+          s.relicOffer = null
+          s.relicSpoils = false
+          events.push({ type: 'relic_chosen', relic: null, goldAwarded: 0 })
+          return
+        }
+        if (!s.relicOffer.includes(command.relic)) return reject(command, 'relic not in the offer', events)
+        const out = command.replace
+        if (out === undefined || !swappableRelics(s).includes(out)) return reject(command, 'spoils need a carried relic to exchange', events)
+        s.relics = s.relics.filter((r) => r !== out)
+        events.push({ type: 'relic_swapped', out, in: command.relic })
+      } else if (command.replace !== undefined) return reject(command, 'only guardian spoils exchange relics', events)
       if (command.relic === null) {
         // Passing on all three is a paid choice, not a dead end — some
         // relics carry downsides worth more than the gold.
         const goldAwarded = relicSkipGold(s.wave)
         s.gold += goldAwarded
         s.relicOffer = null
+        if (s.relicSpoils) s.relicSpoils = false
         events.push({ type: 'relic_chosen', relic: null, goldAwarded })
         return
       }
       if (!s.relicOffer.includes(command.relic)) return reject(command, 'relic not in the offer', events)
       s.relics.push(command.relic)
       s.relicOffer = null
+      if (s.relicSpoils) s.relicSpoils = false
       if (command.relic === 'golden_touch') reduceSpireMax(s, 90)
       // 60: the 2026-07 deep hunt won at 5k AND 8k sparks with Glass Cannon
       // as the linchpin — at −20% the downside never bound, and even −35%
@@ -798,7 +816,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   // Ashen Road pays its skipped offers back, one per build phase, before the
   // regular cadence resumes.
   if ((s.relicDebt ?? 0) > 0 && s.wave % RELIC_WAVE_INTERVAL !== 0) {
-    const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
+    const pool = relicPool(s)
     if (pool.length > 0) {
       const offer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
       s.relicOffer = offer
@@ -808,12 +826,36 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     }
   }
   if (s.wave % RELIC_WAVE_INTERVAL === 0) {
-    const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
+    const pool = relicPool(s)
     if (pool.length > 0) {
       const offer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
       s.relicOffer = offer
       s.relicRerolled = false
       events.push({ type: 'relic_offered', options: [...offer] })
+    }
+  }
+  // Rules 6, Crucible rank 1+: a guardian slain on its own wave leaves
+  // spoils — a chance to EXCHANGE one carried relic for one of a small
+  // offer. Never an addition, and never at rank 0. Measured (active pilot,
+  // 4 biomes x 4-5 seeds): added relics, even commons only, let three
+  // pinned exploit builds win below their floors and full-table additions
+  // won 2/16 at the 5k breaking boundary; the exchange still took the
+  // calibrated 5k Glassforge build from 0/20 wins to 5/20 (commons-only
+  // offers 5/20, common-for-common 3/20, drawing without swapping 2/20).
+  // Relic agency is worth real power, so it is Crucible content: the heat
+  // pays for it, and every account that sees it has already won.
+  // Spoils wait for a quiet build phase: they never displace another offer.
+  if (rules6(s) && s.crucible >= 1 && s.relicOffer === null && swappableRelics(s).length > 0) {
+    const guardian = GUARDIAN_MILESTONES.find((m) => m.wave === s.wave)
+    if (guardian && (s.killsByEnemy[guardian.enemy] ?? 0) > 0) {
+      const pool = relicPool(s)
+      if (pool.length > 0) {
+        const offer = drawRelicOffer(s, pool, Math.min(GUARDIAN_SPOILS_SIZE + (s.mods.relicChoices ?? 0), pool.length)) as RelicId[]
+        s.relicOffer = offer
+        s.relicRerolled = false
+        s.relicSpoils = true
+        events.push({ type: 'relic_offered', options: [...offer], spoils: true })
+      }
     }
   }
 }

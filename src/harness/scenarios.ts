@@ -1,6 +1,7 @@
 import type { MetaUpgradeId } from '../data/metaTree'
 import type { EmberUpgradeId } from '../data/emberTree'
 import { createMeta } from '../engine/meta'
+import { RELIC_SEALS } from '../data/content'
 import type { MetaState } from '../engine/types'
 import { spendSparks } from './autoplay'
 import { BOTS, type BotName } from './bots'
@@ -56,8 +57,17 @@ export const DEFAULT_EMBER_PRIORITY: EmberUpgradeId[] = [
   'ember_crews',
 ]
 
+// A banked account has fought its way here, so every relic seal is broken.
+// Budgets measure the Spire Tree's power against the full relic table,
+// exactly as they did before seals existed; only a truly fresh account
+// (createMeta) plays with the sealed table. Seals only — the biome pool
+// (guardian milestones) stays as it was, so seeds keep their battlefields.
+export function seasonedMeta(sparks = 0): MetaState {
+  return { ...createMeta(), sparks, relicSeals: RELIC_SEALS.map((seal) => seal.id) }
+}
+
 export function richMeta(sparks: number): MetaState {
-  return spendSparks({ ...createMeta(), sparks }, DEFAULT_BUY_PRIORITY)
+  return spendSparks(seasonedMeta(sparks), DEFAULT_BUY_PRIORITY)
 }
 
 export interface Scenario {
@@ -69,7 +79,7 @@ export interface Scenario {
 }
 
 export const SCENARIOS: Scenario[] = [
-  { name: 'glassforge-active', seed: 'golden-glassforge', bot: 'active', meta: () => spendSparks({ ...createMeta(), sparks: 5000 }, ['tower_damage', 'ks_glassforge', 'spire_hp', 'crit_chance', ...DEFAULT_BUY_PRIORITY]), maxTicks: 400_000 },
+  { name: 'glassforge-active', seed: 'golden-glassforge', bot: 'active', meta: () => spendSparks(seasonedMeta(5000), ['tower_damage', 'ks_glassforge', 'spire_hp', 'crit_chance', ...DEFAULT_BUY_PRIORITY]), maxTicks: 400_000 },
   { name: 'afk-fresh', seed: 'golden-afk', bot: 'afk', meta: createMeta, maxTicks: 400_000 },
   { name: 'greedy-fresh', seed: 'golden-greedy', bot: 'greedy', meta: createMeta, maxTicks: 400_000 },
   { name: 'balanced-fresh', seed: 'golden-balanced', bot: 'balanced', meta: createMeta, maxTicks: 400_000 },

@@ -5,7 +5,7 @@
     "kills": 1243,
     "outcome": "defeat",
     "sparks": 715,
-    "stateHash": "6eba6609"
+    "stateHash": "443ca5d3"
   },
   "afk-fresh": {
     "ticks": 211,
@@ -13,23 +13,23 @@
     "kills": 0,
     "outcome": "defeat",
     "sparks": 0,
-    "stateHash": "792e195c"
+    "stateHash": "c9980b99"
   },
   "greedy-fresh": {
-    "ticks": 3855,
+    "ticks": 4309,
     "wavesCleared": 8,
-    "kills": 294,
+    "kills": 288,
     "outcome": "defeat",
     "sparks": 236,
-    "stateHash": "469a1630"
+    "stateHash": "e710f9b6"
   },
   "balanced-fresh": {
-    "ticks": 2181,
-    "wavesCleared": 5,
-    "kills": 156,
+    "ticks": 5331,
+    "wavesCleared": 11,
+    "kills": 428,
     "outcome": "defeat",
-    "sparks": 134,
-    "stateHash": "342f0fa6"
+    "sparks": 351,
+    "stateHash": "59fdd61c"
   },
   "balanced-rich": {
     "ticks": 6660,
@@ -37,15 +37,15 @@
     "kills": 615,
     "outcome": "defeat",
     "sparks": 444,
-    "stateHash": "87ca961b"
+    "stateHash": "fc4c4da5"
   },
   "active-fresh": {
-    "ticks": 8312,
-    "wavesCleared": 15,
-    "kills": 797,
+    "ticks": 6103,
+    "wavesCleared": 13,
+    "kills": 609,
     "outcome": "defeat",
-    "sparks": 542,
-    "stateHash": "eed10d2e"
+    "sparks": 443,
+    "stateHash": "e26157a7"
   },
   "active-rich": {
     "ticks": 8278,
@@ -53,6 +53,6 @@
     "kills": 790,
     "outcome": "defeat",
     "sparks": 499,
-    "stateHash": "4675addc"
+    "stateHash": "ee8ef5ba"
   }
 }

@@ -1135,7 +1135,7 @@ export default function App() {
           options={state.relicOffer}
           skipGold={relicSkipGold(state.wave)}
           canReroll={!state.relicRerolled && state.gold >= relicSkipGold(state.wave)}
-          onChoose={(relic) => session.dispatch({ type: 'choose_relic', relic })}
+          onChoose={(relic, replace) => session.dispatch(replace === undefined ? { type: 'choose_relic', relic } : { type: 'choose_relic', relic, replace })}
           onReroll={focus => session.dispatch(focus ? {type:'reroll_relic',focus} : {type:'reroll_relic'})}
         />
       )}

@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest'
 import findings from '../../../fixtures/finish-findings.json'
 import type { BiomeId } from '../../data/biomes'
-import { createMeta, createRun } from '../../engine/meta'
+import { createRun } from '../../engine/meta'
+import { seasonedMeta } from '../scenarios'
 import { autoplay, spendSparks } from '../autoplay'
 import { calibrateFindings, type FuzzFinding } from '../fuzz'
 import { makePolicyBot, type PolicyGenome } from '../policy'
@@ -13,7 +14,7 @@ it('the discovered lineages satisfy both same-build and independent-build 5k bou
     winsByBiome.set(finding.biome, wins)
     for (const doctrine of [null, 'shatter', 'siege', 'storm', 'war_economy'] as const) {
       const genome = {...finding.genome, doctrine} as PolicyGenome
-      const meta = spendSparks({...createMeta(), sparks: 5000}, genome.metaPriority)
+      const meta = spendSparks(seasonedMeta(5000), genome.metaPriority)
       expect(meta.upgrades.ks_glassforge ?? 0).toBe(finding.id === 'storm-reference' ? 0 : 1)
       const bot = makePolicyBot(genome)
       for (const seed of ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta']) {
