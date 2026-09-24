@@ -13,6 +13,12 @@ The follow-up review is tracked in
 adds automatic bounty, mechanical doctrines, early specialization, guardian
 milestones and act assault choices; archived rules-4 runs retain their semantics.
 
+The incremental-loop review is tracked in
+[incremental-review.md](docs/incremental-review.md). Rules 6 pays Sparks by
+depth, seals the transformative relics behind milestones and adds Crucible
+spoils; ascension, the chosen Crucible ladder and the reshaped tier 3 are meta
+changes. Archived rules-4 and rules-5 runs retain their semantics.
+
 The September release and its measured limits are tracked in
 [roadmap-implementation.md](docs/roadmap-implementation.md). Historical balance
 tables below describe their original tuning revision; use current test envelopes
@@ -39,9 +45,20 @@ and the release profile for current measurements.
 >   endless-tier phasing (Veilwarden) and horde-mending (Blightmother) — each
 >   with explicit counterplay; guardians at 6/12/18, Hollow Sovereign at 24,
 >   then the endless roster every ten waves.
-> - **The Crucible**: post-victory escalation — each cycle victory hardens the
->   next run (+10% HP) and sweetens it (+15% sparks, +1 ember at ascension);
->   rank milestones add NAMED tiers (Seething/Ironbound/Unrelenting texture).
+> - **The Crucible**: opt-in heat, chosen before each run up to one rank above
+>   your best winning rank (max 10; lifetime, survives ascension). Each rank
+>   hardens the run (+10% HP) and sweetens it (+15% sparks; a win banks
+>   1 + rank Embers); rank milestones add NAMED tiers (Seething/Ironbound/
+>   Unrelenting texture). At rank 1+, guardians slain on their wave leave
+>   spoils: exchange one carried relic for one of two (never an addition).
+> - **The incremental loop (rules 6)**: waves pay 5 + 1.5×wave Sparks plus a
+>   frontier bonus past your best; ascension keeps 35% of what it burns and
+>   pays Embers for wins and Sparks earned; Honed Edge III stops at four
+>   levels and Battle-Hardened / Relic Cartography / Deep Reserves carry the
+>   tier-3 budget; the eight transformative relics start sealed behind
+>   guardian, victory and Crucible milestones. `src/harness/pacing.ts` and
+>   `scripts/profile-careers.ts` measure careers end to end, and the envelope
+>   pins income growth and prestige speed-up.
 > - **Replays** (`session.replaySession()`): determinism as a feature — watch
 >   your last run, import compatible v3/rules-versioned replay JSON, or open a ?replay= link;
 >   spectator sessions never touch meta or saves. Original starts survive reloads;
@@ -170,10 +187,13 @@ choose loadout → BUILD phase (place towers, no timer)
   damage %, crit chance %, Spark gain % (the compounding incremental node),
   starting-wave skip.
 - **Ascension (shipped):** after any victory, stat upgrades and banked Sparks
-  can be burned (tower and ability unlocks remain) for **Embers** — 1 + 1 per victory that cycle. The
-  Ember Tree (damage, Spire HP, Spark gain, a banked-Spark head start, gold,
+  can be burned (tower and ability unlocks remain) for **Embers** — 1, plus
+  1 + Crucible rank per victory that cycle, plus 1 per 5,000 Sparks the cycle
+  earned — and 35% of the burned Sparks return as a head start. The
+  Ember Tree (damage, Spire HP, Spark gain, a larger head start, gold,
   ability cooldowns) survives every ascension and compounds with the rebuilt
-  Spire Tree.
+  Spire Tree. Measured: pooled over four careers, cycles reach a first win in
+  22 → 18 → 13 runs (the old ascension made later cycles no faster).
 - **Trials (shipped):** opt-in run handicaps chosen at run start — Glass Spire
   (half HP, +40% sparks), Swift Horde (+15% speed, +25%), Iron Horde (+25% HP,
   +35%), Famine (−25% gold, +30%). Hardship is a strong account's spark

@@ -15,9 +15,12 @@ Read PLAN.md before making architectural changes — it is the design contract.
   always resolve a run's map with `getRunMap(state)`, never `getMap(mapId)`.
 - `src/harness/` — Headless tooling: strategy bots, autoplay/careers, scenarios,
   state hashing, and the build fuzzer (`policy.ts` + `fuzz.ts`: seeded
-  evolutionary search for curve-breaking strategies). `src/harness/__tests__/`
-  holds the balance envelope, perf budget, and the CI fuzz sweep;
-  `npm run fuzz:builds` runs the deep search.
+  evolutionary search for curve-breaking strategies), and career pacing
+  (`pacing.ts`; `scripts/profile-careers.ts` profiles whole careers with
+  ascension). Budget references start from `seasonedMeta` (every relic seal
+  broken); only truly fresh accounts use bare `createMeta()`.
+  `src/harness/__tests__/` holds the balance envelope, perf budget, and the
+  CI fuzz sweep; `npm run fuzz:builds` runs the deep search.
 - `src/ui/` — React shell + canvas renderer. `session.ts` bridges real time to
   fixed ticks; commands are the only write path into the engine.
 - `e2e/` — Playwright suite driving the real UI (buttons, canvas clicks) plus the

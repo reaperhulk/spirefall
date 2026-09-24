@@ -48,16 +48,22 @@ npm run dev     # then open http://localhost:5173
   War Economy supplies Mint-backed requisitions. Tier-2 towers can specialize,
   with a once-per-run 20-gold commission after wave 2. Relic offers identify matching
   towers and owned synergies. A focused reroll costs extra and guarantees one
-  unowned family relic, sharing the normal once-per-offer limit. Every 5 waves the ruins offer a relic (31 in the pool, with
+  unowned family relic, sharing the normal once-per-offer limit. Every 5 waves the ruins offer a relic (31 in the pool, 8 of them sealed at first, with
   rarities, one paid reroll, and a pity floor past wave 15). Skipping pays gold.
 - **Fall**: the Spire has 10 HP and every enemy hits differently — first runs die
   in minutes. Sparks buy the Iron, Gold and Ash branches, each with rival
-  keystones and free between-run respec. Ascension burns stat upgrades for
-  Embers while retaining tower and ability unlocks. Achievements pay bounties
+  keystones and free between-run respec; the tier-3 nodes change how a run
+  plays (veteran towers hit harder, wider relic offers, a deeper charge pool).
+  Deeper waves pay more Sparks, and waves past your best pay a frontier bonus.
+  Ascension burns stat upgrades for Embers, keeps 35% of the burned Sparks as a
+  head start and retains tower and ability unlocks. Achievements pay bounties
   along the way; mid-run stats live on S.
 - **Push**: clear wave 24 to break the cycle, then dare the endless — every 5th
-  wave past victory strikes a permanent, stacking Cataclysm. Win again and the
-  **Crucible** hardens each subsequent run for bonus sparks and embers.
+  wave past victory strikes a permanent, stacking Cataclysm. Each win opens a
+  higher **Crucible** rank: choose your heat before a run for bonus Sparks,
+  more Embers and, from rank 1, guardian spoils that exchange a relic.
+  Eight transformative relics start sealed; guardians, a first win and a
+  Crucible-1 win break the seals.
 - **Vary it**: battlefields GENERATE per run across 4 biomes (marsh, lava vents,
   mesas — each biome fights differently), with six named tactical situations.
   Guardian kills at waves 6/12/18 permanently unlock the next biomes and award
