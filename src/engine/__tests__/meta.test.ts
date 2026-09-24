@@ -14,6 +14,10 @@ import { ABILITIES, STARTING_GOLD, STARTING_SPIRE_HP,
 } from '../../data/content'
 import {
   ascend,
+  ascensionSparksKept,
+  chosenCrucible,
+  crucibleUnlocked,
+  setCrucibleRank,
   buyEmberUpgrade,
   buyMetaUpgrade,
   canAscend,
@@ -339,9 +343,23 @@ describe('ascension', () => {
     expect(canAscend(createMeta())).toBe(false)
   })
 
-  it('the Crucible: each cycle victory hardens the next run and sweetens the pot', () => {
-    const meta = winner(winner()) // two victories this cycle
-    expect(meta.cycleVictories).toBe(2)
+  it('the Crucible: a chosen rank hardens the run, sweetens the pot, and winning opens the next', () => {
+    // Nothing is forced: a fresh account has no ladder, and asking for heat
+    // it has not earned is clamped away.
+    expect(crucibleUnlocked(createMeta())).toBe(0)
+    expect(createRun(createMeta(), 'no-heat', undefined, undefined, 3).crucible).toBe(0)
+    // The first win opens rank 1 — but the next run stays at rank 0 until
+    // the player chooses otherwise. Winning never makes you lose.
+    const first = winner()
+    expect(crucibleUnlocked(first)).toBe(1)
+    expect(createRun(first, 'after-win').crucible).toBe(0)
+    // Choosing above the ladder clamps to its top.
+    const chosen = setCrucibleRank(first, 5)
+    expect(chosenCrucible(chosen)).toBe(1)
+    // A win at rank 1 opens rank 2 and banks 1 + 1 Embers for the cycle.
+    const meta = setCrucibleRank(winner(chosen), 2)
+    expect(crucibleUnlocked(meta)).toBe(2)
+    expect(meta.cycleEmbers).toBe(1 + 2)
     const run = createRun(meta, 'crucible-run')
     expect(run.crucible).toBe(2)
     // Sparks scale +15% per rank on the same progress.
@@ -362,22 +380,40 @@ describe('ascension', () => {
     hardened.enemies.forEach((e, i) => {
       expect(e.hp).toBe(Math.floor((control.enemies[i]!.hp * 120) / 100))
     })
-    // Ascending resets the Crucible along with the cycle.
-    expect(ascend({ ...meta, sparks: 0 }).cycleVictories).toBe(0)
-    expect(createRun(ascend({ ...meta, sparks: 0 }), 'post-ascend').crucible).toBe(0)
+    // The ladder is lifetime: ascension resets the cycle, not the heat.
+    const ascended = ascend(meta)
+    expect(ascended.cycleVictories).toBe(0)
+    expect(crucibleUnlocked(ascended)).toBe(2)
+    expect(createRun(ascended, 'post-ascend').crucible).toBe(2)
+    // Dailies are a shared ruleset: rank 0 regardless of choice.
+    expect(createRun(meta, 'daily-2026-09-24').crucible).toBe(0)
+    // Rematch asks for the ended run's rank explicitly.
+    expect(createRun(setCrucibleRank(meta, 0), 'rematch', undefined, undefined, 2).crucible).toBe(2)
+    // Pre-ladder saves reached one rank per victory this cycle; honor it.
+    expect(crucibleUnlocked({ ...createMeta(), victories: 4, cycleVictories: 3 })).toBe(3)
+    expect(crucibleUnlocked({ ...createMeta(), victories: 4, cycleVictories: 0 })).toBe(1)
   })
 
-  it('ascending burns the Spire Tree for embers and keeps the Ember Tree', () => {
+  it('ascending burns the Spire Tree for embers and a head start', () => {
     let meta = winner({ ...createMeta(), sparks: 5000 })
     meta = buyMetaUpgrade(meta, 'unlock_tesla').meta
     meta = buyMetaUpgrade(meta, 'tower_damage').meta
-    expect(emberGainOnAscend(meta)).toBe(2) // 1 base + 1 victory this cycle
+    // 1 base + 1 for a rank-0 victory + 1 per 5000 Sparks the cycle earned.
+    expect(emberGainOnAscend(meta)).toBe(2 + Math.floor(meta.cycleSparks! / 5000))
+    expect(emberGainOnAscend({ ...meta, cycleSparks: 12_000 })).toBe(4)
+    // Pre-ladder saves: absent cycleEmbers means one per victory, as before.
+    expect(emberGainOnAscend({ ...createMeta(), cycleVictories: 2 })).toBe(3)
+    const gain = emberGainOnAscend(meta)
+    const burned = meta.sparks + 30 // the bank plus Honed Edge's first level
     const after = ascend(meta)
-    expect(after.embers).toBe(2)
+    expect(after.embers).toBe(gain)
     expect(after.ascensions).toBe(1)
     expect(after.upgrades).toEqual({ unlock_tesla: 1 }) // learned variety survives
-    expect(after.sparks).toBe(0) // no Ashen Legacy yet
+    expect(after.sparks).toBe(Math.floor((burned * 35) / 100)) // the kept head start
+    expect(ascensionSparksKept(meta)).toBe(after.sparks)
     expect(after.cycleVictories).toBe(0)
+    expect(after.cycleEmbers).toBe(0)
+    expect(after.cycleSparks).toBe(0)
     expect(after.victories).toBe(1) // lifetime record survives
     // Without a fresh victory, a second ascension is refused.
     expect(ascend(after)).toBe(after)
@@ -393,7 +429,7 @@ describe('ascension', () => {
     expect(run.spireMaxHp).toBe(STARTING_SPIRE_HP + 2)
     const after = ascend(meta)
     expect(after.emberUpgrades).toEqual(meta.emberUpgrades) // forever
-    expect(after.sparks).toBe(300) // Ashen Legacy head start
+    expect(after.sparks).toBe(Math.floor((meta.sparks * 45) / 100)) // Ashen Legacy keeps +10%
     // Broke accounts cannot buy.
     expect(buyEmberUpgrade({ ...meta, embers: 0 }, 'ember_memory').ok).toBe(false)
   })

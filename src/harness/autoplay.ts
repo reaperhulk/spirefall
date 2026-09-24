@@ -54,6 +54,11 @@ export interface ProgressionOptions {
   // ascends measures one cycle; one that does measures the loop.
   ascendWhen?: (meta: MetaState, history: RunSummary[]) => boolean
   emberPriority?: EmberUpgradeId[]
+  // Crucible rank to start each run at (clamped to what the ladder allows).
+  // Absent = the account's chosen rank, which defaults to 0.
+  crucibleFor?: (meta: MetaState) => number
+  // End the career early once it has shown what it needed to.
+  stopWhen?: (history: RunSummary[], ascensions: number[]) => boolean
 }
 
 // Play `runs` consecutive runs, banking Sparks and buying meta upgrades from
@@ -72,7 +77,7 @@ export function playProgression(
   const ascensions: number[] = []
   const simSeconds: number[] = []
   for (let i = 1; i <= runs; i++) {
-    const run = createRun(meta, `${seedBase}-run${i}`)
+    const run = createRun(meta, `${seedBase}-run${i}`, undefined, undefined, options.crucibleFor?.(meta))
     const { state } = autoplay(run, bot, maxTicks)
     if (state.phase !== 'defeat' && state.phase !== 'victory') {
       throw new Error(`run ${i} did not finish within ${maxTicks} ticks (wave ${state.wave})`)
@@ -88,6 +93,7 @@ export function playProgression(
     const levelsBefore = totalLevels(meta)
     meta = spendSparks(meta, buyPriority)
     purchases.push(totalLevels(meta) - levelsBefore)
+    if (options.stopWhen?.(history, ascensions)) break
   }
   return { meta, history, purchases, ascensions, simSeconds }
 }

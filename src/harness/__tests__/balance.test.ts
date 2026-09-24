@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { VICTORY_WAVE } from '../../data/content'
 import { createMeta, createRun } from '../../engine/meta'
 import { autoplay, playProgression } from '../autoplay'
 import { BOTS } from '../bots'
-import { DEFAULT_BUY_PRIORITY, richMeta } from '../scenarios'
+import { DEFAULT_ASCEND_WHEN, DEFAULT_BUY_PRIORITY, DEFAULT_EMBER_PRIORITY, richMeta } from '../scenarios'
+import { careerPacing } from '../pacing'
 
 // The balance envelope (PLAN.md §2.3, updated to measured reality): headless
 // bots play whole runs and meta-progressions, and these assertions pin the
@@ -24,6 +25,11 @@ function play(seed: string, bot: keyof typeof BOTS, meta = createMeta(), maxTick
 }
 
 describe('balance envelope', () => {
+  // These tests are long and fully synchronous. Yield one macrotask between
+  // them so the worker can answer Vitest's RPC; back-to-back they starve it
+  // past its 60s timeout.
+  beforeEach(() => new Promise<void>((resolve) => setTimeout(resolve, 0)))
+
   it('an afk player is overrun almost immediately — and zero effort pays zero sparks', () => {
     for (const seed of SEEDS) {
       const state = play(seed, 'afk')
@@ -216,4 +222,33 @@ describe('balance envelope', () => {
     const active = playProgression(8, 'career', BOTS.active, DEFAULT_BUY_PRIORITY)
     expect(active.history.some(h => h.outcome === 'victory')).toBe(true)
   }, 600_000)
+
+  // Prestige pays: a second cycle wins in well under the runs the first
+  // took. Measured at introduction (rules 6, 35% kept, rank-0 reference):
+  // the active pilot's first cycles took 6/7/9/8 runs to a first win, its
+  // second cycles 6/4/4/4 — 18 of 30 pooled. Before the redesign an
+  // ascension burned the tree for 2-3 Embers and cycle 2 was no faster
+  // than cycle 1 (6 → 6, 6 → 10). One test per seed keeps each worker
+  // call short; the pooled bound is asserted after all four.
+  const prestige: { first: number; second: number }[] = []
+  for (const seed of ['career', 'cb', 'cc', 'cd']) {
+    it(`prestige pays (${seed}): the career wins again after ascending`, () => {
+      const career = playProgression(40, seed, BOTS.active, DEFAULT_BUY_PRIORITY, {
+        ascendWhen: DEFAULT_ASCEND_WHEN,
+        emberPriority: DEFAULT_EMBER_PRIORITY,
+        stopWhen: (history, ascensions) =>
+          ascensions.length > 0 && history.slice(ascensions[0]).some((h) => h.outcome === 'victory'),
+      })
+      const { cycles } = careerPacing(career)
+      expect(cycles.length).toBe(2)
+      expect(cycles[1]!.firstVictory, 'never won its second cycle').toBeGreaterThan(0)
+      prestige.push({ first: cycles[0]!.firstVictory, second: cycles[1]!.firstVictory })
+    }, 300_000)
+  }
+  it('prestige pays: pooled, second cycles win in at most 60% of the first cycles\' runs', () => {
+    expect(prestige).toHaveLength(4)
+    const first = prestige.reduce((sum, p) => sum + p.first, 0)
+    const second = prestige.reduce((sum, p) => sum + p.second, 0)
+    expect(second).toBeLessThanOrEqual(Math.floor((first * 60) / 100))
+  })
 })

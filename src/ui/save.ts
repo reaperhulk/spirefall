@@ -3,7 +3,7 @@ import { EMBER_TREE } from '../data/emberTree'
 import { BIOME_IDS } from '../data/biomes'
 import { measure } from './performance'
 import { MAX_TRANSFER_BYTES, throughStream } from './boundedStream'
-import { COLLECT_RADIUS_BASE } from '../data/content'
+import { COLLECT_RADIUS_BASE, CRUCIBLE_MAX_RANK } from '../data/content'
 import { finiteTree, parseRecording, validRun, type Recording } from './validation'
 import { deriveStream } from '../engine/rng'
 import type { MetaState, RunState } from '../engine/types'
@@ -158,6 +158,10 @@ function migrate(parsed: { version?: number }): SaveData | null {
       const nat = (n: unknown) => Number.isSafeInteger(n) && (n as number) >= 0
       const counters = ['sparks','totalSparks','runs','victories','cycleVictories','embers','ascensions','bestWave','lifetimeKills']
       if (data.meta.schemaVersion !== 1 || !counters.every(k => nat((data.meta as unknown as Record<string,unknown>)[k]))) return null
+      // Rules-6 incremental fields are optional; absent values derive from the old ones.
+      const optional = ['cycleEmbers','cycleSparks','crucibleUnlocked','crucibleRank']
+      if (!optional.every(k => { const v = (data.meta as unknown as Record<string,unknown>)[k]; return v === undefined || nat(v) })) return null
+      if ((data.meta.crucibleUnlocked ?? 0) > CRUCIBLE_MAX_RANK) return null
       if (!Object.entries(data.meta.upgrades).every(([id,n]) => { const def = META_TREE.find(d => d.id === id); return def && nat(n) && n <= def.maxLevel })) return null
       if (!Object.entries(data.meta.emberUpgrades).every(([id,n]) => { const def = EMBER_TREE.find(d => d.id === id); return def && nat(n) && n <= def.maxLevel })) return null
       if (data.meta.guardianMilestones !== undefined && (!Array.isArray(data.meta.guardianMilestones) || !data.meta.guardianMilestones.every(id => ['boss','boss2','boss3'].includes(id)))) return null

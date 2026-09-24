@@ -228,9 +228,9 @@ export interface RunState {
   activeAffix: AffixId | null // wave modifier for the current/last wave
   cataclysms: CataclysmId[] // permanent endless modifiers, in strike order
   trials: TrialId[] // opt-in handicaps chosen at run start; pay bonus sparks
-  // Victories won this cycle when the run began. Each one hardens the horde
-  // (+HP) and sweetens the pot (+sparks): repeat wins are an escalating
-  // ladder, not a replay of a solved puzzle. Resets with ascension.
+  // The Crucible rank this run was started at. It hardens the horde (+HP)
+  // and sweetens the pot (+sparks, and Embers on a win). Rules 6: chosen
+  // before the run; older runs took one rank per victory this cycle.
   crucible: number
   damageByTower: Partial<Record<TowerType, number>> // run-lifetime, survives sales
   killsByEnemy: Partial<Record<EnemyType, number>> // run-lifetime tally
@@ -341,6 +341,10 @@ export interface MetaState {
   runs: number
   victories: number // lifetime victories
   cycleVictories: number // victories since the last ascension — fuels ember gain
+  cycleEmbers?: number // Embers banked by this cycle's victories (1 + Crucible rank each); absent = cycleVictories
+  cycleSparks?: number // Sparks earned since the last ascension (absent = 0)
+  crucibleUnlocked?: number // highest selectable Crucible rank: best rank won + 1 (lifetime)
+  crucibleRank?: number // the rank chosen for upcoming runs (clamped to crucibleUnlocked)
   embers: number // ascension currency
   ascensions: number
   upgrades: Record<string, number> // MetaUpgradeId -> level (wiped on ascension)

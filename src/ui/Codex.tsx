@@ -24,6 +24,7 @@ import {
   SPARKS_FRONTIER_BONUS,
   SPARKS_PER_WAVE_BASE,
   SPARKS_PER_WAVE_DEPTH_PCT,
+  CRUCIBLE_MAX_RANK,
   CRUCIBLE_TIERS,
   ENEMIES,
   ENHANCE_COST_GROWTH_PCT,
@@ -223,7 +224,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'The Crucible',
-    body: `Each victory in a cycle hardens the next run: +${CRUCIBLE_HP_PCT_PER_RANK}% enemy HP and +${CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks per rank. Rank milestones add named tiers — ${CRUCIBLE_TIERS.map((t) => `${t.name} (rank ${t.rank}: ${t.description})`).join('; ')}. Ascending resets it.`,
+    body: `Opt-in heat, chosen on the Next run tab. Each rank adds +${CRUCIBLE_HP_PCT_PER_RANK}% enemy HP and +${CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks, and a victory pays 1 Ember plus its rank at the next ascension. Your first victory opens rank 1; winning at a rank opens the next, up to ${CRUCIBLE_MAX_RANK}. The ladder is permanent — ascension never resets it. Rank milestones add named tiers — ${CRUCIBLE_TIERS.map((t) => `${t.name} (rank ${t.rank}: ${t.description})`).join('; ')}.`,
   },
   {
     title: 'Trials',

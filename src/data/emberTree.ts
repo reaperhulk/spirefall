@@ -44,7 +44,7 @@ export const EMBER_TREE: EmberNodeDef[] = [
   {
     id: 'ashen_legacy',
     name: 'Ashen Legacy',
-    description: 'Begin each new cycle with 300 banked Sparks per level.',
+    description: 'Ascension keeps +10% more of the Sparks it burns, per level.',
     maxLevel: 3,
     costs: [2, 4, 7],
   },
@@ -77,7 +77,15 @@ export const EMBER_TREE: EmberNodeDef[] = [
 export const EMBER_DAMAGE_PCT_PER_LEVEL = 10
 export const EMBER_SPIRE_HP_PER_LEVEL = 2
 export const EMBER_SPARK_PCT_PER_LEVEL = 25
-export const EMBER_LEGACY_SPARKS_PER_LEVEL = 300
+export const EMBER_LEGACY_KEEP_PCT_PER_LEVEL = 10
+
+// Ascension economics. A reset must be a good trade: it keeps a share of
+// every Spark it burns (stat upgrades plus the bank) as a head start, and
+// pays Embers for the cycle's wins (more at higher Crucible ranks) and for
+// the Sparks the cycle earned — so a long, winless cycle still pays.
+export const ASCEND_KEEP_PCT = 35
+export const EMBERS_PER_VICTORY = 1 // plus the Crucible rank the win was taken at
+export const EMBER_SPARKS_PER_ASH = 5000
 export const EMBER_GOLD_PCT_PER_LEVEL = 15
 export const EMBER_ABILITY_CD_PCT_PER_LEVEL = 10
 export const EMBER_REPAIR_CASTS_PER_LEVEL = 1

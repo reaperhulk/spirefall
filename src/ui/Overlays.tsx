@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { drawRunCard, challengeLink } from './runCard'
 import { CATACLYSMS, CRUCIBLE_HP_PCT_PER_RANK, CRUCIBLE_SPARK_PCT_PER_RANK, crucibleTiersAt, RELICS, SPARKS_FRONTIER_BONUS, TRIAL_IDS, TRIALS } from '../data/content'
 import { BIOME_IDS, BIOMES, biomeUnlocked } from '../data/biomes'
-import { EMBER_TREE, type EmberUpgradeId } from '../data/emberTree'
+import { ASCEND_KEEP_PCT, EMBER_LEGACY_KEEP_PCT_PER_LEVEL, EMBER_SPARKS_PER_ASH, EMBER_TREE, EMBERS_PER_VICTORY, type EmberUpgradeId } from '../data/emberTree'
 import {
   branchNodes,
   BRANCH_BLURBS,
@@ -15,8 +15,11 @@ import {
   metaNodeEffect,
 } from '../data/metaTree'
 import {
+  ascensionSparksKept,
   branchSpend,
   canAscend,
+  chosenCrucible,
+  crucibleUnlocked,
   emberGainOnAscend,
   emberLevel,
   emberUpgradeCost,
@@ -78,18 +81,25 @@ function AscensionPanel({
           )
         })}
       </div>
+      <p className="run-flavor" data-testid="ascend-terms">
+        Ascending burns stat upgrades and banked Sparks, keeps{' '}
+        {ASCEND_KEEP_PCT + emberLevel(meta, 'ashen_legacy') * EMBER_LEGACY_KEEP_PCT_PER_LEVEL}% of them as a head start,
+        and pays 1 Ember, plus 1 per victory this cycle (+1 per Crucible rank it was won at), plus 1 per{' '}
+        {EMBER_SPARKS_PER_ASH.toLocaleString()} Sparks this cycle earned
+        {meta.cycleSparks !== undefined ? ` (✦${meta.cycleSparks.toLocaleString()} so far)` : ''}. Unlocks and the Crucible ladder stay.
+      </p>
       <button
         className="ghost-btn danger"
         data-testid="ascend"
         disabled={!canAscend(meta)}
         title={
           canAscend(meta)
-            ? 'Reset stat upgrades and banked Sparks for Embers; keep tower and ability unlocks'
+            ? 'Reset stat upgrades and banked Sparks for Embers and a head start; keep tower and ability unlocks'
             : 'Win a run this cycle to unlock Ascension'
         }
         onClick={onAscend}
       >
-        Ascend (+❖ {emberGainOnAscend(meta)}) — burns the Spire Tree
+        Ascend (+❖ {emberGainOnAscend(meta)}, keep ✦{ascensionSparksKept(meta)}) — burns the Spire Tree
       </button>
     </div>
   )
@@ -342,6 +352,7 @@ export function RunOverOverlay({
   onMapPref,
   trialPref,
   onTrialPref,
+  onCrucibleRank,
   onBuy,
   onRespec,
   onBuyEmber,
@@ -360,6 +371,7 @@ export function RunOverOverlay({
   onMapPref: (v: string) => void
   trialPref: string
   onTrialPref: (v: string) => void
+  onCrucibleRank: (rank: number) => void
   onBuy: (id: MetaUpgradeId) => void
   onRespec?: ((id: MetaUpgradeId) => void) | undefined
   onBuyEmber: (id: EmberUpgradeId) => void
@@ -560,9 +572,9 @@ export function RunOverOverlay({
           <div className="ascend-callout" data-testid="runover-ascend-callout">
             <p>
               🔥 <strong>Ascension is ready</strong> — burn the Spire Tree below for{' '}
-              <strong>{emberGainOnAscend(meta)} Embers</strong>, or keep winning: each victory this cycle adds{' '}
-              <strong>+1 Ember</strong> while the Crucible hardens the horde (+{CRUCIBLE_HP_PCT_PER_RANK}% HP) and
-              raises the Spark payout (+{CRUCIBLE_SPARK_PCT_PER_RANK}%).
+              <strong>{emberGainOnAscend(meta)} Embers</strong> and a <strong>✦{ascensionSparksKept(meta)}</strong> head
+              start, or keep winning first: each victory adds <strong>1 Ember plus its Crucible rank</strong>. Raise the
+              rank on the Next run tab (+{CRUCIBLE_HP_PCT_PER_RANK}% enemy HP, +{CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks per rank).
             </p>
           </div>
         )}
@@ -608,15 +620,36 @@ export function RunOverOverlay({
               ))}
             </select>
           </label>
-          {meta.cycleVictories > 0 && (
+          {crucibleUnlocked(meta) > 0 && (
+            <label className="map-pick">
+              Crucible rank — win at a rank to open the next
+              <select
+                data-testid="crucible-select"
+                value={chosenCrucible(meta)}
+                onChange={(e) => onCrucibleRank(Number(e.target.value))}
+                title="Opt-in heat. Each rank: enemies +10% HP, Sparks +15%, and a victory pays one more Ember. Daily runs ignore it."
+              >
+                {Array.from({ length: crucibleUnlocked(meta) + 1 }, (_, rank) => (
+                  <option key={rank} value={rank}>
+                    {rank === 0
+                      ? 'Rank 0 — the horde as it is'
+                      : `Rank ${rank} — enemies +${CRUCIBLE_HP_PCT_PER_RANK * rank}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * rank}%, win ❖${EMBERS_PER_VICTORY + rank}${crucibleTiersAt(rank)
+                          .map((t) => ` · ${t.name}`)
+                          .join('')}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {chosenCrucible(meta) > 0 && (
             <span
               className="trial-badge crucible-badge"
               data-testid="next-run-crucible"
-              title="The horde remembers your victories this cycle. Ascend to reset the Crucible."
+              title="You chose this heat. Lower it any time; win at it to open the next rank."
             >
-              🔥 Next run: Crucible {meta.cycleVictories} — enemies +{CRUCIBLE_HP_PCT_PER_RANK * meta.cycleVictories}%
-              HP, Sparks +{CRUCIBLE_SPARK_PCT_PER_RANK * meta.cycleVictories}%
-              {crucibleTiersAt(meta.cycleVictories)
+              🔥 Next run: Crucible {chosenCrucible(meta)} — enemies +{CRUCIBLE_HP_PCT_PER_RANK * chosenCrucible(meta)}%
+              HP, Sparks +{CRUCIBLE_SPARK_PCT_PER_RANK * chosenCrucible(meta)}%
+              {crucibleTiersAt(chosenCrucible(meta))
                 .map((t) => ` · ${t.name} (${t.description})`)
                 .join('')}
             </span>

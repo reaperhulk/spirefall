@@ -43,7 +43,7 @@ declare global {
       dispatch: (command: unknown) => void
       fastForward: (seconds: number) => void
       newRun: (seed?: string) => void
-      getMeta: () => { sparks: number; cycleVictories: number }
+      getMeta: () => { sparks: number; victories: number; cycleVictories: number; crucibleUnlocked?: number; crucibleRank?: number }
       getMapInfo: () => {
         width: number
         height: number
@@ -1612,7 +1612,7 @@ test('codex: opens from the HUD, focuses an enemy from a preview chip, Escape cl
   expect(errors).toEqual([])
 })
 
-test('the Crucible: cycle victories harden the next run and surface in the HUD', async ({ page }) => {
+test('the Crucible: a chosen rank hardens the next run and surfaces in the HUD', async ({ page }) => {
   const errors = await boot(page, 'e2e-wave')
   await page.locator('.hint-close').click()
 
@@ -1620,9 +1620,14 @@ test('the Crucible: cycle victories harden the next run and surface in the HUD',
   await expect(page.getByTestId('crucible')).not.toBeVisible()
   await expect(page.getByTestId('open-tree')).not.toContainText('🔥')
 
-  // Two victories this cycle -> the next run is Crucible II.
+  // Rank 2 unlocked and chosen, with a win this cycle -> the next run is
+  // Crucible II and Ascension is ready.
   await page.evaluate(() => {
-    window.__harness.getMeta().cycleVictories = 2
+    const meta = window.__harness.getMeta()
+    meta.victories = 2
+    meta.cycleVictories = 2
+    meta.crucibleUnlocked = 2
+    meta.crucibleRank = 2
     window.__harness.newRun('e2e-crucible')
   })
   await page.getByTestId('open-menu').click()

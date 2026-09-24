@@ -654,6 +654,9 @@ export const TRIAL_IRON_HP_PCT = 125
 // The Crucible: after each victory in a cycle, the next run's horde returns
 // harder and richer. Applied per victory-this-cycle, snapshotted at run
 // creation (RunState.crucible).
+// Rules 6 makes the rank a CHOICE: any rank up to one above your best win
+// (lifetime — it survives ascension), picked before the run like a Trial.
+export const CRUCIBLE_MAX_RANK = 10
 export const CRUCIBLE_HP_PCT_PER_RANK = 10
 export const CRUCIBLE_SPARK_PCT_PER_RANK = 15
 

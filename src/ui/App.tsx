@@ -48,9 +48,9 @@ import {
   towerRangeOnBoard,
 } from '../engine/combat'
 import { getRunMap } from '../engine/mapgen'
-import { respecKeystone, ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainOnAscend, settleRun } from '../engine/meta'
+import { respecKeystone, ascend, ascensionSparksKept, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainAfterVictory, emberGainOnAscend, setCrucibleRank, settleRun } from '../engine/meta'
 import type { EmberUpgradeId } from '../data/emberTree'
-import { previewNextWave, wavesUntilCataclysm } from '../engine/step'
+import { computeSparks, previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { cellCenter, sameCell } from '../engine/grid'
 import { BIOME_IDS, BIOMES, type BiomeId } from '../data/biomes'
 import type { MetaUpgradeId } from '../data/metaTree'
@@ -381,7 +381,14 @@ export default function App() {
   // so a rematch after spending sparks IS the rogue-lite promise: same
   // wall, stronger you.
   const beginRematch = (s: RunSummary) => {
-    launchRun(createRun(metaRef.current, s.seed, s.biome, s.trials))
+    launchRun(createRun(metaRef.current, s.seed, s.biome, s.trials, s.crucible))
+  }
+
+  const chooseCrucible = (rank: number) => {
+    const next = setCrucibleRank(metaRef.current, rank)
+    metaRef.current = next
+    setMeta(next)
+    persistSave({ version: 1, meta: next, run: sessionRef.current.terminal ? null : sessionRef.current.state })
   }
 
   const buyMeta = (id: MetaUpgradeId) => {
@@ -413,7 +420,8 @@ export default function App() {
   const doAscend = () => {
     if (!canAscend(metaRef.current)) return
     const gain = emberGainOnAscend(metaRef.current)
-    askConfirm(`Ascend for ❖ ${gain}? Spark stat upgrades and banked Sparks burn. Tower and ability unlocks remain. Ember upgrades are forever.`, () => {
+    const kept = ascensionSparksKept(metaRef.current)
+    askConfirm(`Ascend for ❖ ${gain}? Spark stat upgrades and banked Sparks burn; ✦${kept} of them return as a head start. Tower and ability unlocks, the Crucible ladder and Ember upgrades remain.`, () => {
       const next = ascend(metaRef.current)
       metaRef.current = next
       setMeta(next)
@@ -1103,12 +1111,13 @@ export default function App() {
             <div className="ascend-callout" data-testid="victory-ascend-callout">
               <p>
                 🔥 <strong>Ascension will be ready</strong> — once this run ends you can burn the Spire Tree for{' '}
-                <strong>{emberGainOnAscend(meta) + 1} Embers</strong> (permanent Ember Tree power).
+                <strong>{emberGainAfterVictory(meta, state, computeSparks(state))} Embers</strong> (permanent Ember Tree
+                power) and keep part of the tree as a head start.
               </p>
               <p>
-                Or win again first: every victory this cycle pays <strong>+1 Ember</strong> — and the horde returns{' '}
-                <strong>+{CRUCIBLE_HP_PCT_PER_RANK}% harder</strong>, worth{' '}
-                <strong>+{CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks</strong>. The Crucible deepens with each win.
+                Or win again first: every victory pays <strong>1 Ember plus its Crucible rank</strong>, and this win
+                opens <strong>Crucible {state.crucible + 1}</strong> (+{CRUCIBLE_HP_PCT_PER_RANK}% enemy HP,{' '}
+                +{CRUCIBLE_SPARK_PCT_PER_RANK}% Sparks per rank) — choose your heat before each run.
               </p>
             </div>
             <button className="primary-btn" data-testid="claim-victory" onClick={() => { setVictoryPrompt(false); session.dispatch({ type: 'abandon_run' }) }}>
@@ -1164,6 +1173,7 @@ export default function App() {
               // unsaved preference is fine
             }
           }}
+          onCrucibleRank={chooseCrucible}
           trialPref={trialPref}
           onTrialPref={(v) => {
             setTrialPref(v)
@@ -1234,9 +1244,9 @@ export default function App() {
           <span
             className="trial-badge crucible-badge"
             data-testid="crucible"
-            title={`The Crucible: ${state.crucible} ${state.crucible === 1 ? 'victory' : 'victories'} this cycle — enemies +${CRUCIBLE_HP_PCT_PER_RANK * state.crucible}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * state.crucible}%${crucibleTiersAt(state.crucible)
+            title={`The Crucible, rank ${state.crucible} — enemies +${CRUCIBLE_HP_PCT_PER_RANK * state.crucible}% HP, Sparks +${CRUCIBLE_SPARK_PCT_PER_RANK * state.crucible}%${crucibleTiersAt(state.crucible)
               .map((t) => `; ${t.name}: ${t.description}`)
-              .join('')}. Ascend to reset.`}
+              .join('')}. Chosen before the run; win here to open the next rank.`}
           >
             🔥 Crucible {'I'.repeat(Math.min(state.crucible, 3))}{state.crucible > 3 ? `×${state.crucible}` : ''}
             {crucibleTiersAt(state.crucible).length > 0 &&

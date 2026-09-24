@@ -2,6 +2,7 @@ import { bankGuardianMilestones, RULES_VERSION } from './campaign'
 import { COMMAND_CHARGES } from '../data/doctrines'
 import {
   BASE_WAVE_BUDGET,
+  CRUCIBLE_MAX_RANK,
   COLLECT_RADIUS_BASE,
   META_MAGNET_RADIUS_PER_LEVEL,
   META_SPIRE_MAGNET_RADIUS_PER_LEVEL,
@@ -46,7 +47,10 @@ import {
   EMBER_REPAIR_CASTS_PER_LEVEL,
   EMBER_DAMAGE_PCT_PER_LEVEL,
   EMBER_GOLD_PCT_PER_LEVEL,
-  EMBER_LEGACY_SPARKS_PER_LEVEL,
+  ASCEND_KEEP_PCT,
+  EMBER_LEGACY_KEEP_PCT_PER_LEVEL,
+  EMBER_SPARKS_PER_ASH,
+  EMBERS_PER_VICTORY,
   EMBER_SPARK_PCT_PER_LEVEL,
   EMBER_SPIRE_HP_PER_LEVEL,
   emberNode,
@@ -109,24 +113,72 @@ export function canAscend(meta: MetaState): boolean {
   return meta.cycleVictories > 0
 }
 
-// Each ascension pays 1 Ember plus 1 per victory won this cycle — winning
-// repeatedly before ascending is a real strategy, not wasted effort.
+// Each ascension pays 1 Ember, plus what this cycle's victories banked (1 +
+// the Crucible rank each was won at), plus one per EMBER_SPARKS_PER_ASH
+// Sparks the cycle earned. Winning at higher ranks before ascending is a
+// real strategy; so is a long cycle.
 export function emberGainOnAscend(meta: MetaState): number {
-  return 1 + meta.cycleVictories
+  return 1 + (meta.cycleEmbers ?? meta.cycleVictories) + Math.floor((meta.cycleSparks ?? 0) / EMBER_SPARKS_PER_ASH)
 }
 
-// Burn the Spire Tree down for Embers. Spark upgrades, unlocks, and banked
-// sparks are wiped; ember upgrades, lifetime stats, and the Ember Tree stay.
+function isStatUpgrade(id: string): boolean {
+  return !id.startsWith('unlock_')
+}
+
+// What an ascension burns (stat upgrades plus the bank) and keeps as the
+// next cycle's head start.
+export function ascensionSparksKept(meta: MetaState): number {
+  let burned = meta.sparks
+  for (const [id, level] of Object.entries(meta.upgrades)) {
+    if (isStatUpgrade(id)) burned += sparksSpentOn(id as MetaUpgradeId, level)
+  }
+  const keepPct = ASCEND_KEEP_PCT + emberLevel(meta, 'ashen_legacy') * EMBER_LEGACY_KEEP_PCT_PER_LEVEL
+  return Math.floor((burned * keepPct) / 100)
+}
+
+// Burn the Spire Tree down for Embers. Stat upgrades and banked sparks are
+// wiped, a share of them returns as banked Sparks; unlocks, ember upgrades,
+// the Crucible ladder, lifetime stats, and the Ember Tree stay.
 export function ascend(meta: MetaState): MetaState {
   if (!canAscend(meta)) return meta
   return {
     ...meta,
-    sparks: emberLevel(meta, 'ashen_legacy') * EMBER_LEGACY_SPARKS_PER_LEVEL,
-    upgrades: Object.fromEntries(Object.entries(meta.upgrades).filter(([id]) => id.startsWith('unlock_'))),
+    sparks: ascensionSparksKept(meta),
+    upgrades: Object.fromEntries(Object.entries(meta.upgrades).filter(([id]) => !isStatUpgrade(id))),
     cycleVictories: 0,
+    cycleEmbers: 0,
+    cycleSparks: 0,
     embers: meta.embers + emberGainOnAscend(meta),
     ascensions: meta.ascensions + 1,
   }
+}
+
+// The Embers an ascension would pay once a live, already-won run is banked:
+// the victory's rank-scaled Embers plus the Sparks it would settle for.
+export function emberGainAfterVictory(meta: MetaState, run: RunState, sparks: number): number {
+  return emberGainOnAscend({
+    ...meta,
+    cycleEmbers: (meta.cycleEmbers ?? meta.cycleVictories) + EMBERS_PER_VICTORY + run.crucible,
+    cycleSparks: (meta.cycleSparks ?? 0) + sparks,
+  })
+}
+
+// --- The Crucible ladder ---------------------------------------------------
+
+// Highest rank a run may be started at. Saves from before the ladder earned
+// their ranks one victory at a time; honor what they reached.
+export function crucibleUnlocked(meta: MetaState): number {
+  const earned = meta.crucibleUnlocked ?? (meta.victories > 0 ? Math.max(1, meta.cycleVictories) : 0)
+  return Math.min(CRUCIBLE_MAX_RANK, earned)
+}
+
+export function chosenCrucible(meta: MetaState): number {
+  return Math.max(0, Math.min(meta.crucibleRank ?? 0, crucibleUnlocked(meta)))
+}
+
+export function setCrucibleRank(meta: MetaState, rank: number): MetaState {
+  const clamped = Math.max(0, Math.min(Math.floor(rank), crucibleUnlocked(meta)))
+  return { ...meta, crucibleRank: clamped }
 }
 
 export function metaLevel(meta: MetaState, id: MetaUpgradeId): number {
@@ -224,9 +276,15 @@ export function glassforgeDamageBonus(meta: MetaState): number {
 // roll still always happens, so a chosen map never shifts the other streams.
 // trials are opt-in handicaps: their effects apply here (spire, gold) or at
 // spawn time (enemy stats), and computeSparks pays their bonus.
-export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials?: TrialId[]): RunState {
+export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials?: TrialId[], crucible?: number): RunState {
   // Captured before a daily swaps in its shared meta: the frontier is yours.
   const frontierWave = meta.bestWave
+  // Dailies are a shared ruleset: rank 0 for everyone. Otherwise the rank is
+  // the requested one (rematch) or the account's chosen one, never above
+  // what the ladder has unlocked.
+  const crucibleRank = seed.startsWith('daily-')
+    ? 0
+    : Math.max(0, Math.min(crucible ?? chosenCrucible(meta), crucibleUnlocked(meta)))
   if (seed.startsWith('daily-')) {
     // One challenge ruleset across accounts. The saved personal meta is never mutated.
     meta = { ...createMeta(), upgrades: { tower_damage: 8, tower_damage_2: 8, spire_hp: 6, starting_gold: 4, gold_income: 4, crit_chance: 3, magnet_reach: 2, steady_aim: 2, quick_hands: 2, unlock_tesla: 1, unlock_lance: 1, unlock_mint: 1, unlock_beacon: 1, unlock_bulwark: 1, unlock_gold_rush: 1 } }
@@ -351,7 +409,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     activeAffix: null,
     cataclysms: [],
     trials: chosenTrials,
-    crucible: meta.cycleVictories,
+    crucible: crucibleRank,
     damageByTower: {},
     hpByWave: [],
     repairsThisWave: 0,
@@ -428,6 +486,10 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
       runs: meta.runs + 1,
       victories: meta.victories + won,
       cycleVictories: meta.cycleVictories + won,
+      cycleEmbers: (meta.cycleEmbers ?? meta.cycleVictories) + won * (EMBERS_PER_VICTORY + run.crucible),
+      cycleSparks: (meta.cycleSparks ?? 0) + summary.sparks,
+      // A win at rank r opens rank r + 1. The ladder is lifetime.
+      crucibleUnlocked: Math.min(CRUCIBLE_MAX_RANK, Math.max(crucibleUnlocked(meta), won ? run.crucible + 1 : 0)),
       bestWave: Math.max(meta.bestWave, summary.wavesCleared),
       bestWaveByMap:
         summary.wavesCleared > (meta.bestWaveByMap[bestKey(run)] ?? 0)
