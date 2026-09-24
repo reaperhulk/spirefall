@@ -11,6 +11,11 @@ export function doctrineDamage(id: DoctrineId | null | undefined, tower: TowerTy
   return id === 'siege' && (tower === 'sniper' || tower === 'lance') ? 15 : id === 'storm' && tower === 'tesla' ? 20 : 0
 }
 export const COMMAND_CHARGES = 3
+
+// The pool's capacity for this run: the base plus Deep Reserves.
+export function commandChargeCap(mods: { bonusCharges?: number }): number {
+  return COMMAND_CHARGES + (mods.bonusCharges ?? 0)
+}
 export const COMMAND_RECHARGE_TICKS = 180
 
 export function doctrineDescription(id: DoctrineId, rules = 5): string {

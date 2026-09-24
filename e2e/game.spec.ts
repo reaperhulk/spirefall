@@ -1682,11 +1682,13 @@ const MAXED_PILOT = (seed: string) => {
   // late-wave HP scale. Ramping from wave 1 lets the kill box compound.
   // Every damage vein by name: Honed Edge is split across three tiers since
   // the tree restructure, so a list naming only the first caps the pilot at
-  // 8 levels instead of 25 — measured as dying on wave 22 instead of winning.
+  // 8 levels instead of 20 — measured as dying on wave 22 instead of winning.
+  // Battle-Hardened and Relic Cartography are the Iron/Gold tier-3 nodes that
+  // took over the budget of Honed Edge III's retired levels.
   // The Ash tier-1 nodes also pay that branch's gate, which Bulwark needs.
   const ids = [
     'starting_gold', 'spire_hp', 'tower_damage', 'tower_damage_2', 'tower_damage_3',
-    'crit_chance', 'gold_income', 'spark_gain',
+    'battle_hardened', 'crit_chance', 'gold_income', 'spark_gain', 'relic_cartography',
     'unlock_tesla', 'unlock_mint', 'unlock_beacon', 'unlock_gold_rush', 'quick_hands',
     'steady_aim', 'unlock_bulwark', 'magnet_reach', 'spire_magnet',
   ]

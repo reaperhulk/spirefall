@@ -23,7 +23,11 @@ import {
   metaLevel,
   respecKeystone,
 } from '../meta'
-import type { MetaState } from '../types'
+import type { MetaState, RunState, Tower } from '../types'
+import type { MetaUpgradeId } from '../../data/metaTree'
+import { commandChargeCap } from '../../data/doctrines'
+import { damageBreakdown, veteranDamagePct } from '../combat'
+import { relicOfferSize, step } from '../step'
 
 // The Spire Tree as a TREE: branches, gates that open tiers, keystones that
 // exclude their rivals, and a respec that makes taking one safe.
@@ -78,15 +82,21 @@ describe('tree shape', () => {
     }
   })
 
-  it('splitting Honed Edge preserved the ceiling and the price of reaching it', () => {
+  it('Honed Edge keeps its original price curve, cut at twenty levels', () => {
     const levels = DAMAGE_NODE_IDS.reduce((sum, id) => sum + metaNode(id).maxLevel, 0)
-    expect(levels).toBe(25) // the pre-split node's depth
-    expect(levels * META_TOWER_DAMAGE_PCT_PER_LEVEL).toBe(200) // ...and its ceiling
+    expect(levels).toBe(20) // 8 + 8 + 4: the pre-split node's first twenty levels
+    expect(levels * META_TOWER_DAMAGE_PCT_PER_LEVEL).toBe(160)
     const price = DAMAGE_NODE_IDS.reduce((sum, id) => sum + sparksSpentOn(id, metaNode(id).maxLevel), 0)
-    // The pre-split node's own cost curve, summed — verified against
-    // git HEAD before the split. Same ceiling, same price to reach it; only
-    // WHERE those levels sit in the tree moved.
-    expect(price).toBe(155_816)
+    // The pre-split node's own cost curve (155,816 for 25 levels) minus its
+    // last five levels (121,134): those were 70% of the tree for +40%.
+    expect(price).toBe(155_816 - 121_134)
+  })
+
+  it('no single node is most of the tree', () => {
+    const total = META_TREE.reduce((sum, n) => sum + sparksSpentOn(n.id, n.maxLevel), 0)
+    for (const node of META_TREE) {
+      expect(sparksSpentOn(node.id, node.maxLevel), node.id).toBeLessThan(total / 4)
+    }
   })
 })
 
@@ -203,7 +213,7 @@ it('Glassforge scales with Honed Edge alone and rounds once across the veins', (
     [{}, 0],
     [{tower_damage: 8}, 9],
     [{tower_damage: 8, tower_damage_2: 8}, 19],
-    [{tower_damage: 8, tower_damage_2: 8, tower_damage_3: 9}, 30],
+    [{tower_damage: 8, tower_damage_2: 8, tower_damage_3: 4}, 24],
   ] as const) {
     const meta: MetaState = {...createMeta(), upgrades: {...upgrades, ks_glassforge: 1}}
     const plain = createRun({...meta, upgrades: {...upgrades}}, 'glass-scaling')
@@ -211,4 +221,56 @@ it('Glassforge scales with Honed Edge alone and rounds once across the veins', (
     expect(glass.mods.damagePct - plain.mods.damagePct).toBe(expected)
     expect(glass.spireMaxHp).toBe(Math.floor(plain.spireMaxHp * 0.6))
   }
+})
+
+describe('play-changing tier-3 nodes', () => {
+  const opened = (ids: MetaUpgradeId[]) => {
+    // Pay every gate with tier-1/2 levels, then take the node under test.
+    let meta = rich(1_000_000)
+    for (let pass = 0; pass < 12; pass++) {
+      for (const id of ['spire_hp', 'tower_damage', 'tower_damage_2', 'starting_gold', 'gold_income', 'unlock_gold_rush', 'quick_hands', 'steady_aim', 'unlock_bulwark', 'spark_gain', 'wave_skip'] as const) {
+        meta = buyMetaUpgrade(meta, id).meta
+      }
+    }
+    for (const id of ids) {
+      const result = buyMetaUpgrade(meta, id)
+      expect(result.ok, `${id}: ${result.reason}`).toBe(true)
+      meta = result.meta
+    }
+    return meta
+  }
+
+  it('Battle-Hardened turns veterancy stars into damage, and the panel says so', () => {
+    const meta = opened(['battle_hardened', 'battle_hardened'])
+    const run = createRun(meta, 'veterans')
+    expect(run.mods.veteranDamagePct).toBe(8)
+    const rookie: Tower = { id: 1, type: 'arrow', tier: 1, spec: null, enhance: 0, cell: { cx: 3, cy: 3 }, cooldown: 0, targeting: 'first', kills: 9, damageDealt: 0, shots: 0 }
+    const veteran: Tower = { ...rookie, id: 2, kills: 50 } // two stars
+    expect(veteranDamagePct(run, rookie)).toBe(0)
+    expect(veteranDamagePct(run, veteran)).toBe(16)
+    const parts = damageBreakdown(run, veteran).parts
+    expect(parts.find((p) => p.source.startsWith('Battle-Hardened'))?.pct).toBe(16)
+    expect(veteranDamagePct(createRun(createMeta(), 'plain'), veteran)).toBe(0)
+  })
+
+  it('Relic Cartography widens every offer by one relic', () => {
+    const meta = opened(['relic_cartography'])
+    const run = createRun(meta, 'cartography')
+    expect(run.mods.relicChoices).toBe(1)
+    expect(relicOfferSize(run)).toBe(4)
+    const offered = step({ ...run, wave: 5, phase: 'wave', pendingSpawns: [], enemies: [] }, []).state
+    expect(offered.relicOffer).toHaveLength(4)
+  })
+
+  it('Deep Reserves deepens the command pool, and it refills to the new cap', () => {
+    const meta = opened(['deep_reserves', 'deep_reserves'])
+    const run = createRun(meta, 'reserves')
+    expect(run.commandCharges).toBe(5)
+    expect(commandChargeCap(run.mods)).toBe(5)
+    let live: RunState = { ...run, phase: 'wave', wave: 1, commandCharges: 3, pendingSpawns: [{ type: 'brute', tick: 1_000_000 }] }
+    for (let i = 0; i < 20_000 && (live.commandCharges ?? 0) < 5; i++) live = step(live, []).state
+    expect(live.commandCharges).toBe(5)
+    for (let i = 0; i < 2000; i++) live = step(live, []).state
+    expect(live.commandCharges).toBe(5) // never past the cap
+  })
 })

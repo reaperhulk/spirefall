@@ -35,6 +35,7 @@ import {
   META_SPIRE_HP_PER_LEVEL,
   META_STARTING_GOLD_PER_LEVEL,
   META_TOWER_DAMAGE_PCT_PER_LEVEL,
+  META_VETERAN_DAMAGE_PCT_PER_LEVEL,
   META_WAVE_SKIP_PER_LEVEL,
   metaNode,
   sparksSpentOn,
@@ -397,7 +398,7 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
     boonOffer: firstBoons.offer,
     activeBoon: null,
     doctrine: null,
-    commandCharges: COMMAND_CHARGES,
+    commandCharges: COMMAND_CHARGES + metaLevel(meta, 'deep_reserves'),
     commandRecharge: 0,
     executeCd: 0,
     coins: [],
@@ -443,6 +444,9 @@ export function createRun(meta: MetaState, seed: string, biome?: BiomeId, trials
       // Ash: the verbs the game teaches finally have somewhere to grow.
       executeCdPct: metaLevel(meta, 'quick_hands') * META_EXECUTE_CD_PCT_PER_LEVEL + (metaLevel(meta, 'ks_executioner') ? 20 : 0) - (metaLevel(meta, 'ks_conductor') ? 15 : 0),
       overchargeCdPct: metaLevel(meta, 'steady_aim') * META_OVERCHARGE_CD_PCT_PER_LEVEL + (metaLevel(meta, 'ks_conductor') ? 20 : 0) - (metaLevel(meta, 'ks_executioner') ? 15 : 0),
+      veteranDamagePct: metaLevel(meta, 'battle_hardened') * META_VETERAN_DAMAGE_PCT_PER_LEVEL,
+      relicChoices: metaLevel(meta, 'relic_cartography'),
+      bonusCharges: metaLevel(meta, 'deep_reserves'),
     },
     sparksEarned: 0,
   }

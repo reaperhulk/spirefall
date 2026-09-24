@@ -127,6 +127,24 @@ export async function importSave(code: string): Promise<boolean> {
   }
 }
 
+// Clamp any node above its current max level and bank the Sparks those
+// levels cost. Levels are refunded top-down from the ORIGINAL price list,
+// which for a shrunk node is its old cost array; only Honed Edge III shrank.
+const RETIRED_COSTS: Partial<Record<string, number[]>> = {
+  tower_damage_3: [3664, 4946, 6677, 9014, 12169, 16428, 22178, 29940, 40419],
+}
+export function refundBeyondCap(meta: MetaState): void {
+  for (const [id, costs] of Object.entries(RETIRED_COSTS)) {
+    const level = meta.upgrades[id]
+    const def = META_TREE.find(d => d.id === id)
+    if (!def || !costs || typeof level !== 'number' || level <= def.maxLevel) continue
+    let refund = 0
+    for (let i = def.maxLevel; i < Math.min(level, costs.length); i++) refund += costs[i]!
+    meta.upgrades[id] = def.maxLevel
+    meta.sparks += refund
+  }
+}
+
 function migrate(parsed: { version?: number }): SaveData | null {
   switch (parsed.version) {
     case 1: {
@@ -155,6 +173,9 @@ function migrate(parsed: { version?: number }): SaveData | null {
         data.meta.upgrades['tower_damage_2'] = Math.min(honed - 8, 8)
         if (honed > 16) data.meta.upgrades['tower_damage_3'] = Math.min(honed - 16, 9)
       }
+      // Honed Edge III shrank from nine levels to four. Levels beyond the new
+      // cap are refunded at exactly what they cost, so no account loses value.
+      refundBeyondCap(data.meta)
       const nat = (n: unknown) => Number.isSafeInteger(n) && (n as number) >= 0
       const counters = ['sparks','totalSparks','runs','victories','cycleVictories','embers','ascensions','bestWave','lifetimeKills']
       if (data.meta.schemaVersion !== 1 || !counters.every(k => nat((data.meta as unknown as Record<string,unknown>)[k]))) return null

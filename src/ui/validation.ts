@@ -1,5 +1,5 @@
 import { ASSAULTS } from '../engine/campaign'
-import { DOCTRINES } from '../data/doctrines'
+import { commandChargeCap, DOCTRINES } from '../data/doctrines'
 import { ABILITIES, BOONS, CATACLYSMS, ENEMIES, RELICS, TOWERS, TOWER_SPECS } from '../data/content'
 import { MAPS } from '../data/maps'
 import { BIOME_IDS } from '../data/biomes'
@@ -44,8 +44,10 @@ export function validRun(value: unknown): value is RunState {
     if (!counters.every(k => nat(value[k]))) return false
     if (!['victoryClaimed','relicRerolled','beamOverheated'].every(k => typeof value[k] === 'boolean')) return false
     if (!object(s.mods) || !(['damagePct','goldPct','sparkPct','critChancePct','abilityCdPct','repairCasts','collectRadius','autoCollectRadius','executeCdPct','overchargeCdPct'] as const).every(k => Number.isSafeInteger(s.mods[k]))) return false
+    if (!(['veteranDamagePct','relicChoices','bonusCharges'] as const).every(k => s.mods[k] === undefined || nat(s.mods[k]))) return false
+    if ((s.mods.relicChoices ?? 0) > 1 || (s.mods.bonusCharges ?? 0) > 2 || (s.commandCharges ?? 0) > commandChargeCap(s.mods)) return false
     if (s.doctrine != null && !(known(DOCTRINES, s.doctrine))) return false
-    if (s.commandCharges !== undefined && (!nat(s.commandCharges) || s.commandCharges > 3)) return false
+    if (s.commandCharges !== undefined && (!nat(s.commandCharges) || s.commandCharges > 5)) return false
     if (s.commandRecharge !== undefined && !nat(s.commandRecharge)) return false
     for (const v of [s.beamTarget, s.collectAt]) if (v !== null && (!object(v) || !nat(v.x) || !nat(v.y) || v.x > 24000 || v.y > 14000)) return false
     if (!s.coins.every(c => nat(c.id) && nat(c.gold) && nat(c.bornTick) && object(c.pos) && nat(c.pos.x) && nat(c.pos.y))) return false

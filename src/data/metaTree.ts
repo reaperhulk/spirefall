@@ -21,6 +21,9 @@ export type MetaUpgradeId =
   | 'tower_damage'
   | 'tower_damage_2'
   | 'tower_damage_3'
+  | 'battle_hardened'
+  | 'relic_cartography'
+  | 'deep_reserves'
   | 'crit_chance'
   | 'gold_income'
   | 'spark_gain'
@@ -202,13 +205,29 @@ export const META_TREE: MetaNodeDef[] = [
     parent: 'ks_glassforge',
     name: 'Honed Edge III',
     description: '+8% tower damage per level.',
-    maxLevel: 9,
-    costs: [3664, 4946, 6677, 9014, 12169, 16428, 22178, 29940, 40419],
+    // Four levels, not nine: the five it lost cost 121k Sparks — 70% of the
+    // whole tree for +40% damage, a one-knob grind. That budget now lives in
+    // nodes that change how a run plays, and ascension carries the long game.
+    maxLevel: 4,
+    costs: [3664, 4946, 6677, 9014],
     branch: 'iron',
     tier: 3,
     short: 'Edge III',
-    wide: { x: 20, y: 12 },
-    compact: { x: 50, y: 45 },
+    wide: { x: 13, y: 12 },
+    compact: { x: 18, y: 46 },
+  },
+  {
+    id: 'battle_hardened',
+    parent: 'ks_bastion',
+    name: 'Battle-Hardened',
+    description: 'Veterancy stars become power: +4% tower damage per star, per level. Keep your veterans alive.',
+    maxLevel: 3,
+    costs: [4000, 7000, 11000],
+    branch: 'iron',
+    tier: 3,
+    short: 'Veterans',
+    wide: { x: 28, y: 12 },
+    compact: { x: 82, y: 46 },
   },
 
   // --- GOLD: things that pay ----------------------------------------------
@@ -312,7 +331,7 @@ export const META_TREE: MetaNodeDef[] = [
     tier: 1,
     short: 'Rush',
     wide: { x: 76, y: 72 },
-    compact: { x: 18, y: 90 },
+    compact: { x: 18, y: 100 },
   },
   {
     id: 'quick_hands',
@@ -324,7 +343,7 @@ export const META_TREE: MetaNodeDef[] = [
     tier: 1,
     short: 'Hands',
     wide: { x: 86, y: 76 },
-    compact: { x: 50, y: 90 },
+    compact: { x: 50, y: 100 },
   },
   {
     id: 'steady_aim',
@@ -336,7 +355,7 @@ export const META_TREE: MetaNodeDef[] = [
     tier: 1,
     short: 'Aim',
     wide: { x: 96, y: 72 },
-    compact: { x: 82, y: 90 },
+    compact: { x: 82, y: 100 },
   },
   {
     id: 'unlock_bulwark',
@@ -349,7 +368,7 @@ export const META_TREE: MetaNodeDef[] = [
     tier: 2,
     short: 'Aegis',
     wide: { x: 80, y: 50 },
-    compact: { x: 32, y: 99 },
+    compact: { x: 32, y: 109 },
   },
   {
     id: 'wave_skip',
@@ -362,12 +381,38 @@ export const META_TREE: MetaNodeDef[] = [
     tier: 2,
     short: 'Road',
     wide: { x: 92, y: 50 },
-    compact: { x: 68, y: 99 },
+    compact: { x: 68, y: 109 },
   },
-  { id: 'ks_patron', name: 'Patron of Ruin', description: 'KEYSTONE — +25% gold income, but -10% tower damage. Buy tomorrow with today’s risk.', maxLevel: 1, costs: [1400], branch: 'gold', tier: 3, keystone: true, short: 'Patron', parent: 'gold_income', wide: { x: 44, y: 12 }, compact: { x: 25, y: 79 } },
-  { id: 'ks_treasury', name: 'War Treasury', description: 'KEYSTONE — +150 starting gold, but -15% gold income. Front-load your defense.', maxLevel: 1, costs: [1400], branch: 'gold', tier: 3, keystone: true, short: 'War', parent: 'spire_magnet', wide: { x: 64, y: 12 }, compact: { x: 75, y: 79 } },
-  { id: 'ks_executioner', name: 'Executioner', description: 'KEYSTONE — execute recovers 20% faster; command charges recover 15% slower.', maxLevel: 1, costs: [1400], branch: 'ash', tier: 3, keystone: true, short: 'Executioner', parent: 'quick_hands', wide: { x: 80, y: 25 }, compact: { x: 25, y: 110 } },
-  { id: 'ks_conductor', name: 'Conductor', description: 'KEYSTONE — command charges recover 20% faster; execute recovers 15% slower.', maxLevel: 1, costs: [1400], branch: 'ash', tier: 3, keystone: true, short: 'Conductor', parent: 'steady_aim', wide: { x: 94, y: 25 }, compact: { x: 75, y: 110 } },
+  {
+    id: 'relic_cartography',
+    parent: 'spark_gain',
+    name: 'Relic Cartography',
+    description: 'Every relic offer shows one more relic to choose from.',
+    maxLevel: 1,
+    costs: [8000],
+    branch: 'gold',
+    tier: 3,
+    short: 'Atlas',
+    wide: { x: 54, y: 12 },
+    compact: { x: 50, y: 88 },
+  },
+  {
+    id: 'deep_reserves',
+    parent: 'unlock_bulwark',
+    name: 'Deep Reserves',
+    description: '+1 command charge capacity per level: overcharge more towers before the pool runs dry.',
+    maxLevel: 2,
+    costs: [5000, 9000],
+    branch: 'ash',
+    tier: 3,
+    short: 'Reserves',
+    wide: { x: 87, y: 12 },
+    compact: { x: 50, y: 120 },
+  },
+  { id: 'ks_patron', name: 'Patron of Ruin', description: 'KEYSTONE — +25% gold income, but -10% tower damage. Buy tomorrow with today’s risk.', maxLevel: 1, costs: [1400], branch: 'gold', tier: 3, keystone: true, short: 'Patron', parent: 'gold_income', wide: { x: 42, y: 12 }, compact: { x: 25, y: 79 } },
+  { id: 'ks_treasury', name: 'War Treasury', description: 'KEYSTONE — +150 starting gold, but -15% gold income. Front-load your defense.', maxLevel: 1, costs: [1400], branch: 'gold', tier: 3, keystone: true, short: 'War', parent: 'spire_magnet', wide: { x: 66, y: 12 }, compact: { x: 75, y: 79 } },
+  { id: 'ks_executioner', name: 'Executioner', description: 'KEYSTONE — execute recovers 20% faster; command charges recover 15% slower.', maxLevel: 1, costs: [1400], branch: 'ash', tier: 3, keystone: true, short: 'Executioner', parent: 'quick_hands', wide: { x: 80, y: 25 }, compact: { x: 25, y: 120 } },
+  { id: 'ks_conductor', name: 'Conductor', description: 'KEYSTONE — command charges recover 20% faster; execute recovers 15% slower.', maxLevel: 1, costs: [1400], branch: 'ash', tier: 3, keystone: true, short: 'Conductor', parent: 'steady_aim', wide: { x: 94, y: 25 }, compact: { x: 75, y: 120 } },
 ]
 
 export const META_STARTING_GOLD_PER_LEVEL = 30
@@ -382,6 +427,7 @@ export const META_SPARK_GAIN_PCT_PER_LEVEL = 10
 export const META_WAVE_SKIP_PER_LEVEL = 2
 export const META_EXECUTE_CD_PCT_PER_LEVEL = 20
 export const META_OVERCHARGE_CD_PCT_PER_LEVEL = 15
+export const META_VETERAN_DAMAGE_PCT_PER_LEVEL = 4 // per veterancy star
 
 // Every node that grants tower damage. Kept derived rather than restated so
 // splitting a vein again can never leave createRun reading a stale list.
@@ -441,6 +487,10 @@ export function metaNodeEffect(id: MetaUpgradeId, level: number): string | null 
       return `+${level * META_GOLD_INCOME_PCT_PER_LEVEL}% gold`
     case 'spark_gain':
       return `+${level * META_SPARK_GAIN_PCT_PER_LEVEL}% sparks`
+    case 'battle_hardened':
+      return `+${level * META_VETERAN_DAMAGE_PCT_PER_LEVEL}% damage per veterancy star`
+    case 'deep_reserves':
+      return `${3 + level} command charges`
     case 'wave_skip':
       return `start at wave ${1 + level * META_WAVE_SKIP_PER_LEVEL}`
     case 'magnet_reach':

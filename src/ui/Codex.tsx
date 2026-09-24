@@ -203,7 +203,7 @@ const MECHANICS: MechanicEntry[] = [
   },
   {
     title: 'Relics',
-    body: `Every ${RELIC_WAVE_INTERVAL} waves the ruins offer ${RELIC_OFFER_SIZE} relics — take one, reroll once, or bank gold for skipping. Relics last for the run only.`,
+    body: `Every ${RELIC_WAVE_INTERVAL} waves the ruins offer ${RELIC_OFFER_SIZE} relics (one more with Relic Cartography) — take one, reroll once, or bank gold for skipping. Relics last for the run only.`,
   },
   {
     title: 'Abilities',

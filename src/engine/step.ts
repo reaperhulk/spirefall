@@ -1,7 +1,7 @@
 import { ASSAULTS, assaultActive, canSpecialize, modernRules, rules6, specializationCost, warSupply } from './campaign'
 import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { navigation } from './navigation'
-import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, DOCTRINES } from '../data/doctrines'
+import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, commandChargeCap, DOCTRINES } from '../data/doctrines'
 import {
   ABILITIES,
   specForTower,
@@ -129,7 +129,7 @@ export function step(state: RunState, commands: Command[]): StepResult {
     s.comboTicks -= 1
     if (s.comboTicks === 0) s.combo = 0
   }
-  if (s.phase === 'wave' && (s.commandCharges ?? COMMAND_CHARGES) < COMMAND_CHARGES) {
+  if (s.phase === 'wave' && (s.commandCharges ?? COMMAND_CHARGES) < commandChargeCap(s.mods)) {
     s.commandRecharge = (s.commandRecharge ?? 0) + 1
     const recovery = Math.max(30, Math.floor(COMMAND_RECHARGE_TICKS * (100 - s.mods.overchargeCdPct) / 100))
     if (s.commandRecharge >= recovery) {
@@ -456,7 +456,7 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       if (s.gold < cost) return reject(command, 'not enough gold', events)
       s.gold -= cost
       const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
-      s.relicOffer = drawRelicOffer(s, pool, Math.min(RELIC_OFFER_SIZE, pool.length)) as RelicId[]
+      s.relicOffer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
       if (command.focus) {
         const preferred = BUILD_FAMILIES[command.focus].relics.filter(r => pool.includes(r))
         if (preferred.length && !s.relicOffer.some(r => preferred.includes(r))) {
@@ -800,7 +800,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if ((s.relicDebt ?? 0) > 0 && s.wave % RELIC_WAVE_INTERVAL !== 0) {
     const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
     if (pool.length > 0) {
-      const offer = drawRelicOffer(s, pool, Math.min(RELIC_OFFER_SIZE, pool.length)) as RelicId[]
+      const offer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
       s.relicOffer = offer
       s.relicRerolled = false
       s.relicDebt = (s.relicDebt ?? 0) - 1
@@ -810,7 +810,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (s.wave % RELIC_WAVE_INTERVAL === 0) {
     const pool = RELIC_IDS.filter((r) => !s.relics.includes(r))
     if (pool.length > 0) {
-      const offer = drawRelicOffer(s, pool, Math.min(RELIC_OFFER_SIZE, pool.length)) as RelicId[]
+      const offer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
       s.relicOffer = offer
       s.relicRerolled = false
       events.push({ type: 'relic_offered', options: [...offer] })
@@ -823,6 +823,11 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
 // grows income — the flat 15/wave made a wave-22 run worth barely more than
 // a wave-12 one while the tree's prices climbed geometrically. Every wave
 // cleared past the account's best (the frontier) pays a bonus on top.
+// Relic Cartography widens every offer by one.
+export function relicOfferSize(s: RunState): number {
+  return RELIC_OFFER_SIZE + (s.mods.relicChoices ?? 0)
+}
+
 export function depthSparks(s: RunState): number {
   let total = 0
   for (let w = s.startWave + 1; w <= s.wavesCleared; w++) {

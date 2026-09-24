@@ -71,6 +71,7 @@ import {
   TESLA_CHAIN_RANGE,
   TOWERS,
   towerTier,
+  veterancyStars,
 } from '../data/content'
 import { MARSH_SPEED_PCT, MESA_RANGE_PCT } from '../data/biomes'
 import { blockedGrid, cellCenter, cellIndex, cellOf, distSq, nextCell, sameCell } from './grid'
@@ -92,6 +93,11 @@ export function effectiveDamagePct(state: RunState, tower: Tower['type']): numbe
   // Stacked Dampening cataclysms can drive mods negative; towers never go
   // below a tenth of their base output.
   return Math.max(10, pct)
+}
+
+// Battle-Hardened: each veterancy star a tower has earned adds damage.
+export function veteranDamagePct(state: RunState, tower: Tower): number {
+  return (state.mods.veteranDamagePct ?? 0) * veterancyStars(tower.kills)
 }
 
 export interface DamagePart {
@@ -120,6 +126,8 @@ export function damageBreakdown(
   if (state.relics.includes('last_stand') && state.spireHp * 2 <= state.spireMaxHp)
     parts.push({ source: 'Last Stand (relic, active)', pct: LAST_STAND_PCT })
   if (tower.enhance > 0) parts.push({ source: `Enhance +${tower.enhance}`, pct: ENHANCE_DAMAGE_PCT * tower.enhance })
+  const veteran = veteranDamagePct(state, tower)
+  if (veteran > 0) parts.push({ source: `Battle-Hardened ${'★'.repeat(veterancyStars(tower.kills))}`, pct: veteran })
   const aura = beaconAuraPct(state, tower)
   if (aura > 0) parts.push({ source: 'Beacon aura', pct: aura })
   // Lance ramp: the LIVE stack count, so the panel reads what the next shot
@@ -421,7 +429,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
       }
     }
     if (siegeBurst || stormBurst) events.push({ type: 'doctrine_trigger', doctrine: siegeBurst ? 'siege' : 'storm', id: tower.id, at: origin })
-    const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance + beaconAuraPct(state, tower)
+    const pct = effectiveDamagePct(state, tower.type) + ENHANCE_DAMAGE_PCT * tower.enhance + beaconAuraPct(state, tower) + veteranDamagePct(state, tower)
     let baseDamage = Math.floor((def.damage * pct) / 100)
     if (tower.spec === 'mortar') baseDamage = Math.floor((baseDamage * MORTAR_DAMAGE_PCT) / 100)
     else if (tower.spec === 'breaker') baseDamage = Math.floor((baseDamage * BREAKER_DAMAGE_PCT) / 100)

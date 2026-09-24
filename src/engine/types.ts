@@ -167,6 +167,10 @@ export interface RunMods {
   autoCollectRadius: number // Spire Magnet reach (0 = no auto-collect)
   executeCdPct: number // % shaved off the execute blade's recovery (Ash: Quick Hands)
   overchargeCdPct: number // % shaved off a tower's overcharge recharge (Ash: Steady Aim)
+  // Tier-3 play-changing nodes (absent on runs created before them = 0).
+  veteranDamagePct?: number // Battle-Hardened: +% damage per veterancy star
+  relicChoices?: number // Relic Cartography: extra relics per offer
+  bonusCharges?: number // Deep Reserves: extra command charge capacity
 }
 
 export interface RunState {

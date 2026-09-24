@@ -9,7 +9,7 @@ import { useRunCheckpoint } from './useRunCheckpoint'
 import { Icon } from './Icon'
 import { TowerPortrait } from './TowerPortrait'
 import { RunPlanning } from './RunPlanning'
-import { DOCTRINES } from '../data/doctrines'
+import { commandChargeCap, DOCTRINES } from '../data/doctrines'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ABILITIES,
@@ -1094,7 +1094,7 @@ export default function App() {
           })}
 
         </div>
-      <p className="command-pool" role="status">⚡ <strong>{state.commandCharges ?? 3}/3</strong> charges{state.combo >= 5 && <span data-testid="combo"> · {state.combo} streak{state.combo >= COMBO_HASTE_THRESHOLD ? ' · 2× spell recovery' : ''}</span>} · {state.doctrine === 'war_economy' ? `${warSupply(state)} supply crates` : state.doctrine ? DOCTRINES[state.doctrine].name : 'Select a tower to overcharge'}</p>
+      <p className="command-pool" role="status">⚡ <strong>{state.commandCharges ?? 3}/{commandChargeCap(state.mods)}</strong> charges{state.combo >= 5 && <span data-testid="combo"> · {state.combo} streak{state.combo >= COMBO_HASTE_THRESHOLD ? ' · 2× spell recovery' : ''}</span>} · {state.doctrine === 'war_economy' ? `${warSupply(state)} supply crates` : state.doctrine ? DOCTRINES[state.doctrine].name : 'Select a tower to overcharge'}</p>
       </div>
       </section>
       </div>
