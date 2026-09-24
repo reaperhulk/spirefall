@@ -1,8 +1,9 @@
 import { assertInvariants } from '../engine/invariants'
-import { buyMetaUpgrade, createMeta, createRun, metaUpgradeCost, settleRun } from '../engine/meta'
+import { ascend, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, metaUpgradeCost, settleRun } from '../engine/meta'
 import { step } from '../engine/step'
 import type { Command, GameEvent, MetaState, RunState, RunSummary } from '../engine/types'
 import type { MetaUpgradeId } from '../data/metaTree'
+import type { EmberUpgradeId } from '../data/emberTree'
 import type { Bot } from './bots'
 
 export interface ScheduledCommand {
@@ -41,6 +42,18 @@ export function autoplay(initial: RunState, bot: Bot, maxTicks: number, options:
 export interface ProgressionResult {
   meta: MetaState
   history: RunSummary[]
+  purchases: number[] // Spire Tree levels bought after each run
+  ascensions: number[] // 1-based run numbers after which the career ascended
+  simSeconds: number[] // simulated length of each run (ticks / 30)
+}
+
+export interface ProgressionOptions {
+  maxTicksPerRun?: number
+  startingMeta?: MetaState
+  // Prestige policy: asked after every settled run. A career that never
+  // ascends measures one cycle; one that does measures the loop.
+  ascendWhen?: (meta: MetaState, history: RunSummary[]) => boolean
+  emberPriority?: EmberUpgradeId[]
 }
 
 // Play `runs` consecutive runs, banking Sparks and buying meta upgrades from
@@ -50,23 +63,55 @@ export function playProgression(
   seedBase: string,
   bot: Bot,
   buyPriority: MetaUpgradeId[],
-  options: { maxTicksPerRun?: number; startingMeta?: MetaState } = {},
+  options: ProgressionOptions = {},
 ): ProgressionResult {
   const maxTicks = options.maxTicksPerRun ?? 400_000
   let meta = options.startingMeta ?? createMeta()
   const history: RunSummary[] = []
+  const purchases: number[] = []
+  const ascensions: number[] = []
+  const simSeconds: number[] = []
   for (let i = 1; i <= runs; i++) {
     const run = createRun(meta, `${seedBase}-run${i}`)
     const { state } = autoplay(run, bot, maxTicks)
     if (state.phase !== 'defeat' && state.phase !== 'victory') {
       throw new Error(`run ${i} did not finish within ${maxTicks} ticks (wave ${state.wave})`)
     }
+    simSeconds.push(Math.round(state.tick / 30))
     const settled = settleRun(meta, state)
     meta = settled.meta
     history.push(settled.summary)
+    if (options.ascendWhen && canAscend(meta) && options.ascendWhen(meta, history)) {
+      meta = spendEmbers(ascend(meta), options.emberPriority ?? [])
+      ascensions.push(i)
+    }
+    const levelsBefore = totalLevels(meta)
     meta = spendSparks(meta, buyPriority)
+    purchases.push(totalLevels(meta) - levelsBefore)
   }
-  return { meta, history }
+  return { meta, history, purchases, ascensions, simSeconds }
+}
+
+function totalLevels(meta: MetaState): number {
+  return Object.values(meta.upgrades).reduce((sum, n) => sum + n, 0)
+}
+
+// Spend Embers down a priority list, cheapest-first within it: the list is
+// walked from the top every time, so an unaffordable head never strands
+// Embers a lower entry could use.
+export function spendEmbers(meta: MetaState, priority: EmberUpgradeId[]): MetaState {
+  let current = meta
+  for (;;) {
+    let bought = false
+    for (const id of priority) {
+      const result = buyEmberUpgrade(current, id)
+      if (!result.ok) continue
+      current = result.meta
+      bought = true
+      break
+    }
+    if (!bought) return current
+  }
 }
 
 // Spend down the priority list, skipping anything the tree will not sell:

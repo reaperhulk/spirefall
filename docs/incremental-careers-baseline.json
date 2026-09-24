@@ -1,0 +1,698 @@
+{
+  "note": "Deterministic reference careers (waves/sparks/levels bought), not human win rates.",
+  "results": [
+    {
+      "pilot": "balanced",
+      "firstVictory": 17,
+      "totalSparks": 21236,
+      "longestDrySpell": 1,
+      "meanRunsPerPurchase": 1.03,
+      "meanSparksEarly": 384,
+      "meanSparksLate": 832,
+      "worstPostWinDrop": 1,
+      "cycles": [
+        {
+          "runs": 26,
+          "firstVictory": 17,
+          "victories": 2
+        },
+        {
+          "runs": 14,
+          "firstVictory": 14,
+          "victories": 1
+        }
+      ],
+      "history": [
+        {
+          "waves": 12,
+          "sparks": 594,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 8,
+          "seconds": 184
+        },
+        {
+          "waves": 12,
+          "sparks": 325,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 186
+        },
+        {
+          "waves": 12,
+          "sparks": 281,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 4,
+          "seconds": 193
+        },
+        {
+          "waves": 15,
+          "sparks": 463,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 308
+        },
+        {
+          "waves": 14,
+          "sparks": 259,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 240
+        },
+        {
+          "waves": 18,
+          "sparks": 373,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 4,
+          "seconds": 411
+        },
+        {
+          "waves": 14,
+          "sparks": 264,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 243
+        },
+        {
+          "waves": 15,
+          "sparks": 284,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 267
+        },
+        {
+          "waves": 14,
+          "sparks": 261,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 205
+        },
+        {
+          "waves": 14,
+          "sparks": 330,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 246
+        },
+        {
+          "waves": 18,
+          "sparks": 666,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 426
+        },
+        {
+          "waves": 18,
+          "sparks": 373,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 386
+        },
+        {
+          "waves": 18,
+          "sparks": 361,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 407
+        },
+        {
+          "waves": 19,
+          "sparks": 402,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 476
+        },
+        {
+          "waves": 22,
+          "sparks": 855,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 729
+        },
+        {
+          "waves": 23,
+          "sparks": 530,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 726
+        },
+        {
+          "waves": 24,
+          "sparks": 1520,
+          "outcome": "victory",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 802
+        },
+        {
+          "waves": 23,
+          "sparks": 629,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 2,
+          "seconds": 783
+        },
+        {
+          "waves": 21,
+          "sparks": 572,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 4,
+          "seconds": 580
+        },
+        {
+          "waves": 20,
+          "sparks": 636,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 1,
+          "seconds": 494
+        },
+        {
+          "waves": 18,
+          "sparks": 461,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 2,
+          "seconds": 379
+        },
+        {
+          "waves": 23,
+          "sparks": 679,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 2,
+          "seconds": 754
+        },
+        {
+          "waves": 22,
+          "sparks": 589,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 2,
+          "seconds": 702
+        },
+        {
+          "waves": 22,
+          "sparks": 630,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 2,
+          "seconds": 669
+        },
+        {
+          "waves": 23,
+          "sparks": 730,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 1,
+          "seconds": 769
+        },
+        {
+          "waves": 24,
+          "sparks": 1534,
+          "outcome": "victory",
+          "crucible": 1,
+          "bought": 0,
+          "seconds": 774
+        },
+        {
+          "waves": 12,
+          "sparks": 283,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 6,
+          "seconds": 220
+        },
+        {
+          "waves": 11,
+          "sparks": 306,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 5,
+          "seconds": 179
+        },
+        {
+          "waves": 12,
+          "sparks": 278,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 193
+        },
+        {
+          "waves": 14,
+          "sparks": 333,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 265
+        },
+        {
+          "waves": 15,
+          "sparks": 366,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 5,
+          "seconds": 296
+        },
+        {
+          "waves": 13,
+          "sparks": 305,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 211
+        },
+        {
+          "waves": 14,
+          "sparks": 341,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 245
+        },
+        {
+          "waves": 18,
+          "sparks": 453,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 407
+        },
+        {
+          "waves": 18,
+          "sparks": 461,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 402
+        },
+        {
+          "waves": 18,
+          "sparks": 470,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 403
+        },
+        {
+          "waves": 21,
+          "sparks": 557,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 555
+        },
+        {
+          "waves": 19,
+          "sparks": 498,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 453
+        },
+        {
+          "waves": 23,
+          "sparks": 652,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 726
+        },
+        {
+          "waves": 24,
+          "sparks": 1332,
+          "outcome": "victory",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 830
+        }
+      ]
+    },
+    {
+      "pilot": "active",
+      "firstVictory": 6,
+      "totalSparks": 29718,
+      "longestDrySpell": 1,
+      "meanRunsPerPurchase": 1.09,
+      "meanSparksEarly": 637,
+      "meanSparksLate": 702,
+      "worstPostWinDrop": 3,
+      "cycles": [
+        {
+          "runs": 16,
+          "firstVictory": 6,
+          "victories": 2
+        },
+        {
+          "runs": 12,
+          "firstVictory": 10,
+          "victories": 2
+        },
+        {
+          "runs": 12,
+          "firstVictory": 9,
+          "victories": 2
+        }
+      ],
+      "history": [
+        {
+          "waves": 13,
+          "sparks": 716,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 9,
+          "seconds": 190
+        },
+        {
+          "waves": 18,
+          "sparks": 771,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 470
+        },
+        {
+          "waves": 16,
+          "sparks": 398,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 5,
+          "seconds": 332
+        },
+        {
+          "waves": 18,
+          "sparks": 612,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 5,
+          "seconds": 420
+        },
+        {
+          "waves": 22,
+          "sparks": 686,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 691
+        },
+        {
+          "waves": 24,
+          "sparks": 1788,
+          "outcome": "victory",
+          "crucible": 0,
+          "bought": 4,
+          "seconds": 836
+        },
+        {
+          "waves": 23,
+          "sparks": 610,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 1,
+          "seconds": 743
+        },
+        {
+          "waves": 23,
+          "sparks": 612,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 4,
+          "seconds": 783
+        },
+        {
+          "waves": 19,
+          "sparks": 447,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 3,
+          "seconds": 449
+        },
+        {
+          "waves": 22,
+          "sparks": 688,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 3,
+          "seconds": 697
+        },
+        {
+          "waves": 22,
+          "sparks": 583,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 4,
+          "seconds": 676
+        },
+        {
+          "waves": 23,
+          "sparks": 614,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 3,
+          "seconds": 728
+        },
+        {
+          "waves": 22,
+          "sparks": 526,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 2,
+          "seconds": 655
+        },
+        {
+          "waves": 23,
+          "sparks": 577,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 2,
+          "seconds": 760
+        },
+        {
+          "waves": 22,
+          "sparks": 548,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 3,
+          "seconds": 624
+        },
+        {
+          "waves": 24,
+          "sparks": 1243,
+          "outcome": "victory",
+          "crucible": 1,
+          "bought": 0,
+          "seconds": 785
+        },
+        {
+          "waves": 14,
+          "sparks": 342,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 5,
+          "seconds": 240
+        },
+        {
+          "waves": 18,
+          "sparks": 461,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 7,
+          "seconds": 406
+        },
+        {
+          "waves": 21,
+          "sparks": 568,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 4,
+          "seconds": 609
+        },
+        {
+          "waves": 20,
+          "sparks": 642,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 548
+        },
+        {
+          "waves": 18,
+          "sparks": 472,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 411
+        },
+        {
+          "waves": 18,
+          "sparks": 463,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 4,
+          "seconds": 397
+        },
+        {
+          "waves": 23,
+          "sparks": 670,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 803
+        },
+        {
+          "waves": 22,
+          "sparks": 633,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 729
+        },
+        {
+          "waves": 23,
+          "sparks": 676,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 811
+        },
+        {
+          "waves": 24,
+          "sparks": 1327,
+          "outcome": "victory",
+          "crucible": 0,
+          "bought": 4,
+          "seconds": 824
+        },
+        {
+          "waves": 23,
+          "sparks": 750,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 3,
+          "seconds": 783
+        },
+        {
+          "waves": 24,
+          "sparks": 1730,
+          "outcome": "victory",
+          "crucible": 1,
+          "bought": 0,
+          "seconds": 859
+        },
+        {
+          "waves": 12,
+          "sparks": 333,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 7,
+          "seconds": 177
+        },
+        {
+          "waves": 21,
+          "sparks": 694,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 4,
+          "seconds": 686
+        },
+        {
+          "waves": 18,
+          "sparks": 553,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 420
+        },
+        {
+          "waves": 13,
+          "sparks": 367,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 190
+        },
+        {
+          "waves": 20,
+          "sparks": 651,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 1,
+          "seconds": 547
+        },
+        {
+          "waves": 18,
+          "sparks": 547,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 2,
+          "seconds": 414
+        },
+        {
+          "waves": 18,
+          "sparks": 556,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 387
+        },
+        {
+          "waves": 22,
+          "sparks": 751,
+          "outcome": "defeat",
+          "crucible": 0,
+          "bought": 3,
+          "seconds": 666
+        },
+        {
+          "waves": 24,
+          "sparks": 1579,
+          "outcome": "victory",
+          "crucible": 0,
+          "bought": 6,
+          "seconds": 789
+        },
+        {
+          "waves": 21,
+          "sparks": 777,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 4,
+          "seconds": 619
+        },
+        {
+          "waves": 23,
+          "sparks": 813,
+          "outcome": "defeat",
+          "crucible": 1,
+          "bought": 1,
+          "seconds": 768
+        },
+        {
+          "waves": 26,
+          "sparks": 1944,
+          "outcome": "victory",
+          "crucible": 1,
+          "bought": 0,
+          "seconds": 1027
+        }
+      ]
+    }
+  ]
+}

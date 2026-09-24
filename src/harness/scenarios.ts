@@ -1,4 +1,5 @@
 import type { MetaUpgradeId } from '../data/metaTree'
+import type { EmberUpgradeId } from '../data/emberTree'
 import { createMeta } from '../engine/meta'
 import type { MetaState } from '../engine/types'
 import { spendSparks } from './autoplay'
@@ -40,6 +41,19 @@ export const DEFAULT_BUY_PRIORITY: MetaUpgradeId[] = [
   'steady_aim',
   'crit_chance',
   'spark_gain',
+]
+
+// The reference prestige habit: bank two wins in a cycle, then ascend.
+export const DEFAULT_ASCEND_WHEN = (meta: MetaState): boolean => meta.cycleVictories >= 2
+
+export const DEFAULT_EMBER_PRIORITY: EmberUpgradeId[] = [
+  'ember_memory',
+  'kindled_arsenal',
+  'eternal_core',
+  'ashen_legacy',
+  'molten_vaults',
+  'swift_sigils',
+  'ember_crews',
 ]
 
 export function richMeta(sparks: number): MetaState {
