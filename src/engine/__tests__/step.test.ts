@@ -284,6 +284,7 @@ describe('gold sinks', () => {
     const first = step(crewed, [{ type: 'repair_spire' }])
     const second = step(first.state, [{ type: 'repair_spire' }])
     expect(second.state.spireHp).toBe(7) // second cast LANDS with the ember node
+    expect(() => assertInvariants(second.state)).not.toThrow() // and the save stays loadable
     const third = step(second.state, [{ type: 'repair_spire' }])
     expect(third.events[0]).toMatchObject({ type: 'command_rejected', reason: expect.stringContaining('repair crews') })
 

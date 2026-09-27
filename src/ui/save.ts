@@ -20,6 +20,10 @@ export interface SaveData {
 
 const KEY = 'spirefall-save'
 const BACKUP = `${KEY}-backup`
+const CORRUPT = `${KEY}-corrupt`
+// Set by migrate() when a save's run was unrestorable and dropped (the
+// account survives). Read immediately after a migrate() call.
+let runDropped = false
 let reloadPending = false
 export const saveReloadPending = () => reloadPending
 let lastGoodRaw: string | null = null
@@ -35,34 +39,53 @@ export function registerRecording(provider: () => Recording | undefined): () => 
 }
 export function loadSave(): SaveData | null {
   for (const key of [KEY, BACKUP]) {
+    let raw: string | null = null
     try {
-      const raw = localStorage.getItem(key)
-      if (!raw || raw.length > MAX_TRANSFER_BYTES) continue
-      const data = migrate(JSON.parse(raw) as {version?: number})
-      if (!data) continue
+      raw = localStorage.getItem(key)
+      if (!raw) continue
+      const data = raw.length > MAX_TRANSFER_BYTES ? null : migrate(JSON.parse(raw) as {version?: number})
+      if (!data) { quarantine(raw); continue }
       lastGoodRaw = raw
-      if (key === BACKUP) report('Recovered your previous save checkpoint.')
-      if (data.run && !validRun(data.run)) return null
-      if (data.recording) {
-        const recording = parseRecording(JSON.stringify(data.recording))
-        if (recording && data.run && recording.endTick === data.run.tick && recording.initial.seed === data.run.seed) data.recording = recording
-        else delete data.recording // old saves still resume from their checkpoint
-      }
+      if (runDropped) report('Your in-progress run could not be restored; your account progress is safe.')
+      else if (key === BACKUP) report('Recovered your previous save checkpoint.')
       return data
-    } catch { /* Try the last good backup. */ }
+    } catch {
+      // Try the last good backup.
+      if (raw) quarantine(raw)
+    }
   }
   return null
 }
+// An unreadable save is copied aside before anything can overwrite it, so a
+// future fix (or a person) can still recover the account. The first corrupt
+// copy wins: a later, emptier failure never replaces it.
+function quarantine(raw: string): void {
+  try { if (localStorage.getItem(CORRUPT) === null) localStorage.setItem(CORRUPT, raw) } catch { /* blocked storage */ }
+}
+// The newest state the game asked to save, whether or not storage accepted
+// it: Export reads this, so it hands out live progress exactly when saving
+// is failing.
+let latest: SaveData | null = null
 export function persistSave(data: SaveData): boolean {
   const started = performance.now()
-  try {
-    const recording = data.run ? recordingProvider?.() : undefined
-    const payload = recording?.endTick === data.run?.tick && recording?.initial.seed === data.run?.seed ? { ...data, recording } : data
-    const raw = JSON.stringify(payload)
+  latest = { version: data.version, meta: data.meta, run: data.run }
+  const write = (raw: string) => {
     if (raw.length > MAX_TRANSFER_BYTES) throw new Error('Save too large')
     if (lastGoodRaw) localStorage.setItem(BACKUP, lastGoodRaw)
     localStorage.setItem(KEY, raw)
     lastGoodRaw = raw
+  }
+  try {
+    const recording = data.run ? recordingProvider?.() : undefined
+    const withRecording = recording?.endTick === data.run?.tick && recording?.initial.seed === data.run?.seed
+    try {
+      write(JSON.stringify(withRecording ? { ...data, recording } : data))
+    } catch (error) {
+      // The recording is the bulky, optional part: a run still resumes from
+      // its checkpoint without it (only the full-run replay is lost).
+      if (!withRecording) throw error
+      write(JSON.stringify({ version: data.version, meta: data.meta, run: data.run }))
+    }
     report('')
     measure('save', performance.now() - started)
     return true
@@ -73,6 +96,7 @@ export function persistSave(data: SaveData): boolean {
 }
 export function clearSave(): void {
   reloadPending = true
+  latest = null
   try { localStorage.removeItem(KEY); localStorage.removeItem(BACKUP); lastGoodRaw = null } catch { /* blocked storage */ }
 }
 
@@ -92,7 +116,7 @@ function toBase64(bytes: Uint8Array): string {
 
 export async function exportSave(): Promise<string | null> {
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = latest ? JSON.stringify(latest) : localStorage.getItem(KEY)
     if (!raw) return null
     const bytes = new TextEncoder().encode(raw)
     if (typeof CompressionStream !== 'undefined') {
@@ -146,6 +170,7 @@ export function refundBeyondCap(meta: MetaState): void {
 }
 
 function migrate(parsed: { version?: number }): SaveData | null {
+  runDropped = false
   switch (parsed.version) {
     case 1: {
       const data = parsed as SaveData
@@ -193,84 +218,101 @@ function migrate(parsed: { version?: number }): SaveData | null {
       if (data.run && (data.run.phase === 'defeat' || data.run.phase === 'victory')) {
         return { ...data, run: null }
       }
-      // Additive fields introduced after launch — backfill old saves.
-      if (data.run) {
-        for (const t of data.run.towers) {
-          t.enhance ??= 0
-          t.kills ??= 0
-          t.damageDealt ??= 0
-          // Pre-`shots` saves: infer "has acted" so old towers don't all
-          // become free full refunds.
-          t.shots ??= t.damageDealt > 0 || t.kills > 0 ? 1 : 0
-          t.spec ??= null
-        }
-        for (const e of data.run.enemies) {
-          e.armor ??= 0
-          e.healCooldown ??= 0
-          e.broodCooldown ??= 0
-          e.phased ??= false
-          e.phaseCooldown ??= 0
-          e.burnTicks ??= 0
-          e.burnPerTick ??= 0
-          e.overcharge ??= 0
-          e.mechCooldown ??= 0
-          e.mechActiveTicks ??= 0
-          e.brittleTicks ??= 0
-        }
-        data.run.activeAffix ??= null
-        data.run.victoryClaimed ??= false
-        data.run.startWave ??= 0
-        data.run.cataclysms ??= []
-        data.run.relicRerolled ??= false
-        data.run.bulwarkTicks ??= 0
-        data.run.damageByTower ??= {}
-        data.run.killsByEnemy ??= {}
-        data.run.hpByWave ??= []
-        data.run.repairsThisWave ??= 0
-        data.run.trials ??= []
-        data.run.crucible ??= 0
-        // Biome-era fields: old saves keep playing their fixed map.
-        data.run.biome ??= 'verdant'
-        data.run.mapSeed ??= ''
-        data.run.mods.critChancePct ??= 0
-        data.run.mods.abilityCdPct ??= 0
-        data.run.mods.repairCasts ??= 0
-        data.run.cataclysmOffer ??= null
-        data.run.maxRampStacks ??= 0
-        data.run.combo ??= 0
-        data.run.comboTicks ??= 0
-        data.run.bestCombo ??= 0
-        // Pre-boon saves: no offer mid-run (the next wave clear draws one),
-        // and the stream derives fresh from the seed.
-        data.run.boonOffer ??= null
-        data.run.activeBoon ??= null
-        data.run.rng.boons ??= deriveStream(data.run.seed, 'boons')
-        data.run.doctrine ??= null
-        data.run.commandCharges ??= 3
-        data.run.commandRecharge ??= 0
-        data.run.executeCd ??= 0
-        data.run.beamTarget ??= null
-        data.run.beamHeat ??= 0
-        data.run.beamOverheated ??= false
-        data.run.coins ??= []
-        data.run.collectAt ??= null
-        data.run.mods.collectRadius ??= COLLECT_RADIUS_BASE
-        data.run.mods.autoCollectRadius ??= 0
-        // Ash branch (skill-tree restructure): pre-tree runs have no
-        // cooldown shaving, and an undefined here would poison the
-        // arithmetic that reads it every execute and every overcharge.
-        data.run.mods.executeCdPct ??= 0
-        data.run.mods.overchargeCdPct ??= 0
-      }
-      if (data.run && !validRun(data.run)) return null
-      if (data.recording) {
-        const recording = parseRecording(JSON.stringify(data.recording))
-        if (recording && data.run && recording.endTick === data.run.tick && recording.initial.seed === data.run.seed) data.recording = recording
-        else delete data.recording // old saves still resume from their checkpoint
+      // A run that cannot be restored costs only that run, never the account.
+      if (data.run && !restoreRun(data)) {
+        runDropped = true
+        delete data.recording
+        return { ...data, run: null }
       }
       return data
     }
     default:
       return null
+  }
+}
+
+// Backfill a saved run's additive fields and validate it. False means the
+// run is unrestorable (malformed, or an invariant the engine no longer
+// accepts); the caller drops just the run.
+function restoreRun(data: SaveData): boolean {
+  const run = data.run
+  if (!run) return true
+  try {
+    // Additive fields introduced after launch — backfill old saves.
+    for (const t of run.towers) {
+      t.enhance ??= 0
+      t.kills ??= 0
+      t.damageDealt ??= 0
+      // Pre-`shots` saves: infer "has acted" so old towers don't all
+      // become free full refunds.
+      t.shots ??= t.damageDealt > 0 || t.kills > 0 ? 1 : 0
+      t.spec ??= null
+    }
+    for (const e of run.enemies) {
+      e.armor ??= 0
+      e.healCooldown ??= 0
+      e.broodCooldown ??= 0
+      e.phased ??= false
+      e.phaseCooldown ??= 0
+      e.burnTicks ??= 0
+      e.burnPerTick ??= 0
+      e.overcharge ??= 0
+      e.mechCooldown ??= 0
+      e.mechActiveTicks ??= 0
+      e.brittleTicks ??= 0
+    }
+    run.activeAffix ??= null
+    run.victoryClaimed ??= false
+    run.startWave ??= 0
+    run.cataclysms ??= []
+    run.relicRerolled ??= false
+    run.bulwarkTicks ??= 0
+    run.damageByTower ??= {}
+    run.killsByEnemy ??= {}
+    run.hpByWave ??= []
+    run.repairsThisWave ??= 0
+    run.trials ??= []
+    run.crucible ??= 0
+    // Biome-era fields: old saves keep playing their fixed map.
+    run.biome ??= 'verdant'
+    run.mapSeed ??= ''
+    run.mods.critChancePct ??= 0
+    run.mods.abilityCdPct ??= 0
+    run.mods.repairCasts ??= 0
+    run.cataclysmOffer ??= null
+    run.maxRampStacks ??= 0
+    run.combo ??= 0
+    run.comboTicks ??= 0
+    run.bestCombo ??= 0
+    // Pre-boon saves: no offer mid-run (the next wave clear draws one),
+    // and the stream derives fresh from the seed.
+    run.boonOffer ??= null
+    run.activeBoon ??= null
+    run.rng.boons ??= deriveStream(run.seed, 'boons')
+    run.doctrine ??= null
+    run.commandCharges ??= 3
+    run.commandRecharge ??= 0
+    run.executeCd ??= 0
+    run.beamTarget ??= null
+    run.beamHeat ??= 0
+    run.beamOverheated ??= false
+    run.coins ??= []
+    run.collectAt ??= null
+    run.mods.collectRadius ??= COLLECT_RADIUS_BASE
+    run.mods.autoCollectRadius ??= 0
+    // Ash branch (skill-tree restructure): pre-tree runs have no
+    // cooldown shaving, and an undefined here would poison the
+    // arithmetic that reads it every execute and every overcharge.
+    run.mods.executeCdPct ??= 0
+    run.mods.overchargeCdPct ??= 0
+    if (!validRun(run)) return false
+    if (data.recording) {
+      const recording = parseRecording(JSON.stringify(data.recording))
+      if (recording && recording.endTick === run.tick && recording.initial.seed === run.seed) data.recording = recording
+      else delete data.recording // old saves still resume from their checkpoint
+    }
+    return true
+  } catch {
+    return false
   }
 }

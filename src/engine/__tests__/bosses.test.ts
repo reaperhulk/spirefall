@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CARAPACE_BREAK_DAMAGE, ENEMIES, GALE_SPEED_PCT } from '../../data/content'
+import { assertInvariants } from '../invariants'
 import { applyHit, bossMechanics, carrierBroods, enemyAuras, tickStatuses } from '../combat'
 import { cellCenter } from '../grid'
 import { createMeta, createRun } from '../meta'
@@ -79,6 +80,8 @@ describe('Stormcaller gale', () => {
     const runner = enemy({ id: 2 })
     const chilled = enemy({ id: 3, slowTicks: 30, slowFactor: 60 })
     const s = waveState([boss, runner, chilled])
+    s.nextEntityId = 4
+    s.pendingSpawns = [{ type: 'runner', tick: s.tick + 1 }]
     const events: GameEvent[] = []
     bossMechanics(s, events)
     expect(runner.slowFactor).toBe(GALE_SPEED_PCT) // hastened
@@ -88,6 +91,8 @@ describe('Stormcaller gale', () => {
     const gale = events.find((e) => e.type === 'boss_gale')
     expect(gale).toBeDefined()
     expect((gale as { hastened: number }).hastened).toBe(1)
+    // A hastened horde is a reachable state: saves taken mid-gale must load.
+    expect(() => assertInvariants(s)).not.toThrow()
   })
 })
 

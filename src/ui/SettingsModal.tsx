@@ -84,6 +84,7 @@ export function SettingsModal({
   askConfirm: (message: string, action: () => void) => void
 }) {
   const [transferCode, setTransferCode] = useState('')
+  const [exportFailed, setExportFailed] = useState(false)
   const [importFailed, setImportFailed] = useState(false)
   const [replayCode, setReplayCode] = useState('')
   const [replayFailed, setReplayFailed] = useState(false)
@@ -221,6 +222,7 @@ export function SettingsModal({
             data-testid="export-save"
             onClick={() => {
               void exportSave().then((code) => {
+                setExportFailed(!code)
                 if (!code) return
                 setTransferCode(code)
                 void navigator.clipboard?.writeText(code).catch(() => {})
@@ -255,6 +257,11 @@ export function SettingsModal({
             setImportFailed(false)
           }}
         />
+        {exportFailed && (
+          <p className="transfer-error" data-testid="export-failed">
+            There is no progress to export yet.
+          </p>
+        )}
         {importFailed && (
           <p className="transfer-error" data-testid="import-failed">
             That code didn't parse as a Spirefall save.

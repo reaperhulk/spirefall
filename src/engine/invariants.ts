@@ -1,4 +1,4 @@
-import { REPAIR_CASTS_PER_WAVE } from '../data/content'
+import { GALE_SPEED_PCT, REPAIR_CASTS_PER_WAVE } from '../data/content'
 import { cellIndex, inBounds, sameCell } from './grid'
 import { getRunMap } from './mapgen'
 import type { Rng } from './rng'
@@ -65,12 +65,15 @@ export function assertInvariants(state: RunState): void {
     check(!ids.has(e.id), `duplicate entity id ${e.id}`)
     ids.add(e.id)
     check(e.id < state.nextEntityId, `enemy id ${e.id} >= nextEntityId`)
-    check(e.hp > 0 && e.hp <= e.maxHp, `enemy ${e.id} hp ${e.hp} out of (0, ${e.maxHp}]`)
+    // Burns tick after the dead are collected, so an enemy can end a tick
+    // at 0 hp; the next tick collects it before anything else moves.
+    check(e.hp >= 0 && e.hp <= e.maxHp, `enemy ${e.id} hp ${e.hp} out of [0, ${e.maxHp}]`)
     check(
       e.pos.x >= 0 && e.pos.x <= map.width * 1000 && e.pos.y >= 0 && e.pos.y <= map.height * 1000,
       `enemy ${e.id} out of the world at ${e.pos.x},${e.pos.y}`,
     )
-    check(e.slowFactor >= 1 && e.slowFactor <= 100, `enemy ${e.id} slowFactor ${e.slowFactor}`)
+    // A gale boss hastens enemies through the same factor slows use.
+    check(e.slowFactor >= 1 && e.slowFactor <= Math.max(100, GALE_SPEED_PCT), `enemy ${e.id} slowFactor ${e.slowFactor}`)
     check(e.slowTicks >= 0, `enemy ${e.id} negative slowTicks`)
     check(Number.isInteger(e.armor) && e.armor >= 0, `enemy ${e.id} bad armor ${e.armor}`)
     check(Number.isInteger(e.healCooldown) && e.healCooldown >= 0, `enemy ${e.id} bad healCooldown`)
@@ -149,14 +152,14 @@ export function assertInvariants(state: RunState): void {
     check(Number.isInteger(hp) && hp >= 0, `hpByWave bad sample ${hp}`)
   }
   check(
-    Number.isInteger(state.repairsThisWave) && state.repairsThisWave >= 0 && state.repairsThisWave <= REPAIR_CASTS_PER_WAVE,
+    Number.isInteger(state.repairsThisWave) && state.repairsThisWave >= 0 && state.repairsThisWave <= REPAIR_CASTS_PER_WAVE + state.mods.repairCasts,
     `repairsThisWave out of range: ${state.repairsThisWave}`,
   )
 
   check(new Set(state.relics).size === state.relics.length, 'duplicate relics')
   if (state.relicOffer !== null) {
+    // An offer may stay pending into a wave: choose_relic works in any phase.
     check(state.relicOffer.length > 0, 'empty relic offer')
-    check(state.phase === 'build', 'relic offer outside build phase')
     for (const r of state.relicOffer) check(!state.relics.includes(r), `offered relic ${r} already owned`)
   }
 
@@ -164,6 +167,7 @@ export function assertInvariants(state: RunState): void {
     ['waves', state.rng.waves],
     ['combat', state.rng.combat],
     ['relics', state.rng.relics],
+    ['boons', state.rng.boons],
   ]
   for (const [name, rng] of streams) {
     for (const word of ['a', 'b', 'c', 'd'] as const) {
