@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createMeta, createRun } from '../../engine/meta'
-import { loadSave, persistSave, clearSave, getSaveStatus } from '../save'
+import { loadSave, persistSave, clearSave, getSaveStatus, resetSaveSession } from '../save'
 import { parseRecording, RULES_VERSION } from '../validation'
 import { GameSession } from '../session'
 import { gzipBase64Url, gunzipBase64Url } from '../codec'
@@ -10,6 +10,7 @@ beforeEach(() => {
   values.clear()
   vi.stubGlobal('localStorage', { getItem: (k: string) => values.get(k) ?? null, setItem: (k: string, v: string) => values.set(k, v), removeItem: (k: string) => values.delete(k) })
   clearSave()
+  resetSaveSession()
 })
 afterEach(() => vi.unstubAllGlobals())
 

@@ -719,6 +719,27 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   const nextBoons = drawBoonOffer(s.rng.boons)
   s.rng.boons = nextBoons.rng
   s.boonOffer = nextBoons.offer
+  payWaveClear(s, events)
+
+  // Clearing the victory wave completes the cycle — but the run continues
+  // into the endless if the player wants to push further. Sparks keep
+  // accruing; the victory bonus is banked whenever the run finally ends.
+  if (s.wave >= VICTORY_WAVE && !s.victoryClaimed) {
+    s.victoryClaimed = true
+    events.push({ type: 'victory_achieved', wave: s.wave })
+  }
+
+  offerCataclysm(s, events)
+
+  s.phase = 'build'
+  settleShrine(s, events)
+  offerWaveRelics(s, events)
+}
+
+// Everything a cleared wave pays, in order: clear gold, the Spire's knit,
+// the HP timeline sample, mint yields, war supply, an assault's reward and
+// Golden Ledger interest (after mints, so hoarding compounds).
+function payWaveClear(s: RunState, events: GameEvent[]): void {
   const clearBonus = s.relics.includes('deep_pockets') ? DEEP_POCKETS_GOLD_PCT : 0
   const goldAwarded = Math.floor(
     ((WAVE_CLEAR_GOLD_BASE + s.wave * WAVE_CLEAR_GOLD_PER_WAVE) * (100 + s.mods.goldPct + clearBonus)) / 100,
@@ -776,14 +797,7 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
       events.push({ type: 'gold_interest', amount: interest, gold: s.gold })
     }
   }
-
-  // Clearing the victory wave completes the cycle — but the run continues
-  // into the endless if the player wants to push further. Sparks keep
-  // accruing; the victory bonus is banked whenever the run finally ends.
-  if (s.wave >= VICTORY_WAVE && !s.victoryClaimed) {
-    s.victoryClaimed = true
-    events.push({ type: 'victory_achieved', wave: s.wave })
-  }
+}
 
   // Past the cycle, every 5th cleared wave strikes a Cataclysm: a permanent,
   // stacking run modifier. Struck at wave CLEAR so the build phase (and the
@@ -791,18 +805,21 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   // The strike OFFERS two distinct dooms and the player picks their poison
   // (choose_cataclysm; start_wave is gated until the world settles) — endless
   // is a gauntlet you steer, not weather that happens to you.
-  if (s.wave >= VICTORY_WAVE && (s.wave - VICTORY_WAVE) % CATACLYSM_WAVE_INTERVAL === 0) {
-    const first = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 1)
-    s.rng.relics = first.rng
-    const second = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 2)
-    s.rng.relics = second.rng
-    // Second draw over a pool with the first removed: always distinct.
-    const secondIdx = second.value >= first.value ? second.value + 1 : second.value
-    s.cataclysmOffer = [CATACLYSM_IDS[first.value]!, CATACLYSM_IDS[secondIdx]!]
-    events.push({ type: 'cataclysm_offered', options: [...s.cataclysmOffer], wave: s.wave })
-  }
+function offerCataclysm(s: RunState, events: GameEvent[]): void {
+  if (s.wave < VICTORY_WAVE || (s.wave - VICTORY_WAVE) % CATACLYSM_WAVE_INTERVAL !== 0) return
+  const first = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 1)
+  s.rng.relics = first.rng
+  const second = nextInt(s.rng.relics, 0, CATACLYSM_IDS.length - 2)
+  s.rng.relics = second.rng
+  // Second draw over a pool with the first removed: always distinct.
+  const secondIdx = second.value >= first.value ? second.value + 1 : second.value
+  s.cataclysmOffer = [CATACLYSM_IDS[first.value]!, CATACLYSM_IDS[secondIdx]!]
+  events.push({ type: 'cataclysm_offered', options: [...s.cataclysmOffer], wave: s.wave })
+}
 
-  s.phase = 'build'
+// The shrine: an active defence resolves on its wave's clear; after wave 4
+// one is offered two-thirds of the way down the current route.
+function settleShrine(s: RunState, events: GameEvent[]): void {
   if (s.shrine?.status === 'active') {
     const won = (s.shrine.guardTicks ?? 0) >= 90
     const shrineGold = won ? 100 + s.wave * 12 : 0
@@ -815,6 +832,11 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
     const path = pathFrom(map, distanceField(map, blockedGrid(map, s.towers)), map.spawn)
     s.shrine = { cell: path[Math.floor((path.length * 65) / 100)] ?? { cx: 16, cy: map.spire.cy }, status: 'offered', wave: 5, guardTicks: 0 }
   }
+}
+
+// Relic offers at a build phase: Ashen Road's debt first, then the regular
+// cadence, then (rules 6, Crucible 1+) a slain guardian's spoils.
+function offerWaveRelics(s: RunState, events: GameEvent[]): void {
   // Ashen Road pays its skipped offers back, one per build phase, before the
   // regular cadence resumes.
   if ((s.relicDebt ?? 0) > 0 && s.wave % RELIC_WAVE_INTERVAL !== 0) {

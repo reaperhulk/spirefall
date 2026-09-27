@@ -72,6 +72,9 @@ export function registerLiveSave(provider: () => SaveData | null): () => void {
   return () => { if (liveProvider === provider) liveProvider = undefined }
 }
 export function persistSave(data: SaveData): boolean {
+  // After a wipe or an import the page is about to reload: nothing may write
+  // the old state back (a trailing autosave or checkpoint would resurrect it).
+  if (reloadPending) return false
   const started = performance.now()
   latest = { version: data.version, meta: data.meta, run: data.run }
   const write = (raw: string) => {
@@ -99,6 +102,13 @@ export function persistSave(data: SaveData): boolean {
     return false
   }
 }
+// Test isolation: forget this module's session state (not the storage).
+export function resetSaveSession(): void {
+  reloadPending = false
+  latest = null
+  lastGoodRaw = null
+}
+// Wipe the save ahead of a reload; nothing may save again before it.
 export function clearSave(): void {
   reloadPending = true
   latest = null
@@ -149,8 +159,11 @@ export async function importSave(code: string): Promise<boolean> {
     const parsed = JSON.parse(raw) as { version?: number }
     const data = migrate(parsed)
     if (!data) return false
+    const wasPending = reloadPending
+    reloadPending = false // an import replaces a wiped save too
     const saved = persistSave(data)
-    if (saved) reloadPending = true
+    // Once the import is stored, the old session must not overwrite it.
+    reloadPending = saved || wasPending
     return saved
   } catch {
     return false

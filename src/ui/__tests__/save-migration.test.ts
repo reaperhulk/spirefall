@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createMeta } from '../../engine/meta'
-import { clearSave, getSaveStatus, loadSave, persistSave } from '../save'
+import { clearSave, getSaveStatus, loadSave, persistSave, resetSaveSession } from '../save'
 
 const values = new Map<string, string>()
 beforeEach(() => {
   values.clear()
   vi.stubGlobal('localStorage', { getItem: (k: string) => values.get(k) ?? null, setItem: (k: string, v: string) => values.set(k, v), removeItem: (k: string) => values.delete(k) })
   clearSave()
+  resetSaveSession()
 })
 afterEach(() => vi.unstubAllGlobals())
 
@@ -79,4 +80,11 @@ it('exports the newest progress even when storage rejected it', async () => {
   expect(persistSave({ version: 1, meta: { ...createMeta(), sparks: 99 }, run: null })).toBe(false)
   const code = await exportSave()
   expect(code).not.toBeNull()
+})
+
+it('nothing saves between a wipe and the reload, so a trailing autosave cannot resurrect the run', () => {
+  persistSave({ version: 1, meta: { ...createMeta(), sparks: 50 }, run: null })
+  clearSave()
+  expect(persistSave({ version: 1, meta: { ...createMeta(), sparks: 50 }, run: null })).toBe(false)
+  expect(values.get('spirefall-save')).toBeUndefined()
 })

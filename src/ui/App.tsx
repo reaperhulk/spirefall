@@ -2,7 +2,6 @@ import { useCompactLandscape } from './useCompactLandscape'
 import { WaveReview } from './WaveReview'
 import { TOWER_ROLES, stormNetwork } from '../engine/campaign'
 import { bankGuardianMilestones, canSpecialize, specializationCost, warSupply } from '../engine/campaign'
-import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
 import { TacticalControls } from './TacticalControls'
 import { useGameKeyboard } from './useGameKeyboard'
 import { useRunCheckpoint } from './useRunCheckpoint'
@@ -40,21 +39,19 @@ import {
   VICTORY_WAVE,
 } from '../data/content'
 import {
-  damageBreakdown,
   effectiveAbilityCooldown,
   effectiveCritChancePct,
-  effectiveCritDamagePct,
-  effectiveTowerCooldown,
-  towerRangeOnBoard,
 } from '../engine/combat'
 import { getRunMap } from '../engine/mapgen'
+import { TowerTooltip } from './TowerTooltip'
+import { towerStats } from './towerStats'
 import { respecKeystone, ascend, ascensionSparksKept, buyEmberUpgrade, buyMetaUpgrade, canAscend, createMeta, createRun, emberGainAfterVictory, emberGainOnAscend, setCrucibleRank, settleRun } from '../engine/meta'
 import type { EmberUpgradeId } from '../data/emberTree'
 import { computeSparks, previewNextWave, wavesUntilCataclysm } from '../engine/step'
 import { cellCenter, sameCell } from '../engine/grid'
 import { BIOME_IDS, BIOMES, type BiomeId } from '../data/biomes'
 import type { MetaUpgradeId } from '../data/metaTree'
-import type { AbilityId, CataclysmId, CellPos, EnemyType, RunState, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
+import type { AbilityId, CataclysmId, CellPos, EnemyType, MetaState, RunState, RunSummary, Targeting, TowerType, TrialId } from '../engine/types'
 import { Sfx } from './audio'
 import { Music } from './music'
 import { CodexModal } from './Codex'
@@ -412,37 +409,32 @@ export default function App() {
     launchRun(createRun(metaRef.current, s.seed, s.biome, s.trials, s.crucible))
   }
 
-  const chooseCrucible = (rank: number) => {
-    const next = setCrucibleRank(metaRef.current, rank)
+  // Every meta change lands the same way: the ref (read by callbacks), the
+  // React state (rendered), and the save — with the live run, if one is on.
+  const commitMeta = (next: MetaState) => {
     metaRef.current = next
     setMeta(next)
-    persistSave({ version: 1, meta: next, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+    const live = sessionRef.current
+    persistSave({ version: 1, meta: next, run: live.terminal ? null : live.state })
   }
+
+  const chooseCrucible = (rank: number) => commitMeta(setCrucibleRank(metaRef.current, rank))
 
   const buyMeta = (id: MetaUpgradeId) => {
     const result = buyMetaUpgrade(metaRef.current, id)
-    if (!result.ok) return
-    metaRef.current = result.meta
-    setMeta(result.meta)
-    persistSave({ version: 1, meta: result.meta, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+    if (result.ok) commitMeta(result.meta)
   }
 
   const respec = (id: MetaUpgradeId) => {
     const live = sessionRef.current
     if (live.replaying || (!live.terminal && (live.state.wave > 0 || live.state.towers.length > 0))) return
     const result = respecKeystone(metaRef.current, id)
-    if (!result.ok) return
-    metaRef.current = result.meta
-    setMeta(result.meta)
-    persistSave({ version: 1, meta: result.meta, run: live.terminal ? null : live.state })
+    if (result.ok) commitMeta(result.meta)
   }
 
   const buyEmber = (id: EmberUpgradeId) => {
     const result = buyEmberUpgrade(metaRef.current, id)
-    if (!result.ok) return
-    metaRef.current = result.meta
-    setMeta(result.meta)
-    persistSave({ version: 1, meta: result.meta, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+    if (result.ok) commitMeta(result.meta)
   }
 
   const doAscend = () => {
@@ -450,16 +442,14 @@ export default function App() {
     const gain = emberGainOnAscend(metaRef.current)
     const kept = ascensionSparksKept(metaRef.current)
     askConfirm(`Ascend for ❖ ${gain}? Spark stat upgrades and banked Sparks burn; ✦${kept} of them return as a head start. Tower and ability unlocks, the Crucible ladder and Ember upgrades remain.`, () => {
-      const next = ascend(metaRef.current)
-      metaRef.current = next
-      setMeta(next)
       music.ascendMotif() // the burning of the tree deserves its six notes
-      persistSave({ version: 1, meta: next, run: sessionRef.current.terminal ? null : sessionRef.current.state })
+      commitMeta(ascend(metaRef.current))
     })
   }
 
   const beginNextRunRef = useRef(beginNextRun)
-  useEffect(() => { beginNextRunRef.current = beginNextRun })
+  const buyMetaRef = useRef(buyMeta)
+  useEffect(() => { beginNextRunRef.current = beginNextRun; buyMetaRef.current = buyMeta })
 
   // Dev/test harness on window.__game / window.__harness.
   useEffect(() => {
@@ -469,7 +459,7 @@ export default function App() {
       audioState: () => sfx.currentContext()?.state ?? 'none',
       audioLive: () => sfx.live,
       newRun: (seed) => beginNextRunRef.current(seed),
-      buyMeta,
+      buyMeta: (id) => buyMetaRef.current(id),
       reset: () => {
         clearSave()
         window.location.reload()
@@ -770,54 +760,7 @@ export default function App() {
           Wave {state.wave}: {state.waveStats.damageTaken ? `${state.waveStats.damageTaken} HP lost` : 'Spire held'} · {state.waveStats.bankedGold} bounty banked · Review defense →
         </button>}
         {hoveredTower && !shopSelection && hoveredTower.id !== selectedTowerId && (
-          <div
-            className="tower-tooltip"
-            data-testid="tower-tooltip"
-            style={{
-              left: `clamp(4px, ${(hoveredTower.cell.cx + 1) * 100 / MAP_WIDTH}%, calc(100% - 190px))`,
-              top: `clamp(4px, ${hoveredTower.cell.cy * 100 / MAP_HEIGHT}%, calc(100% - 150px))`,
-            }}
-          >
-            <strong>
-              {TOWERS[hoveredTower.type].name} · T{hoveredTower.tier}
-              {hoveredTower.enhance > 0 && ` +${hoveredTower.enhance}`}
-            </strong>
-            {TOWERS[hoveredTower.type].support ? (
-              <span>
-                {hoveredTower.type === 'beacon'
-                  ? `+${towerTier('beacon', hoveredTower.tier).auraPct}% damage to towers in range`
-                  : `${towerTier('mint', hoveredTower.tier).mintYield} gold / cleared wave · ⛀ ${hoveredTower.earned ?? 0} earned`}
-              </span>
-            ) : (
-              (() => {
-                const b = damageBreakdown(state, hoveredTower)
-                // Spec rides along and range is the board's own radius
-                // (Longsight, Longbow, mesa) — the tooltip must quote the
-                // numbers the engine rolls, same contract as the panel.
-                const rate = 30 / effectiveTowerCooldown(state, hoveredTower.type, hoveredTower.tier, hoveredTower.spec)
-                const range = towerRangeOnBoard(state, getRunMap(state), hoveredTower)
-                return (
-                  <span>
-                    {b.effective} dmg{b.parts.length > 0 && ` (${b.base} base +${b.totalPct - 100}%)`} ·{' '}
-                    {rate.toFixed(1)}/s · ≈{Math.round(b.effective * rate)} DPS ·{' '}
-                    {(range / 1000).toFixed(1)} range
-                  </span>
-                )
-              })()
-            )}
-            {!TOWERS[hoveredTower.type].support && (
-              <span>
-                {towerRole(hoveredTower.type)}
-                {critChance > 0 && ` · ${critChance}% crit ×${(effectiveCritDamagePct(state) / 100).toFixed(1)}`}
-              </span>
-            )}
-            <span>
-              {hoveredTower.type === 'mint'
-                ? `earned via waves`
-                : `${hoveredTower.kills} kills · ${hoveredTower.damageDealt} dmg dealt`}
-            </span>
-            <span>targets {hoveredTower.targeting} · click to manage</span>
-          </div>
+          <TowerTooltip state={state} tower={hoveredTower} />
         )}
       </main>
       </div>
@@ -870,20 +813,14 @@ export default function App() {
               </p>
             ) : (
               (() => {
-                const b = damageBreakdown(state, selectedTower)
-                const baseCd = towerTier(selectedTower.type, selectedTower.tier).cooldown
-                const cd = effectiveTowerCooldown(state, selectedTower.type, selectedTower.tier, selectedTower.spec)
-                const rate = 30 / cd
-                const ratePct = cd < baseCd ? Math.round((baseCd / cd - 1) * 100) : 0
-                // Capacitor: 3 normal + 1 triple per cycle = ×1.5 sustained.
-                const dpsAvg = selectedTower.spec === 'capacitor' ? 1.5 : 1
+                const { breakdown: b, rate, ratePct, dps } = towerStats(state, selectedTower)
                 const specDef = selectedTower.spec !== null ? specForTower(selectedTower.type, selectedTower.spec) : null
                 return (
                   <>
                     <p>
                       DMG {b.effective}
                       {(b.parts.length > 0 || b.specPct !== 100) && ` (base ${b.base})`} · {rate.toFixed(1)} shots/s · ≈
-                      {Math.round(b.effective * rate * dpsAvg)} DPS
+                      {dps} DPS
                     </p>
                     {(b.parts.length > 0 || ratePct > 0 || specDef !== null || selectedTower.overcharged) && (
                       <ul className="dmg-breakdown" data-testid="dmg-breakdown">
