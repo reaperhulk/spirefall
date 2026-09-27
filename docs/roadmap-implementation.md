@@ -200,11 +200,11 @@ npm ci
 npm run check
 npm run test:e2e
 npm run fuzz:builds
-./node_modules/.bin/vite-node scripts/profile-families.ts
-./node_modules/.bin/vite-node scripts/profile-release.ts
-./node_modules/.bin/vite-node scripts/verify-finish-builds.ts
-./node_modules/.bin/vite-node scripts/profile-glassforge.ts
-./node_modules/.bin/vite-node scripts/profile-glassforge-doctrines.ts
+npx tsx scripts/profile-families.ts
+npx tsx scripts/profile-release.ts
+npx tsx scripts/verify-finish-builds.ts
+npx tsx scripts/profile-glassforge.ts
+npx tsx scripts/profile-glassforge-doctrines.ts
 ```
 
 The browser suite requires Chromium; CI installs it and publishes its reports.

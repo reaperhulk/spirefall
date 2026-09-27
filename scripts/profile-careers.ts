@@ -1,5 +1,5 @@
 // Career pacing profile: the incremental loop measured end to end.
-// ./node_modules/.bin/vite-node scripts/profile-careers.ts [runs] [out.json]
+// npx tsx scripts/profile-careers.ts [runs] [out.json]
 import { writeFileSync } from 'node:fs'
 import { playProgression } from '../src/harness/autoplay'
 import { BOTS } from '../src/harness/bots'

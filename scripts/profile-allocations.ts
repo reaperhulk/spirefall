@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs'
+import { profileOutput } from './profileOutput'
 import { measure, performanceReport, resetPerformance } from '../src/ui/performance'
 
 // Isolate the two bounded histories on the hot path. Medians of nine
@@ -29,5 +30,5 @@ for(const c of cases) {
 }
 sink+=performanceReport().render!.samples;resetPerformance()
 const report={runtime:process.version,note:'Isolated allocation microbenchmarks, not end-to-end frame speedups. Nine alternating-order samples after warmup; 512-entry histories.',sink,results}
-writeFileSync('docs/second-review-allocations.json',JSON.stringify(report,null,2)+'\n')
+writeFileSync(profileOutput('second-review-allocations.json'),JSON.stringify(report,null,2)+'\n')
 console.log(JSON.stringify(report))

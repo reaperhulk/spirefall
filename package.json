@@ -7,19 +7,23 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest",
+    "test": "vitest --project fast",
     "test:unit": "vitest --run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
-    "goldens:update": "UPDATE_GOLDENS=1 vitest --run src/engine/__tests__/goldens.test.ts",
-    "fuzz:builds": "FUZZ_POP=14 FUZZ_GENS=4 FUZZ_BUDGETS=0,5000,8000,10000,14000 FUZZ_SEEDS=alpha,beta,gamma,delta,epsilon,zeta,eta,theta vitest --run src/harness/__tests__/fuzz.test.ts",
+    "goldens:update": "UPDATE_GOLDENS=1 vitest --run --project fast src/engine/__tests__/goldens.test.ts",
+    "fuzz:builds": "FUZZ_POP=14 FUZZ_GENS=4 FUZZ_BUDGETS=0,5000,8000,10000,14000 FUZZ_SEEDS=alpha,beta,gamma,delta,epsilon,zeta,eta,theta vitest --run --project slow src/harness/__tests__/fuzz.test.ts -t 'sweep finds no curve-breaking'",
     "test:e2e": "playwright test",
-    "check": "npm run lint && npm run typecheck && npm run test:unit && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run test:unit && npm run build && npm run size",
+    "test:slow": "vitest --run --project slow",
+    "size": "node scripts/check-bundle-size.mjs",
+    "test:e2e:functional": "playwright test --project functional",
+    "test:e2e:performance": "playwright test --project performance"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
     "@playwright/test": "^1.61.1",
-    "@types/node": "^26.1.1",
+    "@types/node": "^22.20.4",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
@@ -27,13 +31,17 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "fast-check": "^4.3.0",
     "globals": "^16.4.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.1.11",
-    "vitest": "^3.2.4"
+    "vitest": "^5.0.2"
   },
   "dependencies": {
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

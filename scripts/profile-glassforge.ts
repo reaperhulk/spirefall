@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs'
+import { profileOutput } from './profileOutput'
 import findings from '../fixtures/finish-findings.json'
 import type { BiomeId } from '../src/data/biomes'
 import { createMeta, createRun, glassforgeDamageBonus } from '../src/engine/meta'
@@ -24,4 +25,4 @@ for (const finding of findings.slice(0, 2)) for (const seed of ['gamma',finding.
     runs.push({biome:finding.biome,seed,variant,bonus,startingHp:initial.spireMaxHp,win:state.victoryClaimed,waves:state.wavesCleared,leaks:state.leaks?.length ?? 0})
   }
 }
-writeFileSync('docs/glassforge-ablation.json',JSON.stringify({notes:'Controlled ablations at fixed 5k meta and fuzzer-discovered policies. bonus35 reconstructs the pre-fix bonus; HP-only variants keep it. Other variables and the existing robust-win oracle are unchanged. Commands stop after first victory.',runs},null,2)+'\n')
+writeFileSync(profileOutput('glassforge-ablation.json'),JSON.stringify({notes:'Controlled ablations at fixed 5k meta and fuzzer-discovered policies. bonus35 reconstructs the pre-fix bonus; HP-only variants keep it. Other variables and the existing robust-win oracle are unchanged. Commands stop after first victory.',runs},null,2)+'\n')

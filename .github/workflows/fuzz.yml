@@ -9,15 +9,28 @@ name: Deep fuzz
 on:
   push:
     branches: [main]
+  # On PRs, only when something that can move the curve changed.
   pull_request:
+    paths:
+      - 'src/engine/**'
+      - 'src/data/**'
+      - 'src/harness/**'
+      - 'fixtures/**'
+      - 'package-lock.json'
+      - '.github/workflows/fuzz.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   hunt:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -26,7 +39,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run fuzz:builds

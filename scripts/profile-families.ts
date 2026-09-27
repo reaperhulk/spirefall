@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs'
+import { profileOutput } from './profileOutput'
 import { BIOME_IDS } from '../src/data/biomes'
 import { DOCTRINES, type DoctrineId } from '../src/data/doctrines'
 import { createRun } from '../src/engine/meta'
@@ -29,4 +30,4 @@ for (const budget of [10000, 20000]) for (const family of Object.keys(DOCTRINES)
   }
   console.log(JSON.stringify({budget, family, runs:runs.filter(r => r.budget === budget && r.family === family).length}))
 }
-writeFileSync(process.env.PROFILE_OUTPUT ?? 'docs/family-profile.json', JSON.stringify({rules:RULES_VERSION, notes:'192 runs: two reference progression budgets plus all tower unlocks, four families, four biomes, six held-out seeds. At most one command every 400ms, including planning, collection and abilities. Policies are documented in src/harness/families.ts. Simulated time includes automated planning; these are policy measurements, not human win rates.', runs}, null, 2) + '\n')
+writeFileSync(profileOutput('family-profile.json'), JSON.stringify({rules:RULES_VERSION, notes:'192 runs: two reference progression budgets plus all tower unlocks, four families, four biomes, six held-out seeds. At most one command every 400ms, including planning, collection and abilities. Policies are documented in src/harness/families.ts. Simulated time includes automated planning; these are policy measurements, not human win rates.', runs}, null, 2) + '\n')

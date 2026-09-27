@@ -17,7 +17,9 @@ Read PLAN.md before making architectural changes — it is the design contract.
   state hashing, and the build fuzzer (`policy.ts` + `fuzz.ts`: seeded
   evolutionary search for curve-breaking strategies), and career pacing
   (`pacing.ts`; `scripts/profile-careers.ts` profiles whole careers with
-  ascension). Budget references start from `seasonedMeta` (every relic seal
+  ascension). Profile scripts run with `npx tsx scripts/<name>.ts` and write
+  to the gitignored `profiles/`; JSON in `docs/` is historical (see
+  `docs/README.md`). Budget references start from `seasonedMeta` (every relic seal
   broken); only truly fresh accounts use bare `createMeta()`.
   `src/harness/__tests__/` holds the balance envelope, perf budget, and the
   CI fuzz sweep; `npm run fuzz:builds` runs the deep search.
@@ -30,9 +32,14 @@ Read PLAN.md before making architectural changes — it is the design contract.
 ## Dev commands
 
 - `npm run dev` — Vite dev server (http://localhost:5173)
-- `npm test` — Vitest watch; `npm run test:unit` for one-shot
-- `npm run test:e2e` — Playwright browser suite (builds + serves automatically)
-- `npm run check` — full local gate: lint + typecheck + unit tests + build.
+- `npm test` — Vitest watch over the `fast` project; `npm run test:unit` runs
+  everything once (fast + `slow`: balance envelope, Glassforge floor, fuzzer).
+  `npm run test:slow` runs only the slow project.
+- `npm run test:e2e` — Playwright browser suite (builds + serves automatically).
+  Projects: `functional` (the CI gate) and `performance` (wall-clock budgets,
+  non-blocking in CI).
+- `npm run check` — full local gate: lint + typecheck (src, e2e, scripts) +
+  unit tests + build + bundle-size budget.
   **Run this before committing.**
 - `npm run goldens:update` — regenerate golden fixtures after an intentional
   balance change; commit the diff and say so in the commit message.
@@ -60,5 +67,7 @@ Read PLAN.md before making architectural changes — it is the design contract.
 
 `window.__harness` (installed by the UI): `getState()`, `snapshot()`,
 `dispatch(cmd)`, `setSpeed(0–100)`, `fastForward(seconds)`, `newRun(seed)`,
-`buyMeta(id)`, `getReplay()` (seed + full command log), `reset()`.
+`buyMeta(id)`, `getReplay()` (seed + full command log), `getPerformance()`,
+`resetPerformance()`, `reset()`. Its type is `GameHarness` (`src/ui/harness.ts`);
+the e2e suite uses that declaration directly.
 Deterministic repro: `newRun('some-seed')` then replay the logged commands.

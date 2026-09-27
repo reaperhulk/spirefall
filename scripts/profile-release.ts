@@ -1,4 +1,6 @@
 import { writeFileSync } from 'node:fs'
+import { RULES_VERSION } from '../src/engine/campaign'
+import { profileOutput } from './profileOutput'
 import { autoplay } from '../src/harness/autoplay'
 import { activeBot, attentionBot, balancedBot, buildActions, type Bot } from '../src/harness/bots'
 import { richMeta } from '../src/harness/scenarios'
@@ -61,4 +63,4 @@ for (const biome of BIOME_IDS) for (let i=0;i<40;i++) {
   }
   maps.push({biome,seed:i,routeCells:path.length,buildable,nearRoute:covered})
 }
-writeFileSync('docs/release-profile.json', JSON.stringify({rules:3,progression:meta,notes:'Synthetic pilots at 10k reference progression plus all tower unlocks; six held-out seeds. Attention/families: one action every 400ms. Times are simulation seconds, not wall-clock playtime. No universal win-rate or human-usability claim.',runs,maps},null,2)+'\n')
+writeFileSync(profileOutput('release-profile.json'), JSON.stringify({rules:RULES_VERSION,progression:meta,notes:'Synthetic pilots at 10k reference progression plus all tower unlocks; six held-out seeds. Attention/families: one action every 400ms. Times are simulation seconds, not wall-clock playtime. No universal win-rate or human-usability claim.',runs,maps},null,2)+'\n')

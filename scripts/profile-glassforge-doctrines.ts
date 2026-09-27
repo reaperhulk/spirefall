@@ -1,4 +1,5 @@
 import {writeFileSync} from 'node:fs'
+import { profileOutput } from './profileOutput'
 import findings from '../fixtures/finish-findings.json'
 import { metaNode } from '../src/data/metaTree'
 import { createMeta, createRun, glassforgeDamageBonus } from '../src/engine/meta'
@@ -22,4 +23,4 @@ for(const [bonus,cost] of [[25,1200],[15,1200],[10,1200],[35,1800],[35,2400],[25
     const row={bonus,cost,build,biome:f.biome,doctrine,wins,waves}; rows.push(row);console.log(JSON.stringify(row))
   }
 }
-writeFileSync('docs/glassforge-doctrine-ablation.json',JSON.stringify(rows,null,2)+'\n')
+writeFileSync(profileOutput('glassforge-doctrine-ablation.json'),JSON.stringify(rows,null,2)+'\n')

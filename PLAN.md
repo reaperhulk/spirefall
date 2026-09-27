@@ -482,8 +482,9 @@ Headless strategy bots play *entire meta-progressions*, not just runs:
 - `balanced` — a decent heuristic player,
 - `random` — chaos monkey for robustness.
 
-`npm run test:balance` simulates e.g. 20 consecutive runs per bot per seed set and
-asserts the §2.3 envelope: *afk dies by wave 4; balanced fresh dies 8–12; balanced
+The balance envelope (`src/harness/__tests__/balance*.test.ts`, part of
+`npm run test:unit` and runnable alone with `npm run test:slow`) simulates runs
+and careers per bot per seed set and asserts the §2.3 envelope: *afk dies by wave 4; balanced fresh dies 8–12; balanced
 with full tree wins; each of the first 5 runs reaches strictly further than the
 last (given spending)*. Results also emit JSON so CI can diff balance drift between
 main and a PR, like the reference repo's `--compare` mode — but gating PRs, not
@@ -575,12 +576,12 @@ scripts/              golden regeneration, deep fuzz entry
 
 ```
 npm run dev            vite dev server
-npm test               vitest watch
-npm run test:unit      vitest --run
-npm run test:balance   headless bot playtests with balance assertions
+npm test               vitest watch (fast project)
+npm run test:unit      vitest --run: fast + slow projects (balance, fuzz, floors)
+npm run test:slow      the slow project alone: headless bot playtests with balance assertions
 npm run lint           eslint (includes engine purity rules)
-npm run typecheck      tsc --noEmit
-npm run check          lint + typecheck + unit + balance + build (the local gate)
+npm run typecheck      tsc --noEmit for src/ and for e2e/ + scripts/ (tsconfig.node.json)
+npm run check          lint + typecheck + unit (incl. balance) + build + bundle size (the local gate)
 npm run goldens:update regenerate golden replay hashes (balance changes)
 ```
 

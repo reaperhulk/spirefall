@@ -1,4 +1,6 @@
 import { writeFileSync } from 'node:fs'
+import { RULES_VERSION } from '../src/engine/campaign'
+import { profileOutput } from './profileOutput'
 import { playProgression } from '../src/harness/autoplay'
 import { BOTS } from '../src/harness/bots'
 import { DEFAULT_BUY_PRIORITY } from '../src/harness/scenarios'
@@ -9,4 +11,4 @@ for (const pilot of ['balanced', 'active'] as const) {
     history: history.map(h => ({ waves: h.wavesCleared, biome: h.biome, sparks: h.sparks, outcome: h.outcome })) }
   results.push(result); console.log(JSON.stringify(result))
 }
-writeFileSync('docs/second-review-careers.json', JSON.stringify({ rules: 5, note: 'Deterministic reference careers, not human win rates.', results }, null, 2) + '\n')
+writeFileSync(profileOutput('second-review-careers.json'), JSON.stringify({ rules: RULES_VERSION, note: 'Deterministic reference careers, not human win rates.', results }, null, 2) + '\n')

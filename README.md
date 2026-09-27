@@ -89,18 +89,30 @@ bosses, victory and ascension, voiced differently in each biome.
 
 See [the second-review implementation report](docs/second-review-implementation.md)
 for the current checklist, measurements, build-family results and validation limits.
-New runs use rules 5; existing saved runs and replays retain their original rules.
+New runs use rules 7; existing saved runs and replays retain their original rules.
+The [September 27 project review](docs/project-review.md) lists the rules-7
+correctness fixes and the tooling changes that shipped with them.
 
 ## Testing
 
 ```bash
-npm test               # vitest watch mode
-npm run test:unit      # engine + harness suites (determinism, balance, goldens)
-npm run test:e2e       # Playwright browser suite against the real UI
-npm run check          # full local gate: lint + typecheck + unit + build
-npm run goldens:update # accept intentional balance changes
-npm run fuzz:builds    # deep evolutionary hunt for curve-breaking builds
+npm test                     # vitest watch mode, fast project (~10s; skips the slow suites)
+npm run test:unit            # every suite once: fast + slow (balance, Glassforge floor, fuzz)
+npm run test:slow            # only the slow project
+npm run test:e2e             # Playwright: functional + performance projects
+npm run test:e2e:functional  # the browser gate CI blocks on
+npm run test:e2e:performance # frame-time / latency / heap budgets (non-blocking in CI)
+npm run check                # full local gate: lint + typecheck + unit + build + bundle size
+npm run goldens:update       # accept intentional balance changes
+npm run fuzz:builds          # deep evolutionary hunt for curve-breaking builds
 ```
+
+`npm run typecheck` covers `src/` and, through `tsconfig.node.json`, `e2e/`,
+`scripts/` and the Playwright config. `npm run size` fails when the gzipped
+JavaScript exceeds the budget in `scripts/check-bundle-size.mjs`. Profile
+scripts run with `npx tsx scripts/<name>.ts` and write to the gitignored
+`profiles/` directory; see [docs/README.md](docs/README.md) for the
+committed snapshots.
 
 The build fuzzer searches strategy-genome space (tower ratios, relic and meta
 priorities, repair habits) for builds that win far cheaper than the curve allows.
@@ -111,8 +123,9 @@ The dev harness is exposed at `window.__harness` in the browser console:
 `setSpeed(10)`, `fastForward(300)`, `snapshot()`, `dispatch(command)`,
 `newRun(seed)`, `getReplay()`, `getPerformance()`, `resetPerformance()`, `reset()`.
 `e2e/performance.spec.ts` records dense 1×/3×/10× browser profiles. Run
-`./node_modules/.bin/vite-node scripts/profile-release.ts` to reproduce the
-held-out pilot and geography report in `docs/release-profile.json`.
+`npx tsx scripts/profile-release.ts` to regenerate the
+held-out pilot and geography report (the committed `docs/release-profile.json`
+is the rules-3 snapshot).
 
 `npx playwright test e2e/viewport-fit.spec.ts` checks desktop sizes from
 1024×600 through 1920×1080, plus touch phones and tablets from 320×568 through
@@ -128,7 +141,9 @@ windows of dense combat, real input, audio, saves and retained heap.
 
 ## Deploying
 
-CI runs lint/typecheck/tests/build plus the Playwright suite on every push and PR.
+CI runs lint/typecheck/tests/build/bundle-size plus the functional Playwright
+suite on every push and PR; the browser performance budgets run in a separate,
+non-blocking job, and `npm audit` reports without blocking.
 The same `ci.yml` workflow deploys that exact commit to Pages only after both
 check and browser jobs pass. Manual CI runs use the same gates; pull requests
 never deploy. Pages must use GitHub Actions as its source in repository settings.
@@ -143,7 +158,7 @@ share a visual vocabulary with the shop and Codex. The responsive synthesized
 score carries a recurring Spire theme, with priority sound cues and a shared mix.
 
 See [release notes and verification](docs/roadmap-implementation.md),
-[held-out measurements](docs/release-profile.json), and the historical
+[held-out measurements](docs/release-profile.json) (rules 3), and the historical
 [iteration log](docs/iterations.md). Automated checks cover deterministic play,
 recovery/imports, music scheduling, balance, fuzzing and real browser flows.
 Human playtesting, long-session listening and physical-device profiling remain

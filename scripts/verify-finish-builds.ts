@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs'
+import { profileOutput } from './profileOutput'
 import findings from '../fixtures/finish-findings.json'
 import { createMeta, createRun, glassforgeDamageBonus } from '../src/engine/meta'
 import { autoplay, spendSparks } from '../src/harness/autoplay'
@@ -27,7 +28,7 @@ for (const finding of findings) {
     }
   }
 }
-writeFileSync('docs/finish-balance-profile.json', JSON.stringify({
+writeFileSync(profileOutput('finish-balance-profile.json'), JSON.stringify({
   notes: 'Four frozen fuzzer-discovered policies, including the independent no-keystone Storm reference crossed with all doctrines and none. Glassforge amplifies Honed Edge by 15%, at unchanged 1200 Sparks and -40% HP. Eight search seeds at 5k constrain repeatable early wins; four unseen seeds at 20k check retained viability. No-keystone reference/family pilots and existing win thresholds are unchanged.',
   runs,
 }, null, 2) + '\n')

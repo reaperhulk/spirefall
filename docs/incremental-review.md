@@ -101,5 +101,5 @@ human pass:
 
 ```sh
 npm run check
-CAREER_SEEDS=career,cb,cc,cd ./node_modules/.bin/vite-node scripts/profile-careers.ts 40 docs/incremental-careers.json
+CAREER_SEEDS=career,cb,cc,cd npx tsx scripts/profile-careers.ts 40 docs/incremental-careers.json
 ```
