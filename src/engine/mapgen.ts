@@ -96,7 +96,7 @@ function attempt(biome: BiomeId, mapSeed: string, salt: number): MapDef {
 
   if (def.vents[1] > 0) {
     const count = draw(d, def.vents[0], def.vents[1])
-    for (let i = 0; i < count && vents.length < count; ) {
+    for (let i = 0; i < count; ) {
       const c = { cx: draw(d, 4, MAP_WIDTH - 5), cy: draw(d, 1, MAP_HEIGHT - 2) }
       const idx = cellIndex(map, c)
       i++
@@ -134,10 +134,11 @@ export function generateMap(biome: BiomeId, mapSeed: string): MapDef {
 
 // Authored strategic structures over seeded biome detail. Broad openings
 // retain build freedom; failed combinations fall back to the original roll.
+export const authoredPattern = (seed: string): number => nextInt(rngFromSeed(`${seed}:structure`), 0, 2).value
 export function authoredMap(biome: BiomeId, seed: string): MapDef {
   const map = generateMap(biome, seed)
   const original = map.rocks.slice()
-  const pattern = nextInt(rngFromSeed(`${seed}:structure`), 0, 2).value
+  const pattern = authoredPattern(seed)
   for (let y = 1; y < map.height - 1; y++) {
     if (pattern === 0) {
       if (y < 8) map.rocks[y * map.width + 9] = true
@@ -181,8 +182,11 @@ export function tacticalMap(biome: BiomeId, seed: string): MapDef {
     for (let y = 7; y <= 11; y++) set(16, y)
   }
   if (!playable(map)) Object.assign(map, original)
-  map.situation = situations[pattern]![0]!
-  map.tactic = situations[pattern]![1]!
+  // Patterns 0–2 build an authored structure, which rolls its OWN pattern:
+  // name the battlefield after the structure it actually has.
+  const named = pattern < 3 ? authoredPattern(seed) : pattern
+  map.situation = situations[named]![0]!
+  map.tactic = situations[named]![1]!
   return map
 }
 

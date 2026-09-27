@@ -1,4 +1,4 @@
-import { addFrostBrittleness, isHeavy, modernRules, stormNetwork } from './campaign'
+import { addFrostBrittleness, isHeavy, isSlowed, modernRules, rules7, stormNetwork } from './campaign'
 import { doctrineDamage } from '../data/doctrines'
 import type { MapDef } from '../data/maps'
 import {
@@ -218,7 +218,7 @@ function applySlow(enemy: Enemy, slowFactor: number, slowTicks: number, state: R
 // axis-by-axis (x then y) so re-pathing mid-transit stays well-defined.
 export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, events: GameEvent[]): void {
   const blocked = blockedGrid(map, state.towers)
-  const arrived: number[] = []
+  let arrived: number[] = []
 
   for (const enemy of state.enemies) {
     let budget = enemy.slowTicks > 0 ? Math.max(1, Math.floor((enemy.speed * enemy.slowFactor) / 100)) : enemy.speed
@@ -286,6 +286,14 @@ export function moveEnemies(state: RunState, map: MapDef, field: Int32Array, eve
     }
   }
 
+  // Rules 7: an enemy already emptied (an execute this tick, last tick's
+  // burn) is only awaiting collection later this tick. It still drifts on
+  // (its coin drops where it falls, as before), but the dead never reach
+  // the Spire: collectDead pays its bounty instead.
+  if (rules7(state)) {
+    const dead = new Set(state.enemies.filter((e) => e.hp <= 0).map((e) => e.id))
+    if (dead.size > 0) arrived = arrived.filter((id) => !dead.has(id))
+  }
   if (arrived.length > 0) {
     const stoneskin = state.relics.includes('stoneskin')
     // A leak breaks the flow: the kill streak zeroes the moment anything
@@ -397,7 +405,7 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     if ((tower.overchargeCd ?? 0) > 0) tower.overchargeCd = tower.overchargeCd! - 1
     if (modernRules(state) && state.doctrine === 'siege' && (tower.type === 'sniper' || tower.type === 'lance')) {
       const held = state.enemies.find(e => e.id === tower.siegeTarget && e.hp > 0 && !e.phased)
-      if (held && distSq(held.pos, cellCenter(tower.cell)) <= towerRangeOnBoard(state, map, tower) ** 2) tower.siegeAim = Math.min(45, (tower.siegeAim ?? 0) + 1)
+      if (held && distSq(held.pos, cellCenter(tower.cell)) <= towerRangeOnBoard(state, map, tower) * towerRangeOnBoard(state, map, tower)) tower.siegeAim = Math.min(45, (tower.siegeAim ?? 0) + 1)
       else tower.siegeAim = 0
     }
     if (tower.cooldown > 0) {
@@ -502,8 +510,8 @@ export function towersFire(state: RunState, map: MapDef, field: Int32Array, even
     // bounce can bounce off a shield the primary punched through.
     let blocked = false
     const hit = (enemy: Enemy, scalePct = 100): void => {
-      let bonus = bonusPctVs(tower.type, enemy) + (shatter && enemy.slowTicks > 0 ? SHATTER_BONUS_PCT : 0)
-      if (state.doctrine === 'shatter' && enemy.slowTicks > 0 && !modernRules(state)) bonus += 20
+      let bonus = bonusPctVs(tower.type, enemy) + (shatter && isSlowed(state, enemy) ? SHATTER_BONUS_PCT : 0)
+      if (state.doctrine === 'shatter' && isSlowed(state, enemy) && !modernRules(state)) bonus += 20
       const crystals = modernRules(state) && state.doctrine === 'shatter' && isHeavy(tower.type) ? enemy.frostStacks ?? 0 : 0
       bonus += crystals * 20
       if (enemy.id === target.id) bonus += (siegeBurst ? 40 : 0) + (stormBurst ? 75 : 0)
@@ -1063,7 +1071,7 @@ export function tickCoins(state: RunState, map: MapDef, events: GameEvent[]): vo
     if (coin.pulling) {
       const dx = spire.x - coin.pos.x
       const dy = spire.y - coin.pos.y
-      const dist = Math.max(1, Math.floor(Math.sqrt(dx * dx + dy * dy)))
+      const dist = Math.max(1, isqrt(dx * dx + dy * dy))
       if (dist <= AUTO_COLLECT_PULL_SPEED) {
         state.gold += coin.gold
       if (state.waveStats) state.waveStats.bonusCollected += coin.gold
@@ -1088,6 +1096,7 @@ export function tickCoins(state: RunState, map: MapDef, events: GameEvent[]): vo
 export function collectDead(state: RunState, events: GameEvent[]): void {
   const survivors: Enemy[] = []
   const children: Enemy[] = []
+  const bursts: { pos: Vec; damage: number }[] = [] // rules 7: Shatterheart, after the pass
   for (const e of state.enemies) {
     if (e.hp > 0) {
       survivors.push(e)
@@ -1145,13 +1154,14 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
     state.killsByEnemy[e.type] = (state.killsByEnemy[e.type] ?? 0) + 1
     events.push({ type: 'enemy_killed', id: e.id, enemy: e.type, at: { ...e.pos }, bounty, lucky })
     // Shatterheart: a slowed death detonates. Elemental — ignores shields
-    // and armor. Enemies already emptied this pass don't re-die; victims
-    // dropped to zero here are collected on the next pass (no cascades
-    // within a single tick — bounded and deterministic).
-    if (state.relics.includes('shatterheart') && e.slowTicks > 0) {
+    // and armor. Rules 7 applies every burst after this pass, so victims
+    // dropped to zero are collected next tick: no cascades within a tick.
+    // (Before rules 7, victims later in the array died in this same pass.)
+    if (state.relics.includes('shatterheart') && isSlowed(state, e)) {
       const radiusSq = SHATTERHEART_RADIUS * SHATTERHEART_RADIUS
       const burst = Math.max(1, Math.floor((e.maxHp * SHATTERHEART_PCT) / 100))
-      for (const other of state.enemies) {
+      if (rules7(state)) bursts.push({ pos: { ...e.pos }, damage: burst })
+      else for (const other of state.enemies) {
         if (other.id === e.id || other.hp <= 0) continue
         if (distSq(e.pos, other.pos) <= radiusSq) {
           const dealt = Math.min(other.hp, burst)
@@ -1207,8 +1217,30 @@ export function collectDead(state: RunState, events: GameEvent[]): void {
       }
     }
   }
+  const radiusSq = SHATTERHEART_RADIUS * SHATTERHEART_RADIUS
+  for (const burst of bursts) {
+    for (const other of survivors) {
+      if (other.hp <= 0 || distSq(burst.pos, other.pos) > radiusSq) continue
+      const dealt = Math.min(other.hp, burst.damage)
+      other.hp -= dealt
+      state.damageByTower.frost = (state.damageByTower.frost ?? 0) + dealt
+    }
+  }
   // Children have the highest ids, so appending keeps spawn order stable.
   state.enemies = survivors.concat(children)
+}
+
+// Integer square root (floor) by Newton's method. Math.sqrt is only
+// "implementation-approximated" by the spec; this is exact everywhere.
+export function isqrt(n: number): number {
+  if (n <= 0) return 0
+  let x = n
+  let y = Math.floor((x + 1) / 2)
+  while (y < x) {
+    x = y
+    y = Math.floor((x + Math.floor(n / x)) / 2)
+  }
+  return x
 }
 
 // Deterministic "densest cluster" helper used by bots and available to UI:

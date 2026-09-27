@@ -32,7 +32,7 @@ export function validRun(value: unknown): value is RunState {
     if (s.schemaVersion !== 1 || typeof s.seed !== 'string' || s.seed.length > 512 || typeof s.mapSeed !== 'string') return false
     if (!BIOME_IDS.includes(s.biome) || !nat(s.mapId) || !nat(s.tick) || s.mapSeed.length > 512 || (s.mapSeed === '' && s.mapId >= MAPS.length)) return false
     if (s.layoutVersion !== undefined && ![1,2,3].includes(s.layoutVersion)) return false
-    if (s.rulesVersion !== undefined && ![4, 5, 6].includes(s.rulesVersion)) return false
+    if (s.rulesVersion !== undefined && ![4, 5, 6, 7].includes(s.rulesVersion)) return false
     if (s.frontierWave !== undefined && !nat(s.frontierWave)) return false
     if (s.sealedRelics !== undefined && (!Array.isArray(s.sealedRelics) || !s.sealedRelics.every(r => known(RELICS, r)))) return false
     if (s.relicSpoils !== undefined && typeof s.relicSpoils !== 'boolean') return false

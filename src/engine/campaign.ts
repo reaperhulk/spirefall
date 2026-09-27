@@ -1,4 +1,4 @@
-import { RELIC_IDS, RELIC_SEALS, specForTower, TOWERS, type RelicSealId } from '../data/content'
+import { RELIC_IDS, RELIC_SEALS, specForTower, type RelicSealId } from '../data/content'
 import { BUILD_FAMILIES } from '../data/buildFamilies'
 import type { DoctrineId } from '../data/doctrines'
 import type { Enemy, MetaState, RelicId, RunState, Tower, TowerType } from './types'
@@ -9,8 +9,16 @@ import { cellCenter, distSq } from './grid'
 export const modernRules = (s: RunState): boolean => (s.rulesVersion ?? 4) >= 5
 // Rules 6: the incremental layer — depth-scaled spark pay, guardian spoils,
 // the sealed relic pool. Rules-5 runs and replays keep their exact outcomes.
-export const RULES_VERSION: number = 6
+export const RULES_VERSION: number = 7
 export const rules6 = (s: RunState): boolean => (s.rulesVersion ?? 4) >= 6
+// Rules 7: correctness fixes that move outcomes. An enemy at 0 hp can no
+// longer reach the Spire (an executed or burned one used to walk in), gale haste no longer counts as a slow, a regular relic
+// offer never inherits a guardian-spoils flag, and Shatterheart bursts
+// land after the kill pass instead of cascading within it.
+export const rules7 = (s: RunState): boolean => (s.rulesVersion ?? 4) >= 7
+// Slowed, as frost bonuses mean it. Rules 7 excludes gale haste, which
+// rides the same timer at a factor above 100.
+export const isSlowed = (s: RunState, e: Enemy): boolean => e.slowTicks > 0 && (!rules7(s) || e.slowFactor < 100)
 export const GUARDIAN_MILESTONES = [
   { enemy: 'boss', name: 'Gatebreaker', unlock: 'Frostfen', wave: 6 },
   { enemy: 'boss2', name: 'Broodbreaker', unlock: 'Ember Waste', wave: 12 },
@@ -104,4 +112,3 @@ export const TOWER_ROLES: Record<TowerType, string> = {
   arrow: 'Air defense', cannon: 'Crowd breaker', frost: 'Control', tesla: 'Chain damage',
   sniper: 'Elite hunter', mint: 'Income', beacon: 'Support aura', lance: 'Boss damage',
 }
-export function combatTowers(s: RunState): Tower[] { return s.towers.filter(t => !TOWERS[t.type].support) }

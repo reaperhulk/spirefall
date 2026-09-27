@@ -1,4 +1,4 @@
-import { ASSAULTS, assaultActive, canSpecialize, familyRelicsAvailable, GUARDIAN_MILESTONES, modernRules, relicPool, rules6, specializationCost, swappableRelics, warSupply } from './campaign'
+import { ASSAULTS, assaultActive, canSpecialize, familyRelicsAvailable, GUARDIAN_MILESTONES, modernRules, relicPool, rules6, rules7, specializationCost, swappableRelics, warSupply } from './campaign'
 import { BUILD_FAMILIES } from '../data/buildFamilies'
 import { navigation } from './navigation'
 import { COMMAND_CHARGES, COMMAND_RECHARGE_TICKS, commandChargeCap, DOCTRINES } from '../data/doctrines'
@@ -133,6 +133,8 @@ export function step(state: RunState, commands: Command[]): StepResult {
     s.commandRecharge = (s.commandRecharge ?? 0) + 1
     const recovery = Math.max(30, Math.floor(COMMAND_RECHARGE_TICKS * (100 - s.mods.overchargeCdPct) / 100))
     if (s.commandRecharge >= recovery) {
+      // Legacy default (0, not COMMAND_CHARGES) is pinned by old replays; every
+      // run since command charges shipped carries the field.
       s.commandCharges = (s.commandCharges ?? 0) + 1
       s.commandRecharge = 0
     }
@@ -295,7 +297,6 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       const tower = s.towers.find((t) => t.id === command.id)
       if (!tower) return reject(command, 'no such tower', events)
       if (!canSpecialize(s, tower)) return reject(command, modernRules(s) ? 'specializations open at tier 2' : 'specializations open at tier 3', events)
-      if (tower.spec !== null) return reject(command, 'already specialized', events)
       const def = specForTower(tower.type, command.spec)
       if (!def) return reject(command, 'unknown specialization for this tower', events)
       const cost = specializationCost(s, tower, def.id)
@@ -322,8 +323,8 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       // board, null when the pointer leaves.
       s.collectAt = command.at
         ? {
-            x: Math.max(0, Math.min(map.width * 1000, command.at.x)),
-            y: Math.max(0, Math.min(map.height * 1000, command.at.y)),
+            x: Math.max(0, Math.min(map.width * 1000, Math.floor(command.at.x))),
+            y: Math.max(0, Math.min(map.height * 1000, Math.floor(command.at.y))),
           }
         : null
       return
@@ -334,8 +335,8 @@ function applyCommand(s: RunState, command: Command, events: GameEvent[]): void 
       // wild pointer can't serialize an off-map aim point.
       s.beamTarget = command.target
         ? {
-            x: Math.max(0, Math.min(map.width * 1000, command.target.x)),
-            y: Math.max(0, Math.min(map.height * 1000, command.target.y)),
+            x: Math.max(0, Math.min(map.width * 1000, Math.floor(command.target.x))),
+            y: Math.max(0, Math.min(map.height * 1000, Math.floor(command.target.y))),
           }
         : null
       return
@@ -588,10 +589,11 @@ export function previewNextWave(s: RunState): WavePreview | null {
 // can never disagree with the engine. Null outside endless — no victory yet,
 // no Cataclysms coming.
 export function wavesUntilCataclysm(s: RunState): number | null {
-  if (!s.victoryClaimed) return null
   // The wave whose clear is next: mid-wave it's this one, in build it's the
   // one about to be sent.
   const facing = s.phase === 'build' ? s.wave + 1 : s.wave
+  // The victory wave's own clear strikes the first one.
+  if (!s.victoryClaimed) return facing === VICTORY_WAVE ? 1 : null
   const since = facing - VICTORY_WAVE
   if (since < 0) return null
   const rem = since % CATACLYSM_WAVE_INTERVAL
@@ -811,29 +813,14 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (s.wave === 4 && !s.shrine) {
     const map = getRunMap(s)
     const path = pathFrom(map, distanceField(map, blockedGrid(map, s.towers)), map.spawn)
-    s.shrine = { cell: path[Math.floor(path.length * 0.65)] ?? { cx: 16, cy: map.spire.cy }, status: 'offered', wave: 5, guardTicks: 0 }
+    s.shrine = { cell: path[Math.floor((path.length * 65) / 100)] ?? { cx: 16, cy: map.spire.cy }, status: 'offered', wave: 5, guardTicks: 0 }
   }
   // Ashen Road pays its skipped offers back, one per build phase, before the
   // regular cadence resumes.
   if ((s.relicDebt ?? 0) > 0 && s.wave % RELIC_WAVE_INTERVAL !== 0) {
-    const pool = relicPool(s)
-    if (pool.length > 0) {
-      const offer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
-      s.relicOffer = offer
-      s.relicRerolled = false
-      s.relicDebt = (s.relicDebt ?? 0) - 1
-      events.push({ type: 'relic_offered', options: [...offer] })
-    }
+    if (offerRelics(s, events, relicOfferSize(s), false)) s.relicDebt = (s.relicDebt ?? 0) - 1
   }
-  if (s.wave % RELIC_WAVE_INTERVAL === 0) {
-    const pool = relicPool(s)
-    if (pool.length > 0) {
-      const offer = drawRelicOffer(s, pool, Math.min(relicOfferSize(s), pool.length)) as RelicId[]
-      s.relicOffer = offer
-      s.relicRerolled = false
-      events.push({ type: 'relic_offered', options: [...offer] })
-    }
-  }
+  if (s.wave % RELIC_WAVE_INTERVAL === 0) offerRelics(s, events, relicOfferSize(s), false)
   // Rules 6, Crucible rank 1+: a guardian slain on its own wave leaves
   // spoils — a chance to EXCHANGE one carried relic for one of a small
   // offer. Never an addition, and never at rank 0. Measured (active pilot,
@@ -848,16 +835,25 @@ function checkWaveEnd(s: RunState, events: GameEvent[]): void {
   if (rules6(s) && s.crucible >= 1 && s.relicOffer === null && swappableRelics(s).length > 0) {
     const guardian = GUARDIAN_MILESTONES.find((m) => m.wave === s.wave)
     if (guardian && (s.killsByEnemy[guardian.enemy] ?? 0) > 0) {
-      const pool = relicPool(s)
-      if (pool.length > 0) {
-        const offer = drawRelicOffer(s, pool, Math.min(GUARDIAN_SPOILS_SIZE + (s.mods.relicChoices ?? 0), pool.length)) as RelicId[]
-        s.relicOffer = offer
-        s.relicRerolled = false
-        s.relicSpoils = true
-        events.push({ type: 'relic_offered', options: [...offer], spoils: true })
-      }
+      offerRelics(s, events, GUARDIAN_SPOILS_SIZE + (s.mods.relicChoices ?? 0), true)
     }
   }
+}
+
+// Put a fresh relic offer on the table (replacing any pending one). False
+// when the pool is empty. Every offer states whether it is guardian spoils:
+// before rules 7 a regular offer left the flag alone, so an ignored spoils
+// offer turned the next regular one swap-only.
+function offerRelics(s: RunState, events: GameEvent[], size: number, spoils: boolean): boolean {
+  const pool = relicPool(s)
+  if (pool.length === 0) return false
+  const offer = drawRelicOffer(s, pool, Math.min(size, pool.length)) as RelicId[]
+  s.relicOffer = offer
+  s.relicRerolled = false
+  if (spoils) s.relicSpoils = true
+  else if (rules7(s) && s.relicSpoils) s.relicSpoils = false
+  events.push(spoils ? { type: 'relic_offered', options: [...offer], spoils: true } : { type: 'relic_offered', options: [...offer] })
+  return true
 }
 
 // Rules 6: a wave pays more the deeper it is (SPARKS_PER_WAVE_BASE plus

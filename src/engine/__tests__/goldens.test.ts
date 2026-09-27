@@ -28,10 +28,12 @@ const UPDATE = process.env['UPDATE_GOLDENS'] === '1'
 const RULES_6_FIELDS = ['frontierWave', 'sealedRelics'] as const
 const RULES_6_MODS = ['veteranDamagePct', 'relicChoices', 'bonusCharges'] as const
 
-function playAll(legacy = false, rules5 = false): Record<string, Golden> {
+function playAll(legacy = false, rules5 = false, rules6 = false): Record<string, Golden> {
   const results: Record<string, Golden> = {}
   for (const scenario of SCENARIOS) {
     const run = createRun(scenario.meta(), scenario.seed)
+    // Rules 7 added no fields: a rules-6 replay only differs in its marker.
+    if (rules6) run.rulesVersion = 6
     if (rules5 || legacy) {
       run.rulesVersion = 5
       for (const key of RULES_6_FIELDS) delete run[key]
@@ -62,6 +64,10 @@ describe('golden playthroughs', () => {
   it('preserves all rules-5 outcomes and complete state hashes', () => {
     const expected = JSON.parse(readFileSync(join(dirname(FIXTURE), 'rules-5-goldens.json'), 'utf8'))
     expect(playAll(false, true)).toEqual(expected)
+  }, 120_000)
+  it('preserves all rules-6 outcomes and complete state hashes', () => {
+    const expected = JSON.parse(readFileSync(join(dirname(FIXTURE), 'rules-6-goldens.json'), 'utf8'))
+    expect(playAll(false, false, true)).toEqual(expected)
   }, 120_000)
   it(
     'match the pinned outcomes (run `npm run goldens:update` to accept changes)',

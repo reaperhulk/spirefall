@@ -483,7 +483,12 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     cataclysms: [...run.cataclysms],
     unlocked,
   }
-  const won = run.phase === 'victory' ? 1 : 0
+  // A daily plays a shared, boosted preset account with every relic
+  // unsealed: its Sparks and history are yours, but it cannot climb your
+  // ladder, count toward ascension, break seals or move your frontier.
+  const daily = run.seed.startsWith('daily-')
+  const won = run.phase === 'victory' && !daily ? 1 : 0
+  const record = daily ? 0 : summary.wavesCleared
   const settled: MetaState = {
     ...meta,
     sparks: meta.sparks + summary.sparks,
@@ -495,10 +500,10 @@ export function settleRun(meta: MetaState, run: RunState): { meta: MetaState; su
     cycleSparks: (meta.cycleSparks ?? 0) + summary.sparks,
     // A win at rank r opens rank r + 1. The ladder is lifetime.
     crucibleUnlocked: Math.min(CRUCIBLE_MAX_RANK, Math.max(crucibleUnlocked(meta), won ? run.crucible + 1 : 0)),
-    bestWave: Math.max(meta.bestWave, summary.wavesCleared),
+    bestWave: Math.max(meta.bestWave, record),
     bestWaveByMap:
-      summary.wavesCleared > (meta.bestWaveByMap[bestKey(run)] ?? 0)
-        ? { ...meta.bestWaveByMap, [bestKey(run)]: summary.wavesCleared }
+      record > (meta.bestWaveByMap[bestKey(run)] ?? 0)
+        ? { ...meta.bestWaveByMap, [bestKey(run)]: record }
         : meta.bestWaveByMap,
     achievements: [...meta.achievements, ...unlocked.map((a) => a.id)],
     lifetimeKills: meta.lifetimeKills + summary.kills,
