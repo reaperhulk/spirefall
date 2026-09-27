@@ -132,10 +132,12 @@ export function installHarness(api: HarnessApi): void {
         s.enemies.push(enemy)
       }
       if (s.phase === 'build') s.phase = 'wave'
+      // No command produced this state, so the recording restarts here.
+      api.getSession().rebase()
     },
     dispatch: (command) => api.getSession().dispatch(command),
     setSpeed: (n) => {
-      api.getSession().speed = Math.max(0, Math.min(100, n))
+      api.getSession().setSpeed(n)
     },
     getSpeed: () => api.getSession().speed,
     fastForward: (seconds) => api.getSession().fastForward(seconds),

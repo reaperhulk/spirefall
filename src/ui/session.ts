@@ -6,6 +6,7 @@ import { ENEMIES, type TowerSpecId } from '../data/content'
 import { cellCenter } from '../engine/grid'
 import { getRunMap } from '../engine/mapgen'
 import { enemyColor, stampDecal } from './render'
+import { towerBeamColor } from './render/theme'
 import { step, TICKS_PER_SECOND } from '../engine/step'
 import type { Command, GameEvent, RunState, Vec } from '../engine/types'
 
@@ -52,14 +53,6 @@ export interface LoggedCommand {
 
 const TICK_MS = 1000 / TICKS_PER_SECOND
 const MAX_STEPS_PER_FRAME = 24
-const TOWER_BEAM_COLORS: Record<string, string> = {
-  arrow: '#9ece6a',
-  cannon: '#e0af68',
-  frost: '#7dcfff',
-  tesla: '#bb9af7',
-  sniper: '#73daca',
-  lance: '#f7768e',
-}
 
 let nextRenderId = 1
 
@@ -69,7 +62,7 @@ export class GameSession {
   prev: RunState // one tick behind, for render interpolation
   // The run's tick-0 state, kept so the run can be REPLAYED: determinism
   // means initial state + command log reproduces every moment exactly.
-  readonly initial: RunState
+  initial: RunState
   // Non-null = this session is a spectator: commands come from the script,
   // player dispatches are ignored, and App suppresses meta/save effects.
   replayScript: LoggedCommand[] | null = null
@@ -115,6 +108,15 @@ export class GameSession {
     // pins tick 0 against later mutation-by-reference.
     this.initial = JSON.parse(JSON.stringify(recording?.initial ?? initial)) as RunState
     this.commandLog = recording?.log.slice() ?? []
+    this.checkpoints = [{ tick: this.initial.tick, wave: this.initial.wave, state: this.initial }]
+  }
+
+  // Restart the recording from the current state. For out-of-band edits
+  // (the test harness's spawnHorde) that no command log can reproduce: the
+  // replay then starts here instead of silently diverging.
+  rebase(): void {
+    this.initial = JSON.parse(JSON.stringify(this.state)) as RunState
+    this.commandLog = []
     this.checkpoints = [{ tick: this.initial.tick, wave: this.initial.wave, state: this.initial }]
   }
 
@@ -279,7 +281,7 @@ export class GameSession {
           if (this.hits.size > 600) this.hits.clear()
           const spec = this.state.towers.find(t => t.id === e.id)?.spec
           if (spec && !e.blocked) this.effects.push({kind:'special',spec,from:e.from,to:e.to,t0:now,dur:220})
-          const color = e.crit ? '#ffffff' : (TOWER_BEAM_COLORS[e.tower] ?? '#ffffff')
+          const color = e.crit ? '#ffffff' : towerBeamColor(e.tower)
           this.effects.push({ kind: 'flash', at: e.from, color, t0: now, dur: 90 })
           switch (e.tower) {
             case 'cannon': {

@@ -360,6 +360,15 @@ export class Sfx {
 
   constructor() {
     try { this.muted = localStorage.getItem(MUTE_KEY) === '1' } catch { this.muted = false }
+  }
+
+  // Attach the gesture and visibility listeners; the returned function
+  // removes them (React effect cleanup). Outside the constructor so a
+  // discarded instance (StrictMode double init, HMR) never holds listeners
+  // that would spin up an AudioContext of its own.
+  listen(): () => void {
+    const controller = new AbortController()
+    const { signal } = controller
     // Browsers require a user gesture before audio can start — and can
     // suspend a running context at any time (tab switch, OS interruption).
     // The listeners stay attached for the whole session so every gesture is
@@ -370,11 +379,11 @@ export class Sfx {
     // pointerdown counts, but a TOUCH pointerdown does not — touch grants
     // on pointerup/touchend/click. pointerdown alone left phones silent.
     const revive = () => this.ensureRunning(true)
-    window.addEventListener('pointerdown', revive)
-    window.addEventListener('pointerup', revive)
-    window.addEventListener('touchend', revive, { passive: true })
-    window.addEventListener('click', revive)
-    window.addEventListener('keydown', revive)
+    window.addEventListener('pointerdown', revive, { signal })
+    window.addEventListener('pointerup', revive, { signal })
+    window.addEventListener('touchend', revive, { passive: true, signal })
+    window.addEventListener('click', revive, { signal })
+    window.addEventListener('keydown', revive, { signal })
     // iOS mutes Web Audio while the ringer switch is on silent unless the
     // page declares itself a playback app (Safari 16.4+). A game's audio
     // should behave like game audio; the in-app mute button still rules.
@@ -386,7 +395,8 @@ export class Sfx {
     }
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') this.ensureRunning(false)
-    })
+    }, { signal })
+    return () => { controller.abort() }
   }
 
   // The generative score (music.ts) rides this context so autoplay-unlock

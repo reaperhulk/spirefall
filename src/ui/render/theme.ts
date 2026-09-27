@@ -62,6 +62,27 @@ export function enemyColor(type: string): string {
 }
 
 
+const TOWER_BEAM_COLORS: Record<string, string> = {
+  arrow: '#9ece6a',
+  cannon: '#e0af68',
+  frost: '#7dcfff',
+  tesla: '#bb9af7',
+  sniper: '#73daca',
+  lance: '#f7768e',
+}
+// Okabe–Ito hues: arrow green vs lance red is the classic confusable pair.
+const TOWER_BEAM_COLORS_ASSIST: Record<string, string> = {
+  arrow: '#f0e442', // yellow
+  cannon: '#e69f00', // orange
+  frost: '#56b4e9', // sky blue
+  tesla: '#cc79a7', // reddish purple
+  sniper: '#009e73', // bluish green
+  lance: '#d55e00', // vermillion
+}
+export function towerBeamColor(type: string): string {
+  return (settings.colorAssist ? TOWER_BEAM_COLORS_ASSIST[type] : TOWER_BEAM_COLORS[type]) ?? '#ffffff'
+}
+
 export const COLORS = {
   bg: '#19232c',
   gridLine: '#151b28',

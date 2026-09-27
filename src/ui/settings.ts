@@ -36,10 +36,18 @@ export function normalizeBindings(value: unknown): Record<string,string> {
   }
   return bindings
 }
+// Until the player chooses, follow the operating system's motion preference.
+function prefersReducedMotion(): boolean {
+  try {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+  } catch {
+    return false
+  }
+}
 function load(): Settings {
   try {
     const raw = localStorage.getItem(KEY)
-    if (!raw) return { ...DEFAULTS }
+    if (!raw) return { ...DEFAULTS, reducedMotion: prefersReducedMotion() }
     const parsed = JSON.parse(raw) as Partial<Settings>
     return {
       graphicsQuality: parsed.graphicsQuality === 'high' || parsed.graphicsQuality === 'low' ? parsed.graphicsQuality : 'auto',
@@ -50,13 +58,13 @@ function load(): Settings {
       volume: typeof parsed.volume === 'number' ? Math.max(0, Math.min(100, parsed.volume)) : DEFAULTS.volume,
       musicVolume:
         typeof parsed.musicVolume === 'number' ? Math.max(0, Math.min(100, parsed.musicVolume)) : DEFAULTS.musicVolume,
-      reducedMotion: parsed.reducedMotion === true,
+      reducedMotion: typeof parsed.reducedMotion === 'boolean' ? parsed.reducedMotion : prefersReducedMotion(),
       autoStart: parsed.autoStart === true,
       haptics: parsed.haptics !== false, // default on — only an explicit off sticks
       colorAssist: parsed.colorAssist === true,
     }
   } catch {
-    return { ...DEFAULTS }
+    return { ...DEFAULTS, reducedMotion: prefersReducedMotion() }
   }
 }
 

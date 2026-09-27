@@ -73,6 +73,8 @@ import { GameSession } from './session'
 import { dailySeed, loadDailyBest, loadDailyRaw, loadMapPref, loadTrialPref, MAP_PREF_KEY, newSeed, TRIAL_PREF_KEY, type DailyBest } from './prefs'
 import { ABILITY_KEYS, SPEEDS, TARGETING_OPTIONS, TOWER_KEYS, towerRole, upgradeDelta } from './towerCopy'
 
+const MAX_REPLAY_LINK_CHARS = 32_000
+
 export default function App() {
   useDialogFocus()
   const [boot] = useState(() => {
@@ -135,6 +137,7 @@ export default function App() {
   // Beam mode is a LATCH (B key or the Beam button), not a held chord —
   // the same control works identically with a mouse or a thumb.
   const beamModeRef = useRef(false)
+  const beamAimedRef = useRef(false) // a set_beam went out since beam mode began
   const [beamMode, setBeamMode] = useState(false)
   // Screen-reader narration of major beats (aria-live, visually hidden).
   const [srMessage, setSrMessage] = useState('')
@@ -194,12 +197,15 @@ export default function App() {
   // current across newRun(), so the music follows every run seamlessly.
   useEffect(() => {
     music.attach(() => sessionRef.current.state)
+    return () => { music.detach() }
   }, [music])
+  useEffect(() => sfx.listen(), [sfx])
 
   useRunCheckpoint(sessionRef, metaRef)
 
   // Engine events drive meta settlement and saves.
   useEffect(() => {
+    let routineSaveTimer: number | undefined
     session.setOnEvents((events, s) => {
       sfx.handleEvents(events)
       music.handleEvents(events)
@@ -239,6 +245,7 @@ export default function App() {
       // for victory, or touch the save — the run already happened.
       if (session.replaying) return
       let saveNeeded = false
+      let routineSave = false
       if (events.some(e => e.type === 'enemy_killed')) {
         const earned = bankGuardianMilestones(metaRef.current, s)
         if (earned !== metaRef.current) {
@@ -250,9 +257,12 @@ export default function App() {
       }
       for (const e of events) {
         if (e.type === 'run_ended') {
-          if (s.seed === dailySeed()) {
-            const today = new Date().toISOString().slice(0, 10)
-            const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
+          const dailyDate = /^daily-(\d{4}-\d{2}-\d{2})$/.exec(s.seed)?.[1]
+          if (dailyDate) {
+            // The daily's own date, not the clock's: a run started before
+            // UTC midnight and finished after it still counts for its day.
+            const today = dailyDate
+            const yesterday = new Date(Date.parse(dailyDate) - 86_400_000).toISOString().slice(0, 10)
             const raw = loadDailyRaw()
             // Streak: today extends yesterday's chain; a gap resets to 1.
             const streak =
@@ -284,13 +294,26 @@ export default function App() {
           e.type === 'tower_sold' ||
           e.type === 'tower_upgraded'
         ) {
-          saveNeeded = true
+          routineSave = true
         }
       }
-      if (saveNeeded) persistSave({ version: 1, meta: metaRef.current, run: session.terminal ? null : s })
+      if (saveNeeded) {
+        window.clearTimeout(routineSaveTimer)
+        persistSave({ version: 1, meta: metaRef.current, run: session.terminal ? null : s })
+      } else if (routineSave) {
+        // Build-phase edits come in bursts; serialising the whole run and
+        // its recording on every click is main-thread work the player feels.
+        // One trailing save covers the burst (pagehide still saves at once).
+        window.clearTimeout(routineSaveTimer)
+        routineSaveTimer = window.setTimeout(() => {
+          const live = sessionRef.current
+          if (live === session && !live.replaying) persistSave({ version: 1, meta: metaRef.current, run: live.terminal ? null : live.state })
+        }, 750)
+      }
     })
     return () => {
       session.setOnEvents(null)
+      window.clearTimeout(routineSaveTimer)
     }
   }, [session, sfx, music])
 
@@ -352,6 +375,10 @@ export default function App() {
     // waiting for React's post-commit effect would race it onto the old session.
     sessionRef.current = next
     setSession(next)
+    // Starting a run from a replay leaves the replay: the parked session is
+    // finished, and the new run's dialogs must not stay hidden.
+    liveSessionRef.current = null
+    setWatching(false)
     setSummary(null)
     setVictoryPrompt(false)
     setShopSelection(null)
@@ -360,6 +387,7 @@ export default function App() {
     setShowTree(false)
     setShowPlan(false)
     beamModeRef.current = false
+    beamAimedRef.current = false
     setBeamMode(false)
     persistSave({ version: 1, meta: metaRef.current, run })
   }
@@ -452,6 +480,7 @@ export default function App() {
 
   const toggleBeam = (on: boolean) => {
     beamModeRef.current = on
+    beamAimedRef.current = false
     setBeamMode(on)
     if (on) {
       const st = sessionRef.current.state
@@ -723,7 +752,11 @@ export default function App() {
             keyboardEnemyRef.current = null
             hoverRef.current = c
             // In beam mode the ray follows the cursor (or a touch drag).
-            if (beamModeRef.current && c) sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(c) })
+            // One command per cell entered: every command is logged and saved.
+            if (beamModeRef.current && c && (!prev || !sameCell(c, prev) || !beamAimedRef.current)) {
+              beamAimedRef.current = true
+              sessionRef.current.dispatch({ type: 'set_beam', target: cellCenter(c) })
+            }
             // The pointer IS the coin collector: entering a new cell moves
             // it, leaving the board parks it away (coins wait, then expire).
             if ((c === null) !== (prev === null) || (c && prev && !sameCell(c, prev))) {
@@ -1154,7 +1187,9 @@ export default function App() {
           replay={() => JSON.stringify(session.recording())}
           replayLink={async () => {
             const blob = await gzipBase64Url(JSON.stringify(session.recording()))
-            return blob ? `${window.location.origin}${window.location.pathname}?replay=${blob}` : null
+            // Long links get truncated by browsers and chat apps; past this
+            // the plain replay text is the reliable way to share.
+            return blob && blob.length <= MAX_REPLAY_LINK_CHARS ? `${window.location.origin}${window.location.pathname}?replay=${blob}` : null
           }}
           onBuy={buyMeta}
           onRespec={session.terminal || (state.wave === 0 && state.towers.length === 0) ? respec : undefined}

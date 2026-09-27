@@ -1,6 +1,6 @@
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react'
 import { MAP_HEIGHT, MAP_WIDTH } from '../data/maps'
-import { EXECUTE_THRESHOLD_PCT } from '../data/content'
+import { ENEMIES, EXECUTE_THRESHOLD_PCT } from '../data/content'
 import { cellCenter } from '../engine/grid'
 import type { AbilityId, CellPos, EnemyType, RunSummary, TowerType } from '../engine/types'
 import type { Sfx } from './audio'
@@ -126,7 +126,7 @@ export function useGameKeyboard(options: KeyboardOptions): void {
         if (target) {
           keyboardEnemyRef.current = target.id
           hoverRef.current = { cx: Math.floor(target.pos.x / 1000), cy: Math.floor(target.pos.y / 1000) }
-          setSrMessage(`${target.type}, ${target.hp} health`)
+          setSrMessage(`${ENEMIES[target.type].name}, ${target.hp} health`)
         }
         return
       }

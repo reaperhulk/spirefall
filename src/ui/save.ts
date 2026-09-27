@@ -63,9 +63,14 @@ function quarantine(raw: string): void {
   try { if (localStorage.getItem(CORRUPT) === null) localStorage.setItem(CORRUPT, raw) } catch { /* blocked storage */ }
 }
 // The newest state the game asked to save, whether or not storage accepted
-// it: Export reads this, so it hands out live progress exactly when saving
-// is failing.
+// it — Export falls back to this, so it hands out live progress exactly
+// when saving is failing. The live provider (the running session) wins.
 let latest: SaveData | null = null
+let liveProvider: (() => SaveData | null) | undefined
+export function registerLiveSave(provider: () => SaveData | null): () => void {
+  liveProvider = provider
+  return () => { if (liveProvider === provider) liveProvider = undefined }
+}
 export function persistSave(data: SaveData): boolean {
   const started = performance.now()
   latest = { version: data.version, meta: data.meta, run: data.run }
@@ -116,7 +121,8 @@ function toBase64(bytes: Uint8Array): string {
 
 export async function exportSave(): Promise<string | null> {
   try {
-    const raw = latest ? JSON.stringify(latest) : localStorage.getItem(KEY)
+    const live = liveProvider?.() ?? latest
+    const raw = live ? JSON.stringify({ version: live.version, meta: live.meta, run: live.run }) : localStorage.getItem(KEY)
     if (!raw) return null
     const bytes = new TextEncoder().encode(raw)
     if (typeof CompressionStream !== 'undefined') {

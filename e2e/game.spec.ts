@@ -672,6 +672,28 @@ test('replay links: opening a ?replay= URL spectates the exact run on arrival', 
   expect(errors).toEqual([])
 })
 
+test('starting a run from a replay leaves replay mode', async ({ page }) => {
+  const errors = await boot(page, 'e2e-replay-exit-by-run')
+  await page.evaluate(() => {
+    const send = () => {
+      const s = window.__harness.getState()
+      if (s.phase === 'build') window.__harness.dispatch({ type: 'start_wave' })
+      window.__harness.fastForward(300)
+      if (window.__harness.snapshot().phase !== 'defeat') send()
+    }
+    send()
+  })
+  await expect(page.getByTestId('run-over')).toBeVisible()
+  await page.getByTestId('watch-replay').click()
+  await expect(page.getByTestId('replay-banner')).toBeVisible()
+  await page.keyboard.press('Space') // begins the next run
+  await expect(page.getByTestId('replay-banner')).not.toBeVisible()
+  const next = await page.evaluate(() => window.__harness.snapshot())
+  expect(next.phase).toBe('build')
+  expect(next.wave).toBe(0)
+  expect(errors).toEqual([])
+})
+
 test('relic offers appear in the UI and apply on click', async ({ page }) => {
   const errors = await boot(page, 'e2e-relic-a')
   // Actually play: each build phase, buy/upgrade arrows, then send the wave —

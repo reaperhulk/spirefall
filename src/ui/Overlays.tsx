@@ -386,6 +386,15 @@ export function RunOverOverlay({
   // configuring the next run — each gets a tab instead of one long scroll.
   const [tab, setTab] = useState<'result' | 'tree' | 'next'>('result')
   const [replayText, setReplayText] = useState<string | null>(null)
+  // What the last copy attempt did — only a resolved clipboard write shows ✓.
+  const [copyNote, setCopyNote] = useState<string | null>(null)
+  const copy = (text: string, done: string) => {
+    setReplayText(text)
+    setCopyNote(null)
+    const write = navigator.clipboard?.writeText(text)
+    if (!write) { setCopyNote('Clipboard unavailable — select the text below and copy it.'); return }
+    void write.then(() => setCopyNote(done), () => setCopyNote('Copy failed — select the text below and copy it.'))
+  }
   const [shared, setShared] = useState<'' | 'card' | 'link'>('')
   const cardHost = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -460,19 +469,33 @@ export function RunOverOverlay({
               ['tree', `Spire Tree · ✦${meta.sparks}`],
               ['next', 'Next Run'],
             ] as const
-          ).map(([id, label]) => (
+          ).map(([id, label], index, tabs) => (
             <button
               key={id}
+              id={`runover-tab-${id}`}
               role="tab"
               aria-selected={tab === id}
+              aria-controls="runover-panel"
+              tabIndex={tab === id ? 0 : -1}
               className={`tab${tab === id ? ' active' : ''}`}
               data-testid={`tab-${id}`}
               onClick={() => setTab(id)}
+              onKeyDown={(e) => {
+                // WAI-ARIA tabs: arrows (and Home/End) move between tabs.
+                const to = e.key === 'ArrowRight' ? (index + 1) % tabs.length : e.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1
+                if (to < 0) return
+                e.preventDefault()
+                e.stopPropagation()
+                const next = tabs[to]![0]
+                setTab(next)
+                document.getElementById(`runover-tab-${next}`)?.focus()
+              }}
             >
               {label}
             </button>
           ))}
         </div>
+        <div id="runover-panel" role="tabpanel" aria-labelledby={`runover-tab-${tab}`}>
         {tab === 'result' && (
           <>
         {summary.trials.length > 0 && (
@@ -536,13 +559,9 @@ export function RunOverOverlay({
             className="ghost-btn"
             data-testid="copy-replay"
             title="Copies the run's seed and full command log — anyone can replay this exact run."
-            onClick={() => {
-              const text = replay()
-              setReplayText(text)
-              void navigator.clipboard?.writeText(text).catch(() => {})
-            }}
+            onClick={() => copy(replay(), 'Replay copied ✓')}
           >
-            {replayText === null ? '🐞 Copy replay' : 'Replay copied ✓'}
+            🐞 Copy replay
           </button>
           <button
             className="ghost-btn"
@@ -550,14 +569,14 @@ export function RunOverOverlay({
             title="Copies a link — anyone who opens it watches this exact run live."
             onClick={() => {
               void replayLink().then((link) => {
-                if (!link) return
-                setReplayText(link)
-                void navigator.clipboard?.writeText(link).catch(() => {})
+                if (!link) setCopyNote('This run is too long to share as a link — use Copy replay instead.')
+                else copy(link, 'Replay link copied ✓')
               })
             }}
           >
             ⏯ Copy replay link
           </button>
+          {copyNote !== null && <span className="replay-hint" role="status" data-testid="copy-note">{copyNote}</span>}
           {replayText !== null && (
             <span className="replay-hint">Paste it into a bug report — same seed, same commands, same run.</span>
           )}
@@ -678,6 +697,7 @@ export function RunOverOverlay({
           </button>
         </div>
         )}
+        </div>
       </div>
     </div>
   )

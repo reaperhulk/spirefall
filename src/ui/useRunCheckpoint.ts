@@ -1,12 +1,17 @@
 import { useEffect, type RefObject } from 'react'
 import type { MetaState } from '../engine/types'
 import type { GameSession } from './session'
-import { persistSave, registerRecording, saveReloadPending } from './save'
+import { persistSave, registerLiveSave, registerRecording, saveReloadPending } from './save'
 
 // Browser lifecycle lives outside the command-driven simulation. The refs
 // follow session replacement; playback never overwrites the live save.
 export function useRunCheckpoint(session: RefObject<GameSession>, meta: RefObject<MetaState>): void {
   useEffect(() => registerRecording(() => session.current.replaying ? undefined : session.current.recording()), [session])
+  // Export reads the running game, never a save that may lag behind it.
+  useEffect(() => registerLiveSave(() => {
+    const live = session.current
+    return live.replaying ? null : { version: 1, meta: meta.current, run: live.terminal ? null : live.state }
+  }), [session, meta])
   useEffect(() => {
     const checkpoint = () => {
       const live = session.current

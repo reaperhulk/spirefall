@@ -145,6 +145,11 @@ export class Music {
     }
   }
 
+  detach(): void {
+    if (this.timer !== null) clearInterval(this.timer)
+    this.timer = null
+  }
+
   // Ascension is a META act (no engine event reaches the score): the tree
   // burns and something permanent is born. Same gesture as victory — the
   // six-note ascent and a briefly wide-open filter — because it IS one.

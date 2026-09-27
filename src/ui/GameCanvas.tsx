@@ -9,6 +9,9 @@ import { CELL_PX, draw, LOUPE_D, LOUPE_GAP, renderLoupe, type RenderUiState, typ
 import { settings } from './settings'
 import type { GameSession } from './session'
 
+// Placement text must hold still this long before the live region announces it.
+const REPORT_SETTLE_MS = 350
+
 interface Props {
   onObserve?: (state:RunState, identity:number) => void
   session: GameSession
@@ -53,6 +56,7 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
     let dpr = 1, displayWidth = canvas.getBoundingClientRect().width
     let dirty = true, lastSignature = '', lastState = session.state
     let observedState: RunState | null = null
+    const pendingReport = { text: '', since: 0 }
     const resized = new ResizeObserver(entries => {
       displayWidth = entries[0]?.contentRect.width ?? displayWidth
       dirty = true
@@ -87,7 +91,8 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
       const frozen = session.suspended || session.speed <= 0 || session.terminal || session.seeking
       const animating = session.effects.some(fx => now < fx.t0 + fx.dur)
       last = now
-      if (frozen && !animating && !dirty && signature === lastSignature && lastState === session.state) {
+      const reportSettled = previewRef.current === null || previewRef.current.textContent === pendingReport.text
+      if (frozen && !animating && !dirty && reportSettled && signature === lastSignature && lastState === session.state) {
         measure('idleFrame', 1)
         raf = requestAnimationFrame(frame)
         return
@@ -108,7 +113,10 @@ export function GameCanvas({ session, ui, armed, beamAim, dragCollect, onCellCli
       const {shopSelection,hoverCell} = uiRef.current
       if (previewRef.current) {
         const text = shopSelection && hoverCell ? placementSummary(placementPreview(session.state,shopSelection,hoverCell),shopSelection) : shopSelection ? 'Aim to compare the new route and coverage. Green squares gain coverage; crossed cells lose it.' : ''
-        if (previewRef.current.textContent !== text) previewRef.current.textContent = text
+        // A live region: publish only once the text has held still, so a
+        // sweeping pointer doesn't make screen readers chatter every cell.
+        if (text !== pendingReport.text) { pendingReport.text = text; pendingReport.since = now }
+        if (previewRef.current.textContent !== text && (text === '' || now - pendingReport.since >= REPORT_SETTLE_MS)) previewRef.current.textContent = text
       }
       ctx.restore()
       session.markRendered()
