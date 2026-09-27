@@ -21,7 +21,7 @@
     "test:e2e:performance": "playwright test --project performance"
   },
   "devDependencies": {
-    "@eslint/js": "^9.37.0",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@types/node": "^22.20.4",
     "@types/react": "^19.2.17",
