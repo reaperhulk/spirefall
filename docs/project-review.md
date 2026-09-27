@@ -81,6 +81,31 @@ its hash. The balance envelope and fuzz pins pass unchanged.
 - Profile scripts write to the gitignored `profiles/`;
   [docs/README.md](README.md) records what each committed snapshot measured.
 
+## Structure (`b2ca5f1`)
+
+- `e2e/game.spec.ts` (2,000 lines) is six feature specs over shared helpers.
+- `checkWaveEnd` reads as its sequence of steps (`payWaveClear`,
+  `offerCataclysm`, `settleShrine`, `offerWaveRelics`); goldens unchanged.
+- `App.tsx`: one `commitMeta` for all meta purchases; `TowerTooltip` is its
+  own component, and it and the panel share `towerStats` — which fixed the
+  tooltip quoting Capacitor DPS without its ×1.5 sustained burst.
+- The coalesced autosave briefly reopened a wipe race (a trailing save could
+  land between "wipe" and the reload); `persistSave` now refuses to write
+  once a reload is pending.
+
+## Left as is, deliberately
+
+- `applyCommand` stays one switch: about 20 cases, most under 30 lines,
+  each self-contained. A handler table would add boilerplate, not clarity.
+- `towersFire` stays one loop: its `hit` closure captures a dozen per-shot
+  values; splitting it means threading a context object through every
+  branch for no behavioural gain.
+- `App.tsx` is still ~1,400 lines. Further extraction (HUD, shop bar,
+  combat dock, run menu, a replay controller) is worthwhile but should go
+  with a UI change that needs it, with the e2e suite as the net.
+- CI still builds three times (check, e2e web server, Pages). Passing
+  `dist` between jobs would save seconds, not minutes.
+
 ## Measured but not changed
 
 - The career income pin (late runs ≥ 3× early runs) holds on the `career`
