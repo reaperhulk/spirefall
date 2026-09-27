@@ -21,7 +21,7 @@ for (const finding of findings.slice(0, 2)) for (const seed of ['gamma',finding.
     }
     const bot=makePolicyBot(g)
     const {state}=autoplay(initial,s=>s.victoryClaimed?[{type:'abandon_run'}]:bot(s),150000)
-    runs.push({biome:finding.biome,seed,variant,bonus,startingHp:initial.spireMaxHp,win:state.victoryClaimed,waves:state.wavesCleared,leaks:state.leaks.length})
+    runs.push({biome:finding.biome,seed,variant,bonus,startingHp:initial.spireMaxHp,win:state.victoryClaimed,waves:state.wavesCleared,leaks:state.leaks?.length ?? 0})
   }
 }
 writeFileSync('docs/glassforge-ablation.json',JSON.stringify({notes:'Controlled ablations at fixed 5k meta and fuzzer-discovered policies. bonus35 reconstructs the pre-fix bonus; HP-only variants keep it. Other variables and the existing robust-win oracle are unchanged. Commands stop after first victory.',runs},null,2)+'\n')

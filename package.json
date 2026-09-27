@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:unit": "vitest --run",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "goldens:update": "UPDATE_GOLDENS=1 vitest --run src/engine/__tests__/goldens.test.ts",
     "fuzz:builds": "FUZZ_POP=14 FUZZ_GENS=4 FUZZ_BUDGETS=0,5000,8000,10000,14000 FUZZ_SEEDS=alpha,beta,gamma,delta,epsilon,zeta,eta,theta vitest --run src/harness/__tests__/fuzz.test.ts",
     "test:e2e": "playwright test",

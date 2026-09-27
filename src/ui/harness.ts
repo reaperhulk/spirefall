@@ -71,10 +71,12 @@ export interface GameHarness {
   reset: () => void
 }
 
+// Declared present: the app installs it on mount, and the e2e suite (the
+// only reader) always boots the app first.
 declare global {
   interface Window {
-    __game?: GameHarness
-    __harness?: GameHarness
+    __game: GameHarness
+    __harness: GameHarness
   }
 }
 

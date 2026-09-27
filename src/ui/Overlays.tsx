@@ -391,9 +391,9 @@ export function RunOverOverlay({
   const copy = (text: string, done: string) => {
     setReplayText(text)
     setCopyNote(null)
-    const write = navigator.clipboard?.writeText(text)
-    if (!write) { setCopyNote('Clipboard unavailable — select the text below and copy it.'); return }
-    void write.then(() => setCopyNote(done), () => setCopyNote('Copy failed — select the text below and copy it.'))
+    const clipboard = navigator.clipboard as Clipboard | undefined
+    if (!clipboard) { setCopyNote('Clipboard unavailable — select the text below and copy it.'); return }
+    void clipboard.writeText(text).then(() => setCopyNote(done), () => setCopyNote('Copy failed — select the text below and copy it.'))
   }
   const [shared, setShared] = useState<'' | 'card' | 'link'>('')
   const cardHost = useRef<HTMLDivElement | null>(null)

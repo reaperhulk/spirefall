@@ -1,5 +1,8 @@
 import { clickMenu, chooseTower } from './ui-helpers'
 import { expect, test, type Page } from '@playwright/test'
+import type { MetaUpgradeId } from '../src/data/metaTree'
+import type { TowerSpecId } from '../src/data/content'
+import type { TowerType } from '../src/engine/types'
 
 // UI smoke suite (PLAN.md §5.7): deliberately shallow on game logic — that
 // lives in the headless suites — but drives the REAL input path: buttons,
@@ -11,58 +14,6 @@ import { expect, test, type Page } from '@playwright/test'
 // a hardcoded pixel size drifts whenever layout shifts (fonts, hint banner).
 const MAP_W = 24
 const MAP_H = 14
-
-declare global {
-  interface Window {
-    __harness: {
-      getState: () => {
-        phase: string
-        wave: number
-        biome: string
-        crucible: number
-        gold: number
-        towers: { id: number; tier: number; spec: string | null; cell: { cx: number; cy: number } }[]
-        enemies: unknown[]
-        relicOffer: unknown[] | null
-        relicSpoils?: boolean
-        victoryClaimed: boolean
-        spireHp: number
-        spireMaxHp: number
-      }
-      snapshot: () => {
-        tick: number
-        phase: string
-        wave: number
-        gold: number
-        spireHp: number
-        towers: number
-        enemies: number
-        kills: number
-        metaSparks: number
-        runs: number
-      }
-      dispatch: (command: unknown) => void
-      fastForward: (seconds: number) => void
-      newRun: (seed?: string) => void
-      getMeta: () => { sparks: number; victories: number; cycleVictories: number; crucibleUnlocked?: number; crucibleRank?: number }
-      getMapInfo: () => {
-        width: number
-        height: number
-        spawn: { cx: number; cy: number }
-        spire: { cx: number; cy: number }
-        buildable: boolean[]
-        path: { cx: number; cy: number }[]
-      }
-      buyMeta: (id: string) => void
-      setSpeed: (n: number) => void
-      getSpeed: () => number
-      getReplay: () => { seed: string; log: unknown[] }
-      audioState: () => string
-      audioLive: () => boolean
-      reset: () => void
-    }
-  }
-}
 
 async function boot(page: Page, seed: string) {
   const errors: string[] = []
@@ -447,7 +398,7 @@ test('wave boons: pick one, it blesses exactly one wave, skipping is free', asyn
 test('overcharge: the panel button arms the next shot and the recharge gates it', async ({ page }) => {
   const errors = await boot(page, 'e2e-overcharge')
   await chooseTower(page, 'shop-arrow')
-  const [[cx, cy]] = await findBuildCells(page, 1)
+  const [cx, cy] = (await findBuildCells(page, 1))[0]!
   await clickCell(page, cx!, cy!)
   await chooseTower(page, 'shop-arrow') // disarm placement
   await clickCell(page, cx!, cy!) // select the tower
@@ -1219,7 +1170,7 @@ test('keyboard shortcuts: 1 arms the arrow, U upgrades, X sells for a full refun
 test('saves survive a reload mid-run', async ({ page }) => {
   const errors = await boot(page, 'e2e-save')
   await chooseTower(page, 'shop-cannon')
-  const [[scx, scy]] = await findBuildCells(page, 1)
+  const [scx, scy] = (await findBuildCells(page, 1))[0]!
   await clickCell(page, scx!, scy!)
   await page.evaluate(() => {
     window.__harness.dispatch({ type: 'start_wave' })
@@ -1488,7 +1439,7 @@ test('the Lance: locked until Duelist Doctrine, then hotkey 8 places it and the 
   })
   await expect(page.getByTestId('shop-lance')).toBeEnabled()
 
-  const [[cx, cy]] = await findBuildCells(page, 1)
+  const [cx, cy] = (await findBuildCells(page, 1))[0]!
   await page.keyboard.press('8') // arm via the new hotkey
   await clickCell(page, cx!, cy!)
   await expect.poll(async () => (await page.evaluate(() => window.__harness.snapshot())).towers).toBe(1)
@@ -1512,7 +1463,7 @@ test('the Lance: locked until Duelist Doctrine, then hotkey 8 places it and the 
 test('keyboard-only build: arm with 1, steer with arrows, place with Enter', async ({ page }) => {
   const errors = await boot(page, 'e2e-wave')
   await page.locator('.hint-close').click()
-  const [[cx, cy]] = await findBuildCells(page, 1)
+  const [cx, cy] = (await findBuildCells(page, 1))[0]!
 
   await page.keyboard.press('1') // arm the arrow tower
   // Steer from the cursor's spawn point (map center) to the target cell.
@@ -1664,7 +1615,7 @@ test('the Crucible: a chosen rank hardens the next run and surfaces in the HUD',
 test('tier-3 specialization: the panel offers both paths, the pick sticks', async ({ page }) => {
   const errors = await boot(page, 'e2e-wave')
   await page.locator('.hint-close').click()
-  const [[cx, cy]] = await findBuildCells(page, 1)
+  const [cx, cy] = (await findBuildCells(page, 1))[0]!
   await page.evaluate(
     ([x, y]) => {
       const h = window.__harness
@@ -1709,7 +1660,7 @@ const MAXED_PILOT = (seed: string) => {
   // Battle-Hardened and Relic Cartography are the Iron/Gold tier-3 nodes that
   // took over the budget of Honed Edge III's retired levels.
   // The Ash tier-1 nodes also pay that branch's gate, which Bulwark needs.
-  const ids = [
+  const ids: MetaUpgradeId[] = [
     'starting_gold', 'spire_hp', 'tower_damage', 'tower_damage_2', 'tower_damage_3',
     'battle_hardened', 'crit_chance', 'gold_income', 'spark_gain', 'relic_cartography',
     'unlock_tesla', 'unlock_mint', 'unlock_beacon', 'unlock_gold_rush', 'quick_hands',
@@ -1756,14 +1707,14 @@ const MAXED_PILOT = (seed: string) => {
   // DPS line lacks — they're what push the line over the wave-24 hump.
   // 18 posts, not 14: the consolidated elites survive the gate-side guns
   // and die along the enfilade, so the line runs deeper down the walk.
-  const types = ['arrow', 'tesla', 'cannon', 'arrow', 'frost', 'beacon', 'sniper', 'tesla', 'cannon', 'arrow', 'frost', 'tesla', 'cannon', 'arrow', 'sniper', 'frost', 'tesla', 'cannon']
+  const types: TowerType[] = ['arrow', 'tesla', 'cannon', 'arrow', 'frost', 'beacon', 'sniper', 'tesla', 'cannon', 'arrow', 'frost', 'tesla', 'cannon', 'arrow', 'sniper', 'frost', 'tesla', 'cannon']
   let lastGold = -1 // whiff detector: a build action that moved no gold means "stop shopping, send the wave"
   for (let guard = 0; guard < 1500; guard++) {
     const s = h.getState()
     if (s.phase === 'victory' || s.phase === 'defeat') break
     if (s.relicOffer && s.relicOffer.length > 0) {
       // Guardian spoils are an exchange; the pilot keeps its build.
-      h.dispatch({ type: 'choose_relic', relic: s.relicSpoils ? null : s.relicOffer[0] })
+      h.dispatch({ type: 'choose_relic', relic: s.relicSpoils ? null : s.relicOffer[0]! })
       h.fastForward(0.2)
       continue
     }
@@ -1825,7 +1776,7 @@ const MAXED_PILOT = (seed: string) => {
       (s.towers.length < 4 && s.gold >= 200) || (!upgradeTarget && s.towers.length < types.length && s.gold >= 400)
     const cand = wantPlace ? nextBuildCell() : null
     if (cand) {
-      h.dispatch({ type: 'place_tower', tower: types[s.towers.length % types.length], cell: cand })
+      h.dispatch({ type: 'place_tower', tower: types[s.towers.length % types.length]!, cell: cand })
       h.fastForward(0.2)
       if (h.getState().towers.length === s.towers.length) banned.add(`${cand.cx},${cand.cy}`)
       continue
@@ -1838,7 +1789,7 @@ const MAXED_PILOT = (seed: string) => {
     }
     // Tier 3s then commit to specs — Permafrost's brittle (+25% damage
     // taken) multiplies the whole line; Volley/Mortar/Lattice clear hordes.
-    const SPECS: Record<string, string> = {
+    const SPECS: Record<string, TowerSpecId> = {
       arrow: 'volley',
       cannon: 'mortar',
       frost: 'permafrost',
@@ -1853,7 +1804,7 @@ const MAXED_PILOT = (seed: string) => {
       h.dispatch({
         type: 'specialize_tower',
         id: specTarget.id,
-        spec: SPECS[(specTarget as unknown as { type: string }).type],
+        spec: SPECS[(specTarget as unknown as { type: string }).type]!,
       })
       h.fastForward(0.2)
       continue

@@ -381,8 +381,8 @@ buyMetaUpgrade(meta: MetaState, id: UpgradeId): MetaState
 4. **Stable iteration order.** Entities live in arrays ordered by monotonic spawn ID.
    No object-key iteration in sim-affecting code.
 5. **No ambient anything.** `Date.now`, `Math.random`, `performance`, timers, and I/O
-   are banned from `src/engine/` — enforced by an ESLint rule scoped to that
-   directory, not by code review vigilance.
+   are banned from `src/engine/`, `src/data/` and `src/harness/` — enforced by
+   ESLint rules on those directories, not by code review vigilance.
 
 ### 3.3 Sim subsystems (per tick, in fixed order)
 
@@ -549,9 +549,11 @@ Pages deploy). Deliberate upgrades:
    and the Pages deploy job runs only after CI passes.
 3. **fast-check** for property testing — the reference has none, and it's the
    highest-leverage tool for a deterministic sim.
-4. **Lint-enforced purity:** `no-restricted-globals`/`no-restricted-properties`
-   ESLint rules scoped to `src/engine/**` ban `Math.random`, `Date`, `setTimeout`,
-   `performance`, and DOM globals.
+4. **Lint-enforced purity:** ESLint rules on `src/engine/**`, `src/data/**` and
+   `src/harness/**` ban `Math.random`, `Date`, timers, `performance`, `globalThis`,
+   `crypto` and DOM globals, and any import of the UI. The simulation proper
+   (engine + data) also bans every inexact `Math` function, the `**` operator,
+   `process` and `node:*` imports.
 5. **Playwright over Puppeteer** for the browser smoke test (first-class runner,
    auto-waiting, preinstalled in more CI images).
 
